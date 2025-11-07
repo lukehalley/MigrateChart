@@ -42,7 +42,16 @@ export function drawVerticalLines(
     const priceScale = chart.priceScale();
 
     lines.forEach(line => {
-      const coordinate = timeScale.timeToCoordinate(line.time);
+      let coordinate = timeScale.timeToCoordinate(line.time);
+
+      // If coordinate is null (timestamp in gap), try to estimate position
+      if (coordinate === null) {
+        const logicalIndex = timeScale.timeToLogical(line.time);
+        if (logicalIndex !== null) {
+          coordinate = timeScale.logicalToCoordinate(logicalIndex);
+        }
+      }
+
       if (coordinate === null) return;
 
       // Draw vertical line
