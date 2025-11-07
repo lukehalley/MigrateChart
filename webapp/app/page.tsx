@@ -35,7 +35,7 @@ export default function Home() {
                 onClick={() => setTimeframe(tf)}
                 className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
                   timeframe === tf
-                    ? 'bg-blue text-white shadow-lg'
+                    ? 'bg-zera text-black shadow-lg shadow-zera/50'
                     : 'text-textMuted hover:text-text hover:bg-surface'
                 }`}
               >

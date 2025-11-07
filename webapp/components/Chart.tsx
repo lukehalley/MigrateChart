@@ -23,12 +23,12 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
     // Create chart
     const chart = createChart(chartContainerRef.current, {
       layout: {
-        background: { color: '#0d1117' },
-        textColor: '#c9d1d9',
+        background: { color: '#000000' },
+        textColor: '#ffffff',
       },
       grid: {
         vertLines: { color: '#30363d' },
-        horzLines: { color: '#30363d' },
+        horzLines: { visible: false },
       },
       width: chartContainerRef.current.clientWidth,
       height: window.innerHeight - 80, // Full screen minus minimal header
@@ -88,6 +88,8 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
         borderVisible: false,
         wickUpColor: '#26a69a',
         wickDownColor: '#ef5350',
+        priceLineVisible: false,
+        lastValueVisible: false,
       });
 
       // Transform and set data
@@ -107,11 +109,11 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
     // Add migration markers as vertical lines using custom plugin
     const migrationLines = Object.values(MIGRATION_DATES).map(migration => ({
       time: migration.timestamp,
-      color: '#666666',
+      color: '#52C97D',
       label: migration.label,
-      lineWidth: 1,
-      labelBackgroundColor: '#161b22',
-      labelTextColor: '#8b949e',
+      lineWidth: 2,
+      labelBackgroundColor: '#000000',
+      labelTextColor: '#52C97D',
     }));
 
     const cleanupLines = drawVerticalLines(chart, chartContainerRef.current, migrationLines);

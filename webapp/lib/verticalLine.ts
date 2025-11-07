@@ -53,7 +53,8 @@ export function drawVerticalLines(
       lineEl.style.bottom = '0';
       lineEl.style.width = `${line.lineWidth || 1}px`;
       lineEl.style.borderLeft = `${line.lineWidth || 1}px dashed ${line.color}`;
-      lineEl.style.opacity = '0.6';
+      lineEl.style.opacity = '0.8';
+      lineEl.style.boxShadow = `0 0 10px ${line.color}, 0 0 20px ${line.color}40`;
       overlay.appendChild(lineEl);
 
       // Draw label at top
@@ -62,13 +63,15 @@ export function drawVerticalLines(
       labelEl.style.left = `${coordinate}px`;
       labelEl.style.top = '10px';
       labelEl.style.transform = 'translateX(-50%)';
-      labelEl.style.padding = '4px 8px';
-      labelEl.style.backgroundColor = line.labelBackgroundColor || '#161b22';
-      labelEl.style.color = line.labelTextColor || '#8b949e';
-      labelEl.style.border = `1px solid ${line.color}`;
-      labelEl.style.borderRadius = '4px';
-      labelEl.style.fontSize = '11px';
+      labelEl.style.padding = '6px 12px';
+      labelEl.style.backgroundColor = line.labelBackgroundColor || '#000000';
+      labelEl.style.color = line.labelTextColor || '#52C97D';
+      labelEl.style.border = `2px solid ${line.color}`;
+      labelEl.style.borderRadius = '6px';
+      labelEl.style.fontSize = '12px';
+      labelEl.style.fontWeight = '600';
       labelEl.style.whiteSpace = 'nowrap';
+      labelEl.style.boxShadow = `0 0 15px ${line.color}80, inset 0 0 10px ${line.color}20`;
       labelEl.textContent = line.label;
       overlay.appendChild(labelEl);
     });
