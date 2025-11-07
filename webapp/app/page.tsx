@@ -21,33 +21,28 @@ export default function Home() {
 
   return (
     <main className="w-screen h-screen overflow-hidden relative">
-      {/* Floating Controls - Top Left */}
-      <div className="absolute top-10 left-10 z-50 flex flex-col gap-6">
-        {/* Logo */}
-        <div className="flex items-center gap-4 bg-gradient-to-br from-black/90 via-black/80 to-black/70 backdrop-blur-2xl rounded-2xl p-6 shadow-[0_0_50px_rgba(82,201,125,0.4)]">
+      {/* Floating Info Card - Top Left */}
+      <div className="absolute top-10 left-10 z-50 bg-black/90 backdrop-blur-2xl rounded-2xl p-8">
+        {/* Logo & Title */}
+        <div className="flex items-center gap-5 mb-6">
           <img
             src="/circle-logo.avif"
             alt="ZERA"
-            className="h-10 w-10 drop-shadow-[0_0_15px_rgba(82,201,125,0.8)]"
+            className="h-14 w-14"
           />
-          <span className="text-white/80 text-base font-medium">Complete History</span>
+          <div>
+            <h1 className="text-2xl font-bold text-white mb-1">ZERA</h1>
+            <p className="text-white/60 text-sm">Complete Price History</p>
+          </div>
         </div>
 
-        {/* Timeframe Toggle */}
-        <div className="inline-flex bg-black/90 backdrop-blur-xl rounded-full p-1 shadow-lg">
-          {(['minute', 'hour', 'day'] as const).map((tf) => (
-            <button
-              key={tf}
-              onClick={() => setTimeframe(tf)}
-              className={`px-6 py-2 rounded-full text-sm font-bold transition-all duration-300 ${
-                timeframe === tf
-                  ? 'bg-zera text-black shadow-[0_0_20px_rgba(82,201,125,0.8)]'
-                  : 'text-zera/40 hover:text-zera/80 hover:bg-zera/5'
-              }`}
-            >
-              {tf === 'minute' ? '1M' : tf === 'hour' ? '1H' : '1D'}
-            </button>
-          ))}
+        {/* Migration Path */}
+        <div className="flex items-center gap-2 text-xs">
+          <span className="text-white/50 font-medium">MON3Y</span>
+          <span className="text-zera">→</span>
+          <span className="text-white/50 font-medium">Raydium</span>
+          <span className="text-zera">→</span>
+          <span className="text-white/70 font-semibold">Meteora</span>
         </div>
       </div>
 
