@@ -36,6 +36,7 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
         borderColor: '#1F6338',  // Deep green border
         timeVisible: true,
         secondsVisible: false,
+        rightOffset: 5,  // Small padding on right
         barSpacing: 8,  // More space between bars
         minBarSpacing: 4,
       },
