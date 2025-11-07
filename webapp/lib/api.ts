@@ -3,6 +3,11 @@ import { GeckoTerminalResponse, OHLCData, PoolData, POOLS } from './types';
 const BASE_URL = 'https://api.geckoterminal.com/api/v2';
 const NETWORK = 'solana';
 
+// Jupiter API for comprehensive historical data
+const JUPITER_API = 'https://datapi.jup.ag/v2/charts';
+const MON3Y_TOKEN = 'ANNTWQsQ9J3PeM6dXLjdzwYcSzr51RREWQnjuuCEpump';
+const ZERA_TOKEN = '8avjtjHAHFqp4g2RR9ALAGBpSTqKPZR8nRbzSTwZERA';
+
 export async function fetchPoolData(
   poolAddress: string,
   timeframe: 'minute' | 'hour' | 'day' = 'day'
@@ -41,20 +46,48 @@ export async function fetchPoolData(
   }
 }
 
+export async function fetchJupiterData(tokenAddress: string): Promise<OHLCData[]> {
+  const now = Date.now();
+  const url = `${JUPITER_API}/${tokenAddress}?interval=1_HOUR&to=${now}&candles=3000&type=price&quote=usd`;
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    const data = await response.json();
+    return data.candles || [];
+  } catch (error) {
+    console.error(`Error fetching Jupiter data:`, error);
+    return [];
+  }
+}
+
 export async function fetchAllPoolsData(timeframe: 'minute' | 'hour' | 'day' = 'day'): Promise<PoolData[]> {
-  const poolEntries = Object.entries(POOLS);
+  // Use Jupiter API for both tokens
+  const [mon3yData, zeraData] = await Promise.all([
+    fetchJupiterData(MON3Y_TOKEN),
+    fetchJupiterData(ZERA_TOKEN),
+  ]);
 
-  const promises = poolEntries.map(async ([poolKey, poolInfo]) => {
-    const data = await fetchPoolData(poolInfo.address, timeframe);
-    return {
-      pool_name: poolKey,
-      pool_address: poolInfo.address,
-      token_symbol: poolInfo.token_symbol,
-      data,
-    };
-  });
-
-  return Promise.all(promises);
+  return [
+    {
+      pool_name: 'mon3y',
+      pool_address: POOLS.mon3y.address,
+      token_symbol: POOLS.mon3y.token_symbol,
+      data: mon3yData,
+    },
+    {
+      pool_name: 'zera_Raydium',
+      pool_address: POOLS.zera_Raydium.address,
+      token_symbol: POOLS.zera_Raydium.token_symbol,
+      data: [],
+    },
+    {
+      pool_name: 'zera_Meteora',
+      pool_address: POOLS.zera_Meteora.address,
+      token_symbol: POOLS.zera_Meteora.token_symbol,
+      data: zeraData,
+    },
+  ];
 }
 
 export function findLocalPeaks(data: OHLCData[], window: number = 5): number[] {
