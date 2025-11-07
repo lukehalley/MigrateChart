@@ -28,7 +28,7 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
       },
       grid: {
         vertLines: { color: '#133D2315' },  // Ultra subtle dark green
-        horzLines: { visible: false },
+        horzLines: { color: '#133D2315' },  // Ultra subtle dark green
       },
       width: chartContainerRef.current.clientWidth,
       height: window.innerHeight, // Fullscreen - no header
