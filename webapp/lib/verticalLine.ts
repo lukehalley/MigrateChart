@@ -42,17 +42,13 @@ export function drawVerticalLines(
     const priceScale = chart.priceScale();
 
     lines.forEach(line => {
-      let coordinate = timeScale.timeToCoordinate(line.time);
+      const coordinate = timeScale.timeToCoordinate(line.time);
 
-      // If coordinate is null (timestamp in gap), try to estimate position
-      if (coordinate === null) {
-        const logicalIndex = timeScale.timeToLogical(line.time);
-        if (logicalIndex !== null) {
-          coordinate = timeScale.logicalToCoordinate(logicalIndex);
-        }
+      // Skip if coordinate can't be determined (timestamp outside visible range or in gap)
+      if (coordinate === null || coordinate < 0 || coordinate > container.clientWidth) {
+        console.log(`Skipping marker "${line.label}" - outside visible range or in data gap`);
+        return;
       }
-
-      if (coordinate === null) return;
 
       // Draw vertical line
       const lineEl = document.createElement('div');
