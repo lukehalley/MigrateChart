@@ -26,9 +26,9 @@ export default function Home() {
         {/* Logo */}
         <div className="flex items-center gap-4 bg-gradient-to-br from-black/90 via-black/80 to-black/70 backdrop-blur-2xl border-2 border-zera/50 rounded-2xl p-6 shadow-[0_0_50px_rgba(82,201,125,0.4)]">
           <img
-            src="/img/zeralabs-logotype.webp"
+            src="/circle-logo.avif"
             alt="ZERA"
-            className="h-10 w-auto drop-shadow-[0_0_15px_rgba(82,201,125,0.8)]"
+            className="h-10 w-10 drop-shadow-[0_0_15px_rgba(82,201,125,0.8)]"
           />
           <span className="text-white/80 text-base font-medium">Complete History</span>
         </div>
