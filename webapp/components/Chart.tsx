@@ -43,16 +43,16 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
       crosshair: {
         mode: 0, // 0 = Normal (free moving), 1 = Magnet (locks to bars)
         vertLine: {
-          color: '#8b949e',
+          color: '#52C97D',
           width: 1,
           style: 2,
-          labelBackgroundColor: '#4169E1',
+          labelBackgroundColor: '#52C97D',
         },
         horzLine: {
-          color: '#8b949e',
+          color: '#52C97D',
           width: 1,
           style: 2,
-          labelBackgroundColor: '#4169E1',
+          labelBackgroundColor: '#52C97D',
         },
       },
     });

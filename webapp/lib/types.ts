@@ -51,7 +51,7 @@ export const POOLS = {
     address: '6oUJD1EHNVBNMeTpytmY2NxKWicz5C2JUbByUrHEsjhc',
     name: 'ZERA Meteora',
     token_symbol: 'ZERA',
-    color: '#45B7D1',
+    color: '#52C97D',
   },
 } as const;
 
