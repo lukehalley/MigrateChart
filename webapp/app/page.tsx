@@ -21,19 +21,22 @@ export default function Home() {
 
   return (
     <main className="w-screen h-screen overflow-hidden flex flex-col">
-      {/* Minimal Header with Timeframe Selector */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-        <div className="flex items-center gap-4">
-          <h1 className="text-xl font-bold">ZERA</h1>
-          <div className="flex gap-2">
+      {/* Header */}
+      <div className="flex items-center justify-between px-8 py-5 border-b border-border bg-surface/50 backdrop-blur-sm">
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold tracking-tight">ZERA</h1>
+            <span className="text-textMuted text-sm">Complete Price History</span>
+          </div>
+          <div className="flex gap-1 bg-background rounded-lg p-1">
             {(['minute', 'hour', 'day'] as const).map((tf) => (
               <button
                 key={tf}
                 onClick={() => setTimeframe(tf)}
-                className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
                   timeframe === tf
-                    ? 'bg-blue text-white'
-                    : 'bg-surface text-textMuted hover:bg-border'
+                    ? 'bg-blue text-white shadow-lg'
+                    : 'text-textMuted hover:text-text hover:bg-surface'
                 }`}
               >
                 {tf === 'minute' ? '1M' : tf === 'hour' ? '1H' : '1D'}
@@ -41,6 +44,14 @@ export default function Home() {
             ))}
           </div>
         </div>
+        <a
+          href="https://zeralabs.org"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-sm text-textMuted hover:text-text transition-colors"
+        >
+          zeralabs.org ↗
+        </a>
       </div>
 
       {/* Fullscreen Chart */}

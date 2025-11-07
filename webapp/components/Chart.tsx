@@ -28,7 +28,7 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
       },
       grid: {
         vertLines: { color: '#30363d' },
-        horzLines: { visible: false }, // Hide horizontal grid lines
+        horzLines: { color: '#30363d' },
       },
       width: chartContainerRef.current.clientWidth,
       height: window.innerHeight - 80, // Full screen minus minimal header
@@ -88,8 +88,6 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
         borderVisible: false,
         wickUpColor: '#26a69a',
         wickDownColor: '#ef5350',
-        priceLineVisible: false, // Hide the price line
-        lastValueVisible: false, // Hide the last value badge
       });
 
       // Transform and set data
