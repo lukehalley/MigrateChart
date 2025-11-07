@@ -57,11 +57,11 @@ export function drawVerticalLines(
       lineEl.style.boxShadow = `0 0 10px ${line.color}, 0 0 20px ${line.color}40`;
       overlay.appendChild(lineEl);
 
-      // Draw label - positioned to align under logo and toggle
+      // Draw label - positioned to align under enlarged floating card
       const labelEl = document.createElement('div');
       labelEl.style.position = 'absolute';
       labelEl.style.left = `${coordinate}px`;
-      labelEl.style.top = '180px';
+      labelEl.style.top = '260px';
       labelEl.style.transform = 'translateX(-50%)';
       labelEl.style.padding = '6px 12px';
       labelEl.style.backgroundColor = line.labelBackgroundColor || '#000000';

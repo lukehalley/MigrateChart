@@ -37,12 +37,14 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
         timeVisible: true,
         secondsVisible: false,
         rightOffset: 12,
+        barSpacing: 8,  // More space between bars
+        minBarSpacing: 4,
       },
       rightPriceScale: {
         borderColor: '#1F6338',  // Deep green border
         scaleMargins: {
-          top: 0.15,
-          bottom: 0.15,
+          top: 0.35,    // 35% padding - reduces vertical stretch
+          bottom: 0.35, // 35% padding - reduces vertical stretch
         },
       },
       crosshair: {
@@ -135,8 +137,21 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
 
     window.addEventListener('resize', handleResize);
 
-    // Fit content
-    chart.timeScale().fitContent();
+    // Fit content with padding on left and right
+    setTimeout(() => {
+      const allData = poolsData.flatMap(p => p.data).sort((a, b) => a.time - b.time);
+      if (allData.length > 0) {
+        const firstTime = allData[0].time;
+        const lastTime = allData[allData.length - 1].time;
+        const range = lastTime - firstTime;
+        const padding = range * 0.05; // 5% padding on each side
+
+        chart.timeScale().setVisibleLogicalRange({
+          from: -padding / (range / allData.length),
+          to: allData.length + (padding / (range / allData.length)),
+        });
+      }
+    }, 100);
 
     return () => {
       window.removeEventListener('resize', handleResize);
