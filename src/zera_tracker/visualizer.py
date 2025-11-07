@@ -394,7 +394,7 @@ def create_price_chart(df: pd.DataFrame, output_path: str = None, include_volume
         ax1.text(migration_date, ax1.get_ylim()[1] * 0.98, label,
                 ha='center', va='top', fontsize=8, color='#8b949e',
                 bbox=dict(boxstyle='round,pad=0.3', facecolor='#161b22',
-                         edgecolor='#30363d', alpha=0.9, linewidth=0.5))
+                         edgecolor='#52C97D', alpha=0.9, linewidth=0.5))
 
     # Create custom legend with simple names
     legend_elements = []
@@ -416,8 +416,8 @@ def create_price_chart(df: pd.DataFrame, output_path: str = None, include_volume
     ax1.set_ylabel('Price (USD)', fontsize=12, color='#c9d1d9')
     ax1.set_title('OHLC Candlestick Chart', fontsize=14, color='#c9d1d9')
     ax1.legend(handles=legend_elements, loc='upper left', fontsize=10,
-              facecolor='#161b22', edgecolor='#30363d', labelcolor='#c9d1d9')
-    ax1.grid(True, alpha=0.15, color='#30363d', linestyle='-', linewidth=0.5)
+              facecolor='#161b22', edgecolor='#52C97D', labelcolor='#c9d1d9')
+    ax1.grid(True, alpha=0.15, color='#52C97D', linestyle='-', linewidth=0.5)
     ax1.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
     ax1.tick_params(colors='#8b949e', which='both')
     plt.setp(ax1.xaxis.get_majorticklabels(), rotation=45, ha='right')
@@ -454,13 +454,13 @@ def create_price_chart(df: pd.DataFrame, output_path: str = None, include_volume
         # Add migration markers to volume chart (matching price chart style)
         for event_name, timestamp in config.MIGRATION_DATES.items():
             migration_date = datetime.fromtimestamp(timestamp)
-            ax2.axvline(x=migration_date, color='#30363d', linestyle='--',
+            ax2.axvline(x=migration_date, color='#52C97D', linestyle='--',
                        linewidth=1, alpha=0.6, zorder=0)
 
         ax2.set_xlabel('Date', fontsize=12, color='#c9d1d9')
         ax2.set_ylabel('Volume (Millions USD)', fontsize=12, color='#c9d1d9')
         ax2.set_title('Trading Volume Over Time', fontsize=14, color='#c9d1d9')
-        ax2.grid(True, alpha=0.15, color='#30363d', linestyle='-', linewidth=0.5, axis='y')
+        ax2.grid(True, alpha=0.15, color='#52C97D', linestyle='-', linewidth=0.5, axis='y')
         ax2.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
         ax2.tick_params(colors='#8b949e', which='both')
         plt.setp(ax2.xaxis.get_majorticklabels(), rotation=45, ha='right')
@@ -520,7 +520,7 @@ def create_comparison_chart(df: pd.DataFrame, output_path: str = None):
                          rotation=15, ha='right', color='#c9d1d9')
     ax1.set_ylabel('Average Price (USD)', color='#c9d1d9')
     ax1.set_title('Average Price by Pool', color='#c9d1d9')
-    ax1.grid(True, alpha=0.15, axis='y', color='#30363d', linewidth=0.5)
+    ax1.grid(True, alpha=0.15, axis='y', color='#52C97D', linewidth=0.5)
     ax1.tick_params(colors='#8b949e', which='both')
 
     # 2. Total Volume by Pool
@@ -531,7 +531,7 @@ def create_comparison_chart(df: pd.DataFrame, output_path: str = None):
                          rotation=15, ha='right', color='#c9d1d9')
     ax2.set_ylabel('Total Volume (USD)', color='#c9d1d9')
     ax2.set_title('Total Volume by Pool', color='#c9d1d9')
-    ax2.grid(True, alpha=0.15, axis='y', color='#30363d', linewidth=0.5)
+    ax2.grid(True, alpha=0.15, axis='y', color='#52C97D', linewidth=0.5)
     ax2.tick_params(colors='#8b949e', which='both')
 
     # 3. Price Volatility (std dev) by Pool
@@ -542,7 +542,7 @@ def create_comparison_chart(df: pd.DataFrame, output_path: str = None):
                          rotation=15, ha='right', color='#c9d1d9')
     ax3.set_ylabel('Price Std Dev (USD)', color='#c9d1d9')
     ax3.set_title('Price Volatility by Pool', color='#c9d1d9')
-    ax3.grid(True, alpha=0.15, axis='y', color='#30363d', linewidth=0.5)
+    ax3.grid(True, alpha=0.15, axis='y', color='#52C97D', linewidth=0.5)
     ax3.tick_params(colors='#8b949e', which='both')
 
     # 4. Days Active by Pool
@@ -553,7 +553,7 @@ def create_comparison_chart(df: pd.DataFrame, output_path: str = None):
                          rotation=15, ha='right', color='#c9d1d9')
     ax4.set_ylabel('Days', color='#c9d1d9')
     ax4.set_title('Days Active by Pool', color='#c9d1d9')
-    ax4.grid(True, alpha=0.15, axis='y', color='#30363d', linewidth=0.5)
+    ax4.grid(True, alpha=0.15, axis='y', color='#52C97D', linewidth=0.5)
     ax4.tick_params(colors='#8b949e', which='both')
 
     plt.tight_layout()

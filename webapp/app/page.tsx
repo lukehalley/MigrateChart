@@ -21,37 +21,36 @@ export default function Home() {
 
   return (
     <main className="w-screen h-screen overflow-hidden relative">
-      {/* Floating Logo & Controls - Top Left */}
-      <div className="absolute top-6 left-6 z-10 flex flex-col gap-3">
-        {/* Logo */}
-        <img
-          src="/img/zeralabs-logotype.webp"
-          alt="ZERA"
-          className="h-8 w-auto"
-          style={{ filter: 'drop-shadow(0 0 15px rgba(82, 201, 125, 0.4))' }}
-        />
+      {/* Floating Card - Top Left */}
+      <div className="absolute top-6 left-6 z-10 bg-black/70 backdrop-blur-md border-2 border-zera/40 rounded-xl p-4 shadow-2xl"
+           style={{ boxShadow: '0 0 30px rgba(82, 201, 125, 0.3), inset 0 0 20px rgba(82, 201, 125, 0.05)' }}>
+        {/* Logo & Title */}
+        <div className="flex items-center gap-3 mb-4">
+          <img
+            src="/img/zeralabs-logotype.webp"
+            alt="ZERA"
+            className="h-7 w-auto"
+            style={{ filter: 'drop-shadow(0 0 10px rgba(82, 201, 125, 0.6))' }}
+          />
+          <span className="text-textMuted text-xs">Complete History</span>
+        </div>
 
-        {/* Sleek Timeframe Switch */}
-        <div className="flex gap-0.5 bg-black/90 backdrop-blur-sm rounded-lg p-0.5 border border-zera/30">
+        {/* Toggle Switch */}
+        <div className="flex items-center gap-1 bg-black/60 rounded-full p-1">
           {(['minute', 'hour', 'day'] as const).map((tf) => (
             <button
               key={tf}
               onClick={() => setTimeframe(tf)}
-              className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${
+              className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-200 ${
                 timeframe === tf
-                  ? 'bg-zera text-black shadow-lg shadow-zera/60'
-                  : 'text-zera/60 hover:text-zera'
+                  ? 'bg-zera text-black shadow-lg shadow-zera/70'
+                  : 'text-zera/40 hover:text-zera/80'
               }`}
             >
               {tf === 'minute' ? '1M' : tf === 'hour' ? '1H' : '1D'}
             </button>
           ))}
         </div>
-      </div>
-
-      {/* Title - Top Right */}
-      <div className="absolute top-6 right-6 z-10 text-sm text-textMuted font-medium">
-        Complete Price History
       </div>
 
       {/* Fullscreen Chart */}
