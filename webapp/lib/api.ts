@@ -68,6 +68,29 @@ export async function fetchAllPoolsData(timeframe: 'minute' | 'hour' | 'day' = '
     fetchJupiterData(ZERA_TOKEN),
   ]);
 
+  // Add placeholder candles at migration points for marker anchoring
+  const MIGRATION_1 = 1759363200; // Oct 2, 2025 - MON3Y → Raydium
+  const MIGRATION_2 = 1762300800; // Nov 5, 2025 - Raydium → Meteora
+
+  // Add placeholder at first migration if not present
+  const zeraWithMarker = [...zeraData];
+  const hasMarker1 = zeraWithMarker.some(c => c.time === MIGRATION_1);
+  if (!hasMarker1 && zeraWithMarker.length > 0) {
+    // Find surrounding candles to interpolate
+    const before = mon3yData[mon3yData.length - 1];
+    const after = zeraWithMarker[0];
+    if (before && after) {
+      zeraWithMarker.unshift({
+        time: MIGRATION_1,
+        open: before.close,
+        high: before.close,
+        low: before.close,
+        close: before.close,
+        volume: 0,
+      });
+    }
+  }
+
   return [
     {
       pool_name: 'mon3y',
@@ -85,7 +108,7 @@ export async function fetchAllPoolsData(timeframe: 'minute' | 'hour' | 'day' = '
       pool_name: 'zera_Meteora',
       pool_address: POOLS.zera_Meteora.address,
       token_symbol: POOLS.zera_Meteora.token_symbol,
-      data: zeraData,
+      data: zeraWithMarker.sort((a, b) => a.time - b.time),
     },
   ];
 }
