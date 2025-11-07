@@ -37,7 +37,7 @@ export default function Home() {
         </div>
 
         {/* Migration Path */}
-        <div className="flex items-center justify-center gap-2 text-sm pt-4 mt-4 border-t border-zera-800/30">
+        <div className="flex items-center justify-center gap-2 text-sm pt-8 mt-8 border-t border-zera-800/30">
           <span className="text-zera-300/60 font-medium">MON3Y</span>
           <span className="text-zera-400">→</span>
           <span className="text-zera-300/60 font-medium">Raydium</span>
