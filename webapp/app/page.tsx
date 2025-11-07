@@ -26,12 +26,14 @@ export default function Home() {
            style={{ boxShadow: '0 0 60px rgba(82, 201, 125, 0.5), inset 0 0 40px rgba(82, 201, 125, 0.1)' }}>
         {/* Logo & Title */}
         <div className="flex items-center gap-6 mb-8">
-          <img
-            src="/img/zeralabs-logotype.webp"
-            alt="ZERA"
-            className="h-16 w-auto"
-            style={{ filter: 'drop-shadow(0 0 20px rgba(82, 201, 125, 0.8))' }}
-          />
+          <div className="p-3 bg-black/50 rounded-xl">
+            <img
+              src="/img/zeralabs-logotype.webp"
+              alt="ZERA"
+              className="h-10 w-auto"
+              style={{ filter: 'drop-shadow(0 0 15px rgba(82, 201, 125, 0.8))' }}
+            />
+          </div>
           <span className="text-text text-lg font-semibold">Complete History</span>
         </div>
 
