@@ -37,15 +37,21 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
         timeVisible: true,
         secondsVisible: false,
         rightOffset: 5,  // Small padding on right
-        barSpacing: 8,  // More space between bars
-        minBarSpacing: 4,
+        barSpacing: 6,  // Default spacing
+        minBarSpacing: 0.001,  // Allow extreme zoom out to see all data
+        fixLeftEdge: false,  // Allow scrolling past edges
+        fixRightEdge: false,
+        lockVisibleTimeRangeOnResize: false,
+        rightBarStaysOnScroll: true,
+        shiftVisibleRangeOnNewBar: true,  // Auto-scroll for new data
       },
       rightPriceScale: {
         borderColor: '#1F6338',  // Deep green border
         scaleMargins: {
-          top: 0.35,    // 35% padding - reduces vertical stretch
-          bottom: 0.35, // 35% padding - reduces vertical stretch
+          top: 0.1,    // 10% padding - allows seeing full price range
+          bottom: 0.1, // 10% padding
         },
+        autoScale: true,  // Auto-scale to fit data
       },
       crosshair: {
         mode: 0, // Free moving
