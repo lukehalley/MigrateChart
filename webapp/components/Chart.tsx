@@ -38,7 +38,7 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
         secondsVisible: false,
         rightOffset: 5,  // Small padding on right
         barSpacing: 6,  // Default spacing
-        minBarSpacing: 0.001,  // Allow extreme zoom out to see all data
+        minBarSpacing: 0.50,  // Allow extreme zoom out to see all data
         fixLeftEdge: false,  // Allow scrolling past edges
         fixRightEdge: false,
         lockVisibleTimeRangeOnResize: false,
@@ -52,6 +52,11 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
           bottom: 0.1, // 10% padding
         },
         autoScale: true,  // Auto-scale to fit data
+        mode: 0,  // Normal price scale
+        invertScale: false,
+        alignLabels: true,
+        minimumWidth: 0,
+        entireTextOnly: false,
       },
       crosshair: {
         mode: 0, // Free moving
