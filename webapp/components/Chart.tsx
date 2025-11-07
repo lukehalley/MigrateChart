@@ -28,7 +28,7 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
       },
       grid: {
         vertLines: { color: '#2b6c4373' },
-        horzLines: { visible: false },
+        horzLines: { color: '#2b6c4348' },
       },
       width: chartContainerRef.current.clientWidth,
       height: window.innerHeight, // Fullscreen - no header
@@ -36,9 +36,14 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
         borderColor: '#2b6c43ff',
         timeVisible: true,
         secondsVisible: false,
+        rightOffset: 12, // Horizontal padding on right
       },
       rightPriceScale: {
         borderColor: '#2b6c43ff',
+        scaleMargins: {
+          top: 0.15,    // 15% padding at top
+          bottom: 0.15, // 15% padding at bottom
+        },
       },
       crosshair: {
         mode: 0, // 0 = Normal (free moving), 1 = Magnet (locks to bars)
@@ -83,10 +88,10 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
 
       // Create candlestick series
       const candlestickSeries = chart.addCandlestickSeries({
-        upColor: '#26a69a',
+        upColor: '#52C97D',
         downColor: '#ef5350',
         borderVisible: false,
-        wickUpColor: '#26a69a',
+        wickUpColor: '#52C97D',
         wickDownColor: '#ef5350',
         priceLineVisible: false,
         lastValueVisible: false,
