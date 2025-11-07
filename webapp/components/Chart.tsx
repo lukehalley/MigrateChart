@@ -27,18 +27,18 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
         textColor: '#ffffff',
       },
       grid: {
-        vertLines: { color: '#30363d' },
+        vertLines: { color: '#2b6c4373' },
         horzLines: { visible: false },
       },
       width: chartContainerRef.current.clientWidth,
       height: window.innerHeight, // Fullscreen - no header
       timeScale: {
-        borderColor: '#30363d',
+        borderColor: '#2b6c43ff',
         timeVisible: true,
         secondsVisible: false,
       },
       rightPriceScale: {
-        borderColor: '#30363d',
+        borderColor: '#2b6c43ff',
       },
       crosshair: {
         mode: 0, // 0 = Normal (free moving), 1 = Magnet (locks to bars)
