@@ -1,0 +1,142 @@
+import { GeckoTerminalResponse, OHLCData, PoolData, POOLS } from './types';
+
+const BASE_URL = 'https://api.geckoterminal.com/api/v2';
+const NETWORK = 'solana';
+
+export async function fetchPoolData(
+  poolAddress: string,
+  timeframe: 'minute' | 'hour' | 'day' = 'day'
+): Promise<OHLCData[]> {
+  const url = `${BASE_URL}/networks/${NETWORK}/pools/${poolAddress}/ohlcv/${timeframe}`;
+
+  try {
+    const response = await fetch(url, {
+      headers: {
+        'Accept': 'application/json',
+      },
+      next: {
+        revalidate: timeframe === 'minute' ? 60 : timeframe === 'hour' ? 3600 : 86400, // Cache based on timeframe
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data: GeckoTerminalResponse = await response.json();
+
+    // Transform the OHLCV data
+    const ohlcvList = data.data.attributes.ohlcv_list;
+    return ohlcvList.map(([timestamp, open, high, low, close, volume]) => ({
+      time: timestamp,
+      open,
+      high,
+      low,
+      close,
+      volume,
+    }));
+  } catch (error) {
+    console.error(`Error fetching data for pool ${poolAddress}:`, error);
+    return [];
+  }
+}
+
+export async function fetchAllPoolsData(timeframe: 'minute' | 'hour' | 'day' = 'day'): Promise<PoolData[]> {
+  const poolEntries = Object.entries(POOLS);
+
+  const promises = poolEntries.map(async ([poolKey, poolInfo]) => {
+    const data = await fetchPoolData(poolInfo.address, timeframe);
+    return {
+      pool_name: poolKey,
+      pool_address: poolInfo.address,
+      token_symbol: poolInfo.token_symbol,
+      data,
+    };
+  });
+
+  return Promise.all(promises);
+}
+
+export function findLocalPeaks(data: OHLCData[], window: number = 5): number[] {
+  if (data.length < window * 2) return [];
+
+  const peaks: number[] = [];
+  const highs = data.map(d => d.high);
+
+  // Calculate prominence threshold (25% of price range)
+  const priceRange = Math.max(...highs) - Math.min(...highs);
+  const minProminence = priceRange * 0.25;
+
+  for (let i = window; i < highs.length - window; i++) {
+    // Check if current point is higher than neighbors
+    const isPeak =
+      highs.slice(i - window, i).every(h => highs[i] >= h) &&
+      highs.slice(i + 1, i + window + 1).every(h => highs[i] >= h);
+
+    if (isPeak) {
+      // Check prominence
+      const leftMin = Math.min(...highs.slice(Math.max(0, i - window), i));
+      const rightMin = Math.min(...highs.slice(i + 1, Math.min(highs.length, i + window + 1)));
+      const prominence = highs[i] - Math.max(leftMin, rightMin);
+
+      if (prominence >= minProminence) {
+        peaks.push(i);
+      }
+    }
+  }
+
+  return peaks;
+}
+
+export function findLocalTroughs(data: OHLCData[], window: number = 5): number[] {
+  if (data.length < window * 2) return [];
+
+  const troughs: number[] = [];
+  const lows = data.map(d => d.low);
+
+  // Calculate prominence threshold (25% of price range)
+  const priceRange = Math.max(...lows) - Math.min(...lows);
+  const minProminence = priceRange * 0.25;
+
+  for (let i = window; i < lows.length - window; i++) {
+    // Check if current point is lower than neighbors
+    const isTrough =
+      lows.slice(i - window, i).every(l => lows[i] <= l) &&
+      lows.slice(i + 1, i + window + 1).every(l => lows[i] <= l);
+
+    if (isTrough) {
+      // Check prominence
+      const leftMax = Math.max(...lows.slice(Math.max(0, i - window), i));
+      const rightMax = Math.max(...lows.slice(i + 1, Math.min(lows.length, i + window + 1)));
+      const prominence = Math.min(leftMax, rightMax) - lows[i];
+
+      if (prominence >= minProminence) {
+        troughs.push(i);
+      }
+    }
+  }
+
+  return troughs;
+}
+
+export function filterByMinimumDistance<T extends { time: number }>(
+  points: T[],
+  minDistanceHours: number
+): T[] {
+  if (points.length <= 1) return points;
+
+  const sorted = [...points].sort((a, b) => a.time - b.time);
+  const filtered: T[] = [sorted[0]];
+
+  for (let i = 1; i < sorted.length; i++) {
+    const lastTime = filtered[filtered.length - 1].time;
+    const currentTime = sorted[i].time;
+    const hoursDiff = (currentTime - lastTime) / 3600;
+
+    if (hoursDiff >= minDistanceHours) {
+      filtered.push(sorted[i]);
+    }
+  }
+
+  return filtered;
+}

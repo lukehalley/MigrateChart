@@ -91,11 +91,15 @@ def main(use_cache: bool = False):
 
     # Define paths before try block
     chart_path = f"{config.OUTPUT_DIR}/{config.CHART_FILENAME}"
+    chart_price_only_path = f"{config.OUTPUT_DIR}/zera_price_chart_large.png"
     comparison_path = f"{config.OUTPUT_DIR}/zera_comparison_chart.png"
 
     try:
-        # Main price chart
-        create_price_chart(df, chart_path)
+        # Main price chart with volume
+        create_price_chart(df, chart_path, include_volume=True)
+
+        # Large price chart without volume
+        create_price_chart(df, chart_price_only_path, include_volume=False)
 
         # Comparison chart
         create_comparison_chart(df, comparison_path)
@@ -116,6 +120,7 @@ def main(use_cache: bool = False):
     print(f"\nGenerated files:")
     print(f"  📊 {csv_path}")
     print(f"  📈 {chart_path}")
+    print(f"  📈 {chart_price_only_path} (large, price only)")
     print(f"  📊 {comparison_path}")
     print("\n" + "="*70)
     print(f"Completed at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")

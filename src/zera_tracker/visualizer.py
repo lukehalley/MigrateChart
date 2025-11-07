@@ -30,7 +30,7 @@ def plot_candlesticks(ax, df, color='#4ECDC4', alpha=0.8):
     else:
         candle_width = timedelta(days=0.6)
 
-    for idx, row in df.iterrows():
+    for _, row in df.iterrows():
         date = row['date']
         open_price = row['open']
         high = row['high']
@@ -181,19 +181,70 @@ def filter_by_minimum_distance(points, min_distance_days=5):
     return filtered
 
 
-def create_price_chart(df: pd.DataFrame, output_path: str = None):
+def create_price_chart(df: pd.DataFrame, output_path: str = None, include_volume: bool = True):
     """
     Create a comprehensive price chart with migration markers
 
     Args:
         df: Unified DataFrame with price history
         output_path: Path to save the chart (optional)
+        include_volume: Whether to include volume subplot (default: True)
     """
-    # Set up the figure with multiple subplots
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(16, 10),
-                                     gridspec_kw={'height_ratios': [3, 1]})
-    fig.suptitle('ZERA Token - Complete Price History (M0N3Y → ZERA)',
-                 fontsize=16, fontweight='bold')
+    # Calculate adaptive parameters based on timeframe
+    real_df_temp = df[~df.get('is_interpolated', False)].copy()
+    if len(real_df_temp) > 1:
+        avg_time_delta = (real_df_temp['date'].iloc[-1] - real_df_temp['date'].iloc[0]) / len(real_df_temp)
+        avg_hours = avg_time_delta.total_seconds() / 3600
+
+        # Adaptive parameters based on timeframe
+        if avg_hours < 1.5:  # Minute data
+            label_offset_multiplier = 3
+            min_distance_periods = 10
+            peak_window = 3
+        elif avg_hours < 12:  # Hourly data
+            label_offset_multiplier = 4
+            min_distance_periods = 6  # Reduced from 15 to allow more markers
+            peak_window = 3  # Reduced from 5 for better detection
+        else:  # Daily or longer
+            label_offset_multiplier = 2
+            min_distance_periods = 7
+            peak_window = 5
+
+        label_offset = avg_time_delta * label_offset_multiplier
+        min_distance_hours = avg_hours * min_distance_periods
+    else:
+        # Fallback values
+        label_offset = pd.Timedelta(hours=6)
+        min_distance_hours = 24
+        peak_window = 5
+
+    # Set up dark theme style
+    plt.style.use('dark_background')
+
+    # Set up the figure - single plot if no volume, otherwise with volume subplot
+    if include_volume:
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(16, 10),
+                                         gridspec_kw={'height_ratios': [3, 1]})
+        fig.patch.set_facecolor('#0d1117')
+        ax1.set_facecolor('#0d1117')
+        ax2.set_facecolor('#0d1117')
+    else:
+        # Larger single chart without volume
+        fig, ax1 = plt.subplots(1, 1, figsize=(24, 12))
+        fig.patch.set_facecolor('#0d1117')
+        ax1.set_facecolor('#0d1117')
+
+    # Add timeframe label to title
+    timeframe_label = config.TIMEFRAME.upper()
+    if config.TIMEFRAME == 'hour':
+        timeframe_label = '1H'
+    elif config.TIMEFRAME == 'day':
+        timeframe_label = '1D'
+    elif config.TIMEFRAME == 'minute':
+        timeframe_label = '1M'
+
+    fig.suptitle(f'ZERA Token - Complete Price History | {timeframe_label}',
+                 fontsize=16, fontweight='bold', color='#c9d1d9')
 
     # Color mapping for different pools
     pool_colors = {
@@ -230,31 +281,9 @@ def create_price_chart(df: pd.DataFrame, output_path: str = None):
             plot_candlesticks(ax1, pool_df, color=pool_colors.get(pool_name, '#333333'), alpha=0.9)
             plotted_pools.append((pool_name, pool_colors.get(pool_name, '#333333')))
 
-            # Always label the last candlestick (current price)
-            last_row = pool_df.iloc[-1]
-            last_date = last_row['date']
-            last_close = last_row['close']
-
-            # Mark with a larger circle
-            ax1.plot(last_date, last_close, 'o', color='#4169E1', markersize=8,
-                    markeredgecolor='white', markeredgewidth=1.5, zorder=12)
-
-            # Position label to the right
-            label_date = last_date + pd.Timedelta(days=2)
-            ax1.annotate(f'${last_close:.4f}',
-                       xy=(last_date, last_close),
-                       xytext=(label_date, last_close),
-                       fontsize=8, color='white', weight='bold',
-                       bbox=dict(boxstyle='round,pad=0.5', facecolor='#4169E1',
-                                edgecolor='white', alpha=1.0, linewidth=1.5),
-                       ha='left', va='center',
-                       arrowprops=dict(arrowstyle='-', color='#4169E1',
-                                     lw=1.5, alpha=0.8),
-                       zorder=12)
-
-            # Find peaks and troughs
-            peaks = find_local_peaks(pool_df, window=7, prominence_threshold=0.25)
-            troughs = find_local_troughs(pool_df, window=7, prominence_threshold=0.25)
+            # Find peaks and troughs using adaptive window
+            peaks = find_local_peaks(pool_df, window=peak_window, prominence_threshold=0.25)
+            troughs = find_local_troughs(pool_df, window=peak_window, prominence_threshold=0.25)
 
             # Combine peaks and troughs with type markers
             all_markers = []
@@ -263,8 +292,9 @@ def create_price_chart(df: pd.DataFrame, output_path: str = None):
             for date, value in troughs:
                 all_markers.append((date, value, 'trough'))
 
-            # Filter combined list to prevent ANY overlaps
-            filtered_markers = filter_by_minimum_distance(all_markers, min_distance_days=10)
+            # Filter combined list to prevent overlaps using adaptive distance
+            min_distance_days = min_distance_hours / 24
+            filtered_markers = filter_by_minimum_distance(all_markers, min_distance_days=min_distance_days)
 
             # Plot filtered markers with side labels
             for marker in filtered_markers:
@@ -275,8 +305,8 @@ def create_price_chart(df: pd.DataFrame, output_path: str = None):
                     ax1.plot(date, value, 'o', color='#26a69a', markersize=6,
                             markeredgecolor='white', markeredgewidth=1, zorder=11)
 
-                    # Position label to the right with connecting line
-                    label_date = date + pd.Timedelta(days=2)
+                    # Position label using adaptive offset
+                    label_date = date + label_offset
                     ax1.annotate(f'${value:.4f}',
                                xy=(date, value),
                                xytext=(label_date, value),
@@ -292,8 +322,8 @@ def create_price_chart(df: pd.DataFrame, output_path: str = None):
                     ax1.plot(date, value, 'o', color='#ef5350', markersize=6,
                             markeredgecolor='white', markeredgewidth=1, zorder=11)
 
-                    # Position label to the right with connecting line
-                    label_date = date + pd.Timedelta(days=2)
+                    # Position label using adaptive offset
+                    label_date = date + label_offset
                     ax1.annotate(f'${value:.4f}',
                                xy=(date, value),
                                xytext=(label_date, value),
@@ -304,6 +334,47 @@ def create_price_chart(df: pd.DataFrame, output_path: str = None):
                                arrowprops=dict(arrowstyle='-', color='#ef5350',
                                              lw=1, alpha=0.6),
                                zorder=10)
+
+    # Label the absolute last candlestick (current price) - only once
+    last_row = real_df.iloc[-1]
+    last_date = last_row['date']
+    last_close = last_row['close']
+    last_high = last_row['high']
+    last_low = last_row['low']
+
+    # Determine which value to mark (high or low based on close position)
+    candle_range = last_high - last_low
+    if candle_range > 0:
+        close_position = (last_close - last_low) / candle_range
+        if close_position > 0.7:  # Close near high
+            mark_value = last_high
+            mark_color = '#26a69a'  # Green
+        elif close_position < 0.3:  # Close near low
+            mark_value = last_low
+            mark_color = '#ef5350'  # Red
+        else:  # Close in middle
+            mark_value = last_close
+            mark_color = '#4169E1'  # Blue
+    else:
+        mark_value = last_close
+        mark_color = '#4169E1'
+
+    # Mark with circle
+    ax1.plot(last_date, mark_value, 'o', color=mark_color, markersize=8,
+            markeredgecolor='white', markeredgewidth=1.5, zorder=12)
+
+    # Position label using adaptive offset
+    label_date = last_date + label_offset
+    ax1.annotate(f'${mark_value:.4f}',
+               xy=(last_date, mark_value),
+               xytext=(label_date, mark_value),
+               fontsize=8, color='white', weight='bold',
+               bbox=dict(boxstyle='round,pad=0.5', facecolor=mark_color,
+                        edgecolor='white', alpha=1.0, linewidth=1.5),
+               ha='left', va='center',
+               arrowprops=dict(arrowstyle='-', color=mark_color,
+                             lw=1.5, alpha=0.8),
+               zorder=12)
 
     # Add migration markers with transition labels
     for event_name, timestamp in config.MIGRATION_DATES.items():
@@ -321,9 +392,9 @@ def create_price_chart(df: pd.DataFrame, output_path: str = None):
 
         # Place label at top of chart, centered on line
         ax1.text(migration_date, ax1.get_ylim()[1] * 0.98, label,
-                ha='center', va='top', fontsize=8, color='#666666',
-                bbox=dict(boxstyle='round,pad=0.3', facecolor='white',
-                         edgecolor='#666666', alpha=0.8, linewidth=0.5))
+                ha='center', va='top', fontsize=8, color='#8b949e',
+                bbox=dict(boxstyle='round,pad=0.3', facecolor='#161b22',
+                         edgecolor='#30363d', alpha=0.9, linewidth=0.5))
 
     # Create custom legend with simple names
     legend_elements = []
@@ -341,58 +412,61 @@ def create_price_chart(df: pd.DataFrame, output_path: str = None):
         legend_elements.append(Line2D([0], [0], color=color, linewidth=8,
                                      label=label))
 
-    ax1.set_xlabel('Date', fontsize=12)
-    ax1.set_ylabel('Price (USD)', fontsize=12)
-    ax1.set_title('OHLC Candlestick Chart', fontsize=14)
-    ax1.legend(handles=legend_elements, loc='upper left', fontsize=10)
-    ax1.grid(True, alpha=0.3)
+    ax1.set_xlabel('Date', fontsize=12, color='#c9d1d9')
+    ax1.set_ylabel('Price (USD)', fontsize=12, color='#c9d1d9')
+    ax1.set_title('OHLC Candlestick Chart', fontsize=14, color='#c9d1d9')
+    ax1.legend(handles=legend_elements, loc='upper left', fontsize=10,
+              facecolor='#161b22', edgecolor='#30363d', labelcolor='#c9d1d9')
+    ax1.grid(True, alpha=0.15, color='#30363d', linestyle='-', linewidth=0.5)
     ax1.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+    ax1.tick_params(colors='#8b949e', which='both')
     plt.setp(ax1.xaxis.get_majorticklabels(), rotation=45, ha='right')
 
-    # Set x-axis limits with padding to ensure all data fits
+    # Set x-axis limits with padding to ensure all data fits (including labels)
     date_range = real_df['date'].max() - real_df['date'].min()
-    padding = date_range * 0.02  # 2% padding on each side
-    ax1.set_xlim(real_df['date'].min() - padding, real_df['date'].max() + padding)
+    left_padding = date_range * 0.02  # 2% padding on left
+    # Right padding needs to account for label offset plus some extra space
+    right_padding = label_offset + (date_range * 0.05)
+    ax1.set_xlim(real_df['date'].min() - left_padding, real_df['date'].max() + right_padding)
 
-    # Plot 2: Volume over time (with cutoffs at migrations)
-    # Only plot real data (skip interpolated points)
-    real_df = df[~df.get('is_interpolated', False)].copy()
+    # Plot 2: Volume over time (only if include_volume is True)
+    if include_volume:
+        # Only plot real data (skip interpolated points)
+        real_df_vol = df[~df.get('is_interpolated', False)].copy()
 
-    for pool_name in real_df['pool_name'].unique():
-        pool_df = real_df[real_df['pool_name'] == pool_name].copy()
+        for pool_name in real_df_vol['pool_name'].unique():
+            pool_df = real_df_vol[real_df_vol['pool_name'] == pool_name].copy()
 
-        # Cut off old pools BEFORE migration (new pools start AT migration)
-        if pool_name == 'mon3y':
-            pool_df = pool_df[pool_df['date'] < migration_1]
-        elif pool_name == 'zera_Raydium':
-            pool_df = pool_df[pool_df['date'] < migration_2]
+            # Cut off old pools BEFORE migration (new pools start AT migration)
+            if pool_name == 'mon3y':
+                pool_df = pool_df[pool_df['date'] < migration_1]
+            elif pool_name == 'zera_Raydium':
+                pool_df = pool_df[pool_df['date'] < migration_2]
 
-        if len(pool_df) > 0:
-            label = simple_labels.get(pool_name, pool_name)
-            # Scale volume to millions
-            ax2.bar(pool_df['date'], pool_df['volume'] / 1_000_000,
-                   label=label,
-                   color=pool_colors.get(pool_name, '#333333'),
-                   alpha=0.6, width=0.8)
+            if len(pool_df) > 0:
+                label = simple_labels.get(pool_name, pool_name)
+                # Scale volume to millions
+                ax2.bar(pool_df['date'], pool_df['volume'] / 1_000_000,
+                       label=label,
+                       color=pool_colors.get(pool_name, '#333333'),
+                       alpha=0.6, width=0.8)
 
-    # Add migration markers to volume chart (matching price chart style)
-    for event_name, timestamp in config.MIGRATION_DATES.items():
-        migration_date = datetime.fromtimestamp(timestamp)
-        ax2.axvline(x=migration_date, color='#666666', linestyle='--',
-                   linewidth=1, alpha=0.6, zorder=0)
+        # Add migration markers to volume chart (matching price chart style)
+        for event_name, timestamp in config.MIGRATION_DATES.items():
+            migration_date = datetime.fromtimestamp(timestamp)
+            ax2.axvline(x=migration_date, color='#30363d', linestyle='--',
+                       linewidth=1, alpha=0.6, zorder=0)
 
-    ax2.set_xlabel('Date', fontsize=12)
-    ax2.set_ylabel('Volume (Millions USD)', fontsize=12)
-    ax2.set_title('Trading Volume Over Time', fontsize=14)
-    ax2.grid(True, alpha=0.3, axis='y')
-    ax2.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
-    plt.setp(ax2.xaxis.get_majorticklabels(), rotation=45, ha='right')
+        ax2.set_xlabel('Date', fontsize=12, color='#c9d1d9')
+        ax2.set_ylabel('Volume (Millions USD)', fontsize=12, color='#c9d1d9')
+        ax2.set_title('Trading Volume Over Time', fontsize=14, color='#c9d1d9')
+        ax2.grid(True, alpha=0.15, color='#30363d', linestyle='-', linewidth=0.5, axis='y')
+        ax2.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+        ax2.tick_params(colors='#8b949e', which='both')
+        plt.setp(ax2.xaxis.get_majorticklabels(), rotation=45, ha='right')
 
-    # Set x-axis limits with padding to match price chart
-    volume_df = df[~df.get('is_interpolated', False)].copy()
-    date_range_vol = volume_df['date'].max() - volume_df['date'].min()
-    padding_vol = date_range_vol * 0.02
-    ax2.set_xlim(volume_df['date'].min() - padding_vol, volume_df['date'].max() + padding_vol)
+        # Set x-axis limits to match price chart exactly
+        ax2.set_xlim(real_df['date'].min() - left_padding, real_df['date'].max() + right_padding)
 
     plt.tight_layout()
 
@@ -415,12 +489,19 @@ def create_comparison_chart(df: pd.DataFrame, output_path: str = None):
         df: Unified DataFrame with price history
         output_path: Path to save the chart (optional)
     """
+    # Set up dark theme
+    plt.style.use('dark_background')
+
     # Filter out interpolated data for accurate statistics
     real_df = df[~df.get('is_interpolated', False)].copy()
 
     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(14, 10))
+    fig.patch.set_facecolor('#0d1117')
+    for ax in [ax1, ax2, ax3, ax4]:
+        ax.set_facecolor('#0d1117')
+
     fig.suptitle('ZERA Token - Pool Comparison Metrics',
-                 fontsize=16, fontweight='bold')
+                 fontsize=16, fontweight='bold', color='#c9d1d9')
 
     pool_colors = ['#FF6B6B', '#4ECDC4', '#45B7D1']
 
@@ -436,40 +517,44 @@ def create_comparison_chart(df: pd.DataFrame, output_path: str = None):
     ax1.bar(range(len(avg_prices)), avg_prices.values, color=pool_colors)
     ax1.set_xticks(range(len(avg_prices)))
     ax1.set_xticklabels([simple_labels.get(p, p) for p in avg_prices.index],
-                         rotation=15, ha='right')
-    ax1.set_ylabel('Average Price (USD)')
-    ax1.set_title('Average Price by Pool')
-    ax1.grid(True, alpha=0.3, axis='y')
+                         rotation=15, ha='right', color='#c9d1d9')
+    ax1.set_ylabel('Average Price (USD)', color='#c9d1d9')
+    ax1.set_title('Average Price by Pool', color='#c9d1d9')
+    ax1.grid(True, alpha=0.15, axis='y', color='#30363d', linewidth=0.5)
+    ax1.tick_params(colors='#8b949e', which='both')
 
     # 2. Total Volume by Pool
     total_volumes = real_df.groupby('pool_name')['volume'].sum()
     ax2.bar(range(len(total_volumes)), total_volumes.values, color=pool_colors)
     ax2.set_xticks(range(len(total_volumes)))
     ax2.set_xticklabels([simple_labels.get(p, p) for p in total_volumes.index],
-                         rotation=15, ha='right')
-    ax2.set_ylabel('Total Volume (USD)')
-    ax2.set_title('Total Volume by Pool')
-    ax2.grid(True, alpha=0.3, axis='y')
+                         rotation=15, ha='right', color='#c9d1d9')
+    ax2.set_ylabel('Total Volume (USD)', color='#c9d1d9')
+    ax2.set_title('Total Volume by Pool', color='#c9d1d9')
+    ax2.grid(True, alpha=0.15, axis='y', color='#30363d', linewidth=0.5)
+    ax2.tick_params(colors='#8b949e', which='both')
 
     # 3. Price Volatility (std dev) by Pool
     volatility = real_df.groupby('pool_name')['close'].std()
     ax3.bar(range(len(volatility)), volatility.values, color=pool_colors)
     ax3.set_xticks(range(len(volatility)))
     ax3.set_xticklabels([simple_labels.get(p, p) for p in volatility.index],
-                         rotation=15, ha='right')
-    ax3.set_ylabel('Price Std Dev (USD)')
-    ax3.set_title('Price Volatility by Pool')
-    ax3.grid(True, alpha=0.3, axis='y')
+                         rotation=15, ha='right', color='#c9d1d9')
+    ax3.set_ylabel('Price Std Dev (USD)', color='#c9d1d9')
+    ax3.set_title('Price Volatility by Pool', color='#c9d1d9')
+    ax3.grid(True, alpha=0.15, axis='y', color='#30363d', linewidth=0.5)
+    ax3.tick_params(colors='#8b949e', which='both')
 
     # 4. Days Active by Pool
     days_active = real_df.groupby('pool_name').size()
     ax4.bar(range(len(days_active)), days_active.values, color=pool_colors)
     ax4.set_xticks(range(len(days_active)))
     ax4.set_xticklabels([simple_labels.get(p, p) for p in days_active.index],
-                         rotation=15, ha='right')
-    ax4.set_ylabel('Days')
-    ax4.set_title('Days Active by Pool')
-    ax4.grid(True, alpha=0.3, axis='y')
+                         rotation=15, ha='right', color='#c9d1d9')
+    ax4.set_ylabel('Days', color='#c9d1d9')
+    ax4.set_title('Days Active by Pool', color='#c9d1d9')
+    ax4.grid(True, alpha=0.15, axis='y', color='#30363d', linewidth=0.5)
+    ax4.tick_params(colors='#8b949e', which='both')
 
     plt.tight_layout()
 

@@ -1,0 +1,181 @@
+'use client';
+
+import { useEffect, useRef, useState } from 'react';
+import { createChart, IChartApi, ISeriesApi, CandlestickData, Time } from 'lightweight-charts';
+import { PoolData, MIGRATION_DATES, POOLS, PeakTrough } from '@/lib/types';
+import { findLocalPeaks, findLocalTroughs, filterByMinimumDistance } from '@/lib/api';
+
+interface ChartProps {
+  poolsData: PoolData[];
+  timeframe: 'minute' | 'hour' | 'day';
+}
+
+export default function Chart({ poolsData, timeframe }: ChartProps) {
+  const chartContainerRef = useRef<HTMLDivElement>(null);
+  const chartRef = useRef<IChartApi | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (!chartContainerRef.current || poolsData.length === 0) return;
+
+    setIsLoading(false);
+
+    // Create chart
+    const chart = createChart(chartContainerRef.current, {
+      layout: {
+        background: { color: '#0d1117' },
+        textColor: '#c9d1d9',
+      },
+      grid: {
+        vertLines: { color: '#30363d' },
+        horzLines: { color: '#30363d' },
+      },
+      width: chartContainerRef.current.clientWidth,
+      height: 700,
+      timeScale: {
+        borderColor: '#30363d',
+        timeVisible: true,
+        secondsVisible: false,
+      },
+      rightPriceScale: {
+        borderColor: '#30363d',
+      },
+      crosshair: {
+        mode: 1,
+        vertLine: {
+          color: '#8b949e',
+          width: 1,
+          style: 2,
+          labelBackgroundColor: '#4169E1',
+        },
+        horzLine: {
+          color: '#8b949e',
+          width: 1,
+          style: 2,
+          labelBackgroundColor: '#4169E1',
+        },
+      },
+    });
+
+    chartRef.current = chart;
+
+    // Add candlestick series for each pool
+    const migrations = Object.values(MIGRATION_DATES);
+    const migration1 = migrations[0].timestamp;
+    const migration2 = migrations[1].timestamp;
+
+    poolsData.forEach((poolData) => {
+      if (poolData.data.length === 0) return;
+
+      // Filter data based on migrations
+      let filteredData = [...poolData.data];
+      if (poolData.pool_name === 'mon3y') {
+        filteredData = filteredData.filter(d => d.time < migration1);
+      } else if (poolData.pool_name === 'zera_Raydium') {
+        filteredData = filteredData.filter(d => d.time < migration2);
+      }
+
+      if (filteredData.length === 0) return;
+
+      // Get pool color
+      const poolInfo = POOLS[poolData.pool_name as keyof typeof POOLS];
+      const color = poolInfo?.color || '#4ECDC4';
+
+      // Create candlestick series
+      const candlestickSeries = chart.addCandlestickSeries({
+        upColor: '#26a69a',
+        downColor: '#ef5350',
+        borderVisible: false,
+        wickUpColor: '#26a69a',
+        wickDownColor: '#ef5350',
+      });
+
+      // Transform and set data
+      const chartData: CandlestickData[] = filteredData.map(d => ({
+        time: d.time as Time,
+        open: d.open,
+        high: d.high,
+        low: d.low,
+        close: d.close,
+      }));
+
+      candlestickSeries.setData(chartData);
+
+      // Find and add markers for peaks and troughs
+      const window = timeframe === 'day' ? 5 : 3;
+      const peakIndices = findLocalPeaks(filteredData, window);
+      const troughIndices = findLocalTroughs(filteredData, window);
+
+      const peaksAndTroughs: PeakTrough[] = [
+        ...peakIndices.map(i => ({
+          time: filteredData[i].time,
+          value: filteredData[i].high,
+          type: 'peak' as const,
+        })),
+        ...troughIndices.map(i => ({
+          time: filteredData[i].time,
+          value: filteredData[i].low,
+          type: 'trough' as const,
+        })),
+      ];
+
+      // Filter to prevent overlaps
+      const minDistanceHours = timeframe === 'day' ? 168 : 24; // 7 days for daily, 1 day for hourly
+      const filtered = filterByMinimumDistance(peaksAndTroughs, minDistanceHours);
+
+      // Add markers
+      const markers = filtered.map(pt => ({
+        time: pt.time as Time,
+        position: pt.type === 'peak' ? ('aboveBar' as const) : ('belowBar' as const),
+        color: pt.type === 'peak' ? '#26a69a' : '#ef5350',
+        shape: 'circle' as const,
+        text: `$${pt.value.toFixed(4)}`,
+      }));
+
+      candlestickSeries.setMarkers(markers);
+    });
+
+    // Add migration markers as vertical lines (pricelines)
+    const series = chart.addCandlestickSeries();
+    Object.values(MIGRATION_DATES).forEach(migration => {
+      series.createPriceLine({
+        price: 0,
+        color: '#666666',
+        lineWidth: 1,
+        lineStyle: 2, // Dashed
+        axisLabelVisible: false,
+        title: migration.label,
+      });
+    });
+
+    // Handle resize
+    const handleResize = () => {
+      if (chartContainerRef.current && chartRef.current) {
+        chartRef.current.applyOptions({
+          width: chartContainerRef.current.clientWidth,
+        });
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    // Fit content
+    chart.timeScale().fitContent();
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      chart.remove();
+    };
+  }, [poolsData, timeframe]);
+
+  return (
+    <div className="w-full">
+      {isLoading && (
+        <div className="flex items-center justify-center h-[700px]">
+          <div className="text-textMuted">Loading chart...</div>
+        </div>
+      )}
+      <div ref={chartContainerRef} className="w-full" />
+    </div>
+  );
+}
