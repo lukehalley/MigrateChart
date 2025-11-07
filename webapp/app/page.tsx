@@ -21,31 +21,37 @@ export default function Home() {
 
   return (
     <main className="w-screen h-screen overflow-hidden relative">
-      {/* Floating Logo - Top Left */}
-      <div className="absolute top-6 left-6 z-10">
+      {/* Floating Logo & Controls - Top Left */}
+      <div className="absolute top-6 left-6 z-10 flex flex-col gap-3">
+        {/* Logo */}
         <img
           src="/img/zeralabs-logotype.webp"
           alt="ZERA"
           className="h-8 w-auto"
           style={{ filter: 'drop-shadow(0 0 15px rgba(82, 201, 125, 0.4))' }}
         />
+
+        {/* Sleek Timeframe Switch */}
+        <div className="flex gap-0.5 bg-black/90 backdrop-blur-sm rounded-lg p-0.5 border border-zera/30">
+          {(['minute', 'hour', 'day'] as const).map((tf) => (
+            <button
+              key={tf}
+              onClick={() => setTimeframe(tf)}
+              className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${
+                timeframe === tf
+                  ? 'bg-zera text-black shadow-lg shadow-zera/60'
+                  : 'text-zera/60 hover:text-zera'
+              }`}
+            >
+              {tf === 'minute' ? '1M' : tf === 'hour' ? '1H' : '1D'}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Floating Timeframe Selector - Top Right */}
-      <div className="absolute top-6 right-6 z-10 flex gap-1 bg-black/80 backdrop-blur-md rounded-lg p-1 border border-zera/20">
-        {(['minute', 'hour', 'day'] as const).map((tf) => (
-          <button
-            key={tf}
-            onClick={() => setTimeframe(tf)}
-            className={`px-4 py-1.5 rounded-md text-sm font-semibold transition-all ${
-              timeframe === tf
-                ? 'bg-zera text-black shadow-lg shadow-zera/50'
-                : 'text-textMuted hover:text-zera'
-            }`}
-          >
-            {tf === 'minute' ? '1M' : tf === 'hour' ? '1H' : '1D'}
-          </button>
-        ))}
+      {/* Title - Top Right */}
+      <div className="absolute top-6 right-6 z-10 text-sm text-textMuted font-medium">
+        Complete Price History
       </div>
 
       {/* Fullscreen Chart */}
