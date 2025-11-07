@@ -136,21 +136,8 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
 
     window.addEventListener('resize', handleResize);
 
-    // Fit content with padding on left and right
-    setTimeout(() => {
-      const allData = poolsData.flatMap(p => p.data).sort((a, b) => a.time - b.time);
-      if (allData.length > 0) {
-        const firstTime = allData[0].time;
-        const lastTime = allData[allData.length - 1].time;
-        const range = lastTime - firstTime;
-        const padding = range * 0.05; // 5% padding on each side
-
-        chart.timeScale().setVisibleLogicalRange({
-          from: -padding / (range / allData.length),
-          to: allData.length + (padding / (range / allData.length)),
-        });
-      }
-    }, 100);
+    // Fit content to fill width
+    chart.timeScale().fitContent();
 
     return () => {
       window.removeEventListener('resize', handleResize);
