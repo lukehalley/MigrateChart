@@ -59,8 +59,8 @@ export default function Home() {
   const stats = getStats();
 
   return (
-    <main className="min-h-screen p-8">
-      <div className="max-w-[1600px] mx-auto">
+    <main className="min-h-screen p-4">
+      <div className="w-full h-full">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2">

@@ -31,7 +31,7 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
         horzLines: { color: '#30363d' },
       },
       width: chartContainerRef.current.clientWidth,
-      height: 700,
+      height: window.innerHeight - 350, // Fill viewport minus header/stats
       timeScale: {
         borderColor: '#30363d',
         timeVisible: true,
@@ -91,13 +91,15 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
       });
 
       // Transform and set data
-      const chartData: CandlestickData[] = filteredData.map(d => ({
-        time: d.time as Time,
-        open: d.open,
-        high: d.high,
-        low: d.low,
-        close: d.close,
-      }));
+      const chartData: CandlestickData[] = filteredData
+        .map(d => ({
+          time: d.time as Time,
+          open: d.open,
+          high: d.high,
+          low: d.low,
+          close: d.close,
+        }))
+        .sort((a, b) => (a.time as number) - (b.time as number)); // Sort by time ascending
 
       candlestickSeries.setData(chartData);
 
@@ -153,6 +155,7 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
       if (chartContainerRef.current && chartRef.current) {
         chartRef.current.applyOptions({
           width: chartContainerRef.current.clientWidth,
+          height: window.innerHeight - 350,
         });
       }
     };
@@ -168,10 +171,12 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
     };
   }, [poolsData, timeframe]);
 
+  const chartHeight = typeof window !== 'undefined' ? window.innerHeight - 350 : 700;
+
   return (
     <div className="w-full">
       {isLoading && (
-        <div className="flex items-center justify-center h-[700px]">
+        <div className="flex items-center justify-center" style={{ height: `${chartHeight}px` }}>
           <div className="text-textMuted">Loading chart...</div>
         </div>
       )}
