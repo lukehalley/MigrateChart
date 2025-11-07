@@ -31,7 +31,7 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
         horzLines: { visible: false },
       },
       width: chartContainerRef.current.clientWidth,
-      height: window.innerHeight - 80, // Full screen minus minimal header
+      height: window.innerHeight, // Fullscreen - no header
       timeScale: {
         borderColor: '#30363d',
         timeVisible: true,
@@ -123,7 +123,7 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
       if (chartContainerRef.current && chartRef.current) {
         chartRef.current.applyOptions({
           width: chartContainerRef.current.clientWidth,
-          height: window.innerHeight - 80,
+          height: window.innerHeight,
         });
       }
     };
@@ -140,7 +140,7 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
     };
   }, [poolsData, timeframe]);
 
-  const chartHeight = typeof window !== 'undefined' ? window.innerHeight - 80 : 800;
+  const chartHeight = typeof window !== 'undefined' ? window.innerHeight : 800;
 
   return (
     <div className="w-full h-full">
