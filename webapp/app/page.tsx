@@ -32,17 +32,17 @@ export default function Home() {
           />
           <div>
             <h1 className="text-2xl font-bold text-white mb-1">ZERA</h1>
-            <p className="text-white/60 text-sm">Complete Price History</p>
+            <p className="text-zera-200 text-sm">Complete Price History</p>
           </div>
         </div>
 
         {/* Migration Path */}
-        <div className="flex items-center gap-2 text-xs">
-          <span className="text-white/50 font-medium">MON3Y</span>
-          <span className="text-zera">→</span>
-          <span className="text-white/50 font-medium">Raydium</span>
-          <span className="text-zera">→</span>
-          <span className="text-white/70 font-semibold">Meteora</span>
+        <div className="flex items-center gap-2 text-sm">
+          <span className="text-zera-300/60 font-medium">MON3Y</span>
+          <span className="text-zera-400">→</span>
+          <span className="text-zera-300/60 font-medium">Raydium</span>
+          <span className="text-zera-400">→</span>
+          <span className="text-zera-300 font-semibold">Meteora</span>
         </div>
       </div>
 

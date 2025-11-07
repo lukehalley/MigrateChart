@@ -24,40 +24,40 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
     const chart = createChart(chartContainerRef.current, {
       layout: {
         background: { color: '#000000' },
-        textColor: '#ffffff',
+        textColor: '#FFFFFF',
       },
       grid: {
-        vertLines: { color: '#2b6c4373' },
-        horzLines: { color: '#2b6c4348' },
+        vertLines: { color: '#133D2315' },  // Ultra subtle dark green
+        horzLines: { visible: false },
       },
       width: chartContainerRef.current.clientWidth,
       height: window.innerHeight, // Fullscreen - no header
       timeScale: {
-        borderColor: '#2b6c43ff',
+        borderColor: '#1F6338',  // Deep green border
         timeVisible: true,
         secondsVisible: false,
-        rightOffset: 12, // Horizontal padding on right
+        rightOffset: 12,
       },
       rightPriceScale: {
-        borderColor: '#2b6c43ff',
+        borderColor: '#1F6338',  // Deep green border
         scaleMargins: {
-          top: 0.15,    // 15% padding at top
-          bottom: 0.15, // 15% padding at bottom
+          top: 0.15,
+          bottom: 0.15,
         },
       },
       crosshair: {
-        mode: 0, // 0 = Normal (free moving), 1 = Magnet (locks to bars)
+        mode: 0, // Free moving
         vertLine: {
-          color: '#2b6c43ff',
+          color: '#52C97D',  // Bright ZERA green - pops!
           width: 1,
-          style: 2,
-          labelBackgroundColor: '#2b6c43ff',
+          style: 0,  // Solid line
+          labelBackgroundColor: '#52C97D',
         },
         horzLine: {
-          color: '#2b6c43ff',
+          color: '#52C97D',  // Bright ZERA green - pops!
           width: 1,
-          style: 2,
-          labelBackgroundColor: '#2b6c43ff',
+          style: 0,  // Solid line
+          labelBackgroundColor: '#52C97D',
         },
       },
     });
@@ -114,11 +114,11 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
     // Add migration markers as vertical lines using custom plugin
     const migrationLines = Object.values(MIGRATION_DATES).map(migration => ({
       time: migration.timestamp,
-      color: '#52C97D',
+      color: '#3FAA66',  // Darker ZERA green for lines
       label: migration.label,
       lineWidth: 2,
-      labelBackgroundColor: '#000000',
-      labelTextColor: '#52C97D',
+      labelBackgroundColor: '#0A1F12',  // Ultra dark green background
+      labelTextColor: '#75D29F',  // Lighter green for text pop
     }));
 
     const cleanupLines = drawVerticalLines(chart, chartContainerRef.current, migrationLines);
