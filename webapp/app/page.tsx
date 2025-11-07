@@ -24,7 +24,7 @@ export default function Home() {
       {/* Floating Controls - Top Left */}
       <div className="absolute top-10 left-10 z-50 flex flex-col gap-6">
         {/* Logo */}
-        <div className="flex items-center gap-4 bg-gradient-to-br from-black/90 via-black/80 to-black/70 backdrop-blur-2xl border-2 border-zera/50 rounded-2xl p-6 shadow-[0_0_50px_rgba(82,201,125,0.4)]">
+        <div className="flex items-center gap-4 bg-gradient-to-br from-black/90 via-black/80 to-black/70 backdrop-blur-2xl rounded-2xl p-6 shadow-[0_0_50px_rgba(82,201,125,0.4)]">
           <img
             src="/circle-logo.avif"
             alt="ZERA"
@@ -34,7 +34,7 @@ export default function Home() {
         </div>
 
         {/* Timeframe Toggle */}
-        <div className="inline-flex bg-black/90 backdrop-blur-xl rounded-full p-1 border border-zera/30 shadow-lg">
+        <div className="inline-flex bg-black/90 backdrop-blur-xl rounded-full p-1 shadow-lg">
           {(['minute', 'hour', 'day'] as const).map((tf) => (
             <button
               key={tf}
