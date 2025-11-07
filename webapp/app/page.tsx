@@ -44,7 +44,7 @@ export default function Home() {
       </div>
 
       {/* Fullscreen Chart */}
-      <div className="flex-1 w-full">
+      <div className="flex-1 w-full relative">
         {error && (
           <div className="flex items-center justify-center h-full">
             <div className="text-red">Error loading chart data</div>

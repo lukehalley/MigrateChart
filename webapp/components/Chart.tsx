@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { createChart, IChartApi, ISeriesApi, CandlestickData, Time } from 'lightweight-charts';
-import { PoolData, MIGRATION_DATES, POOLS, PeakTrough } from '@/lib/types';
-import { findLocalPeaks, findLocalTroughs, filterByMinimumDistance } from '@/lib/api';
+import { PoolData, MIGRATION_DATES, POOLS } from '@/lib/types';
+import { drawVerticalLines } from '@/lib/verticalLine';
 
 interface ChartProps {
   poolsData: PoolData[];
@@ -41,7 +41,7 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
         borderColor: '#30363d',
       },
       crosshair: {
-        mode: 1,
+        mode: 0, // 0 = Normal (free moving), 1 = Magnet (locks to bars)
         vertLine: {
           color: '#8b949e',
           width: 1,
@@ -102,53 +102,19 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
         .sort((a, b) => (a.time as number) - (b.time as number)); // Sort by time ascending
 
       candlestickSeries.setData(chartData);
-
-      // Find and add markers for peaks and troughs
-      const window = timeframe === 'day' ? 5 : 3;
-      const peakIndices = findLocalPeaks(filteredData, window);
-      const troughIndices = findLocalTroughs(filteredData, window);
-
-      const peaksAndTroughs: PeakTrough[] = [
-        ...peakIndices.map(i => ({
-          time: filteredData[i].time,
-          value: filteredData[i].high,
-          type: 'peak' as const,
-        })),
-        ...troughIndices.map(i => ({
-          time: filteredData[i].time,
-          value: filteredData[i].low,
-          type: 'trough' as const,
-        })),
-      ];
-
-      // Filter to prevent overlaps
-      const minDistanceHours = timeframe === 'day' ? 168 : 24; // 7 days for daily, 1 day for hourly
-      const filtered = filterByMinimumDistance(peaksAndTroughs, minDistanceHours);
-
-      // Add markers
-      const markers = filtered.map(pt => ({
-        time: pt.time as Time,
-        position: pt.type === 'peak' ? ('aboveBar' as const) : ('belowBar' as const),
-        color: pt.type === 'peak' ? '#26a69a' : '#ef5350',
-        shape: 'circle' as const,
-        text: `$${pt.value.toFixed(4)}`,
-      }));
-
-      candlestickSeries.setMarkers(markers);
     });
 
-    // Add migration markers as vertical lines (pricelines)
-    const series = chart.addCandlestickSeries();
-    Object.values(MIGRATION_DATES).forEach(migration => {
-      series.createPriceLine({
-        price: 0,
-        color: '#666666',
-        lineWidth: 1,
-        lineStyle: 2, // Dashed
-        axisLabelVisible: false,
-        title: migration.label,
-      });
-    });
+    // Add migration markers as vertical lines using custom plugin
+    const migrationLines = Object.values(MIGRATION_DATES).map(migration => ({
+      time: migration.timestamp,
+      color: '#666666',
+      label: migration.label,
+      lineWidth: 1,
+      labelBackgroundColor: '#161b22',
+      labelTextColor: '#8b949e',
+    }));
+
+    const cleanupLines = drawVerticalLines(chart, chartContainerRef.current, migrationLines);
 
     // Handle resize
     const handleResize = () => {
@@ -167,6 +133,7 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
 
     return () => {
       window.removeEventListener('resize', handleResize);
+      if (cleanupLines) cleanupLines();
       chart.remove();
     };
   }, [poolsData, timeframe]);
@@ -174,13 +141,13 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
   const chartHeight = typeof window !== 'undefined' ? window.innerHeight - 80 : 800;
 
   return (
-    <div className="w-full">
+    <div className="w-full h-full">
       {isLoading && (
         <div className="flex items-center justify-center" style={{ height: `${chartHeight}px` }}>
           <div className="text-textMuted">Loading chart...</div>
         </div>
       )}
-      <div ref={chartContainerRef} className="w-full" />
+      <div ref={chartContainerRef} className="w-full h-full" />
     </div>
   );
 }
