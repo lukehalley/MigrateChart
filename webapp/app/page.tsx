@@ -75,7 +75,7 @@ export default function Home() {
             </div>
 
             {/* Decorative Divider */}
-            <div className="flex items-center justify-center py-5">
+            <div className="flex items-center justify-center py-7">
               <div className="h-[2px] w-24 bg-gradient-to-r from-transparent via-[#52C97D]/60 to-transparent shadow-[0_0_8px_rgba(82,201,125,0.4)]"></div>
             </div>
 
@@ -94,7 +94,7 @@ export default function Home() {
             </div>
 
             {/* Decorative Divider */}
-            <div className="flex items-center justify-center py-5">
+            <div className="flex items-center justify-center py-7">
               <div className="h-[2px] w-24 bg-gradient-to-r from-transparent via-[#52C97D]/60 to-transparent shadow-[0_0_8px_rgba(82,201,125,0.4)]"></div>
             </div>
 
@@ -114,7 +114,7 @@ export default function Home() {
             </div>
 
             {/* Decorative Divider */}
-            <div className="flex items-center justify-center py-5">
+            <div className="flex items-center justify-center py-7">
               <div className="h-[2px] w-24 bg-gradient-to-r from-transparent via-[#52C97D]/60 to-transparent shadow-[0_0_8px_rgba(82,201,125,0.4)]"></div>
             </div>
 
@@ -165,7 +165,7 @@ export default function Home() {
         </div>
 
         {/* Decorative Divider */}
-        <div className="flex items-center justify-center py-8">
+        <div className="flex items-center justify-center py-12">
           <div className="h-[2px] w-24 bg-gradient-to-r from-transparent via-[#52C97D]/60 to-transparent shadow-[0_0_8px_rgba(82,201,125,0.4)]"></div>
         </div>
 
@@ -181,7 +181,7 @@ export default function Home() {
         </div>
 
         {/* Decorative Divider */}
-        <div className="flex items-center justify-center py-8">
+        <div className="flex items-center justify-center py-12">
           <div className="h-[2px] w-24 bg-gradient-to-r from-transparent via-[#52C97D]/60 to-transparent shadow-[0_0_8px_rgba(82,201,125,0.4)]"></div>
         </div>
 
@@ -201,7 +201,7 @@ export default function Home() {
         </div>
 
         {/* Decorative Divider */}
-        <div className="flex items-center justify-center py-8">
+        <div className="flex items-center justify-center py-12">
           <div className="h-[2px] w-24 bg-gradient-to-r from-transparent via-[#52C97D]/60 to-transparent shadow-[0_0_8px_rgba(82,201,125,0.4)]"></div>
         </div>
 
