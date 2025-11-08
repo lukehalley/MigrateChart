@@ -58,25 +58,16 @@ export default function Home() {
     <main className="w-screen h-screen overflow-hidden">
       {/* Mobile View */}
       <div className="md:hidden w-full h-full relative">
-        {/* Mobile Menu Toggle Button - Only visible on mobile */}
+        {/* Mobile Menu Toggle Button - Floating hamburger menu */}
         <button
           onClick={() => setShowMobileMenu(!showMobileMenu)}
-          className="fixed top-3 left-3 z-50 info-card-small"
+          className="fixed top-3 left-3 z-50 w-11 h-11 flex items-center justify-center bg-[#0A1F12]/90 hover:bg-[#0A1F12] border-2 border-[#52C97D] shadow-[0_0_12px_rgba(82,201,125,0.3)] hover:shadow-[0_0_16px_rgba(82,201,125,0.5)] transition-all backdrop-blur-sm"
           aria-label="Toggle menu"
         >
-          <div className="flex flex-col items-center gap-1">
-            <div className="flex items-center gap-2">
-              <img
-                src="/circle-logo.avif"
-                alt="ZERA"
-                className="h-5 w-5"
-              />
-              <span className="text-white text-sm font-semibold">ZERA</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <span className="text-[#52C97D] text-[9px] font-bold tracking-wider">MENU</span>
-              <span className="text-[#52C97D] text-[10px]">{showMobileMenu ? '▲' : '▼'}</span>
-            </div>
+          <div className="flex flex-col gap-1.5">
+            <div className={`w-6 h-0.5 bg-[#52C97D] transition-all duration-300 ${showMobileMenu ? 'rotate-45 translate-y-2' : ''}`}></div>
+            <div className={`w-6 h-0.5 bg-[#52C97D] transition-all duration-300 ${showMobileMenu ? 'opacity-0' : ''}`}></div>
+            <div className={`w-6 h-0.5 bg-[#52C97D] transition-all duration-300 ${showMobileMenu ? '-rotate-45 -translate-y-2' : ''}`}></div>
           </div>
         </button>
 
