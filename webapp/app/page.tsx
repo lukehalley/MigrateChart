@@ -75,8 +75,8 @@ export default function Home() {
             </div>
 
             {/* Decorative Divider */}
-            <div className="flex items-center justify-center py-2">
-              <div className="h-px w-16 bg-gradient-to-r from-transparent via-[#52C97D]/40 to-transparent"></div>
+            <div className="flex items-center justify-center py-5">
+              <div className="h-[2px] w-24 bg-gradient-to-r from-transparent via-[#52C97D]/60 to-transparent shadow-[0_0_8px_rgba(82,201,125,0.4)]"></div>
             </div>
 
             {/* Timeframe Toggle Card */}
@@ -94,8 +94,8 @@ export default function Home() {
             </div>
 
             {/* Decorative Divider */}
-            <div className="flex items-center justify-center py-2">
-              <div className="h-px w-16 bg-gradient-to-r from-transparent via-[#52C97D]/40 to-transparent"></div>
+            <div className="flex items-center justify-center py-5">
+              <div className="h-[2px] w-24 bg-gradient-to-r from-transparent via-[#52C97D]/60 to-transparent shadow-[0_0_8px_rgba(82,201,125,0.4)]"></div>
             </div>
 
             {/* Twitter Handle Card */}
@@ -114,8 +114,8 @@ export default function Home() {
             </div>
 
             {/* Decorative Divider */}
-            <div className="flex items-center justify-center py-2">
-              <div className="h-px w-16 bg-gradient-to-r from-transparent via-[#52C97D]/40 to-transparent"></div>
+            <div className="flex items-center justify-center py-5">
+              <div className="h-[2px] w-24 bg-gradient-to-r from-transparent via-[#52C97D]/60 to-transparent shadow-[0_0_8px_rgba(82,201,125,0.4)]"></div>
             </div>
 
             {/* ZERA Tips Card */}
@@ -165,8 +165,8 @@ export default function Home() {
         </div>
 
         {/* Decorative Divider */}
-        <div className="flex items-center justify-center py-3">
-          <div className="h-px w-16 bg-gradient-to-r from-transparent via-[#52C97D]/40 to-transparent"></div>
+        <div className="flex items-center justify-center py-8">
+          <div className="h-[2px] w-24 bg-gradient-to-r from-transparent via-[#52C97D]/60 to-transparent shadow-[0_0_8px_rgba(82,201,125,0.4)]"></div>
         </div>
 
         {/* Timeframe Toggle Card */}
@@ -181,8 +181,8 @@ export default function Home() {
         </div>
 
         {/* Decorative Divider */}
-        <div className="flex items-center justify-center py-3">
-          <div className="h-px w-16 bg-gradient-to-r from-transparent via-[#52C97D]/40 to-transparent"></div>
+        <div className="flex items-center justify-center py-8">
+          <div className="h-[2px] w-24 bg-gradient-to-r from-transparent via-[#52C97D]/60 to-transparent shadow-[0_0_8px_rgba(82,201,125,0.4)]"></div>
         </div>
 
         {/* Twitter Handle Card */}
@@ -201,8 +201,8 @@ export default function Home() {
         </div>
 
         {/* Decorative Divider */}
-        <div className="flex items-center justify-center py-3">
-          <div className="h-px w-16 bg-gradient-to-r from-transparent via-[#52C97D]/40 to-transparent"></div>
+        <div className="flex items-center justify-center py-8">
+          <div className="h-[2px] w-24 bg-gradient-to-r from-transparent via-[#52C97D]/60 to-transparent shadow-[0_0_8px_rgba(82,201,125,0.4)]"></div>
         </div>
 
         {/* ZERA Tips Card */}
