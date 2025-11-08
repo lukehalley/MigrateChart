@@ -178,6 +178,29 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
 
     window.addEventListener('resize', handleResize);
 
+    // Log visible range changes in development
+    if (process.env.NODE_ENV === 'development') {
+      const logVisibleRange = () => {
+        const visibleLogicalRange = chart.timeScale().getVisibleLogicalRange();
+        if (visibleLogicalRange) {
+          const visibleBars = Math.round(visibleLogicalRange.to - visibleLogicalRange.from);
+          const totalBars = allData.length;
+          const currentVisibilityRatio = visibleBars / totalBars;
+
+          console.log('Chart Movement:', {
+            device: isMobile ? 'MOBILE' : 'DESKTOP',
+            timeframe,
+            visibleBars,
+            totalBars,
+            currentVisibilityRatio: currentVisibilityRatio.toFixed(4),
+            currentPercentage: (currentVisibilityRatio * 100).toFixed(2) + '%',
+          });
+        }
+      };
+
+      chart.timeScale().subscribeVisibleLogicalRangeChange(logVisibleRange);
+    }
+
     // Get all data points to calculate visible range
     const allData = poolsData.flatMap(pool => pool.data);
     if (allData.length > 0) {
@@ -188,32 +211,45 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
       const lastTime = sortedData[totalPoints - 1].time;
 
       // Calculate how much data to show based on device and timeframe
-      // Mobile: show ~35-40% of data (zoomed out for overview), Desktop: show ~15% of data (zoomed in)
+      // Mobile: show ~17-23% of data, Desktop: show ~15-20% of data
       // Adjust based on timeframe for better initial view - zoomed towards end for migration clarity
-      let visibilityRatio = isMobile ? 0.35 : 0.15;
+      let visibilityRatio = isMobile ? 0.17 : 0.15;
 
       // Adjust ratio based on timeframe - shorter timeframes show more of the data
       switch(timeframe) {
         case '1H':
-          visibilityRatio = isMobile ? 0.45 : 0.20;
+          visibilityRatio = isMobile ? 0.23 : 0.20;
           break;
         case '4H':
-          visibilityRatio = isMobile ? 0.40 : 0.18;
+          visibilityRatio = isMobile ? 0.20 : 0.18;
           break;
         case '8H':
-          visibilityRatio = isMobile ? 0.38 : 0.16;
+          visibilityRatio = isMobile ? 0.1878 : 0.16;
           break;
         case '1D':
-          visibilityRatio = isMobile ? 0.35 : 0.15;
+          visibilityRatio = isMobile ? 0.17 : 0.15;
           break;
         case '1W':
-          visibilityRatio = isMobile ? 0.30 : 0.12;
+          visibilityRatio = isMobile ? 0.15 : 0.12;
           break;
       }
 
       const timeRange = lastTime - firstTime;
       const visibleTimeRange = timeRange * visibilityRatio;
       const fromTime = lastTime - visibleTimeRange;
+
+      // Log parameters for local dev tuning
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Chart Zoom Parameters:', {
+          device: isMobile ? 'MOBILE' : 'DESKTOP',
+          timeframe,
+          visibilityRatio,
+          totalDataPoints: totalPoints,
+          visibleDataPoints: Math.round(totalPoints * visibilityRatio),
+          barSpacing: isMobile ? 2 : 12,
+          rightOffset: isMobile ? 10 : 50,
+        });
+      }
 
       // Set the visible range to zoom into the most recent data
       // The rightOffset in timeScale options will add space on the right
