@@ -90,7 +90,7 @@ export default function TokenStats({ stats, isLoading }: TokenStatsProps) {
       <div className="stat-card">
         <p className="text-white text-[11px] font-medium mb-2">PRICE (USD)</p>
         <div className="flex items-center gap-2 mb-1">
-          <p className={`text-white text-xl font-bold ${flashingFields.has('price') ? 'flash-update' : ''}`}>
+          <p className={`text-white text-xl font-bold select-text ${flashingFields.has('price') ? 'flash-update' : ''}`}>
             {formatPrice(stats.price)}
           </p>
           <div className="flex items-center gap-1">
@@ -99,7 +99,7 @@ export default function TokenStats({ stats, isLoading }: TokenStatsProps) {
           </div>
         </div>
         <p
-          className={`text-sm font-semibold ${
+          className={`text-sm font-semibold select-text ${
             stats.priceChange24h >= 0 ? 'text-[#52C97D]' : 'text-[#ef5350]'
           } ${flashingFields.has('priceChange') ? 'flash-update' : ''}`}
         >
@@ -115,7 +115,7 @@ export default function TokenStats({ stats, isLoading }: TokenStatsProps) {
       {/* Liquidity Card */}
       <div className="stat-card">
         <p className="text-white text-[11px] font-medium mb-2">LIQUIDITY</p>
-        <p className={`text-white text-lg font-bold ${flashingFields.has('liquidity') ? 'flash-update' : ''}`}>
+        <p className={`text-white text-lg font-bold select-text ${flashingFields.has('liquidity') ? 'flash-update' : ''}`}>
           {formatNumber(stats.liquidity)}
         </p>
       </div>
@@ -128,7 +128,7 @@ export default function TokenStats({ stats, isLoading }: TokenStatsProps) {
       {/* Market Cap Card */}
       <div className="stat-card">
         <p className="text-white text-[11px] font-medium mb-2">MKT CAP</p>
-        <p className={`text-white text-lg font-bold ${flashingFields.has('marketCap') ? 'flash-update' : ''}`}>
+        <p className={`text-white text-lg font-bold select-text ${flashingFields.has('marketCap') ? 'flash-update' : ''}`}>
           {formatNumber(stats.marketCap)}
         </p>
       </div>
@@ -141,7 +141,7 @@ export default function TokenStats({ stats, isLoading }: TokenStatsProps) {
       {/* Volume 24H Card */}
       <div className="stat-card">
         <p className="text-white text-[11px] font-medium mb-2">VOLUME (24H)</p>
-        <p className={`text-white text-lg font-bold ${flashingFields.has('volume') ? 'flash-update' : ''}`}>
+        <p className={`text-white text-lg font-bold select-text ${flashingFields.has('volume') ? 'flash-update' : ''}`}>
           {formatNumber(stats.volume24h)}
         </p>
       </div>
@@ -159,13 +159,13 @@ export default function TokenStats({ stats, isLoading }: TokenStatsProps) {
           <div className="flex justify-center gap-8 text-sm">
             <div>
               <p className="text-white text-[11px] font-medium">BUYS</p>
-              <p className={`text-[#52C97D] font-bold text-base ${flashingFields.has('buys') ? 'flash-update' : ''}`}>
+              <p className={`text-[#52C97D] font-bold text-base select-text ${flashingFields.has('buys') ? 'flash-update' : ''}`}>
                 {stats.buyCount24h || 0}
               </p>
             </div>
             <div>
               <p className="text-white text-[11px] font-medium">SELLS</p>
-              <p className={`text-[#ef5350] font-bold text-base ${flashingFields.has('sells') ? 'flash-update' : ''}`}>
+              <p className={`text-[#ef5350] font-bold text-base select-text ${flashingFields.has('sells') ? 'flash-update' : ''}`}>
                 {stats.sellCount24h || 0}
               </p>
             </div>

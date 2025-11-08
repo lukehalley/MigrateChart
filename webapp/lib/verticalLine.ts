@@ -98,22 +98,20 @@ export function drawVerticalLines(
       labelEl.style.left = `${coordinate}px`;
       labelEl.style.top = isMobile ? '90px' : '30px';
       labelEl.style.transform = 'translateX(-50%)';
-      labelEl.style.padding = isMobile ? '3px 5px' : '4px 8px';
+      labelEl.style.padding = isMobile ? '4px 6px' : '6px 10px';
       labelEl.style.backgroundColor = line.labelBackgroundColor || '#000000';
       labelEl.style.color = line.labelTextColor || '#52C97D';
       labelEl.style.border = `2px solid ${line.color}`;
       labelEl.style.borderRadius = isMobile ? '3px' : '4px';
-      labelEl.style.fontSize = isMobile ? '7px' : '10px';
+      labelEl.style.fontSize = isMobile ? '7px' : '9px';
       labelEl.style.fontWeight = '600';
-      labelEl.style.width = isMobile ? '80px' : '110px';  // Fixed width to force wrapping
-      labelEl.style.whiteSpace = 'normal';  // Allow text to wrap
-      labelEl.style.overflowWrap = 'break-word';  // Break long words if needed
       labelEl.style.textAlign = 'center';
-      labelEl.style.lineHeight = isMobile ? '1.2' : '1.3';
+      labelEl.style.lineHeight = isMobile ? '1.3' : '1.4';
       labelEl.style.boxShadow = `0 0 15px ${line.color}80, inset 0 0 10px ${line.color}20`;
       labelEl.style.opacity = String(opacity); // Apply fade effect
       labelEl.style.transition = 'opacity 0.3s ease-in-out';
-      labelEl.textContent = line.label;
+      labelEl.style.whiteSpace = 'nowrap';
+      labelEl.innerHTML = line.label; // Use innerHTML to support <br/> tags
       overlay.appendChild(labelEl);
     });
   };
