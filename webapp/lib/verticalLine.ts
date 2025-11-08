@@ -39,52 +39,19 @@ export function drawVerticalLines(
     overlay.innerHTML = ''; // Clear existing lines
 
     const timeScale = chart.timeScale();
-    const priceScale = chart.priceScale();
 
     lines.forEach(line => {
-      let coordinate = timeScale.timeToCoordinate(line.time);
+      const coordinate = timeScale.timeToCoordinate(line.time);
 
-      // WORKAROUND: If coordinate is null (data gap), estimate position using logical range
-      if (coordinate === null) {
-        const logicalRange = timeScale.getVisibleLogicalRange();
-        if (logicalRange) {
-          // Try to find logical position for this timestamp
-          const allData = chart.series().data();
-
-          // Find where this timestamp would fit in the data
-          let logicalPosition = null;
-          for (let i = 0; i < allData.length; i++) {
-            const dataTime = allData[i].time;
-            if (typeof dataTime === 'number' && dataTime >= line.time) {
-              logicalPosition = i;
-              break;
-            }
-          }
-
-          // If we found a logical position, convert it to coordinate
-          if (logicalPosition !== null && logicalPosition >= logicalRange.from && logicalPosition <= logicalRange.to) {
-            const rangeWidth = logicalRange.to - logicalRange.from;
-            const positionInRange = (logicalPosition - logicalRange.from) / rangeWidth;
-            coordinate = positionInRange * container.clientWidth;
-            console.log(`Marker "${line.label}" in data gap - using estimated position at ${coordinate}px`);
-          }
-        }
-      }
-
-      // Allow markers with slight tolerance outside visible range (within 50px)
-      const tolerance = 50;
-      if (coordinate === null || coordinate < -tolerance || coordinate > container.clientWidth + tolerance) {
-        console.log(`Skipping marker "${line.label}" - too far outside visible range`);
+      // Skip markers outside visible range
+      if (coordinate === null || coordinate < 0 || coordinate > container.clientWidth) {
         return;
       }
-
-      // Clamp coordinate to visible area for drawing
-      const clampedCoordinate = Math.max(0, Math.min(container.clientWidth, coordinate));
 
       // Draw vertical line
       const lineEl = document.createElement('div');
       lineEl.style.position = 'absolute';
-      lineEl.style.left = `${clampedCoordinate}px`;
+      lineEl.style.left = `${coordinate}px`;
       lineEl.style.top = '0';
       lineEl.style.bottom = '0';
       lineEl.style.width = `${line.lineWidth || 1}px`;
@@ -96,7 +63,7 @@ export function drawVerticalLines(
       // Draw label - positioned to align under enlarged floating card
       const labelEl = document.createElement('div');
       labelEl.style.position = 'absolute';
-      labelEl.style.left = `${clampedCoordinate}px`;
+      labelEl.style.left = `${coordinate}px`;
       labelEl.style.top = '260px';
       labelEl.style.transform = 'translateX(-50%)';
       labelEl.style.padding = '6px 12px';

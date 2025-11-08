@@ -2,12 +2,12 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { createChart, IChartApi, ISeriesApi, CandlestickData, Time } from 'lightweight-charts';
-import { PoolData, MIGRATION_DATES, POOLS } from '@/lib/types';
+import { PoolData, MIGRATION_DATES, POOLS, Timeframe } from '@/lib/types';
 import { drawVerticalLines } from '@/lib/verticalLine';
 
 interface ChartProps {
   poolsData: PoolData[];
-  timeframe: 'minute' | 'hour' | 'day';
+  timeframe: Timeframe;
 }
 
 export default function Chart({ poolsData, timeframe }: ChartProps) {

@@ -1,4 +1,4 @@
-import { GeckoTerminalResponse, OHLCData, PoolData, POOLS } from './types';
+import { GeckoTerminalResponse, OHLCData, PoolData, POOLS, Timeframe, TIMEFRAME_TO_JUPITER_INTERVAL } from './types';
 
 const BASE_URL = 'https://api.geckoterminal.com/api/v2';
 const NETWORK = 'solana';
@@ -10,7 +10,7 @@ const ZERA_TOKEN = '8avjtjHAHFqp4g2RR9ALAGBpSTqKPZR8nRbzSTwZERA';
 
 export async function fetchPoolData(
   poolAddress: string,
-  timeframe: 'minute' | 'hour' | 'day' = 'day'
+  timeframe: Timeframe = '1H'
 ): Promise<OHLCData[]> {
   const url = `${BASE_URL}/networks/${NETWORK}/pools/${poolAddress}/ohlcv/${timeframe}`;
 
@@ -20,7 +20,7 @@ export async function fetchPoolData(
         'Accept': 'application/json',
       },
       next: {
-        revalidate: timeframe === 'minute' ? 60 : timeframe === 'hour' ? 3600 : 86400, // Cache based on timeframe
+        revalidate: timeframe === '1H' ? 3600 : timeframe === '4H' ? 14400 : timeframe === '1D' ? 86400 : 604800, // Cache based on timeframe
       },
     });
 
@@ -46,9 +46,10 @@ export async function fetchPoolData(
   }
 }
 
-export async function fetchJupiterData(tokenAddress: string): Promise<OHLCData[]> {
+export async function fetchJupiterData(tokenAddress: string, timeframe: Timeframe = '1H'): Promise<OHLCData[]> {
   const now = Date.now();
-  const url = `${JUPITER_API}/${tokenAddress}?interval=1_HOUR&to=${now}&candles=3000&type=price&quote=usd`;
+  const interval = TIMEFRAME_TO_JUPITER_INTERVAL[timeframe];
+  const url = `${JUPITER_API}/${tokenAddress}?interval=${interval}&to=${now}&candles=3000&type=price&quote=usd`;
 
   try {
     const response = await fetch(url);
@@ -61,11 +62,11 @@ export async function fetchJupiterData(tokenAddress: string): Promise<OHLCData[]
   }
 }
 
-export async function fetchAllPoolsData(timeframe: 'minute' | 'hour' | 'day' = 'day'): Promise<PoolData[]> {
+export async function fetchAllPoolsData(timeframe: Timeframe = '1H'): Promise<PoolData[]> {
   // Use Jupiter API for both tokens
   const [mon3yData, zeraData] = await Promise.all([
-    fetchJupiterData(MON3Y_TOKEN),
-    fetchJupiterData(ZERA_TOKEN),
+    fetchJupiterData(MON3Y_TOKEN, timeframe),
+    fetchJupiterData(ZERA_TOKEN, timeframe),
   ]);
 
   // Add placeholder candles at migration points for marker anchoring

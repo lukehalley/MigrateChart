@@ -3,11 +3,12 @@
 import { useState } from 'react';
 import useSWR from 'swr';
 import Chart from '@/components/Chart';
+import TimeframeToggle from '@/components/TimeframeToggle';
 import { fetchAllPoolsData } from '@/lib/api';
-import { PoolData } from '@/lib/types';
+import { PoolData, Timeframe } from '@/lib/types';
 
 export default function Home() {
-  const [timeframe, setTimeframe] = useState<'minute' | 'hour' | 'day'>('day');
+  const [timeframe, setTimeframe] = useState<Timeframe>('1D');
   const [showCopied, setShowCopied] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
 
@@ -16,7 +17,7 @@ export default function Home() {
     `/api/pools/${timeframe}`,
     () => fetchAllPoolsData(timeframe),
     {
-      refreshInterval: timeframe === 'minute' ? 60000 : timeframe === 'hour' ? 300000 : 3600000,
+      refreshInterval: timeframe === '1H' ? 300000 : timeframe === '4H' ? 900000 : timeframe === '1D' ? 3600000 : 7200000,
       revalidateOnFocus: false,
     }
   );
@@ -49,7 +50,7 @@ export default function Home() {
           />
 
           {/* Popup Content */}
-          <div className="md:hidden fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 space-y-3 animate-fade-in">
+          <div className="md:hidden fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 animate-fade-in">
             {/* Main Info Card */}
             <div className="info-card-small w-[85vw] max-w-[320px]">
               <div className="flex items-center gap-3 mb-3">
@@ -73,6 +74,30 @@ export default function Home() {
               </div>
             </div>
 
+            {/* Decorative Divider */}
+            <div className="flex items-center justify-center py-2">
+              <div className="h-px w-16 bg-gradient-to-r from-transparent via-[#52C97D]/40 to-transparent"></div>
+            </div>
+
+            {/* Timeframe Toggle Card */}
+            <div className="info-card-small w-[85vw] max-w-[320px]">
+              <div className="py-3 px-3">
+                <p className="text-gray-500 text-[10px] mb-3 text-center">Timeframe</p>
+                <TimeframeToggle
+                  currentTimeframe={timeframe}
+                  onTimeframeChange={(newTimeframe) => {
+                    setTimeframe(newTimeframe);
+                    setShowMobileMenu(false);
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Decorative Divider */}
+            <div className="flex items-center justify-center py-2">
+              <div className="h-px w-16 bg-gradient-to-r from-transparent via-[#52C97D]/40 to-transparent"></div>
+            </div>
+
             {/* Twitter Handle Card */}
             <div className="info-card-small w-[85vw] max-w-[320px]">
               <div className="text-center py-2">
@@ -86,6 +111,11 @@ export default function Home() {
                   @Trenchooooor
                 </a>
               </div>
+            </div>
+
+            {/* Decorative Divider */}
+            <div className="flex items-center justify-center py-2">
+              <div className="h-px w-16 bg-gradient-to-r from-transparent via-[#52C97D]/40 to-transparent"></div>
             </div>
 
             {/* ZERA Tips Card */}
@@ -110,7 +140,7 @@ export default function Home() {
       )}
 
       {/* Desktop Info Cards - Always visible on desktop */}
-      <div className="hidden md:flex md:flex-col md:gap-4 absolute top-10 left-10 z-50">
+      <div className="hidden md:flex md:flex-col absolute top-10 left-10 z-50">
         {/* Main Info Card */}
         <div className="info-card-small">
           <div className="flex items-center gap-3 mb-3">
@@ -134,6 +164,27 @@ export default function Home() {
           </div>
         </div>
 
+        {/* Decorative Divider */}
+        <div className="flex items-center justify-center py-3">
+          <div className="h-px w-16 bg-gradient-to-r from-transparent via-[#52C97D]/40 to-transparent"></div>
+        </div>
+
+        {/* Timeframe Toggle Card */}
+        <div className="info-card-small">
+          <div className="py-3 px-3">
+            <p className="text-gray-500 text-[10px] mb-3 text-center">Timeframe</p>
+            <TimeframeToggle
+              currentTimeframe={timeframe}
+              onTimeframeChange={setTimeframe}
+            />
+          </div>
+        </div>
+
+        {/* Decorative Divider */}
+        <div className="flex items-center justify-center py-3">
+          <div className="h-px w-16 bg-gradient-to-r from-transparent via-[#52C97D]/40 to-transparent"></div>
+        </div>
+
         {/* Twitter Handle Card */}
         <div className="info-card-small">
           <div className="text-center py-2">
@@ -147,6 +198,11 @@ export default function Home() {
               @Trenchooooor
             </a>
           </div>
+        </div>
+
+        {/* Decorative Divider */}
+        <div className="flex items-center justify-center py-3">
+          <div className="h-px w-16 bg-gradient-to-r from-transparent via-[#52C97D]/40 to-transparent"></div>
         </div>
 
         {/* ZERA Tips Card */}

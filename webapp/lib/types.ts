@@ -65,3 +65,12 @@ export const MIGRATION_DATES = {
     label: 'Raydium → Meteora',
   },
 } as const;
+
+export type Timeframe = '1H' | '4H' | '1D' | '1W';
+
+export const TIMEFRAME_TO_JUPITER_INTERVAL: Record<Timeframe, string> = {
+  '1H': '1_HOUR',
+  '4H': '4_HOUR',
+  '1D': '1_DAY',
+  '1W': '1_WEEK',
+} as const;
