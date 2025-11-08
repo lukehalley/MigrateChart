@@ -89,7 +89,7 @@ function HomeContent() {
         {/* Mobile Menu Toggle Button - Floating hamburger menu */}
         <button
           onClick={() => showMobileMenu ? closeMobileMenu() : setShowMobileMenu(true)}
-          className="fixed top-3 left-3 z-50 w-11 h-11 flex items-center justify-center bg-[#0A1F12]/90 hover:bg-[#0A1F12] border-2 border-[#52C97D] shadow-[0_0_12px_rgba(82,201,125,0.3)] hover:shadow-[0_0_16px_rgba(82,201,125,0.5)] transition-all backdrop-blur-sm"
+          className="fixed top-3 left-3 z-[60] w-11 h-11 flex items-center justify-center bg-[#0A1F12]/90 hover:bg-[#0A1F12] border-2 border-[#52C97D] shadow-[0_0_12px_rgba(82,201,125,0.3)] hover:shadow-[0_0_16px_rgba(82,201,125,0.5)] transition-all backdrop-blur-sm"
           aria-label="Toggle menu"
         >
           <div className="flex flex-col gap-1.5">
