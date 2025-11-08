@@ -91,7 +91,7 @@ export default function Home() {
 
           {/* Popup Content */}
           <div className="md:hidden fixed inset-0 z-50 animate-fade-in overflow-y-auto flex items-center justify-center p-4 pointer-events-none">
-            <div className="flex flex-col items-center py-8 px-4 pointer-events-auto">
+            <div className="flex flex-col items-center mt-16 py-8 px-4 pointer-events-auto">
               {/* Main Info Card */}
               <div className="info-card-small w-[85vw] max-w-[320px]">
                 <div className="flex items-center gap-3 mb-4">

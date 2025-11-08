@@ -23,7 +23,7 @@ body {
   overflow-x: hidden;
   background-color: var(--background);
   color: var(--text);
-  touch-action: pan-x pan-y;
+  touch-action: manipulation;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
 }

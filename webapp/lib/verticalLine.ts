@@ -65,7 +65,7 @@ export function drawVerticalLines(
       const labelEl = document.createElement('div');
       labelEl.style.position = 'absolute';
       labelEl.style.left = `${coordinate}px`;
-      labelEl.style.top = isMobile ? '20px' : '30px';
+      labelEl.style.top = isMobile ? '90px' : '30px';
       labelEl.style.transform = 'translateX(-50%)';
       labelEl.style.padding = isMobile ? '3px 5px' : '4px 8px';
       labelEl.style.backgroundColor = line.labelBackgroundColor || '#000000';
