@@ -121,7 +121,7 @@ export default function Home() {
           }}
         >
           <p className="text-[#52C97D] text-sm font-semibold">
-            ✓ Solana address copied to clipboard!
+            ✓ Solana Address Copied To Clipboard!
           </p>
         </div>
       )}
