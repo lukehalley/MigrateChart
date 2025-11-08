@@ -98,12 +98,12 @@ export function drawVerticalLines(
       labelEl.style.left = `${coordinate}px`;
       labelEl.style.top = isMobile ? '90px' : '30px';
       labelEl.style.transform = 'translateX(-50%)';
-      labelEl.style.padding = isMobile ? '4px 6px' : '6px 10px';
+      labelEl.style.padding = isMobile ? '5px 7px' : '7px 12px';
       labelEl.style.backgroundColor = line.labelBackgroundColor || '#000000';
       labelEl.style.color = line.labelTextColor || '#52C97D';
       labelEl.style.border = `2px solid ${line.color}`;
       labelEl.style.borderRadius = isMobile ? '3px' : '4px';
-      labelEl.style.fontSize = isMobile ? '7px' : '9px';
+      labelEl.style.fontSize = isMobile ? '9px' : '12px';
       labelEl.style.fontWeight = '600';
       labelEl.style.textAlign = 'center';
       labelEl.style.lineHeight = isMobile ? '1.3' : '1.4';
