@@ -11,6 +11,7 @@ import { PoolData, Timeframe, POOLS } from '@/lib/types';
 export default function Home() {
   const [timeframe, setTimeframe] = useState<Timeframe>('1H');
   const [showCopied, setShowCopied] = useState(false);
+  const [isCopiedFadingOut, setIsCopiedFadingOut] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   // Fetch data with SWR for automatic revalidation
@@ -90,10 +91,10 @@ export default function Home() {
 
           {/* Popup Content */}
           <div className="md:hidden fixed inset-0 z-50 animate-fade-in overflow-y-auto flex items-center justify-center p-4 pointer-events-none">
-            <div className="flex flex-col items-center py-6 px-4 pointer-events-auto">
+            <div className="flex flex-col items-center py-8 px-4 pointer-events-auto">
               {/* Main Info Card */}
               <div className="info-card-small w-[85vw] max-w-[320px]">
-                <div className="flex items-center gap-3 mb-3">
+                <div className="flex items-center gap-3 mb-4">
                   <img
                     src="/circle-logo.avif"
                     alt="ZERA"
@@ -105,7 +106,7 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-center gap-2 text-[10px] pt-3 pb-1 mt-3">
+                <div className="flex items-center justify-center gap-2 text-[10px] pt-4 pb-2 mt-3">
                   <span className="text-white font-medium">MON3Y</span>
                   <span className="text-white">→</span>
                   <span className="text-white font-medium">Raydium</span>
@@ -115,14 +116,14 @@ export default function Home() {
               </div>
 
               {/* Decorative Divider */}
-              <div className="flex items-center justify-center py-5">
+              <div className="flex items-center justify-center py-6">
                 <div className="dashed-divider w-24"></div>
               </div>
 
               {/* Timeframe Toggle Card */}
               <div className="info-card-small w-[85vw] max-w-[320px]">
-                <div className="py-3 px-3">
-                  <p className="text-white text-[10px] mb-3 text-center">Timeframe</p>
+                <div className="py-4 px-3">
+                  <p className="text-white text-[10px] mb-4 text-center">Timeframe</p>
                   <TimeframeToggle
                     currentTimeframe={timeframe}
                     onTimeframeChange={(newTimeframe) => {
@@ -134,7 +135,7 @@ export default function Home() {
               </div>
 
               {/* Decorative Divider */}
-              <div className="flex items-center justify-center py-5">
+              <div className="flex items-center justify-center py-6">
                 <div className="dashed-divider w-24"></div>
               </div>
 
@@ -144,7 +145,7 @@ export default function Home() {
               </div>
 
               {/* Decorative Divider */}
-              <div className="flex items-center justify-center py-5">
+              <div className="flex items-center justify-center py-6">
                 <div className="dashed-divider w-24"></div>
               </div>
 
@@ -168,6 +169,8 @@ export default function Home() {
                   onClick={() => {
                     navigator.clipboard.writeText('G9fXGu1LvtZesdQYjsWQTj1QeMpc97CJ6vWhX3rgeapb');
                     setShowCopied(true);
+                    setIsCopiedFadingOut(false);
+                    setTimeout(() => setIsCopiedFadingOut(true), 2500);
                     setTimeout(() => setShowCopied(false), 3000);
                     setShowMobileMenu(false);
                   }}
@@ -302,6 +305,8 @@ export default function Home() {
                 onClick={() => {
                   navigator.clipboard.writeText('G9fXGu1LvtZesdQYjsWQTj1QeMpc97CJ6vWhX3rgeapb');
                   setShowCopied(true);
+                  setIsCopiedFadingOut(false);
+                  setTimeout(() => setIsCopiedFadingOut(true), 2500);
                   setTimeout(() => setShowCopied(false), 3000);
                 }}
                 className="w-full text-center py-8 bg-[#52C97D]/5 hover:bg-[#52C97D]/15 transition-all cursor-pointer"
@@ -315,24 +320,17 @@ export default function Home() {
 
       {/* Copy Success Popup */}
       {showCopied && (
-        <div
-          className="fixed top-4 md:top-8 z-[100] animate-fade-in px-4 md:px-0"
-          style={{
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: 'auto',
-            maxWidth: 'calc(100vw - 2rem)',
-          }}
-        >
+        <div className="fixed inset-x-0 top-4 md:top-8 z-[100] flex justify-center px-4 pointer-events-none">
           <div
+            className={`transition-opacity duration-500 ${isCopiedFadingOut ? 'opacity-0' : 'opacity-100'}`}
             style={{
-              background: 'rgba(0, 0, 0, 0.85)',
+              background: 'rgba(0, 0, 0, 0.95)',
               backdropFilter: 'blur(12px)',
               WebkitBackdropFilter: 'blur(12px)',
               border: '2px solid #52C97D',
               borderRadius: '0',
-              padding: '10px 16px',
-              boxShadow: '0 0 12px rgba(82, 201, 125, 0.3), 0 0 24px rgba(82, 201, 125, 0.15)',
+              padding: '12px 20px',
+              boxShadow: '0 0 16px rgba(82, 201, 125, 0.4), 0 0 32px rgba(82, 201, 125, 0.2)',
             }}
           >
             <p className="text-[#52C97D] text-xs md:text-sm font-semibold whitespace-nowrap">
