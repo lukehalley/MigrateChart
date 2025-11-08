@@ -63,13 +63,19 @@ export default function Home() {
           className="fixed top-3 left-3 z-50 info-card-small"
           aria-label="Toggle menu"
         >
-          <div className="flex items-center gap-2">
-            <img
-              src="/circle-logo.avif"
-              alt="ZERA"
-              className="h-5 w-5"
-            />
-            <span className="text-white text-sm font-semibold">ZERA</span>
+          <div className="flex flex-col items-center gap-1">
+            <div className="flex items-center gap-2">
+              <img
+                src="/circle-logo.avif"
+                alt="ZERA"
+                className="h-5 w-5"
+              />
+              <span className="text-white text-sm font-semibold">ZERA</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="text-[#52C97D] text-[9px] font-bold tracking-wider">MENU</span>
+              <span className="text-[#52C97D] text-[10px]">{showMobileMenu ? '▲' : '▼'}</span>
+            </div>
           </div>
         </button>
 
@@ -83,78 +89,81 @@ export default function Home() {
           />
 
           {/* Popup Content */}
-          <div className="md:hidden fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 animate-fade-in">
-            {/* Main Info Card */}
-            <div className="info-card-small w-[85vw] max-w-[320px]">
-              <div className="flex items-center gap-3 mb-3">
-                <img
-                  src="/circle-logo.avif"
-                  alt="ZERA"
-                  className="h-8 w-8"
-                />
-                <div>
-                  <h1 className="text-lg font-bold text-white mb-0">ZERA</h1>
-                  <p className="text-white text-[10px]">Complete Price History</p>
+          <div className="md:hidden fixed inset-0 z-50 animate-fade-in overflow-y-auto flex items-center justify-center p-4 pointer-events-none">
+            <div className="flex flex-col items-center py-6 px-4 pointer-events-auto">
+              {/* Main Info Card */}
+              <div className="info-card-small w-[85vw] max-w-[320px]">
+                <div className="flex items-center gap-3 mb-3">
+                  <img
+                    src="/circle-logo.avif"
+                    alt="ZERA"
+                    className="h-8 w-8"
+                  />
+                  <div>
+                    <h1 className="text-lg font-bold text-white mb-0">ZERA</h1>
+                    <p className="text-white text-[10px]">Complete Price History</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-center gap-2 text-[10px] pt-3 pb-1 mt-3">
+                  <span className="text-white font-medium">MON3Y</span>
+                  <span className="text-white">→</span>
+                  <span className="text-white font-medium">Raydium</span>
+                  <span className="text-white">→</span>
+                  <span className="text-[#52C97D] font-bold">Meteora</span>
                 </div>
               </div>
 
-              <div className="flex items-center justify-center gap-2 text-[10px] pt-3 pb-1 mt-3">
-                <span className="text-white font-medium">MON3Y</span>
-                <span className="text-white">→</span>
-                <span className="text-white font-medium">Raydium</span>
-                <span className="text-white">→</span>
-                <span className="text-white font-semibold">Meteora</span>
+              {/* Decorative Divider */}
+              <div className="flex items-center justify-center py-5">
+                <div className="dashed-divider w-24"></div>
               </div>
-            </div>
 
-            {/* Decorative Divider */}
-            <div className="flex items-center justify-center py-7">
-              <div className="dashed-divider w-24"></div>
-            </div>
-
-            {/* Timeframe Toggle Card */}
-            <div className="info-card-small w-[85vw] max-w-[320px]">
-              <div className="py-3 px-3">
-                <p className="text-white text-[10px] mb-3 text-center">Timeframe</p>
-                <TimeframeToggle
-                  currentTimeframe={timeframe}
-                  onTimeframeChange={(newTimeframe) => {
-                    setTimeframe(newTimeframe);
-                    setShowMobileMenu(false);
-                  }}
-                />
+              {/* Timeframe Toggle Card */}
+              <div className="info-card-small w-[85vw] max-w-[320px]">
+                <div className="py-3 px-3">
+                  <p className="text-white text-[10px] mb-3 text-center">Timeframe</p>
+                  <TimeframeToggle
+                    currentTimeframe={timeframe}
+                    onTimeframeChange={(newTimeframe) => {
+                      setTimeframe(newTimeframe);
+                      setShowMobileMenu(false);
+                    }}
+                  />
+                </div>
               </div>
-            </div>
 
-            {/* Decorative Divider */}
-            <div className="flex items-center justify-center py-7">
-              <div className="dashed-divider w-24"></div>
-            </div>
+              {/* Decorative Divider */}
+              <div className="flex items-center justify-center py-5">
+                <div className="dashed-divider w-24"></div>
+              </div>
 
-            {/* Twitter Handle Card */}
-            <div className="info-card-small w-[85vw] max-w-[320px]">
-              <div className="text-center py-2">
-                <p className="text-white text-[10px] mb-1">Made By</p>
+              {/* Token Stats */}
+              <div className="w-[85vw] max-w-[320px]">
+                <TokenStats stats={tokenStats || null} isLoading={isStatsLoading} />
+              </div>
+
+              {/* Decorative Divider */}
+              <div className="flex items-center justify-center py-5">
+                <div className="dashed-divider w-24"></div>
+              </div>
+
+              {/* Follow & Support Section */}
+              <div className="w-[85vw] max-w-[320px]">
+                {/* Follow */}
                 <a
                   href="https://x.com/Trenchooooor"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-white hover:text-[#52C97D] text-xs transition-colors"
+                  className="block text-center py-6 bg-[#52C97D]/5 hover:bg-[#52C97D]/15 transition-all cursor-pointer info-card-small mb-0"
                 >
-                  @Trenchooooor
+                  <p className="text-[#52C97D] text-sm font-bold tracking-wider">FOLLOW</p>
                 </a>
-              </div>
-            </div>
 
-            {/* Decorative Divider */}
-            <div className="flex items-center justify-center py-7">
-              <div className="dashed-divider w-24"></div>
-            </div>
+                {/* Divider */}
+                <div className="h-px bg-[#52C97D]/30"></div>
 
-            {/* ZERA Tips Card */}
-            <div className="info-card-small w-[85vw] max-w-[320px]">
-              <div className="text-center py-2">
-                <p className="text-white text-[10px] mb-1">Buy Me A Coffee</p>
+                {/* Support */}
                 <button
                   onClick={() => {
                     navigator.clipboard.writeText('G9fXGu1LvtZesdQYjsWQTj1QeMpc97CJ6vWhX3rgeapb');
@@ -162,9 +171,9 @@ export default function Home() {
                     setTimeout(() => setShowCopied(false), 3000);
                     setShowMobileMenu(false);
                   }}
-                  className="text-white hover:text-[#52C97D] text-xs transition-colors cursor-pointer"
+                  className="w-full text-center py-6 bg-[#52C97D]/5 hover:bg-[#52C97D]/15 transition-all cursor-pointer info-card-small mb-0"
                 >
-                  ☕ Send ZERA on Solana
+                  <p className="text-[#52C97D] text-sm font-bold tracking-wider">SUPPORT</p>
                 </button>
               </div>
             </div>
