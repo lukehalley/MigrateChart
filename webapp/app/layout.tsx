@@ -4,6 +4,9 @@ import './globals.css';
 export const metadata: Metadata = {
   title: 'ZERA Price History',
   description: 'Interactive price chart for ZERA token tracking complete history across M0N3Y → Raydium → Meteora migrations',
+  icons: {
+    icon: '/favicon.ico',
+  },
 };
 
 export const viewport: Viewport = {
