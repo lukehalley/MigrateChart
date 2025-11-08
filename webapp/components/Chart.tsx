@@ -89,7 +89,7 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
       handleScale: {
         axisPressedMouseMove: true,
         mouseWheel: true,
-        pinch: false,  // Disable pinch zoom
+        pinch: true,  // Enable pinch zoom
       },
     });
 
@@ -231,7 +231,7 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
       <div
         ref={chartContainerRef}
         className="w-full h-full"
-        style={{ touchAction: 'pan-x pan-y' }}
+        style={{ touchAction: 'manipulation' }}
       />
     </div>
   );

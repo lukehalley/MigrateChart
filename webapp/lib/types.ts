@@ -58,11 +58,11 @@ export const POOLS = {
 export const MIGRATION_DATES = {
   mon3y_to_zera: {
     timestamp: 1759363200, // October 2, 2025 08:00:00 UTC
-    label: 'MON3Y → Raydium',
+    label: 'M0N3Y -> ZERA',
   },
   zera_Raydium_to_Meteora: {
     timestamp: 1762300800, // November 5, 2025 08:00:00 UTC
-    label: 'Raydium → Meteora',
+    label: 'ZERA (Raydium) -> ZERA (Meteora)',
   },
 } as const;
 
