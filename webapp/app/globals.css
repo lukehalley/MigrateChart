@@ -58,3 +58,40 @@ a {
 .animate-fade-in {
   animation: fade-in 0.3s ease-out;
 }
+
+/* Info cards responsive styling */
+.info-card-main {
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 2px solid #52C97D;
+  border-radius: 10px;
+  padding: 14px 16px;
+  box-shadow: 0 0 12px rgba(82, 201, 125, 0.3), 0 0 24px rgba(82, 201, 125, 0.15);
+}
+
+.info-card-small {
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 2px solid #52C97D;
+  border-radius: 10px;
+  padding: 10px 16px;
+  box-shadow: 0 0 12px rgba(82, 201, 125, 0.3), 0 0 24px rgba(82, 201, 125, 0.15);
+}
+
+@media (min-width: 768px) {
+  .info-card-main {
+    border: 3px solid #52C97D;
+    border-radius: 14px;
+    padding: 28px 36px;
+    box-shadow: 0 0 15px rgba(82, 201, 125, 0.35), 0 0 30px rgba(82, 201, 125, 0.18);
+  }
+
+  .info-card-small {
+    border: 3px solid #52C97D;
+    border-radius: 14px;
+    padding: 14px 32px;
+    box-shadow: 0 0 15px rgba(82, 201, 125, 0.35), 0 0 30px rgba(82, 201, 125, 0.18);
+  }
+}

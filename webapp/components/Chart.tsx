@@ -20,6 +20,9 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
 
     setIsLoading(false);
 
+    // Detect mobile device
+    const isMobile = window.innerWidth < 768;
+
     // Create chart
     const chart = createChart(chartContainerRef.current, {
       layout: {
@@ -37,8 +40,8 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
         timeVisible: true,
         secondsVisible: false,
         rightOffset: 5,  // Small padding on right
-        barSpacing: 6,  // Default spacing
-        minBarSpacing: 0.50,  // Allow extreme zoom out to see all data
+        barSpacing: isMobile ? 2 : 6,  // Smaller spacing on mobile for better zoom out
+        minBarSpacing: isMobile ? 0.10 : 0.50,  // Allow extreme zoom out on mobile
         fixLeftEdge: false,  // Allow scrolling past edges
         fixRightEdge: false,
         lockVisibleTimeRangeOnResize: false,
@@ -108,6 +111,11 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
         wickDownColor: '#ef5350',
         priceLineVisible: false,
         lastValueVisible: false,
+        priceFormat: {
+          type: 'price',
+          precision: 5,
+          minMove: 0.00001,
+        },
       });
 
       // Transform and set data
