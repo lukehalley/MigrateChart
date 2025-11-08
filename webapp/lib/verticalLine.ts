@@ -41,15 +41,45 @@ export function drawVerticalLines(
     const timeScale = chart.timeScale();
     const isMobile = window.innerWidth < 768;
 
+    // Create invisible protective box under price axis for label clearance
+    const priceAxisProtection = document.createElement('div');
+    priceAxisProtection.style.position = 'absolute';
+    priceAxisProtection.style.right = '0';
+    priceAxisProtection.style.top = '0';
+    priceAxisProtection.style.width = isMobile ? '60px' : '80px';  // Width to cover price axis
+    priceAxisProtection.style.height = isMobile ? '120px' : '90px';  // Height to cover top area including where labels sit
+    priceAxisProtection.style.pointerEvents = 'none';
+    priceAxisProtection.style.zIndex = '2';  // Above migration lines but below chart controls
+    overlay.appendChild(priceAxisProtection);
+
     lines.forEach(line => {
       const coordinate = timeScale.timeToCoordinate(line.time);
+
+      // Calculate price axis width for fade effect
+      const priceAxisWidth = isMobile ? 60 : 80;
+      const fadeStartDistance = isMobile ? 100 : 150; // Start fading earlier on mobile
+      const fadeEndDistance = isMobile ? 30 : 50; // Completely hidden sooner on mobile
+      const fadeStart = container.clientWidth - priceAxisWidth - fadeStartDistance;
+      const fadeEnd = container.clientWidth - priceAxisWidth - fadeEndDistance;
 
       // Skip markers outside visible range
       if (coordinate === null || coordinate < 0 || coordinate > container.clientWidth) {
         return;
       }
 
-      // Draw vertical line
+      // Calculate opacity based on distance from price axis
+      let opacity = 1;
+      if (coordinate > fadeStart) {
+        if (coordinate >= fadeEnd) {
+          return; // Completely hidden past fadeEnd
+        }
+        // Linear fade from 1 to 0 between fadeStart and fadeEnd
+        const fadeRange = fadeEnd - fadeStart;
+        const distanceIntoFade = coordinate - fadeStart;
+        opacity = 1 - (distanceIntoFade / fadeRange);
+      }
+
+      // Draw vertical line with fade
       const lineEl = document.createElement('div');
       lineEl.style.position = 'absolute';
       lineEl.style.left = `${coordinate}px`;
@@ -57,11 +87,12 @@ export function drawVerticalLines(
       lineEl.style.bottom = '0';
       lineEl.style.width = '2px';
       lineEl.style.borderLeft = '2px dashed #52C97D';
-      lineEl.style.opacity = '0.6';
+      lineEl.style.opacity = String(0.6 * opacity); // Apply fade to base opacity
       lineEl.style.boxShadow = '0 0 8px rgba(82, 201, 125, 0.2)';
+      lineEl.style.transition = 'opacity 0.3s ease-in-out';
       overlay.appendChild(lineEl);
 
-      // Draw label - responsive positioning and sizing
+      // Draw label - centered on the line with fade
       const labelEl = document.createElement('div');
       labelEl.style.position = 'absolute';
       labelEl.style.left = `${coordinate}px`;
@@ -74,8 +105,14 @@ export function drawVerticalLines(
       labelEl.style.borderRadius = isMobile ? '3px' : '4px';
       labelEl.style.fontSize = isMobile ? '7px' : '10px';
       labelEl.style.fontWeight = '600';
-      labelEl.style.whiteSpace = 'nowrap';
+      labelEl.style.width = isMobile ? '80px' : '110px';  // Fixed width to force wrapping
+      labelEl.style.whiteSpace = 'normal';  // Allow text to wrap
+      labelEl.style.overflowWrap = 'break-word';  // Break long words if needed
+      labelEl.style.textAlign = 'center';
+      labelEl.style.lineHeight = isMobile ? '1.2' : '1.3';
       labelEl.style.boxShadow = `0 0 15px ${line.color}80, inset 0 0 10px ${line.color}20`;
+      labelEl.style.opacity = String(opacity); // Apply fade effect
+      labelEl.style.transition = 'opacity 0.3s ease-in-out';
       labelEl.textContent = line.label;
       overlay.appendChild(labelEl);
     });

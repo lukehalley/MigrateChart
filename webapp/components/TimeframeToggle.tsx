@@ -7,7 +7,7 @@ interface TimeframeToggleProps {
   onTimeframeChange: (timeframe: Timeframe) => void;
 }
 
-const TIMEFRAMES: Timeframe[] = ['1H', '4H', '1D', '1W'];
+const TIMEFRAMES: Timeframe[] = ['1H', '4H', '8H', '1D', '1W'];
 
 export default function TimeframeToggle({ currentTimeframe, onTimeframeChange }: TimeframeToggleProps) {
   return (

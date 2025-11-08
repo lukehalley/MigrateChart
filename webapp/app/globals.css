@@ -62,6 +62,21 @@ a {
   animation: fade-in 0.3s ease-out;
 }
 
+@keyframes fade-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+.animate-fade-out {
+  animation: fade-out 0.3s ease-out;
+}
+
 @keyframes flash-green {
   0% {
     color: inherit;

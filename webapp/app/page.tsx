@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
 import Chart from '@/components/Chart';
 import TimeframeToggle from '@/components/TimeframeToggle';
@@ -9,10 +10,36 @@ import { fetchAllPoolsData, fetchTokenStats } from '@/lib/api';
 import { PoolData, Timeframe, POOLS } from '@/lib/types';
 
 export default function Home() {
-  const [timeframe, setTimeframe] = useState<Timeframe>('1H');
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Get timeframe from URL or default to '1D'
+  const urlTimeframe = searchParams.get('timeframe') as Timeframe | null;
+  const validTimeframes: Timeframe[] = ['1H', '4H', '8H', '1D', '1W'];
+  const initialTimeframe = urlTimeframe && validTimeframes.includes(urlTimeframe) ? urlTimeframe : '1D';
+
+  const [timeframe, setTimeframeState] = useState<Timeframe>(initialTimeframe);
   const [showCopied, setShowCopied] = useState(false);
   const [isCopiedFadingOut, setIsCopiedFadingOut] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [isMenuClosing, setIsMenuClosing] = useState(false);
+
+  // Update URL when timeframe changes
+  const setTimeframe = (newTimeframe: Timeframe) => {
+    setTimeframeState(newTimeframe);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('timeframe', newTimeframe);
+    router.push(`?${params.toString()}`, { scroll: false });
+  };
+
+  // Handle menu close with fade-out animation
+  const closeMobileMenu = () => {
+    setIsMenuClosing(true);
+    setTimeout(() => {
+      setShowMobileMenu(false);
+      setIsMenuClosing(false);
+    }, 300); // Match animation duration
+  };
 
   // Fetch data with SWR for automatic revalidation
   // Optimized intervals for live updates while respecting rate limits
@@ -23,6 +50,7 @@ export default function Home() {
       // More frequent updates for shorter timeframes
       refreshInterval: timeframe === '1H' ? 60000   // 1 minute for 1H
                      : timeframe === '4H' ? 180000  // 3 minutes for 4H
+                     : timeframe === '8H' ? 240000  // 4 minutes for 8H
                      : timeframe === '1D' ? 300000  // 5 minutes for 1D
                      : 600000,                      // 10 minutes for 1W
       revalidateOnFocus: true, // Refresh when user returns to tab
@@ -60,7 +88,7 @@ export default function Home() {
       <div className="md:hidden w-full h-full relative">
         {/* Mobile Menu Toggle Button - Floating hamburger menu */}
         <button
-          onClick={() => setShowMobileMenu(!showMobileMenu)}
+          onClick={() => showMobileMenu ? closeMobileMenu() : setShowMobileMenu(true)}
           className="fixed top-3 left-3 z-50 w-11 h-11 flex items-center justify-center bg-[#0A1F12]/90 hover:bg-[#0A1F12] border-2 border-[#52C97D] shadow-[0_0_12px_rgba(82,201,125,0.3)] hover:shadow-[0_0_16px_rgba(82,201,125,0.5)] transition-all backdrop-blur-sm"
           aria-label="Toggle menu"
         >
@@ -76,12 +104,12 @@ export default function Home() {
         <>
           {/* Backdrop */}
           <div
-            className="md:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40 animate-fade-in"
-            onClick={() => setShowMobileMenu(false)}
+            className={`md:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40 ${isMenuClosing ? 'animate-fade-out' : 'animate-fade-in'}`}
+            onClick={closeMobileMenu}
           />
 
           {/* Popup Content */}
-          <div className="md:hidden fixed inset-0 z-50 animate-fade-in overflow-y-auto flex items-center justify-center p-4 pointer-events-none">
+          <div className={`md:hidden fixed inset-0 z-50 ${isMenuClosing ? 'animate-fade-out' : 'animate-fade-in'} overflow-y-auto flex items-center justify-center p-4 pointer-events-none`}>
             <div className="flex flex-col items-center mt-16 py-8 px-4 pointer-events-auto">
               {/* Main Info Card */}
               <div className="info-card-small w-[85vw] max-w-[320px]">
@@ -119,7 +147,7 @@ export default function Home() {
                     currentTimeframe={timeframe}
                     onTimeframeChange={(newTimeframe) => {
                       setTimeframe(newTimeframe);
-                      setShowMobileMenu(false);
+                      closeMobileMenu();
                     }}
                   />
                 </div>
@@ -163,7 +191,7 @@ export default function Home() {
                     setIsCopiedFadingOut(false);
                     setTimeout(() => setIsCopiedFadingOut(true), 2500);
                     setTimeout(() => setShowCopied(false), 3000);
-                    setShowMobileMenu(false);
+                    closeMobileMenu();
                   }}
                   className="w-full text-center py-6 bg-[#52C97D]/5 hover:bg-[#52C97D]/15 transition-all cursor-pointer info-card-small mb-0"
                 >

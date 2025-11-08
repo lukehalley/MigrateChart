@@ -39,8 +39,8 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
         borderColor: '#1F6338',  // Deep green border
         timeVisible: true,
         secondsVisible: false,
-        rightOffset: 5,  // Small padding on right
-        barSpacing: isMobile ? 2 : 6,  // Smaller spacing on mobile for better zoom out
+        rightOffset: isMobile ? 10 : 50,  // More space on right side by default
+        barSpacing: isMobile ? 2 : 12,  // Thicker candlesticks on desktop
         minBarSpacing: isMobile ? 0.10 : 0.50,  // Allow extreme zoom out on mobile
         fixLeftEdge: false,  // Allow scrolling past edges
         fixRightEdge: false,
@@ -188,23 +188,26 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
       const lastTime = sortedData[totalPoints - 1].time;
 
       // Calculate how much data to show based on device and timeframe
-      // Mobile: show ~18% of data, Desktop: show ~24% of data
+      // Mobile: show ~35-40% of data (zoomed out for overview), Desktop: show ~15% of data (zoomed in)
       // Adjust based on timeframe for better initial view - zoomed towards end for migration clarity
-      let visibilityRatio = isMobile ? 0.18 : 0.24;
+      let visibilityRatio = isMobile ? 0.35 : 0.15;
 
       // Adjust ratio based on timeframe - shorter timeframes show more of the data
       switch(timeframe) {
         case '1H':
-          visibilityRatio = isMobile ? 0.24 : 0.30;
+          visibilityRatio = isMobile ? 0.45 : 0.20;
           break;
         case '4H':
-          visibilityRatio = isMobile ? 0.21 : 0.27;
+          visibilityRatio = isMobile ? 0.40 : 0.18;
+          break;
+        case '8H':
+          visibilityRatio = isMobile ? 0.38 : 0.16;
           break;
         case '1D':
-          visibilityRatio = isMobile ? 0.18 : 0.24;
+          visibilityRatio = isMobile ? 0.35 : 0.15;
           break;
         case '1W':
-          visibilityRatio = isMobile ? 0.14 : 0.21;
+          visibilityRatio = isMobile ? 0.30 : 0.12;
           break;
       }
 
@@ -213,6 +216,7 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
       const fromTime = lastTime - visibleTimeRange;
 
       // Set the visible range to zoom into the most recent data
+      // The rightOffset in timeScale options will add space on the right
       chart.timeScale().setVisibleRange({
         from: fromTime as Time,
         to: lastTime as Time,
