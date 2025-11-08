@@ -1,6 +1,4 @@
 {
-  "buildCommand": "cd webapp && npm run build",
-  "devCommand": "cd webapp && npm run dev",
-  "installCommand": "cd webapp && npm install",
-  "outputDirectory": "webapp/.next"
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next"
 }
