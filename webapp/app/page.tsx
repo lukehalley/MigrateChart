@@ -217,7 +217,7 @@ export default function Home() {
         </div>
 
         {/* Right Section - Token Stats Sidebar (10%) */}
-        <div className="flex-[1] h-full bg-gradient-to-b from-black via-black to-black border-l border-dashed border-[#1F6338] opacity-80 overflow-hidden flex flex-col">
+        <div className="flex-[1] h-full bg-gradient-to-b from-black via-black to-black border-l-2 border-dashed border-[#52C97D]/60 overflow-hidden flex flex-col" style={{ boxShadow: '-8px 0 8px rgba(82, 201, 125, 0.2)' }}>
           {/* Scrollable Content */}
           <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
             {/* Main Info Block */}
@@ -274,16 +274,19 @@ export default function Home() {
             </div>
 
             {/* Follow & Support Section */}
-            <div className="space-y-8">
+            <div>
               {/* Follow */}
               <a
                 href="https://x.com/Trenchooooor"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block text-center py-8 bg-[#52C97D]/10 border border-dashed border-[#1F6338] hover:bg-[#52C97D]/20 hover:border-[#52C97D]/40 transition-all cursor-pointer"
+                className="block text-center py-8 bg-[#52C97D]/5 hover:bg-[#52C97D]/15 transition-all cursor-pointer"
               >
-                <p className="text-[#52C97D] text-lg font-bold tracking-wider">FOLLOW</p>
+                <p className="text-[#52C97D] text-base font-bold tracking-wider">FOLLOW</p>
               </a>
+
+              {/* Divider */}
+              <div className="h-px bg-[#52C97D]/30"></div>
 
               {/* Support */}
               <button
@@ -292,9 +295,9 @@ export default function Home() {
                   setShowCopied(true);
                   setTimeout(() => setShowCopied(false), 3000);
                 }}
-                className="w-full text-center py-8 bg-[#52C97D]/10 border border-dashed border-[#1F6338] hover:bg-[#52C97D]/20 hover:border-[#52C97D]/40 transition-all cursor-pointer"
+                className="w-full text-center py-8 bg-[#52C97D]/5 hover:bg-[#52C97D]/15 transition-all cursor-pointer"
               >
-                <p className="text-[#52C97D] text-lg font-bold tracking-wider">SUPPORT</p>
+                <p className="text-[#52C97D] text-base font-bold tracking-wider">SUPPORT</p>
               </button>
             </div>
           </div>

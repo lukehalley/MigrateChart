@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
 import { TokenStats as TokenStatsType } from '@/lib/types';
 
 interface TokenStatsProps {
@@ -8,6 +9,34 @@ interface TokenStatsProps {
 }
 
 export default function TokenStats({ stats, isLoading }: TokenStatsProps) {
+  const prevStats = useRef<TokenStatsType | null>(null);
+  const [flashingFields, setFlashingFields] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (!stats || !prevStats.current) {
+      prevStats.current = stats;
+      return;
+    }
+
+    const updated = new Set<string>();
+
+    if (stats.price !== prevStats.current.price) updated.add('price');
+    if (stats.priceChange24h !== prevStats.current.priceChange24h) updated.add('priceChange');
+    if (stats.liquidity !== prevStats.current.liquidity) updated.add('liquidity');
+    if (stats.marketCap !== prevStats.current.marketCap) updated.add('marketCap');
+    if (stats.volume24h !== prevStats.current.volume24h) updated.add('volume');
+    if (stats.buyCount24h !== prevStats.current.buyCount24h) updated.add('buys');
+    if (stats.sellCount24h !== prevStats.current.sellCount24h) updated.add('sells');
+
+    if (updated.size > 0) {
+      setFlashingFields(updated);
+      const timer = setTimeout(() => setFlashingFields(new Set()), 600);
+      prevStats.current = stats;
+      return () => clearTimeout(timer);
+    }
+
+    prevStats.current = stats;
+  }, [stats]);
   const formatNumber = (num: number, decimals: number = 2): string => {
     if (num >= 1_000_000_000) {
       return `$${(num / 1_000_000_000).toFixed(decimals)}B`;
@@ -61,7 +90,9 @@ export default function TokenStats({ stats, isLoading }: TokenStatsProps) {
       <div className="stat-card">
         <p className="text-white text-[11px] font-medium mb-2">PRICE (USD)</p>
         <div className="flex items-center gap-2 mb-1">
-          <p className="text-white text-xl font-bold">{formatPrice(stats.price)}</p>
+          <p className={`text-white text-xl font-bold ${flashingFields.has('price') ? 'flash-update' : ''}`}>
+            {formatPrice(stats.price)}
+          </p>
           <div className="flex items-center gap-1">
             <div className="w-2 h-2 bg-[#52C97D] rounded-full animate-pulse"></div>
             <span className="text-[#52C97D] text-[9px] font-bold">LIVE</span>
@@ -70,7 +101,7 @@ export default function TokenStats({ stats, isLoading }: TokenStatsProps) {
         <p
           className={`text-sm font-semibold ${
             stats.priceChange24h >= 0 ? 'text-[#52C97D]' : 'text-[#ef5350]'
-          }`}
+          } ${flashingFields.has('priceChange') ? 'flash-update' : ''}`}
         >
           {formatPercent(stats.priceChange24h)}
         </p>
@@ -84,7 +115,9 @@ export default function TokenStats({ stats, isLoading }: TokenStatsProps) {
       {/* Liquidity Card */}
       <div className="stat-card">
         <p className="text-white text-[11px] font-medium mb-2">LIQUIDITY</p>
-        <p className="text-white text-lg font-bold">{formatNumber(stats.liquidity)}</p>
+        <p className={`text-white text-lg font-bold ${flashingFields.has('liquidity') ? 'flash-update' : ''}`}>
+          {formatNumber(stats.liquidity)}
+        </p>
       </div>
 
       {/* Divider */}
@@ -95,13 +128,22 @@ export default function TokenStats({ stats, isLoading }: TokenStatsProps) {
       {/* Market Cap Card */}
       <div className="stat-card">
         <p className="text-white text-[11px] font-medium mb-2">MKT CAP</p>
-        <p className="text-white text-lg font-bold">{formatNumber(stats.marketCap)}</p>
+        <p className={`text-white text-lg font-bold ${flashingFields.has('marketCap') ? 'flash-update' : ''}`}>
+          {formatNumber(stats.marketCap)}
+        </p>
+      </div>
+
+      {/* Divider */}
+      <div className="py-3">
+        <div className="dashed-divider"></div>
       </div>
 
       {/* Volume 24H Card */}
       <div className="stat-card">
         <p className="text-white text-[11px] font-medium mb-2">VOLUME (24H)</p>
-        <p className="text-white text-lg font-bold">{formatNumber(stats.volume24h)}</p>
+        <p className={`text-white text-lg font-bold ${flashingFields.has('volume') ? 'flash-update' : ''}`}>
+          {formatNumber(stats.volume24h)}
+        </p>
       </div>
 
       {/* Divider */}
@@ -117,11 +159,15 @@ export default function TokenStats({ stats, isLoading }: TokenStatsProps) {
           <div className="flex justify-center gap-8 text-sm">
             <div>
               <p className="text-white text-[11px] font-medium">BUYS</p>
-              <p className="text-[#52C97D] font-bold text-base">{stats.buyCount24h || 0}</p>
+              <p className={`text-[#52C97D] font-bold text-base ${flashingFields.has('buys') ? 'flash-update' : ''}`}>
+                {stats.buyCount24h || 0}
+              </p>
             </div>
             <div>
               <p className="text-white text-[11px] font-medium">SELLS</p>
-              <p className="text-[#ef5350] font-bold text-base">{stats.sellCount24h || 0}</p>
+              <p className={`text-[#ef5350] font-bold text-base ${flashingFields.has('sells') ? 'flash-update' : ''}`}>
+                {stats.sellCount24h || 0}
+              </p>
             </div>
           </div>
         </div>
@@ -133,56 +179,6 @@ export default function TokenStats({ stats, isLoading }: TokenStatsProps) {
         </>
       )}
 
-      {/* Social Links Card */}
-      {(stats.website || stats.twitter || stats.telegram) && (
-        <div className="stat-card">
-          <p className="text-white text-[11px] font-medium mb-3">LINKS</p>
-          <div className="flex flex-col gap-2">
-            {stats.website && (
-              <a
-                href={stats.website}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-white hover:text-[#52C97D] text-xs transition-colors flex items-center gap-2"
-              >
-                <span>Website</span>
-                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
-                  <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
-                </svg>
-              </a>
-            )}
-            {stats.twitter && (
-              <a
-                href={stats.twitter}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-white hover:text-[#52C97D] text-xs transition-colors flex items-center gap-2"
-              >
-                <span>Twitter</span>
-                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
-                  <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
-                </svg>
-              </a>
-            )}
-            {stats.telegram && (
-              <a
-                href={stats.telegram}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-white hover:text-[#52C97D] text-xs transition-colors flex items-center gap-2"
-              >
-                <span>Telegram</span>
-                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
-                  <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
-                </svg>
-              </a>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

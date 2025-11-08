@@ -177,7 +177,7 @@ class RateLimiter {
   }
 
   // Get current queue status for debugging/monitoring
-  getStatus(apiName?: string) {
+  getStatus(apiName?: string): any {
     if (apiName) {
       this.cleanOldTimestamps(apiName);
       const timestamps = this.requestTimestamps.get(apiName) || [];

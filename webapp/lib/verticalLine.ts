@@ -55,10 +55,10 @@ export function drawVerticalLines(
       lineEl.style.left = `${coordinate}px`;
       lineEl.style.top = '0';
       lineEl.style.bottom = '0';
-      lineEl.style.width = `${line.lineWidth || 1}px`;
-      lineEl.style.borderLeft = `${line.lineWidth || 1}px dashed ${line.color}`;
-      lineEl.style.opacity = '0.8';
-      lineEl.style.boxShadow = `0 0 10px ${line.color}, 0 0 20px ${line.color}40`;
+      lineEl.style.width = '2px';
+      lineEl.style.borderLeft = '2px dashed #52C97D';
+      lineEl.style.opacity = '0.6';
+      lineEl.style.boxShadow = '0 0 8px rgba(82, 201, 125, 0.2)';
       overlay.appendChild(lineEl);
 
       // Draw label - responsive positioning and sizing
