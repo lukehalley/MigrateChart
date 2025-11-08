@@ -141,7 +141,7 @@ export default function Home() {
               </div>
 
               {/* Follow & Support Section */}
-              <div className="w-[85vw] max-w-[320px]">
+              <div className="w-[85vw] max-w-[320px] mt-2">
                 {/* Follow */}
                 <a
                   href="https://x.com/Trenchooooor"

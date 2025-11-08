@@ -54,7 +54,7 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
           top: 0.1,    // 10% padding - allows seeing full price range
           bottom: 0.1, // 10% padding
         },
-        autoScale: true,  // Auto-scale to fit data
+        autoScale: false,  // Disable auto-scale to allow manual price scaling
         mode: 0,  // Normal price scale
         invertScale: false,
         alignLabels: true,
@@ -84,12 +84,19 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
         mouseWheel: true,
         pressedMouseMove: true,
         horzTouchDrag: true,
-        vertTouchDrag: false,
+        vertTouchDrag: true,  // Enable vertical dragging for price axis
       },
       handleScale: {
-        axisPressedMouseMove: true,
+        axisPressedMouseMove: {
+          time: true,
+          price: true,  // Enable price axis scaling by dragging
+        },
         mouseWheel: true,
         pinch: true,  // Enable pinch zoom
+        axisDoubleClickReset: {
+          time: true,
+          price: true,  // Double-click to reset price scale
+        },
       },
     });
 
@@ -210,6 +217,9 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
         from: fromTime as Time,
         to: lastTime as Time,
       });
+
+      // Fit price range to visible data initially
+      chart.timeScale().fitContent();
     }
 
     return () => {
