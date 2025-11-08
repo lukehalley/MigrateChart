@@ -5,9 +5,9 @@
   --surface: #161b22;
   --border: #30363d;
   --text: #ffffff;
-  --text-muted: #8b949e;
+  --text-muted: #ffffff;
   --zera: #52C97D;
-  --green: #26a69a;
+  --green: #52C97D;
   --red: #ef5350;
 }
 
@@ -23,6 +23,9 @@ body {
   overflow-x: hidden;
   background-color: var(--background);
   color: var(--text);
+  touch-action: pan-x pan-y;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 body {
@@ -64,34 +67,78 @@ a {
   background: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 2px solid #52C97D;
+  border: 2px solid #1F6338;
   border-radius: 10px;
   padding: 14px 16px;
-  box-shadow: 0 0 12px rgba(82, 201, 125, 0.3), 0 0 24px rgba(82, 201, 125, 0.15);
+  box-shadow: 0 0 12px rgba(31, 99, 56, 0.3), 0 0 24px rgba(31, 99, 56, 0.15);
 }
 
 .info-card-small {
   background: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 2px solid #52C97D;
-  border-radius: 10px;
+  border: 2px solid #1F6338;
+  border-radius: 0;
   padding: 10px 16px;
-  box-shadow: 0 0 12px rgba(82, 201, 125, 0.3), 0 0 24px rgba(82, 201, 125, 0.15);
+  box-shadow: 0 0 12px rgba(31, 99, 56, 0.3), 0 0 24px rgba(31, 99, 56, 0.15);
 }
 
 @media (min-width: 768px) {
   .info-card-main {
-    border: 3px solid #52C97D;
-    border-radius: 14px;
+    border: 3px solid #1F6338;
+    border-radius: 0;
     padding: 28px 36px;
-    box-shadow: 0 0 15px rgba(82, 201, 125, 0.35), 0 0 30px rgba(82, 201, 125, 0.18);
+    box-shadow: 0 0 15px rgba(31, 99, 56, 0.35), 0 0 30px rgba(31, 99, 56, 0.18);
   }
 
   .info-card-small {
-    border: 3px solid #52C97D;
-    border-radius: 14px;
+    border: 3px solid #1F6338;
+    border-radius: 0;
     padding: 14px 32px;
-    box-shadow: 0 0 15px rgba(82, 201, 125, 0.35), 0 0 30px rgba(82, 201, 125, 0.18);
+    box-shadow: 0 0 15px rgba(31, 99, 56, 0.35), 0 0 30px rgba(31, 99, 56, 0.18);
   }
+}
+
+/* Stat card for sidebar */
+.stat-card {
+  background: transparent;
+  border: none;
+  padding: 16px 8px;
+  transition: all 0.2s ease;
+}
+
+/* Stat card with ZERA highlight */
+.stat-card-highlight {
+  background: transparent;
+  border: none;
+  padding: 16px 8px;
+  padding-bottom: 16px;
+  transition: all 0.2s ease;
+}
+
+/* Dashed divider matching migration lines */
+.dashed-divider {
+  width: 100%;
+  height: 1px;
+  border-top: 1px dashed #1F6338;
+  opacity: 0.8;
+}
+
+/* Custom scrollbar styling for token stats sidebar */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 8px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 0;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: rgba(31, 99, 56, 0.3);
+  border-radius: 0;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: rgba(31, 99, 56, 0.5);
 }

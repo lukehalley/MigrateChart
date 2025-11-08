@@ -76,6 +76,21 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
           labelBackgroundColor: '#52C97D',
         },
       },
+      kineticScroll: {
+        touch: false,  // Disable kinetic scrolling on touch devices
+        mouse: false,
+      },
+      handleScroll: {
+        mouseWheel: true,
+        pressedMouseMove: true,
+        horzTouchDrag: true,
+        vertTouchDrag: false,
+      },
+      handleScale: {
+        axisPressedMouseMove: true,
+        mouseWheel: true,
+        pinch: false,  // Disable pinch zoom
+      },
     });
 
     chartRef.current = chart;
@@ -156,8 +171,46 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
 
     window.addEventListener('resize', handleResize);
 
-    // Fit content to fill width
-    chart.timeScale().fitContent();
+    // Get all data points to calculate visible range
+    const allData = poolsData.flatMap(pool => pool.data);
+    if (allData.length > 0) {
+      // Sort by time to get the range
+      const sortedData = [...allData].sort((a, b) => a.time - b.time);
+      const totalPoints = sortedData.length;
+      const firstTime = sortedData[0].time;
+      const lastTime = sortedData[totalPoints - 1].time;
+
+      // Calculate how much data to show based on device and timeframe
+      // Mobile: show ~30% of data, Desktop: show ~40% of data
+      // Adjust based on timeframe for better initial view
+      let visibilityRatio = isMobile ? 0.25 : 0.35;
+
+      // Adjust ratio based on timeframe - shorter timeframes show more of the data
+      switch(timeframe) {
+        case '1H':
+          visibilityRatio = isMobile ? 0.35 : 0.45;
+          break;
+        case '4H':
+          visibilityRatio = isMobile ? 0.30 : 0.40;
+          break;
+        case '1D':
+          visibilityRatio = isMobile ? 0.25 : 0.35;
+          break;
+        case '1W':
+          visibilityRatio = isMobile ? 0.20 : 0.30;
+          break;
+      }
+
+      const timeRange = lastTime - firstTime;
+      const visibleTimeRange = timeRange * visibilityRatio;
+      const fromTime = lastTime - visibleTimeRange;
+
+      // Set the visible range to zoom into the most recent data
+      chart.timeScale().setVisibleRange({
+        from: fromTime as Time,
+        to: lastTime as Time,
+      });
+    }
 
     return () => {
       window.removeEventListener('resize', handleResize);
@@ -175,7 +228,11 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
           <div className="text-textMuted">Loading chart...</div>
         </div>
       )}
-      <div ref={chartContainerRef} className="w-full h-full" />
+      <div
+        ref={chartContainerRef}
+        className="w-full h-full"
+        style={{ touchAction: 'pan-x pan-y' }}
+      />
     </div>
   );
 }

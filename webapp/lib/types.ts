@@ -74,3 +74,17 @@ export const TIMEFRAME_TO_JUPITER_INTERVAL: Record<Timeframe, string> = {
   '1D': '1_DAY',
   '1W': '1_WEEK',
 } as const;
+
+export interface TokenStats {
+  price: number;
+  priceChange24h: number;
+  volume24h: number;
+  marketCap: number;
+  liquidity: number;
+  holders?: number;
+  buyCount24h?: number;
+  sellCount24h?: number;
+  twitter?: string;
+  telegram?: string;
+  website?: string;
+}

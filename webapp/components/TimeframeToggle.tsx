@@ -17,10 +17,10 @@ export default function TimeframeToggle({ currentTimeframe, onTimeframeChange }:
           key={timeframe}
           onClick={() => onTimeframeChange(timeframe)}
           className={`
-            flex-1 px-3 py-2 rounded-md text-xs font-semibold transition-all duration-200
+            flex-1 px-3 py-2 text-xs font-semibold transition-all duration-200
             ${currentTimeframe === timeframe
-              ? 'bg-[#52C97D] text-black shadow-lg'
-              : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/50 border border-gray-700/40'
+              ? 'bg-[#52C97D] text-black'
+              : 'text-white hover:text-white hover:bg-gray-800/50 border border-gray-700/40'
             }
           `}
         >

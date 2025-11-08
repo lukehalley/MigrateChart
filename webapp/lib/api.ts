@@ -1,4 +1,5 @@
-import { GeckoTerminalResponse, OHLCData, PoolData, POOLS, Timeframe, TIMEFRAME_TO_JUPITER_INTERVAL } from './types';
+import { GeckoTerminalResponse, OHLCData, PoolData, POOLS, Timeframe, TIMEFRAME_TO_JUPITER_INTERVAL, TokenStats } from './types';
+import { rateLimiter, getApiNameFromUrl } from './rateLimiter';
 
 const BASE_URL = 'https://api.geckoterminal.com/api/v2';
 const NETWORK = 'solana';
@@ -15,20 +16,24 @@ export async function fetchPoolData(
   const url = `${BASE_URL}/networks/${NETWORK}/pools/${poolAddress}/ohlcv/${timeframe}`;
 
   try {
-    const response = await fetch(url, {
-      headers: {
-        'Accept': 'application/json',
-      },
-      next: {
-        revalidate: timeframe === '1H' ? 3600 : timeframe === '4H' ? 14400 : timeframe === '1D' ? 86400 : 604800, // Cache based on timeframe
-      },
+    const data = await rateLimiter.execute('geckoterminal', async () => {
+      const response = await fetch(url, {
+        headers: {
+          'Accept': 'application/json',
+        },
+        next: {
+          revalidate: timeframe === '1H' ? 3600 : timeframe === '4H' ? 14400 : timeframe === '1D' ? 86400 : 604800, // Cache based on timeframe
+        },
+      });
+
+      if (!response.ok) {
+        const error: any = new Error(`HTTP error! status: ${response.status}`);
+        error.status = response.status;
+        throw error;
+      }
+
+      return response.json() as Promise<GeckoTerminalResponse>;
     });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data: GeckoTerminalResponse = await response.json();
 
     // Transform the OHLCV data
     const ohlcvList = data.data.attributes.ohlcv_list;
@@ -52,9 +57,15 @@ export async function fetchJupiterData(tokenAddress: string, timeframe: Timefram
   const url = `${JUPITER_API}/${tokenAddress}?interval=${interval}&to=${now}&candles=3000&type=price&quote=usd`;
 
   try {
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    const data = await response.json();
+    const data = await rateLimiter.execute('jupiter', async () => {
+      const response = await fetch(url);
+      if (!response.ok) {
+        const error: any = new Error(`HTTP error! status: ${response.status}`);
+        error.status = response.status;
+        throw error;
+      }
+      return response.json();
+    });
     return data.candles || [];
   } catch (error) {
     console.error(`Error fetching Jupiter data:`, error);
@@ -196,4 +207,47 @@ export function filterByMinimumDistance<T extends { time: number }>(
   }
 
   return filtered;
+}
+
+// DexScreener API for token statistics
+const DEXSCREENER_API = 'https://api.dexscreener.com/latest/dex';
+
+export async function fetchTokenStats(poolAddress: string): Promise<TokenStats | null> {
+  try {
+    const data = await rateLimiter.execute('dexscreener', async () => {
+      const response = await fetch(`${DEXSCREENER_API}/pairs/solana/${poolAddress}`, {
+        next: { revalidate: 60 }, // Cache for 1 minute
+      });
+
+      if (!response.ok) {
+        const error: any = new Error(`HTTP error! status: ${response.status}`);
+        error.status = response.status;
+        throw error;
+      }
+
+      return response.json();
+    });
+
+    const pair = data.pair || data.pairs?.[0];
+
+    if (!pair) {
+      return null;
+    }
+
+    return {
+      price: parseFloat(pair.priceUsd || '0'),
+      priceChange24h: parseFloat(pair.priceChange?.h24 || '0'),
+      volume24h: parseFloat(pair.volume?.h24 || '0'),
+      marketCap: parseFloat(pair.fdv || pair.marketCap || '0'),
+      liquidity: parseFloat(pair.liquidity?.usd || '0'),
+      buyCount24h: pair.txns?.h24?.buys,
+      sellCount24h: pair.txns?.h24?.sells,
+      twitter: pair.info?.socials?.find((s: any) => s.type === 'twitter')?.url,
+      telegram: pair.info?.socials?.find((s: any) => s.type === 'telegram')?.url,
+      website: pair.info?.websites?.[0]?.url,
+    };
+  } catch (error) {
+    console.error(`Error fetching token stats for pool ${poolAddress}:`, error);
+    return null;
+  }
 }
