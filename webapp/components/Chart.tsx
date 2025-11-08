@@ -54,7 +54,7 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
           top: 0.1,    // 10% padding - allows seeing full price range
           bottom: 0.1, // 10% padding
         },
-        autoScale: false,  // Disable auto-scale to allow manual price scaling
+        autoScale: true,  // Disable auto-scale to allow manual price scaling
         mode: 0,  // Normal price scale
         invertScale: false,
         alignLabels: true,
