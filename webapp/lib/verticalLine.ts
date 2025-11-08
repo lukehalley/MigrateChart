@@ -39,6 +39,7 @@ export function drawVerticalLines(
     overlay.innerHTML = ''; // Clear existing lines
 
     const timeScale = chart.timeScale();
+    const isMobile = window.innerWidth < 768;
 
     lines.forEach(line => {
       const coordinate = timeScale.timeToCoordinate(line.time);
@@ -60,18 +61,18 @@ export function drawVerticalLines(
       lineEl.style.boxShadow = `0 0 10px ${line.color}, 0 0 20px ${line.color}40`;
       overlay.appendChild(lineEl);
 
-      // Draw label - positioned to align under enlarged floating card
+      // Draw label - responsive positioning and sizing
       const labelEl = document.createElement('div');
       labelEl.style.position = 'absolute';
       labelEl.style.left = `${coordinate}px`;
-      labelEl.style.top = '260px';
+      labelEl.style.top = isMobile ? '80px' : '260px';
       labelEl.style.transform = 'translateX(-50%)';
-      labelEl.style.padding = '6px 12px';
+      labelEl.style.padding = isMobile ? '4px 8px' : '6px 12px';
       labelEl.style.backgroundColor = line.labelBackgroundColor || '#000000';
       labelEl.style.color = line.labelTextColor || '#52C97D';
       labelEl.style.border = `2px solid ${line.color}`;
-      labelEl.style.borderRadius = '6px';
-      labelEl.style.fontSize = '12px';
+      labelEl.style.borderRadius = isMobile ? '4px' : '6px';
+      labelEl.style.fontSize = isMobile ? '9px' : '12px';
       labelEl.style.fontWeight = '600';
       labelEl.style.whiteSpace = 'nowrap';
       labelEl.style.boxShadow = `0 0 15px ${line.color}80, inset 0 0 10px ${line.color}20`;
