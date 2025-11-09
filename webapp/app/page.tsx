@@ -100,7 +100,7 @@ function HomeContent() {
         </div>
         <div className="w-full px-6 sm:px-8 flex flex-col items-center justify-center gap-2 text-center relative z-10">
           <p className="text-white/90 text-xs sm:text-sm pt-6 sm:pt-8">
-            Support Hosting Costs Or Say Thanks
+            Buy Me A Coffee (Solana Network)
           </p>
           <div className="flex items-center justify-center gap-2 pb-6 sm:pb-8">
             <code className="text-[#52C97D] text-[10px] sm:text-xs font-mono bg-[#0A1F12]/60 px-3 sm:px-4 py-1.5 rounded border border-[#52C97D]/30 truncate max-w-[180px] sm:max-w-none select-text">
