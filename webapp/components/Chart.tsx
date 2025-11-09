@@ -211,26 +211,26 @@ export default function Chart({ poolsData, timeframe }: ChartProps) {
       const lastTime = sortedData[totalPoints - 1].time;
 
       // Calculate how much data to show based on device and timeframe
-      // Mobile: show ~17-23% of data, Desktop: show ~15-20% of data
+      // Mobile: show ~17-23% of data, Desktop: show ~3-5% of data (4x zoom)
       // Adjust based on timeframe for better initial view - zoomed towards end for migration clarity
-      let visibilityRatio = isMobile ? 0.17 : 0.15;
+      let visibilityRatio = isMobile ? 0.17 : 0.0375;
 
       // Adjust ratio based on timeframe - shorter timeframes show more of the data
       switch(timeframe) {
         case '1H':
-          visibilityRatio = isMobile ? 0.23 : 0.20;
+          visibilityRatio = isMobile ? 0.23 : 0.05;
           break;
         case '4H':
-          visibilityRatio = isMobile ? 0.20 : 0.18;
+          visibilityRatio = isMobile ? 0.20 : 0.045;
           break;
         case '8H':
-          visibilityRatio = isMobile ? 0.1878 : 0.16;
+          visibilityRatio = isMobile ? 0.1878 : 0.04;
           break;
         case '1D':
-          visibilityRatio = isMobile ? 0.17 : 0.15;
+          visibilityRatio = isMobile ? 0.17 : 0.0375;
           break;
         case '1W':
-          visibilityRatio = isMobile ? 0.15 : 0.12;
+          visibilityRatio = isMobile ? 0.15 : 0.03;
           break;
       }
 
