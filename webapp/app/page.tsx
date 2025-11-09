@@ -94,9 +94,9 @@ function HomeContent() {
       {/* Donation Banner */}
       <div className="relative bg-gradient-to-r from-[#0A1F12]/95 via-black/95 to-[#0A1F12]/95 border-b border-[#52C97D]/40 backdrop-blur-sm shadow-[0_4px_12px_rgba(82,201,125,0.15)] overflow-hidden">
         {/* Multi-layered animated glow overlay */}
-        <div className="absolute inset-0 opacity-40 animate-pulse-glow">
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#52C97D]/30 to-transparent"></div>
-          <div className="absolute inset-0 bg-gradient-to-r from-[#52C97D]/10 via-transparent to-[#52C97D]/10"></div>
+        <div className="absolute inset-0 opacity-60 animate-pulse-glow">
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#52C97D]/40 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-[#52C97D]/20 via-transparent to-[#52C97D]/20"></div>
         </div>
         <div className="w-full px-6 sm:px-8 flex flex-col items-center justify-center gap-2 text-center relative z-10">
           <p className="text-white/90 text-xs sm:text-sm pt-6 sm:pt-8">
