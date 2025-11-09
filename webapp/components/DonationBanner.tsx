@@ -23,7 +23,7 @@ export default function DonationBanner() {
           {/* Left: Message */}
           <div className="flex items-center gap-3 min-w-0 my-2">
             <span className="text-white/70 text-xs sm:text-sm whitespace-nowrap">
-              Support hosting costs
+              Buy Me A Coffee (Solana Network)
             </span>
             <span className="hidden sm:inline text-[#52C97D]/50">•</span>
 
