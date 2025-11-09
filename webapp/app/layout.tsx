@@ -6,7 +6,13 @@ export const metadata: Metadata = {
   title: 'ZERA Price History',
   description: 'Interactive price chart for ZERA token tracking complete history across M0N3Y → Raydium → Meteora migrations',
   icons: {
-    icon: '/favicon.ico',
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/favicon.ico', sizes: '16x16', type: 'image/x-icon' },
+      { url: '/favicon.ico', sizes: '32x32', type: 'image/x-icon' },
+    ],
+    shortcut: '/favicon.ico',
+    apple: '/favicon.ico',
   },
 };
 
