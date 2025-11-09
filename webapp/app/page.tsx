@@ -90,9 +90,9 @@ function HomeContent() {
   );
 
   return (
-    <main className="w-screen h-screen overflow-hidden flex flex-col">
+    <main className="w-screen h-screen overflow-hidden grid grid-rows-[auto_1fr]">
       {/* Donation Banner */}
-      <div className="flex-shrink-0 relative bg-gradient-to-r from-[#0A1F12]/95 via-black/95 to-[#0A1F12]/95 border-b border-[#52C97D]/40 backdrop-blur-sm shadow-[0_4px_12px_rgba(82,201,125,0.15)] overflow-hidden">
+      <div className="relative bg-gradient-to-r from-[#0A1F12]/95 via-black/95 to-[#0A1F12]/95 border-b border-[#52C97D]/40 backdrop-blur-sm shadow-[0_4px_12px_rgba(82,201,125,0.15)] overflow-hidden">
         {/* Multi-layered animated glow overlay */}
         <div className="absolute inset-0 opacity-40 animate-pulse-glow">
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#52C97D]/30 to-transparent"></div>
@@ -126,7 +126,7 @@ function HomeContent() {
       </div>
 
       {/* Mobile View */}
-      <div className="md:hidden w-full flex-1 relative">
+      <div className="md:hidden w-full h-full relative overflow-hidden">
         {/* Mobile Menu Toggle Button - Floating hamburger menu */}
         <button
           onClick={() => showMobileMenu ? closeMobileMenu() : setShowMobileMenu(true)}
@@ -245,34 +245,31 @@ function HomeContent() {
         </div>
       </div>
 
-      {/* Desktop View - Split Layout */}
-      <div className="hidden md:flex w-full flex-1">
-        {/* Left Section - Chart (90%) */}
-        <div className="flex-[9] h-full relative">
-          {/* Desktop Chart */}
-          <div className="w-full h-full">
-            {error && (
-              <div className="flex items-center justify-center h-full">
-                <div className="text-red">Error loading chart data</div>
-              </div>
-            )}
+      {/* Desktop View - Grid Layout */}
+      <div className="hidden md:grid md:grid-cols-[9fr_1fr] w-full h-full overflow-hidden">
+        {/* Left Section - Chart */}
+        <div className="h-full relative overflow-hidden">
+          {error && (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-red">Error loading chart data</div>
+            </div>
+          )}
 
-            {isLoading && (
-              <div className="flex items-center justify-center h-full">
-                <div className="text-textMuted">Loading...</div>
-              </div>
-            )}
+          {isLoading && (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-textMuted">Loading...</div>
+            </div>
+          )}
 
-            {!isLoading && !error && poolsData && (
-              <Chart poolsData={poolsData} timeframe={timeframe} />
-            )}
-          </div>
+          {!isLoading && !error && poolsData && (
+            <Chart poolsData={poolsData} timeframe={timeframe} />
+          )}
         </div>
 
-        {/* Right Section - Token Stats Sidebar (10%) */}
-        <div className="flex-[1] flex-shrink-0 h-full bg-gradient-to-b from-black via-black to-black border-l-2 border-dashed border-[#52C97D]/60 overflow-hidden flex flex-col" style={{ boxShadow: '-8px 0 8px rgba(82, 201, 125, 0.2)' }}>
+        {/* Right Section - Token Stats Sidebar */}
+        <div className="h-full bg-gradient-to-b from-black via-black to-black border-l-2 border-dashed border-[#52C97D]/60 grid grid-rows-[1fr_auto]" style={{ boxShadow: '-8px 0 8px rgba(82, 201, 125, 0.2)' }}>
           {/* Scrollable Content */}
-          <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+          <div className="overflow-y-auto overflow-x-hidden px-6 py-4 space-y-4">
             {/* Main Info Block */}
             <div className="stat-card-highlight">
               <div className="flex items-center gap-3 mb-3">
@@ -320,7 +317,7 @@ function HomeContent() {
           </div>
 
           {/* Bottom Fixed Section */}
-          <div className="flex-shrink-0 bg-black px-6 pt-4 pb-12">
+          <div className="bg-black px-6 pt-4 pb-12">
             {/* Decorative Divider */}
             <div className="pb-6">
               <div className="dashed-divider"></div>
