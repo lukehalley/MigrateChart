@@ -19,10 +19,9 @@ function HomeContent() {
   const initialTimeframe = urlTimeframe && validTimeframes.includes(urlTimeframe) ? urlTimeframe : '1D';
 
   const [timeframe, setTimeframeState] = useState<Timeframe>(initialTimeframe);
-  const [showCopied, setShowCopied] = useState(false);
-  const [isCopiedFadingOut, setIsCopiedFadingOut] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [isMenuClosing, setIsMenuClosing] = useState(false);
+  const [showCopied, setShowCopied] = useState(false);
 
   // Update URL when timeframe changes
   const setTimeframe = (newTimeframe: Timeframe) => {
@@ -39,6 +38,14 @@ function HomeContent() {
       setShowMobileMenu(false);
       setIsMenuClosing(false);
     }, 300); // Match animation duration
+  };
+
+  // Handle copy address
+  const solanaAddress = 'G9fXGu1LvtZesdQYjsWQTj1QeMpc97CJ6vWhX3rgeapb';
+  const handleCopy = () => {
+    navigator.clipboard.writeText(solanaAddress);
+    setShowCopied(true);
+    setTimeout(() => setShowCopied(false), 2000);
   };
 
   // Fetch data with SWR for automatic revalidation
@@ -83,9 +90,43 @@ function HomeContent() {
   );
 
   return (
-    <main className="w-screen h-screen overflow-hidden">
+    <main className="w-screen h-screen overflow-hidden flex flex-col">
+      {/* Donation Banner */}
+      <div className="flex-shrink-0 relative bg-gradient-to-r from-[#0A1F12]/95 via-black/95 to-[#0A1F12]/95 border-b border-[#52C97D]/40 backdrop-blur-sm shadow-[0_4px_12px_rgba(82,201,125,0.15)] overflow-hidden">
+        {/* Multi-layered animated glow overlay */}
+        <div className="absolute inset-0 opacity-40 animate-pulse-glow">
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#52C97D]/30 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-[#52C97D]/10 via-transparent to-[#52C97D]/10"></div>
+        </div>
+        <div className="w-full px-6 sm:px-8 flex flex-col items-center justify-center gap-2 text-center relative z-10">
+          <p className="text-white/90 text-xs sm:text-sm pt-6 sm:pt-8">
+            Support Hosting Costs Or Say Thanks
+          </p>
+          <div className="flex items-center justify-center gap-2 pb-6 sm:pb-8">
+            <code className="text-[#52C97D] text-[10px] sm:text-xs font-mono bg-[#0A1F12]/60 px-3 sm:px-4 py-1.5 rounded border border-[#52C97D]/30 truncate max-w-[180px] sm:max-w-none select-text">
+              {solanaAddress}
+            </code>
+            <button
+              onClick={handleCopy}
+              className="flex-shrink-0 p-1.5 sm:p-2 bg-[#52C97D]/10 hover:bg-[#52C97D]/20 border border-[#52C97D]/50 rounded transition-all group"
+              aria-label="Copy address"
+            >
+              {showCopied ? (
+                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#52C97D]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              ) : (
+                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#52C97D] group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* Mobile View */}
-      <div className="md:hidden w-full h-full relative">
+      <div className="md:hidden w-full flex-1 relative">
         {/* Mobile Menu Toggle Button - Floating hamburger menu */}
         <button
           onClick={() => showMobileMenu ? closeMobileMenu() : setShowMobileMenu(true)}
@@ -168,35 +209,16 @@ function HomeContent() {
                 <div className="dashed-divider w-24"></div>
               </div>
 
-              {/* Follow & Support Section */}
+              {/* Follow Section */}
               <div className="w-[85vw] max-w-[320px] mt-2">
-                {/* Follow */}
                 <a
                   href="https://x.com/Trenchooooor"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block text-center py-6 bg-[#52C97D]/5 hover:bg-[#52C97D]/15 transition-all cursor-pointer info-card-small mb-0"
+                  className="block text-center py-6 bg-[#52C97D]/5 hover:bg-[#52C97D]/15 transition-all cursor-pointer info-card-small"
                 >
                   <p className="text-[#52C97D] text-sm font-bold tracking-wider">FOLLOW</p>
                 </a>
-
-                {/* Divider */}
-                <div className="h-px bg-[#52C97D]/30"></div>
-
-                {/* Support */}
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText('G9fXGu1LvtZesdQYjsWQTj1QeMpc97CJ6vWhX3rgeapb');
-                    setShowCopied(true);
-                    setIsCopiedFadingOut(false);
-                    setTimeout(() => setIsCopiedFadingOut(true), 2500);
-                    setTimeout(() => setShowCopied(false), 3000);
-                    closeMobileMenu();
-                  }}
-                  className="w-full text-center py-6 bg-[#52C97D]/5 hover:bg-[#52C97D]/15 transition-all cursor-pointer info-card-small mb-0"
-                >
-                  <p className="text-[#52C97D] text-sm font-bold tracking-wider">SUPPORT</p>
-                </button>
               </div>
             </div>
           </div>
@@ -224,7 +246,7 @@ function HomeContent() {
       </div>
 
       {/* Desktop View - Split Layout */}
-      <div className="hidden md:flex w-full h-full">
+      <div className="hidden md:flex w-full flex-1">
         {/* Left Section - Chart (90%) */}
         <div className="flex-[9] h-full relative">
           {/* Desktop Chart */}
@@ -248,7 +270,7 @@ function HomeContent() {
         </div>
 
         {/* Right Section - Token Stats Sidebar (10%) */}
-        <div className="flex-[1] h-full bg-gradient-to-b from-black via-black to-black border-l-2 border-dashed border-[#52C97D]/60 overflow-hidden flex flex-col" style={{ boxShadow: '-8px 0 8px rgba(82, 201, 125, 0.2)' }}>
+        <div className="flex-[1] flex-shrink-0 h-full bg-gradient-to-b from-black via-black to-black border-l-2 border-dashed border-[#52C97D]/60 overflow-hidden flex flex-col" style={{ boxShadow: '-8px 0 8px rgba(82, 201, 125, 0.2)' }}>
           {/* Scrollable Content */}
           <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
             {/* Main Info Block */}
@@ -298,15 +320,14 @@ function HomeContent() {
           </div>
 
           {/* Bottom Fixed Section */}
-          <div className="bg-black px-6 pt-4 pb-12">
+          <div className="flex-shrink-0 bg-black px-6 pt-4 pb-12">
             {/* Decorative Divider */}
             <div className="pb-6">
               <div className="dashed-divider"></div>
             </div>
 
-            {/* Follow & Support Section */}
+            {/* Follow Section */}
             <div>
-              {/* Follow */}
               <a
                 href="https://x.com/Trenchooooor"
                 target="_blank"
@@ -315,49 +336,10 @@ function HomeContent() {
               >
                 <p className="text-[#52C97D] text-base font-bold tracking-wider">FOLLOW</p>
               </a>
-
-              {/* Divider */}
-              <div className="h-px bg-[#52C97D]/30"></div>
-
-              {/* Support */}
-              <button
-                onClick={() => {
-                  navigator.clipboard.writeText('G9fXGu1LvtZesdQYjsWQTj1QeMpc97CJ6vWhX3rgeapb');
-                  setShowCopied(true);
-                  setIsCopiedFadingOut(false);
-                  setTimeout(() => setIsCopiedFadingOut(true), 2500);
-                  setTimeout(() => setShowCopied(false), 3000);
-                }}
-                className="w-full text-center py-8 bg-[#52C97D]/5 hover:bg-[#52C97D]/15 transition-all cursor-pointer"
-              >
-                <p className="text-[#52C97D] text-base font-bold tracking-wider">SUPPORT</p>
-              </button>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Copy Success Popup */}
-      {showCopied && (
-        <div className="fixed inset-x-0 top-4 md:top-8 z-[100] flex justify-center px-4 pointer-events-none">
-          <div
-            className={`transition-opacity duration-500 ${isCopiedFadingOut ? 'opacity-0' : 'opacity-100'}`}
-            style={{
-              background: 'rgba(0, 0, 0, 0.95)',
-              backdropFilter: 'blur(12px)',
-              WebkitBackdropFilter: 'blur(12px)',
-              border: '2px solid #52C97D',
-              borderRadius: '0',
-              padding: '12px 20px',
-              boxShadow: '0 0 16px rgba(82, 201, 125, 0.4), 0 0 32px rgba(82, 201, 125, 0.2)',
-            }}
-          >
-            <p className="text-[#52C97D] text-xs md:text-sm font-semibold whitespace-nowrap">
-              ✓ Solana Address Copied!
-            </p>
-          </div>
-        </div>
-      )}
     </main>
   );
 }
