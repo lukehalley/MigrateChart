@@ -212,6 +212,33 @@ export function filterByMinimumDistance<T extends { time: number }>(
 // DexScreener API for token statistics
 const DEXSCREENER_API = 'https://api.dexscreener.com/latest/dex';
 
+// Jupiter API for holder count
+const JUPITER_HOLDERS_API = 'https://datapi.jup.ag/v1/holders';
+
+export async function fetchHolderCount(tokenAddress: string): Promise<number | undefined> {
+  try {
+    const data = await rateLimiter.execute('jupiter', async () => {
+      const response = await fetch(`${JUPITER_HOLDERS_API}/${tokenAddress}`, {
+        next: { revalidate: 300 }, // Cache for 5 minutes
+      });
+
+      if (!response.ok) {
+        const error: any = new Error(`HTTP error! status: ${response.status}`);
+        error.status = response.status;
+        throw error;
+      }
+
+      return response.json();
+    });
+
+    // The API returns { count: number }
+    return data?.count;
+  } catch (error) {
+    console.error(`Error fetching holder count for token ${tokenAddress}:`, error);
+    return undefined;
+  }
+}
+
 export async function fetchTokenStats(poolAddress: string): Promise<TokenStats | null> {
   try {
     const data = await rateLimiter.execute('dexscreener', async () => {
@@ -234,12 +261,16 @@ export async function fetchTokenStats(poolAddress: string): Promise<TokenStats |
       return null;
     }
 
+    // Fetch holder count for ZERA token
+    const holderCount = await fetchHolderCount(ZERA_TOKEN);
+
     return {
       price: parseFloat(pair.priceUsd || '0'),
       priceChange24h: parseFloat(pair.priceChange?.h24 || '0'),
       volume24h: parseFloat(pair.volume?.h24 || '0'),
       marketCap: parseFloat(pair.fdv || pair.marketCap || '0'),
       liquidity: parseFloat(pair.liquidity?.usd || '0'),
+      holders: holderCount,
       buyCount24h: pair.txns?.h24?.buys,
       sellCount24h: pair.txns?.h24?.sells,
       twitter: pair.info?.socials?.find((s: any) => s.type === 'twitter')?.url,

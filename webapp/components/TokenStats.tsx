@@ -25,6 +25,7 @@ export default function TokenStats({ stats, isLoading }: TokenStatsProps) {
     if (stats.liquidity !== prevStats.current.liquidity) updated.add('liquidity');
     if (stats.marketCap !== prevStats.current.marketCap) updated.add('marketCap');
     if (stats.volume24h !== prevStats.current.volume24h) updated.add('volume');
+    if (stats.holders !== prevStats.current.holders) updated.add('holders');
     if (stats.buyCount24h !== prevStats.current.buyCount24h) updated.add('buys');
     if (stats.sellCount24h !== prevStats.current.sellCount24h) updated.add('sells');
 
@@ -46,6 +47,18 @@ export default function TokenStats({ stats, isLoading }: TokenStatsProps) {
       return `$${(num / 1_000).toFixed(decimals)}K`;
     } else {
       return `$${num.toFixed(decimals)}`;
+    }
+  };
+
+  const formatCount = (num: number, decimals: number = 2): string => {
+    if (num >= 1_000_000_000) {
+      return `${(num / 1_000_000_000).toFixed(decimals)}B`;
+    } else if (num >= 1_000_000) {
+      return `${(num / 1_000_000).toFixed(decimals)}M`;
+    } else if (num >= 1_000) {
+      return `${(num / 1_000).toFixed(decimals)}K`;
+    } else {
+      return `${num.toFixed(0)}`;
     }
   };
 
@@ -150,6 +163,23 @@ export default function TokenStats({ stats, isLoading }: TokenStatsProps) {
       <div className="py-3">
         <div className="dashed-divider"></div>
       </div>
+
+      {/* Holders Card */}
+      {stats.holders !== undefined && (
+        <>
+        <div className="stat-card">
+          <p className="text-white text-[11px] font-medium mb-2">HOLDERS</p>
+          <p className={`text-white text-lg font-bold select-text ${flashingFields.has('holders') ? 'flash-update' : ''}`}>
+            {formatCount(stats.holders)}
+          </p>
+        </div>
+
+        {/* Divider */}
+        <div className="py-3">
+          <div className="dashed-divider"></div>
+        </div>
+        </>
+      )}
 
       {/* Transactions Card */}
       {(stats.buyCount24h || stats.sellCount24h) && (
