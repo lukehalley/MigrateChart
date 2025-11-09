@@ -80,6 +80,7 @@ export interface TokenStats {
   price: number;
   priceChange24h: number;
   volume24h: number;
+  fees24h?: number;
   marketCap: number;
   liquidity: number;
   holders?: number;

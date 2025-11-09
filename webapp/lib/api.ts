@@ -264,10 +264,14 @@ export async function fetchTokenStats(poolAddress: string): Promise<TokenStats |
     // Fetch holder count for ZERA token
     const holderCount = await fetchHolderCount(ZERA_TOKEN);
 
+    const volume24h = parseFloat(pair.volume?.h24 || '0');
+    const fees24h = volume24h * 0.01; // 1% fee on volume
+
     return {
       price: parseFloat(pair.priceUsd || '0'),
       priceChange24h: parseFloat(pair.priceChange?.h24 || '0'),
-      volume24h: parseFloat(pair.volume?.h24 || '0'),
+      volume24h,
+      fees24h,
       marketCap: parseFloat(pair.fdv || pair.marketCap || '0'),
       liquidity: parseFloat(pair.liquidity?.usd || '0'),
       holders: holderCount,

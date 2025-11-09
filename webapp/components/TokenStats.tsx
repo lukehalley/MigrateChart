@@ -25,6 +25,7 @@ export default function TokenStats({ stats, isLoading }: TokenStatsProps) {
     if (stats.liquidity !== prevStats.current.liquidity) updated.add('liquidity');
     if (stats.marketCap !== prevStats.current.marketCap) updated.add('marketCap');
     if (stats.volume24h !== prevStats.current.volume24h) updated.add('volume');
+    if (stats.fees24h !== prevStats.current.fees24h) updated.add('fees');
     if (stats.holders !== prevStats.current.holders) updated.add('holders');
     if (stats.buyCount24h !== prevStats.current.buyCount24h) updated.add('buys');
     if (stats.sellCount24h !== prevStats.current.sellCount24h) updated.add('sells');
@@ -163,6 +164,33 @@ export default function TokenStats({ stats, isLoading }: TokenStatsProps) {
       <div className="py-3">
         <div className="dashed-divider"></div>
       </div>
+
+      {/* Fees 24H Card */}
+      {stats.fees24h !== undefined && (
+        <>
+        <div className="stat-card">
+          <p className="text-white text-[11px] font-medium mb-2">FEES (24H)</p>
+          <p className={`text-white text-lg font-bold select-text mb-2 ${flashingFields.has('fees') ? 'flash-update' : ''}`}>
+            {formatNumber(stats.fees24h)}
+          </p>
+          <div className="text-[10px] text-gray-400 space-y-0.5">
+            <div className="flex justify-between">
+              <span>Project (80%):</span>
+              <span className="text-white font-medium">{formatNumber(stats.fees24h * 0.8)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Meteora (20%):</span>
+              <span className="text-white font-medium">{formatNumber(stats.fees24h * 0.2)}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div className="py-3">
+          <div className="dashed-divider"></div>
+        </div>
+        </>
+      )}
 
       {/* Holders Card */}
       {stats.holders !== undefined && (
