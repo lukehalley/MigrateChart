@@ -1,6 +1,6 @@
 'use client';
 
-import React, { Suspense, useState } from 'react';
+import React, { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
 import Chart from '@/components/Chart';
@@ -33,30 +33,29 @@ function HomeContent() {
     }
   };
 
-  // Chart display preferences - read from localStorage synchronously to prevent hydration mismatch
-  const [displayMode, setDisplayMode] = useState<'price' | 'marketCap'>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = SafeStorage.getItem('chartDisplayMode') as 'price' | 'marketCap' | null;
-      return saved || 'price';
-    }
-    return 'price';
-  });
+  // Chart display preferences - initialize with defaults to prevent hydration mismatch
+  // Then sync with localStorage after mount
+  const [displayMode, setDisplayMode] = useState<'price' | 'marketCap'>('price');
+  const [showVolume, setShowVolume] = useState<boolean>(true);
+  const [showMigrationLines, setShowMigrationLines] = useState<boolean>(true);
 
-  const [showVolume, setShowVolume] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = SafeStorage.getItem('chartShowVolume');
-      return saved !== null ? saved !== 'false' : true;
+  // Sync with localStorage after component mounts (client-side only)
+  useEffect(() => {
+    const savedDisplayMode = SafeStorage.getItem('chartDisplayMode') as 'price' | 'marketCap' | null;
+    if (savedDisplayMode) {
+      setDisplayMode(savedDisplayMode);
     }
-    return true;
-  });
 
-  const [showMigrationLines, setShowMigrationLines] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = SafeStorage.getItem('chartShowMigrationLines');
-      return saved !== null ? saved !== 'false' : true;
+    const savedShowVolume = SafeStorage.getItem('chartShowVolume');
+    if (savedShowVolume !== null) {
+      setShowVolume(savedShowVolume !== 'false');
     }
-    return true;
-  });
+
+    const savedShowMigrationLines = SafeStorage.getItem('chartShowMigrationLines');
+    if (savedShowMigrationLines !== null) {
+      setShowMigrationLines(savedShowMigrationLines !== 'false');
+    }
+  }, []);
 
   const handleDisplayModeChange = (mode: 'price' | 'marketCap') => {
     setDisplayMode(mode);
