@@ -82,7 +82,7 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D' }: Token
     return `${sign}${percent.toFixed(2)}%`;
   };
 
-  if (isLoading) {
+  if (isLoading || !stats) {
     return (
       <div className="animate-pulse space-y-6">
         <div className="stat-card">
@@ -90,14 +90,6 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D' }: Token
           <div className="h-8 bg-gray-700 mb-2"></div>
           <div className="h-4 bg-gray-700"></div>
         </div>
-      </div>
-    );
-  }
-
-  if (!stats) {
-    return (
-      <div className="stat-card">
-        <p className="text-white text-xs text-center">Unable to load stats</p>
       </div>
     );
   }

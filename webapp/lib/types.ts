@@ -66,14 +66,13 @@ export const MIGRATION_DATES = {
   },
 } as const;
 
-export type Timeframe = '1H' | '4H' | '8H' | '1D' | '1W' | 'MAX';
+export type Timeframe = '1H' | '4H' | '8H' | '1D' | 'MAX';
 
 export const TIMEFRAME_TO_JUPITER_INTERVAL: Record<Timeframe, string> = {
   '1H': '1_HOUR',
   '4H': '4_HOUR',
   '8H': '8_HOUR',
   '1D': '1_DAY',
-  '1W': '1_WEEK',
   'MAX': '1_DAY', // MAX uses 1 day intervals for complete history
 } as const;
 

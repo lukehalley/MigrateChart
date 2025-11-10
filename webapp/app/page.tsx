@@ -16,13 +16,14 @@ function HomeContent() {
 
   // Get timeframe from URL or default to '1D'
   const urlTimeframe = searchParams.get('timeframe') as Timeframe | null;
-  const validTimeframes: Timeframe[] = ['1H', '4H', '8H', '1D', '1W', 'MAX'];
+  const validTimeframes: Timeframe[] = ['1H', '4H', '8H', '1D', 'MAX'];
   const initialTimeframe = urlTimeframe && validTimeframes.includes(urlTimeframe) ? urlTimeframe : '1D';
 
   const [timeframe, setTimeframeState] = useState<Timeframe>(initialTimeframe);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [isMenuClosing, setIsMenuClosing] = useState(false);
   const [showCopied, setShowCopied] = useState(false);
+  const [mobileMenuTab, setMobileMenuTab] = useState<'settings' | 'about'>('settings');
 
   // Chart display preferences - initialize with defaults to prevent hydration mismatch
   const [displayMode, setDisplayMode] = useState<'price' | 'marketCap'>('price');
@@ -71,6 +72,7 @@ function HomeContent() {
     setTimeout(() => {
       setShowMobileMenu(false);
       setIsMenuClosing(false);
+      setMobileMenuTab('settings'); // Reset to settings tab
     }, 300); // Match animation duration
   };
 
@@ -140,17 +142,21 @@ function HomeContent() {
       '4H': 4 * 3600,
       '8H': 8 * 3600,
       '1D': 24 * 3600,
-      '1W': 7 * 24 * 3600,
       'MAX': now - data[0].time, // From first data point to now
     };
 
     const duration = timeframeSeconds[timeframe];
     const startTime = now - duration;
 
-    // Filter data for selected timeframe
-    const timeframeData = data.filter(d => d.time >= startTime);
+    // Filter data for selected timeframe and sort by time ascending
+    const timeframeData = data
+      .filter(d => d.time >= startTime)
+      .sort((a, b) => a.time - b.time);
 
     if (timeframeData.length === 0) return tokenStats;
+
+    // If we only have one data point, return tokenStats 24h change
+    if (timeframeData.length === 1) return tokenStats;
 
     // Calculate volume for timeframe
     const volumeForTimeframe = timeframeData.reduce((sum, d) => sum + (d.volume || 0), 0);
@@ -158,7 +164,7 @@ function HomeContent() {
     // Calculate price change for timeframe
     const firstPrice = timeframeData[0].close;
     const lastPrice = timeframeData[timeframeData.length - 1].close;
-    const priceChangePercent = ((lastPrice - firstPrice) / firstPrice) * 100;
+    const priceChangePercent = firstPrice !== 0 ? ((lastPrice - firstPrice) / firstPrice) * 100 : 0;
 
     // Calculate fees based on volume
     const feesForTimeframe = volumeForTimeframe * 0.01; // 1% fee
@@ -233,9 +239,37 @@ function HomeContent() {
 
           {/* Popup Content */}
           <div className={`md:hidden fixed inset-0 z-50 ${isMenuClosing ? 'animate-fade-out' : 'animate-fade-in'} overflow-y-auto flex items-center justify-center p-4 pointer-events-none`}>
-            <div className="flex flex-col items-center mt-16 py-8 px-4 pointer-events-auto">
+            <div className="flex flex-col items-center mt-16 pointer-events-auto w-[85vw] max-w-[320px]">
+              {/* Tab Navigation */}
+              <div className="w-full bg-gradient-to-r from-[#0A1F12] via-[#1F6338]/20 to-[#0A1F12] border-[3px] border-[#52C97D]/60 border-b-0 flex">
+                <button
+                  onClick={() => setMobileMenuTab('settings')}
+                  className={`flex-1 py-4 text-sm font-bold transition-all ${
+                    mobileMenuTab === 'settings'
+                      ? 'text-[#52C97D] bg-black/50'
+                      : 'text-white/60 hover:text-white/80'
+                  }`}
+                >
+                  SETTINGS
+                </button>
+                <button
+                  onClick={() => setMobileMenuTab('about')}
+                  className={`flex-1 py-4 text-sm font-bold transition-all ${
+                    mobileMenuTab === 'about'
+                      ? 'text-[#52C97D] bg-black/50'
+                      : 'text-white/60 hover:text-white/80'
+                  }`}
+                >
+                  ABOUT
+                </button>
+              </div>
+
+              {/* Tab Content */}
+              <div className="w-full max-h-[70vh] overflow-y-auto bg-gradient-to-b from-[#0A1F12] to-black border-[3px] border-[#52C97D]/60 py-4 px-3" style={{ WebkitOverflowScrolling: 'touch' }}>
+                {mobileMenuTab === 'settings' && (
+                  <>
               {/* Main Info Card */}
-              <div className="info-card-small w-[85vw] max-w-[320px]">
+              <div className="info-card-small">
                 <a
                   href="https://zeralabs.org"
                   target="_blank"
@@ -278,14 +312,14 @@ function HomeContent() {
               </div>
 
               {/* Decorative Divider */}
-              <div className="flex items-center justify-center py-6">
+              <div className="flex items-center justify-center py-3">
                 <div className="dashed-divider w-24"></div>
               </div>
 
               {/* Timeframe Toggle Card */}
-              <div className="info-card-small w-[85vw] max-w-[320px]">
-                <div className="py-4 px-3">
-                  <p className="text-white text-[10px] mb-4 text-center">Timeframe</p>
+              <div className="info-card-small">
+                <div className="py-3 px-2">
+                  <p className="text-white text-[10px] mb-2 text-center">Timeframe</p>
                   <TimeframeToggle
                     currentTimeframe={timeframe}
                     onTimeframeChange={(newTimeframe) => {
@@ -297,13 +331,13 @@ function HomeContent() {
               </div>
 
               {/* Decorative Divider */}
-              <div className="flex items-center justify-center py-6">
+              <div className="flex items-center justify-center py-3">
                 <div className="dashed-divider w-24"></div>
               </div>
 
               {/* Chart Controls Card */}
-              <div className="info-card-small w-[85vw] max-w-[320px]">
-                <div className="py-4 px-3">
+              <div className="info-card-small">
+                <div className="py-3 px-2">
                   <ChartControls
                     displayMode={displayMode}
                     onDisplayModeChange={handleDisplayModeChange}
@@ -316,27 +350,27 @@ function HomeContent() {
               </div>
 
               {/* Decorative Divider */}
-              <div className="flex items-center justify-center py-6">
+              <div className="flex items-center justify-center py-3">
                 <div className="dashed-divider w-24"></div>
               </div>
 
               {/* Token Stats */}
-              <div className="w-[85vw] max-w-[320px]">
+              <div>
                 <TokenStats stats={timeframeStats || null} isLoading={isStatsLoading} timeframe={timeframe} />
               </div>
 
               {/* Decorative Divider */}
-              <div className="flex items-center justify-center py-6">
+              <div className="flex items-center justify-center py-3">
                 <div className="dashed-divider w-24"></div>
               </div>
 
               {/* Follow Section */}
-              <div className="w-[85vw] max-w-[320px] mt-2">
+              <div>
                 <a
                   href="https://x.com/Trenchooooor"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 py-12 bg-black/85 hover:bg-[#52C97D]/15 transition-all cursor-pointer backdrop-blur-xl"
+                  className="flex items-center justify-center gap-2 py-6 bg-black/85 hover:bg-[#52C97D]/15 transition-all cursor-pointer backdrop-blur-xl"
                   style={{ boxShadow: '0 0 12px rgba(31, 99, 56, 0.3), 0 0 24px rgba(31, 99, 56, 0.15)' }}
                 >
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -344,6 +378,87 @@ function HomeContent() {
                   </svg>
                   <p className="text-[#52C97D] text-base font-bold tracking-wider">@Trenchooooor</p>
                 </a>
+              </div>
+                  </>
+                )}
+
+                {mobileMenuTab === 'about' && (
+                  <div style={{ padding: '0 20px' }}>
+                    {/* What You're Viewing */}
+                    <div style={{ marginBottom: '16px' }}>
+                      <h3 style={{ marginBottom: '8px' }} className="text-[#52C97D] text-base font-bold tracking-wider uppercase">What You're Viewing</h3>
+                      <p style={{ paddingLeft: '8px', lineHeight: '1.6', margin: 0 }} className="text-white/90 text-sm">
+                        The complete price history of the ZERA token from its launch on pump.fun through all pool migrations.
+                      </p>
+                    </div>
+
+                    {/* Divider */}
+                    <div style={{ margin: '16px 0' }} className="border-t-2 border-[#52C97D]/30"></div>
+
+                    {/* Token Journey */}
+                    <div style={{ marginBottom: '16px' }}>
+                      <h3 style={{ marginBottom: '12px' }} className="text-[#52C97D] text-base font-bold tracking-wider uppercase">Token Journey</h3>
+                      <div style={{ padding: '16px 20px', marginBottom: '8px' }} className="flex items-center justify-center gap-4 bg-black/50 border-2 border-[#52C97D]/40 rounded-lg">
+                        <span className="text-white text-sm font-medium">M0N3Y</span>
+                        <svg className="w-5 h-5 text-[#52C97D]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                        </svg>
+                        <span className="text-white text-sm font-medium">Raydium</span>
+                        <svg className="w-5 h-5 text-[#52C97D]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                        </svg>
+                        <span className="text-[#52C97D] text-sm font-bold">Meteora</span>
+                      </div>
+                      <p style={{ paddingLeft: '8px', lineHeight: '1.6', margin: 0 }} className="text-white/70 text-xs">
+                        ZERA started as M0N3Y on pump.fun, then migrated to Raydium, and finally to Meteora (current pool).
+                      </p>
+                    </div>
+
+                    {/* Divider */}
+                    <div style={{ margin: '16px 0' }} className="border-t-2 border-[#52C97D]/30"></div>
+
+                    {/* How To Use */}
+                    <div style={{ marginBottom: '16px' }}>
+                      <h3 style={{ marginBottom: '12px' }} className="text-[#52C97D] text-base font-bold tracking-wider uppercase">How To Use</h3>
+                      <div style={{ display: 'grid', gap: '8px' }}>
+                        <div style={{ padding: '12px 16px' }} className="flex items-start gap-3 bg-black/50 border-2 border-[#52C97D]/30 rounded-lg hover:border-[#52C97D]/50 transition-all">
+                          <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[#52C97D] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs">Select timeframes (1H to MAX) from the sidebar</span>
+                        </div>
+                        <div style={{ padding: '12px 16px' }} className="flex items-start gap-3 bg-black/50 border-2 border-[#52C97D]/30 rounded-lg hover:border-[#52C97D]/50 transition-all">
+                          <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[#52C97D] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                          </svg>
+                          <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs">Zoom: Mouse wheel or pinch on mobile</span>
+                        </div>
+                        <div style={{ padding: '12px 16px' }} className="flex items-start gap-3 bg-black/50 border-2 border-[#52C97D]/30 rounded-lg hover:border-[#52C97D]/50 transition-all">
+                          <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[#52C97D] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11l5-5m0 0l5 5m-5-5v12" />
+                          </svg>
+                          <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs">Pan: Click and drag or swipe</span>
+                        </div>
+                        <div style={{ padding: '12px 16px' }} className="flex items-start gap-3 bg-black/50 border-2 border-[#52C97D]/30 rounded-lg hover:border-[#52C97D]/50 transition-all">
+                          <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[#52C97D] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                          </svg>
+                          <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs">Migration events shown as vertical green lines</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Divider */}
+                    <div style={{ margin: '16px 0' }} className="border-t-2 border-[#52C97D]/30"></div>
+
+                    {/* Data Sources */}
+                    <div style={{ padding: '12px 16px' }} className="text-center bg-black/60 border-2 border-[#52C97D]/40 rounded-lg">
+                      <p style={{ margin: 0 }} className="text-white/60 text-xs">
+                        <span className="text-[#52C97D] font-bold">Data sources:</span> Jupiter API, DexScreener, GeckoTerminal
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -406,7 +521,7 @@ function HomeContent() {
         {/* Right Section - Token Stats Sidebar */}
         <div className="h-full bg-gradient-to-b from-black via-black to-black border-l-2 border-dashed border-[#52C97D]/60 flex flex-col min-h-0" style={{ boxShadow: '-8px 0 8px rgba(82, 201, 125, 0.2)' }}>
           {/* Scrollable Content */}
-          <div className="flex-1 overflow-y-auto overflow-x-hidden px-6 py-4 space-y-4 min-h-0">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-3 space-y-3 min-h-0">
             {/* Main Info Block */}
             <div className="stat-card-highlight">
               <a
@@ -451,13 +566,13 @@ function HomeContent() {
             </div>
 
             {/* Decorative Divider */}
-            <div className="py-4">
+            <div className="py-2">
               <div className="dashed-divider"></div>
             </div>
 
             {/* Timeframe Toggle */}
             <div className="stat-card">
-              <p className="text-white text-[11px] font-medium mb-3 text-center">Timeframe</p>
+              <p className="text-white text-[11px] font-medium mb-2 text-center">Timeframe</p>
               <TimeframeToggle
                 currentTimeframe={timeframe}
                 onTimeframeChange={setTimeframe}
@@ -465,7 +580,7 @@ function HomeContent() {
             </div>
 
             {/* Decorative Divider */}
-            <div className="py-4">
+            <div className="py-2">
               <div className="dashed-divider"></div>
             </div>
 
@@ -480,7 +595,7 @@ function HomeContent() {
             />
 
             {/* Decorative Divider */}
-            <div className="py-4">
+            <div className="py-2">
               <div className="dashed-divider"></div>
             </div>
 
@@ -488,13 +603,13 @@ function HomeContent() {
             <TokenStats stats={timeframeStats || null} isLoading={isStatsLoading} timeframe={timeframe} />
 
             {/* Extra spacing before sticky button */}
-            <div className="h-4"></div>
+            <div className="h-2"></div>
           </div>
 
           {/* Sticky Bottom Section */}
-          <div className="flex-shrink-0 bg-black px-6 pt-3 pb-4 border-t-2 border-dashed border-[#52C97D]/30">
+          <div className="flex-shrink-0 bg-black px-4 pt-2 pb-3 border-t-2 border-dashed border-[#52C97D]/30">
             {/* Decorative Divider */}
-            <div className="pb-4">
+            <div className="pb-2">
               <div className="dashed-divider"></div>
             </div>
 
@@ -504,7 +619,7 @@ function HomeContent() {
                 href="https://x.com/Trenchooooor"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 py-8 bg-black/85 hover:bg-[#52C97D]/15 transition-all cursor-pointer backdrop-blur-xl"
+                className="flex items-center justify-center gap-2 py-5 bg-black/85 hover:bg-[#52C97D]/15 transition-all cursor-pointer backdrop-blur-xl"
                 style={{ boxShadow: '0 0 12px rgba(31, 99, 56, 0.3), 0 0 24px rgba(31, 99, 56, 0.15)' }}
               >
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

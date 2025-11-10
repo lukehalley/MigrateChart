@@ -16,6 +16,7 @@ interface ChartProps {
 export default function Chart({ poolsData, timeframe, displayMode, showVolume, showMigrationLines }: ChartProps) {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
+  const modalContentRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showAbout, setShowAbout] = useState(false);
   const [isAboutClosing, setIsAboutClosing] = useState(false);
@@ -27,6 +28,13 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       setIsAboutClosing(false);
     }, 300); // Match animation duration
   };
+
+  // Reset scroll position when modal opens
+  useEffect(() => {
+    if (showAbout && modalContentRef.current) {
+      modalContentRef.current.scrollTop = 0;
+    }
+  }, [showAbout]);
 
   useEffect(() => {
     if (!chartContainerRef.current || poolsData.length === 0) return;
@@ -64,8 +72,8 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       rightPriceScale: {
         borderColor: '#1F6338',  // Deep green border
         scaleMargins: {
-          top: 0.15,    // 15% padding - more breathing room
-          bottom: 0.15, // 15% padding - more breathing room
+          top: isMobile ? 0.45 : 0.15,    // Mobile: 8% padding, Desktop: 15% padding
+          bottom: isMobile ? 0.45 : 0.15, // Tighter margins on mobile to maximize chart space
         },
         autoScale: true,  // Disable auto-scale to allow manual price scaling
         mode: 0,  // Normal price scale
@@ -192,6 +200,8 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
             type: 'volume',
           },
           priceScaleId: 'volume',
+          lastValueVisible: false,
+          priceLineVisible: false,
         });
 
         const volumeData = filteredData
@@ -211,9 +221,10 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
     if (showVolume) {
       chart.priceScale('volume').applyOptions({
         scaleMargins: {
-          top: 0.8, // Volume takes bottom 20% of chart
+          top: isMobile ? 0.85 : 0.8, // Mobile: 15% for volume, Desktop: 20% for volume
           bottom: 0,
         },
+        visible: false, // Hide volume axis labels
       });
     }
 
@@ -276,59 +287,63 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       const firstTime = sortedData[0].time;
       const lastTime = sortedData[totalPoints - 1].time;
 
-      // Calculate how much data to show based on device and timeframe
-      // Mobile: show ~17-23% of data, Desktop: show ~3-5% of data (4x zoom)
-      // Adjust based on timeframe for better initial view - zoomed towards end for migration clarity
-      let visibilityRatio = isMobile ? 0.17 : 0.0375;
+      let fromTime: number;
 
-      // Adjust ratio based on timeframe - shorter timeframes show more of the data
-      switch(timeframe) {
-        case '1H':
-          visibilityRatio = isMobile ? 0.23 : 0.05;
-          break;
-        case '4H':
-          visibilityRatio = isMobile ? 0.20 : 0.045;
-          break;
-        case '8H':
-          visibilityRatio = isMobile ? 0.1878 : 0.04;
-          break;
-        case '1D':
-          visibilityRatio = isMobile ? 0.17 : 0.0375;
-          break;
-        case '1W':
-          visibilityRatio = isMobile ? 0.15 : 0.03;
-          break;
-        case 'MAX':
-          visibilityRatio = 1.0; // Show all data for MAX timeframe
-          break;
+      // For MAX timeframe, show all data
+      // For all other timeframes, default to ~30 days of data
+      if (timeframe === 'MAX') {
+        fromTime = firstTime;
+
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Chart Zoom Parameters (MAX):', {
+            device: isMobile ? 'MOBILE' : 'DESKTOP',
+            timeframe,
+            mode: 'FULL_HISTORY',
+            totalDataPoints: totalPoints,
+            visibleDataPoints: totalPoints,
+            daysCovered: ((lastTime - firstTime) / 86400).toFixed(1),
+          });
+        }
+      } else {
+        // Default to 60 days of data for initial view
+        const SIXTY_DAYS_SECONDS = 60 * 24 * 60 * 60; // 5,184,000 seconds
+        const sixtyDaysAgo = lastTime - SIXTY_DAYS_SECONDS;
+
+        // Handle edge case: if token is less than 60 days old, show all available data
+        fromTime = Math.max(sixtyDaysAgo, firstTime);
+
+        const visibleTimeRange = lastTime - fromTime;
+        const daysCovered = visibleTimeRange / 86400;
+
+        // Estimate visible points based on timeframe
+        const approxPointsPerDay = totalPoints / ((lastTime - firstTime) / 86400);
+        const estimatedVisiblePoints = Math.round(approxPointsPerDay * daysCovered);
+
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Chart Zoom Parameters (60-Day Default):', {
+            device: isMobile ? 'MOBILE' : 'DESKTOP',
+            timeframe,
+            mode: '60_DAY_WINDOW',
+            totalDataPoints: totalPoints,
+            estimatedVisiblePoints,
+            daysCovered: daysCovered.toFixed(1),
+            tokenAgeDays: ((lastTime - firstTime) / 86400).toFixed(1),
+            isLessThan60Days: fromTime === firstTime,
+            barSpacing: isMobile ? 3 : 12,
+            rightOffset: isMobile ? 10 : 50,
+          });
+        }
       }
 
-      const timeRange = lastTime - firstTime;
-      const visibleTimeRange = timeRange * visibilityRatio;
-      const fromTime = lastTime - visibleTimeRange;
-
-      // Log parameters for local dev tuning
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Chart Zoom Parameters:', {
-          device: isMobile ? 'MOBILE' : 'DESKTOP',
-          timeframe,
-          visibilityRatio,
-          totalDataPoints: totalPoints,
-          visibleDataPoints: Math.round(totalPoints * visibilityRatio),
-          barSpacing: isMobile ? 2 : 12,
-          rightOffset: isMobile ? 10 : 50,
-        });
-      }
-
-      // Set the visible range to zoom into the most recent data
+      // Set the visible range to show the calculated window
       // The rightOffset in timeScale options will add space on the right
+      // Note: We DON'T call fitContent() after this because it would override
+      // our custom visible range and show all data. The autoScale: true setting
+      // on rightPriceScale will automatically adjust the price axis for visible data.
       chart.timeScale().setVisibleRange({
         from: fromTime as Time,
         to: lastTime as Time,
       });
-
-      // Fit price range to visible data initially
-      chart.timeScale().fitContent();
     }
 
     return () => {
@@ -356,10 +371,10 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         </div>
       )}
 
-      {/* About Info Button - Top Left */}
+      {/* About Info Button - Top Left (Desktop only) */}
       <button
         onClick={() => setShowAbout(!showAbout)}
-        className="absolute top-6 left-6 md:top-8 md:left-8 z-10 w-9 h-9 md:w-10 md:h-10 flex items-center justify-center bg-black/90 backdrop-blur-sm border-2 border-[#52C97D]/50 rounded-full hover:bg-[#52C97D]/20 hover:border-[#52C97D] transition-all shadow-[0_0_12px_rgba(82,201,125,0.3)]"
+        className="hidden md:flex absolute top-6 left-6 md:top-8 md:left-8 z-10 w-9 h-9 md:w-10 md:h-10 items-center justify-center bg-black/90 backdrop-blur-sm border-2 border-[#52C97D]/50 rounded-full hover:bg-[#52C97D]/20 hover:border-[#52C97D] transition-all shadow-[0_0_12px_rgba(82,201,125,0.3)]"
         aria-label="About this chart"
       >
         <svg className="w-5 h-5 md:w-5 md:h-5 text-[#52C97D]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -382,7 +397,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
               {/* Header */}
               <div
                 style={{ padding: '24px 36px' }}
-                className="relative bg-gradient-to-r from-[#0A1F12] via-[#1F6338]/20 to-[#0A1F12] border-b-[3px] border-[#52C97D]/50"
+                className="sticky top-0 z-10 bg-gradient-to-r from-[#0A1F12] via-[#1F6338]/20 to-[#0A1F12] border-b-[3px] border-[#52C97D]/50"
               >
                 <div className="flex items-center justify-between">
                   <h2 style={{ margin: 0 }} className="text-[#52C97D] text-xl md:text-2xl font-bold tracking-wide">About This Chart</h2>
@@ -399,7 +414,14 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
               </div>
 
               {/* Content */}
-              <div style={{ padding: '32px 40px' }} className="max-h-[75vh] overflow-y-auto">
+              <div
+                ref={modalContentRef}
+                style={{
+                  padding: '32px 40px',
+                  WebkitOverflowScrolling: 'touch' // Enable smooth scrolling on Safari
+                }}
+                className="max-h-[75vh] overflow-y-auto"
+              >
                 {/* What You're Viewing */}
                 <div style={{ marginBottom: '24px' }}>
                   <h3 style={{ marginBottom: '12px' }} className="text-[#52C97D] text-base md:text-lg font-bold tracking-wider uppercase">What You're Viewing</h3>
