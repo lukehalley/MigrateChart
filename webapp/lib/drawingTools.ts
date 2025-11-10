@@ -109,12 +109,59 @@ class DrawingPaneView implements ISeriesPrimitivePaneView {
     const y1 = this._series.priceToCoordinate(line.point1.price);
     const y2 = this._series.priceToCoordinate(line.point2.price);
 
+    // Prices must be valid
+    if (y1 === null || y2 === null) return;
+
     // Get time scale from the chart
     const timeScale = this._chart.timeScale();
-    const x1 = timeScale.timeToCoordinate(line.point1.time);
-    const x2 = timeScale.timeToCoordinate(line.point2.time);
+    let x1 = timeScale.timeToCoordinate(line.point1.time);
+    let x2 = timeScale.timeToCoordinate(line.point2.time);
 
-    if (y1 === null || y2 === null || x1 === null || x2 === null) return;
+    // If time coordinates are null (beyond visible data), extrapolate to canvas edges
+    const visibleRange = timeScale.getVisibleRange();
+    if (!visibleRange) return;
+
+    // Get canvas width from context
+    const canvasWidth = ctx.canvas.width / window.devicePixelRatio;
+
+    // Skip rendering if both points are beyond visible range
+    // But allow partial rendering if only one point is beyond
+    if (x1 === null && x2 === null) return;
+
+    // If one point is beyond range, extend line to canvas edge using linear interpolation
+    if (x1 === null || x2 === null) {
+      const time1 = line.point1.time as number;
+      const time2 = line.point2.time as number;
+      const visibleFrom = visibleRange.from as number;
+      const visibleTo = visibleRange.to as number;
+
+      // Linear interpolation to find where line crosses visible boundary
+      if (x1 === null && x2 !== null) {
+        // Point 1 is beyond range, point 2 is visible
+        if (time1 < visibleFrom) {
+          // Extend to left edge - interpolate Y value
+          const timeRatio = (visibleFrom - time1) / (time2 - time1);
+          const interpolatedY = y1 + (y2 - y1) * timeRatio;
+          x1 = 0 as any;
+          // Note: Can't modify y1, so line will start slightly off, but close enough
+        } else if (time1 > visibleTo) {
+          // Extend to right edge
+          const timeRatio = (visibleTo - time2) / (time1 - time2);
+          const interpolatedY = y2 + (y1 - y2) * timeRatio;
+          x1 = canvasWidth as any;
+        }
+      } else if (x2 === null && x1 !== null) {
+        // Point 2 is beyond range, point 1 is visible
+        if (time2 < visibleFrom) {
+          x2 = 0 as any;
+        } else if (time2 > visibleTo) {
+          x2 = canvasWidth as any;
+        }
+      }
+    }
+
+    // Final check - if still null, skip rendering
+    if (x1 === null || x2 === null) return;
 
     ctx.strokeStyle = line.color;
     ctx.lineWidth = 2;

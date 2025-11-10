@@ -318,35 +318,43 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       });
     }
 
-    // Helper function to get or extrapolate time coordinate
+    // Helper function to get time coordinate (allows drawing beyond data range)
     const getTimeCoordinate = (param: MouseEventParams): Time | null => {
       if (param.time) return param.time; // Within data range
 
-      // Beyond data range - extrapolate time based on X coordinate
+      // Beyond data range - need to extrapolate manually
       if (!param.point) return null;
 
       const timeScale = chart.timeScale();
 
-      // Try to convert coordinate to time (lightweight-charts should handle this)
+      // Try coordinateToTime first (works for most cases)
       const coordinateTime = timeScale.coordinateToTime(param.point.x);
       if (coordinateTime !== null) {
-        console.log('[EXTRAPOLATE] Using coordinateToTime:', coordinateTime);
         return coordinateTime;
       }
 
-      // If coordinateToTime fails, use visible range extrapolation
+      // coordinateToTime returned null - manually extrapolate
+      // This happens when clicking far beyond the rightOffset area
+      const visibleLogicalRange = timeScale.getVisibleLogicalRange();
+      if (!visibleLogicalRange) return null;
+
+      // Get the time range that's actually visible
       const visibleRange = timeScale.getVisibleRange();
       if (!visibleRange) return null;
 
       const containerWidth = chartContainerRef.current?.clientWidth || 0;
       if (containerWidth === 0) return null;
 
-      // Calculate time based on pixel position
-      const visibleTime = (visibleRange.to as number) - (visibleRange.from as number);
-      const timePerPixel = visibleTime / containerWidth;
-      const extrapolatedTime = (visibleRange.from as number) + (param.point.x * timePerPixel);
+      // Calculate time per pixel
+      const visibleFrom = visibleRange.from as number;
+      const visibleTo = visibleRange.to as number;
+      const visibleTimeSpan = visibleTo - visibleFrom;
+      const timePerPixel = visibleTimeSpan / containerWidth;
 
-      console.log('[EXTRAPOLATE] Calculated time:', extrapolatedTime, 'at x:', param.point.x);
+      // Extrapolate time from pixel position
+      const extrapolatedTime = visibleFrom + (param.point.x * timePerPixel);
+
+      console.log('[DRAW] Manual extrapolation - x:', param.point.x, '→ time:', extrapolatedTime);
       return extrapolatedTime as Time;
     };
 
@@ -543,8 +551,10 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       const price = series.coordinateToPrice(y);
       const time = chart.timeScale().coordinateToTime(x);
 
-      if (price !== null && time !== null) {
-        handleMouseDown({ point: { x, y }, time } as MouseEventParams);
+      // Always call handleMouseDown with coordinates - it will handle extrapolation
+      // Even if time is null (beyond data), getTimeCoordinate() will extrapolate it
+      if (price !== null) {
+        handleMouseDown({ point: { x, y }, time: time || undefined } as MouseEventParams);
       }
     };
 
