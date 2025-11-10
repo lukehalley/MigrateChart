@@ -7,6 +7,7 @@ import { PoolData, MIGRATION_DATES, POOLS, Timeframe } from '@/lib/types';
 import { drawVerticalLines } from '@/lib/verticalLine';
 import { DrawingToolsPrimitive, DrawingStateManager, DrawingType } from '@/lib/drawingTools';
 import { motion, AnimatePresence } from 'motion/react';
+import { SafeStorage } from '@/lib/localStorage';
 
 interface ChartProps {
   poolsData: PoolData[];
@@ -36,11 +37,18 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
   // Store migration lines cleanup function
   const migrationLinesCleanupRef = useRef<(() => void) | null>(null);
 
+  // Store mouse event handlers for proper cleanup
+  const mouseHandlersRef = useRef<{
+    mousedown: ((e: MouseEvent) => void) | null;
+    mouseup: ((e: MouseEvent) => void) | null;
+    mouseleave: ((e: MouseEvent) => void) | null;
+  }>({ mousedown: null, mouseup: null, mouseleave: null });
+
   const resetChartPosition = () => {
     const positionKey = `chartPosition_${timeframe}`;
     const priceScaleKey = `priceScale_${timeframe}`;
-    localStorage.removeItem(positionKey);
-    localStorage.removeItem(priceScaleKey);
+    SafeStorage.removeItem(positionKey);
+    SafeStorage.removeItem(priceScaleKey);
     setResetTrigger(prev => prev + 1);
   };
 
@@ -94,7 +102,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
     drawingPrimitiveRef.current?.clearAllDrawings();
     // Clear from localStorage
     const storageKey = `drawings_${timeframe}`;
-    localStorage.removeItem(storageKey);
+    SafeStorage.removeItem(storageKey);
   };
 
   useEffect(() => {
@@ -107,18 +115,8 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
     // Check for saved price scale
     const priceScaleKey = `priceScale_${timeframe}`;
-    const savedPriceScale = localStorage.getItem(priceScaleKey);
-    let hasCustomPriceScale = false;
-    let savedPriceRange: { from: number; to: number } | null = null;
-
-    if (savedPriceScale) {
-      try {
-        savedPriceRange = JSON.parse(savedPriceScale);
-        hasCustomPriceScale = true;
-      } catch (e) {
-        console.error('Failed to parse saved price scale:', e);
-      }
-    }
+    const savedPriceRange = SafeStorage.getJSON<{ from: number; to: number }>(priceScaleKey);
+    const hasCustomPriceScale = savedPriceRange !== null;
 
     // Create chart
     const chart = createChart(chartContainerRef.current, {
@@ -256,14 +254,9 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
         // Load saved drawings from localStorage
         const storageKey = `drawings_${timeframe}`;
-        const savedDrawings = localStorage.getItem(storageKey);
-        if (savedDrawings) {
-          try {
-            const drawings = JSON.parse(savedDrawings);
-            drawingPrimitive.setDrawings(drawings);
-          } catch (e) {
-            console.error('Failed to load drawings:', e);
-          }
+        const drawings = SafeStorage.getJSON<any[]>(storageKey);
+        if (drawings && Array.isArray(drawings)) {
+          drawingPrimitive.setDrawings(drawings);
         }
 
         isFirstSeries = false;
@@ -367,7 +360,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
         // Save to localStorage
         const storageKey = `drawings_${timeframe}`;
-        localStorage.setItem(storageKey, JSON.stringify(drawingPrimitive.getDrawings()));
+        SafeStorage.setJSON(storageKey, drawingPrimitive.getDrawings());
       } else if (activeToolType === 'trend-line') {
         const tempPoint = drawingStateRef.current.getTempPoint();
 
@@ -385,7 +378,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
           // Save to localStorage
           const storageKey = `drawings_${timeframe}`;
-          localStorage.setItem(storageKey, JSON.stringify(drawingPrimitive.getDrawings()));
+          SafeStorage.setJSON(storageKey, drawingPrimitive.getDrawings());
         }
       }
       // Freehand drawing is handled by mouse down/move/up events, not click
@@ -426,7 +419,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
       // Save to localStorage
       const storageKey = `drawings_${timeframe}`;
-      localStorage.setItem(storageKey, JSON.stringify(drawingPrimitive.getDrawings()));
+      SafeStorage.setJSON(storageKey, drawingPrimitive.getDrawings());
     };
 
     const handleCrosshairMove = (param: MouseEventParams) => {
@@ -479,25 +472,35 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
     // Subscribe to mouse events for freehand drawing
     // We need to use the chart container's native mouse events
+    // Define named handler for proper cleanup
+    const handleNativeMouseDown = (e: MouseEvent) => {
+      const chartContainer = chartContainerRef.current;
+      if (!chartContainer) return;
+
+      const rect = chartContainer.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      // Convert to chart coordinates
+      const series = candlestickSeriesRef.current;
+      if (!series) return;
+
+      const price = series.coordinateToPrice(y);
+      const time = chart.timeScale().coordinateToTime(x);
+
+      if (price !== null && time !== null) {
+        handleMouseDown({ point: { x, y }, time } as MouseEventParams);
+      }
+    };
+
+    // Store handlers in ref for proper cleanup
+    mouseHandlersRef.current.mousedown = handleNativeMouseDown;
+    mouseHandlersRef.current.mouseup = handleMouseUp;
+    mouseHandlersRef.current.mouseleave = handleMouseUp;
+
     const chartContainer = chartContainerRef.current;
     if (chartContainer) {
-      chartContainer.addEventListener('mousedown', (e) => {
-        const rect = chartContainer.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-
-        // Convert to chart coordinates
-        const series = candlestickSeriesRef.current;
-        if (!series) return;
-
-        const price = series.coordinateToPrice(y);
-        const time = chart.timeScale().coordinateToTime(x);
-
-        if (price !== null && time !== null) {
-          handleMouseDown({ point: { x, y }, time } as MouseEventParams);
-        }
-      });
-
+      chartContainer.addEventListener('mousedown', handleNativeMouseDown);
       chartContainer.addEventListener('mouseup', handleMouseUp);
       chartContainer.addEventListener('mouseleave', handleMouseUp); // Also finish on mouse leave
     }
@@ -528,7 +531,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
           from: visibleTimeRange.from,
           to: visibleTimeRange.to,
         };
-        localStorage.setItem(storageKey, JSON.stringify(positionData));
+        SafeStorage.setJSON(storageKey, positionData);
 
         // Log in development
         if (process.env.NODE_ENV === 'development') {
@@ -576,7 +579,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
           from: Math.min(topPrice, bottomPrice),
           to: Math.max(topPrice, bottomPrice),
         };
-        localStorage.setItem(priceScaleKey, JSON.stringify(priceScaleData));
+        SafeStorage.setJSON(priceScaleKey, priceScaleData);
 
         // Log in development
         if (process.env.NODE_ENV === 'development') {
@@ -659,35 +662,25 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
       // Check if there's a saved position in localStorage for this timeframe
       const storageKey = `chartPosition_${timeframe}`;
-      const savedPosition = localStorage.getItem(storageKey);
+      const savedPosition = SafeStorage.getJSON<{ from: number; to: number }>(storageKey);
 
       let finalFrom: number;
       let finalTo: number;
 
       if (savedPosition) {
         // Restore saved position
-        try {
-          const parsed = JSON.parse(savedPosition);
-          finalFrom = parsed.from;
-          finalTo = parsed.to;
+        finalFrom = savedPosition.from;
+        finalTo = savedPosition.to;
 
-          if (process.env.NODE_ENV === 'development') {
-            console.log('Restored Chart Position from localStorage:', {
-              device: isMobile ? 'MOBILE' : 'DESKTOP',
-              timeframe,
-              restoredPosition: {
-                from: new Date(finalFrom * 1000).toISOString(),
-                to: new Date(finalTo * 1000).toISOString(),
-              },
-            });
-          }
-        } catch (e) {
-          // If parsing fails, use default position
-          const timeWindow = lastTime - fromTime;
-          const mobileShiftRatio = 0.756;
-          const shiftAmount = isMobile ? Math.floor(timeWindow * mobileShiftRatio) : 0;
-          finalFrom = fromTime + shiftAmount;
-          finalTo = lastTime + shiftAmount;
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Restored Chart Position from localStorage:', {
+            device: isMobile ? 'MOBILE' : 'DESKTOP',
+            timeframe,
+            restoredPosition: {
+              from: new Date(finalFrom * 1000).toISOString(),
+              to: new Date(finalTo * 1000).toISOString(),
+            },
+          });
         }
       } else {
         // No saved position, use default with mobile shift
@@ -792,12 +785,22 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       chart.unsubscribeClick(handleChartClick);
       chart.unsubscribeCrosshairMove(handleCrosshairMove);
 
-      // Remove mouse event listeners from chart container
+      // Remove mouse event listeners from chart container using stored refs
       const chartContainer = chartContainerRef.current;
       if (chartContainer) {
-        chartContainer.removeEventListener('mouseup', handleMouseUp);
-        chartContainer.removeEventListener('mouseleave', handleMouseUp);
+        if (mouseHandlersRef.current.mousedown) {
+          chartContainer.removeEventListener('mousedown', mouseHandlersRef.current.mousedown);
+        }
+        if (mouseHandlersRef.current.mouseup) {
+          chartContainer.removeEventListener('mouseup', mouseHandlersRef.current.mouseup);
+        }
+        if (mouseHandlersRef.current.mouseleave) {
+          chartContainer.removeEventListener('mouseleave', mouseHandlersRef.current.mouseleave);
+        }
       }
+
+      // Clear handler refs
+      mouseHandlersRef.current = { mousedown: null, mouseup: null, mouseleave: null };
 
       // Cleanup migration lines if they exist
       if (migrationLinesCleanupRef.current) {
@@ -845,7 +848,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         migrationLinesCleanupRef.current = null;
       }
     };
-  }, [showMigrationLines, resetTrigger]);
+  }, [showMigrationLines, resetTrigger, timeframe, displayMode, showVolume]);
 
   // Separate effect to handle drawing mode changes without recreating chart
   useEffect(() => {
@@ -899,7 +902,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         </button>
 
         {/* Drawing Tools Container */}
-        <div className="relative flex items-center">
+        <div className="relative flex items-center gap-2">
           {/* Toggle Drawing Mode Button */}
           <button
             onClick={toggleDrawingMode}
@@ -918,7 +921,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
           <AnimatePresence>
             {isDrawingMode && (
               <motion.div
-                className="flex items-center overflow-hidden"
+                className="flex items-center gap-2 overflow-hidden"
                 initial={{ width: 0, opacity: 0 }}
                 animate={{ width: 'auto', opacity: 1 }}
                 exit={{ width: 0, opacity: 0 }}
@@ -927,7 +930,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                 {/* Horizontal Line Tool */}
                 <motion.button
                   onClick={() => selectDrawingTool('horizontal-line')}
-                  className={`w-9 h-9 md:w-10 md:h-10 ml-6 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
+                  className={`w-9 h-9 md:w-10 md:h-10 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
                     activeDrawingTool === 'horizontal-line'
                       ? 'bg-[#52C97D]/30 border-[#52C97D] shadow-[0_0_12px_rgba(82,201,125,0.5)]'
                       : 'bg-black/90 border-[#52C97D]/50 hover:bg-[#52C97D]/20 hover:border-[#52C97D]'
@@ -947,7 +950,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                 {/* Trend Line Tool */}
                 <motion.button
                   onClick={() => selectDrawingTool('trend-line')}
-                  className={`w-9 h-9 md:w-10 md:h-10 ml-6 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
+                  className={`w-9 h-9 md:w-10 md:h-10 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
                     activeDrawingTool === 'trend-line'
                       ? 'bg-[#52C97D]/30 border-[#52C97D] shadow-[0_0_12px_rgba(82,201,125,0.5)]'
                       : 'bg-black/90 border-[#52C97D]/50 hover:bg-[#52C97D]/20 hover:border-[#52C97D]'
@@ -967,7 +970,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                 {/* Freehand Pencil Tool */}
                 <motion.button
                   onClick={() => selectDrawingTool('freehand')}
-                  className={`w-9 h-9 md:w-10 md:h-10 ml-6 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
+                  className={`w-9 h-9 md:w-10 md:h-10 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
                     activeDrawingTool === 'freehand'
                       ? 'bg-[#52C97D]/30 border-[#52C97D] shadow-[0_0_12px_rgba(82,201,125,0.5)]'
                       : 'bg-black/90 border-[#52C97D]/50 hover:bg-[#52C97D]/20 hover:border-[#52C97D]'
@@ -987,7 +990,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                 {/* Clear All Drawings Button */}
                 <motion.button
                   onClick={clearAllDrawings}
-                  className="w-9 h-9 md:w-10 md:h-10 ml-6 flex items-center justify-center bg-black/90 backdrop-blur-sm border-2 border-red-500/50 rounded-full hover:bg-red-500/20 hover:border-red-500 transition-colors"
+                  className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center bg-black/90 backdrop-blur-sm border-2 border-red-500/50 rounded-full hover:bg-red-500/20 hover:border-red-500 transition-colors"
                   initial={{ x: 20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   exit={{ x: 20, opacity: 0 }}
@@ -1007,7 +1010,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
       {/* Mobile: Drawing Tools Button (below hamburger menu) */}
       <div className="md:hidden fixed top-[60px] left-3 z-[60]">
-        <div className="relative flex flex-col">
+        <div className="relative flex flex-col gap-2">
           {/* Toggle Drawing Mode Button */}
           <button
             onClick={toggleDrawingMode}
@@ -1026,7 +1029,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
           <AnimatePresence>
             {isDrawingMode && (
               <motion.div
-                className="flex flex-col overflow-hidden"
+                className="flex flex-col gap-2 overflow-hidden"
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
@@ -1035,7 +1038,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                 {/* Horizontal Line Tool */}
                 <motion.button
                   onClick={() => selectDrawingTool('horizontal-line')}
-                  className={`w-11 h-11 mt-6 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
+                  className={`w-11 h-11 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
                     activeDrawingTool === 'horizontal-line'
                       ? 'bg-[#52C97D]/30 border-[#52C97D] shadow-[0_0_12px_rgba(82,201,125,0.5)]'
                       : 'bg-[#0A1F12]/90 border-[#52C97D] hover:bg-[#0A1F12] shadow-[0_0_12px_rgba(82,201,125,0.3)]'
@@ -1055,7 +1058,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                 {/* Trend Line Tool */}
                 <motion.button
                   onClick={() => selectDrawingTool('trend-line')}
-                  className={`w-11 h-11 mt-6 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
+                  className={`w-11 h-11 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
                     activeDrawingTool === 'trend-line'
                       ? 'bg-[#52C97D]/30 border-[#52C97D] shadow-[0_0_12px_rgba(82,201,125,0.5)]'
                       : 'bg-[#0A1F12]/90 border-[#52C97D] hover:bg-[#0A1F12] shadow-[0_0_12px_rgba(82,201,125,0.3)]'
@@ -1075,7 +1078,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                 {/* Freehand Pencil Tool */}
                 <motion.button
                   onClick={() => selectDrawingTool('freehand')}
-                  className={`w-11 h-11 mt-6 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
+                  className={`w-11 h-11 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
                     activeDrawingTool === 'freehand'
                       ? 'bg-[#52C97D]/30 border-[#52C97D] shadow-[0_0_12px_rgba(82,201,125,0.5)]'
                       : 'bg-[#0A1F12]/90 border-[#52C97D] hover:bg-[#0A1F12] shadow-[0_0_12px_rgba(82,201,125,0.3)]'
@@ -1095,7 +1098,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                 {/* Clear All Drawings Button */}
                 <motion.button
                   onClick={clearAllDrawings}
-                  className="w-11 h-11 mt-6 flex items-center justify-center bg-[#0A1F12]/90 backdrop-blur-sm border-2 border-red-500 rounded-full hover:bg-red-500/20 hover:border-red-500 transition-colors shadow-[0_0_12px_rgba(239,68,68,0.3)]"
+                  className="w-11 h-11 flex items-center justify-center bg-[#0A1F12]/90 backdrop-blur-sm border-2 border-red-500 rounded-full hover:bg-red-500/20 hover:border-red-500 transition-colors shadow-[0_0_12px_rgba(239,68,68,0.3)]"
                   initial={{ y: -20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   exit={{ y: -20, opacity: 0 }}

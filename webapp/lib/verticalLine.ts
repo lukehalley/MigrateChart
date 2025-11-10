@@ -132,6 +132,9 @@ export function drawVerticalLines(
   chart.timeScale().subscribeVisibleLogicalRangeChange(updateLines);
 
   return () => {
+    // Unsubscribe from time scale changes to prevent memory leak
+    chart.timeScale().unsubscribeVisibleLogicalRangeChange(updateLines);
+
     // Fade out by changing opacity
     overlay.style.opacity = '0';
     setTimeout(() => {

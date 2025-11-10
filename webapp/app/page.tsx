@@ -9,6 +9,7 @@ import ChartControls from '@/components/ChartControls';
 import TokenStats from '@/components/TokenStats';
 import { fetchAllPoolsData, fetchTokenStats } from '@/lib/api';
 import { PoolData, Timeframe, POOLS } from '@/lib/types';
+import { SafeStorage } from '@/lib/localStorage';
 
 function HomeContent() {
   const router = useRouter();
@@ -35,7 +36,7 @@ function HomeContent() {
   // Chart display preferences - read from localStorage synchronously to prevent hydration mismatch
   const [displayMode, setDisplayMode] = useState<'price' | 'marketCap'>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('chartDisplayMode') as 'price' | 'marketCap' | null;
+      const saved = SafeStorage.getItem('chartDisplayMode') as 'price' | 'marketCap' | null;
       return saved || 'price';
     }
     return 'price';
@@ -43,7 +44,7 @@ function HomeContent() {
 
   const [showVolume, setShowVolume] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('chartShowVolume');
+      const saved = SafeStorage.getItem('chartShowVolume');
       return saved !== null ? saved !== 'false' : true;
     }
     return true;
@@ -51,7 +52,7 @@ function HomeContent() {
 
   const [showMigrationLines, setShowMigrationLines] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('chartShowMigrationLines');
+      const saved = SafeStorage.getItem('chartShowMigrationLines');
       return saved !== null ? saved !== 'false' : true;
     }
     return true;
@@ -59,19 +60,19 @@ function HomeContent() {
 
   const handleDisplayModeChange = (mode: 'price' | 'marketCap') => {
     setDisplayMode(mode);
-    localStorage.setItem('chartDisplayMode', mode);
+    SafeStorage.setItem('chartDisplayMode', mode);
   };
 
   const handleVolumeToggle = () => {
     const newShowVolume = !showVolume;
     setShowVolume(newShowVolume);
-    localStorage.setItem('chartShowVolume', String(newShowVolume));
+    SafeStorage.setItem('chartShowVolume', String(newShowVolume));
   };
 
   const handleMigrationLinesToggle = () => {
     const newShowMigrationLines = !showMigrationLines;
     setShowMigrationLines(newShowMigrationLines);
-    localStorage.setItem('chartShowMigrationLines', String(newShowMigrationLines));
+    SafeStorage.setItem('chartShowMigrationLines', String(newShowMigrationLines));
   };
 
   // Update URL when timeframe changes
