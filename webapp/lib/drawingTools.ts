@@ -128,35 +128,29 @@ class DrawingPaneView implements ISeriesPrimitivePaneView {
     // But allow partial rendering if only one point is beyond
     if (x1 === null && x2 === null) return;
 
-    // If one point is beyond range, extend line to canvas edge using linear interpolation
+    // If coordinates are null, manually calculate them for extrapolated times
     if (x1 === null || x2 === null) {
       const time1 = line.point1.time as number;
       const time2 = line.point2.time as number;
       const visibleFrom = visibleRange.from as number;
       const visibleTo = visibleRange.to as number;
+      const visibleTimeSpan = visibleTo - visibleFrom;
+      const timePerPixel = visibleTimeSpan / canvasWidth;
 
-      // Linear interpolation to find where line crosses visible boundary
-      if (x1 === null && x2 !== null) {
-        // Point 1 is beyond range, point 2 is visible
-        if (time1 < visibleFrom) {
-          // Extend to left edge - interpolate Y value
-          const timeRatio = (visibleFrom - time1) / (time2 - time1);
-          const interpolatedY = y1 + (y2 - y1) * timeRatio;
-          x1 = 0 as any;
-          // Note: Can't modify y1, so line will start slightly off, but close enough
-        } else if (time1 > visibleTo) {
-          // Extend to right edge
-          const timeRatio = (visibleTo - time2) / (time1 - time2);
-          const interpolatedY = y2 + (y1 - y2) * timeRatio;
-          x1 = canvasWidth as any;
-        }
-      } else if (x2 === null && x1 !== null) {
-        // Point 2 is beyond range, point 1 is visible
-        if (time2 < visibleFrom) {
-          x2 = 0 as any;
-        } else if (time2 > visibleTo) {
-          x2 = canvasWidth as any;
-        }
+      if (x1 === null) {
+        // Calculate X coordinate for extrapolated time1
+        const timeDiffFromVisible = time1 - visibleFrom;
+        const calculatedX = timeDiffFromVisible / timePerPixel;
+        x1 = Math.max(0, Math.min(canvasWidth, calculatedX)) as any;
+        console.log('[RENDER] Extrapolated x1:', calculatedX, 'clamped:', x1);
+      }
+
+      if (x2 === null) {
+        // Calculate X coordinate for extrapolated time2
+        const timeDiffFromVisible = time2 - visibleFrom;
+        const calculatedX = timeDiffFromVisible / timePerPixel;
+        x2 = Math.max(0, Math.min(canvasWidth, calculatedX)) as any;
+        console.log('[RENDER] Extrapolated x2:', calculatedX, 'clamped:', x2);
       }
     }
 
