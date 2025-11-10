@@ -1,9 +1,12 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { createChart, IChartApi, ISeriesApi, CandlestickData, Time } from 'lightweight-charts';
+import { createChart, IChartApi, ISeriesApi, CandlestickData, Time, MouseEventParams } from 'lightweight-charts';
+import { ChartNetwork } from 'lucide-react';
 import { PoolData, MIGRATION_DATES, POOLS, Timeframe } from '@/lib/types';
 import { drawVerticalLines } from '@/lib/verticalLine';
+import { DrawingToolsPrimitive, DrawingStateManager, DrawingType } from '@/lib/drawingTools';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface ChartProps {
   poolsData: PoolData[];
@@ -23,9 +26,21 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
   const [isAboutClosing, setIsAboutClosing] = useState(false);
   const [resetTrigger, setResetTrigger] = useState(0);
 
+  // Drawing tools state
+  const drawingPrimitiveRef = useRef<DrawingToolsPrimitive | null>(null);
+  const drawingStateRef = useRef<DrawingStateManager>(new DrawingStateManager());
+  const [isDrawingMode, setIsDrawingMode] = useState(false);
+  const [activeDrawingTool, setActiveDrawingTool] = useState<DrawingType | null>(null);
+  const candlestickSeriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null);
+
+  // Store migration lines cleanup function
+  const migrationLinesCleanupRef = useRef<(() => void) | null>(null);
+
   const resetChartPosition = () => {
-    const storageKey = `chartPosition_${timeframe}`;
-    localStorage.removeItem(storageKey);
+    const positionKey = `chartPosition_${timeframe}`;
+    const priceScaleKey = `priceScale_${timeframe}`;
+    localStorage.removeItem(positionKey);
+    localStorage.removeItem(priceScaleKey);
     setResetTrigger(prev => prev + 1);
   };
 
@@ -54,6 +69,34 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
     }
   }, [showAbout]);
 
+  // Drawing tool handlers
+  const toggleDrawingMode = () => {
+    const newMode = !isDrawingMode;
+    setIsDrawingMode(newMode);
+    drawingStateRef.current.setDrawingMode(newMode);
+
+    if (!newMode) {
+      setActiveDrawingTool(null);
+      drawingStateRef.current.setActiveToolType(null);
+    }
+  };
+
+  const selectDrawingTool = (tool: DrawingType) => {
+    setActiveDrawingTool(tool);
+    drawingStateRef.current.setActiveToolType(tool);
+    if (!isDrawingMode) {
+      setIsDrawingMode(true);
+      drawingStateRef.current.setDrawingMode(true);
+    }
+  };
+
+  const clearAllDrawings = () => {
+    drawingPrimitiveRef.current?.clearAllDrawings();
+    // Clear from localStorage
+    const storageKey = `drawings_${timeframe}`;
+    localStorage.removeItem(storageKey);
+  };
+
   useEffect(() => {
     if (!chartContainerRef.current || poolsData.length === 0) return;
 
@@ -61,6 +104,21 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
     // Detect mobile device
     const isMobile = window.innerWidth < 768;
+
+    // Check for saved price scale
+    const priceScaleKey = `priceScale_${timeframe}`;
+    const savedPriceScale = localStorage.getItem(priceScaleKey);
+    let hasCustomPriceScale = false;
+    let savedPriceRange: { from: number; to: number } | null = null;
+
+    if (savedPriceScale) {
+      try {
+        savedPriceRange = JSON.parse(savedPriceScale);
+        hasCustomPriceScale = true;
+      } catch (e) {
+        console.error('Failed to parse saved price scale:', e);
+      }
+    }
 
     // Create chart
     const chart = createChart(chartContainerRef.current, {
@@ -93,7 +151,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
           top: isMobile ? 0.25 : 0.15,    // Mobile: smaller top margin for more chart space
           bottom: isMobile ? 0.15 : 0.15, // Mobile: larger bottom margin to reduce price axis
         },
-        autoScale: true,  // Disable auto-scale to allow manual price scaling
+        autoScale: !hasCustomPriceScale,  // Disable auto-scale if we have a custom saved price scale
         mode: 0,  // Normal price scale
         invertScale: false,
         alignLabels: true,
@@ -149,6 +207,9 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
     // Store volume series references for toggling
     const volumeSeries: ISeriesApi<'Histogram'>[] = [];
 
+    // Track if this is the first series (we'll attach drawing tools to it)
+    let isFirstSeries = true;
+
     poolsData.forEach((poolData) => {
       if (poolData.data.length === 0) return;
 
@@ -185,6 +246,28 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
           minMove: displayMode === 'marketCap' ? 1 : 0.00001,
         },
       });
+
+      // Attach drawing tools to the first candlestick series
+      if (isFirstSeries) {
+        candlestickSeriesRef.current = candlestickSeries;
+        const drawingPrimitive = new DrawingToolsPrimitive(chart);
+        candlestickSeries.attachPrimitive(drawingPrimitive);
+        drawingPrimitiveRef.current = drawingPrimitive;
+
+        // Load saved drawings from localStorage
+        const storageKey = `drawings_${timeframe}`;
+        const savedDrawings = localStorage.getItem(storageKey);
+        if (savedDrawings) {
+          try {
+            const drawings = JSON.parse(savedDrawings);
+            drawingPrimitive.setDrawings(drawings);
+          } catch (e) {
+            console.error('Failed to load drawings:', e);
+          }
+        }
+
+        isFirstSeries = false;
+      }
 
       // Transform and set data
       const chartData: CandlestickData[] = filteredData
@@ -246,20 +329,180 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       });
     }
 
-    // Add migration markers as vertical lines using custom plugin (if enabled)
-    let cleanupLines: (() => void) | undefined;
-    if (showMigrationLines) {
-      const migrationLines = Object.values(MIGRATION_DATES).map(migration => ({
-        time: migration.timestamp,
-        color: '#3FAA66',  // Darker ZERA green for lines
-        label: migration.label,
-        lineWidth: 2,
-        labelBackgroundColor: '#0A1F12',  // Ultra dark green background
-        labelTextColor: '#75D29F',  // Lighter green for text pop
-      }));
+    // Add mouse event handlers for drawing tools
+    const handleChartClick = (param: MouseEventParams) => {
+      console.log('Chart clicked!', {
+        isDrawingMode: drawingStateRef.current.isDrawingMode(),
+        hasPoint: !!param.point,
+        hasTime: !!param.time,
+        activeToolType: drawingStateRef.current.getActiveToolType()
+      });
 
-      cleanupLines = drawVerticalLines(chart, chartContainerRef.current, migrationLines);
+      if (!drawingStateRef.current.isDrawingMode() || !param.point || !param.time) return;
+
+      const series = candlestickSeriesRef.current;
+      if (!series) {
+        console.log('No series found');
+        return;
+      }
+
+      const price = series.coordinateToPrice(param.point.y);
+      if (price === null) {
+        console.log('Could not convert to price');
+        return;
+      }
+
+      const drawingPrimitive = drawingPrimitiveRef.current;
+      if (!drawingPrimitive) {
+        console.log('No drawing primitive');
+        return;
+      }
+
+      const activeToolType = drawingStateRef.current.getActiveToolType();
+
+      if (activeToolType === 'horizontal-line') {
+        console.log('Adding horizontal line at price:', price);
+        // Add horizontal line at clicked price
+        drawingPrimitive.addHorizontalLine(price);
+
+        // Save to localStorage
+        const storageKey = `drawings_${timeframe}`;
+        localStorage.setItem(storageKey, JSON.stringify(drawingPrimitive.getDrawings()));
+      } else if (activeToolType === 'trend-line') {
+        const tempPoint = drawingStateRef.current.getTempPoint();
+
+        if (!tempPoint) {
+          // First click - store the point and add a preview line
+          drawingStateRef.current.setTempPoint({ time: param.time, price });
+          drawingStateRef.current.setIsDrawing(true);
+          // Add a temporary trend line that will be updated as mouse moves
+          drawingPrimitive.addTrendLine({ time: param.time, price }, { time: param.time, price });
+        } else {
+          // Second click - the line already exists from first click, just update it
+          drawingPrimitive.updateLastTrendLinePoint2({ time: param.time, price });
+          drawingStateRef.current.setTempPoint(null);
+          drawingStateRef.current.setIsDrawing(false);
+
+          // Save to localStorage
+          const storageKey = `drawings_${timeframe}`;
+          localStorage.setItem(storageKey, JSON.stringify(drawingPrimitive.getDrawings()));
+        }
+      }
+      // Freehand drawing is handled by mouse down/move/up events, not click
+    };
+
+    // Handle mouse down for freehand drawing
+    const handleMouseDown = (param: MouseEventParams) => {
+      const activeToolType = drawingStateRef.current.getActiveToolType();
+      if (!drawingStateRef.current.isDrawingMode() || activeToolType !== 'freehand') return;
+      if (!param.point || !param.time) return;
+
+      const series = candlestickSeriesRef.current;
+      if (!series) return;
+
+      const price = series.coordinateToPrice(param.point.y);
+      if (price === null) return;
+
+      const drawingPrimitive = drawingPrimitiveRef.current;
+      if (!drawingPrimitive) return;
+
+      // Start a new freehand drawing
+      drawingPrimitive.startFreehand({ time: param.time, price });
+      drawingStateRef.current.setIsDrawing(true);
+    };
+
+    // Handle mouse up for freehand drawing
+    const handleMouseUp = () => {
+      if (!drawingStateRef.current.isDrawing()) return;
+      const activeToolType = drawingStateRef.current.getActiveToolType();
+      if (activeToolType !== 'freehand') return;
+
+      const drawingPrimitive = drawingPrimitiveRef.current;
+      if (!drawingPrimitive) return;
+
+      // Finish the freehand drawing
+      drawingPrimitive.finishFreehand();
+      drawingStateRef.current.setIsDrawing(false);
+
+      // Save to localStorage
+      const storageKey = `drawings_${timeframe}`;
+      localStorage.setItem(storageKey, JSON.stringify(drawingPrimitive.getDrawings()));
+    };
+
+    const handleCrosshairMove = (param: MouseEventParams) => {
+      const activeToolType = drawingStateRef.current.getActiveToolType();
+
+      // Update preview for trend line while drawing
+      if (
+        drawingStateRef.current.isDrawing() &&
+        activeToolType === 'trend-line' &&
+        param.point &&
+        param.time
+      ) {
+        const series = candlestickSeriesRef.current;
+        if (!series) return;
+
+        const price = series.coordinateToPrice(param.point.y);
+        if (price === null) return;
+
+        const drawingPrimitive = drawingPrimitiveRef.current;
+        const tempPoint = drawingStateRef.current.getTempPoint();
+
+        if (drawingPrimitive && tempPoint) {
+          // Update the preview line
+          drawingPrimitive.updateLastTrendLinePoint2({ time: param.time, price });
+        }
+      }
+
+      // Add points to freehand drawing while mouse is down
+      if (
+        drawingStateRef.current.isDrawing() &&
+        activeToolType === 'freehand' &&
+        param.point &&
+        param.time
+      ) {
+        const series = candlestickSeriesRef.current;
+        if (!series) return;
+
+        const price = series.coordinateToPrice(param.point.y);
+        if (price === null) return;
+
+        const drawingPrimitive = drawingPrimitiveRef.current;
+        if (drawingPrimitive) {
+          drawingPrimitive.addFreehandPoint({ time: param.time, price });
+        }
+      }
+    };
+
+    chart.subscribeClick(handleChartClick);
+    chart.subscribeCrosshairMove(handleCrosshairMove);
+
+    // Subscribe to mouse events for freehand drawing
+    // We need to use the chart container's native mouse events
+    const chartContainer = chartContainerRef.current;
+    if (chartContainer) {
+      chartContainer.addEventListener('mousedown', (e) => {
+        const rect = chartContainer.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        // Convert to chart coordinates
+        const series = candlestickSeriesRef.current;
+        if (!series) return;
+
+        const price = series.coordinateToPrice(y);
+        const time = chart.timeScale().coordinateToTime(x);
+
+        if (price !== null && time !== null) {
+          handleMouseDown({ point: { x, y }, time } as MouseEventParams);
+        }
+      });
+
+      chartContainer.addEventListener('mouseup', handleMouseUp);
+      chartContainer.addEventListener('mouseleave', handleMouseUp); // Also finish on mouse leave
     }
+
+    // Migration lines will be handled in a separate effect
 
     // Handle resize
     const handleResize = () => {
@@ -310,6 +553,51 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
     };
 
     chart.timeScale().subscribeVisibleLogicalRangeChange(saveAndLogVisibleRange);
+
+    // Save price scale changes to localStorage using coordinate conversion
+    const saveAndLogPriceScale = () => {
+      if (!chartContainerRef.current || !candlestickSeriesRef.current) return;
+
+      const container = chartContainerRef.current;
+      const series = candlestickSeriesRef.current;
+
+      // Get the top and bottom Y coordinates of the chart
+      const topY = 0;
+      const bottomY = container.clientHeight;
+
+      // Convert to prices
+      const topPrice = series.coordinateToPrice(topY);
+      const bottomPrice = series.coordinateToPrice(bottomY);
+
+      if (topPrice !== null && bottomPrice !== null) {
+        // Save to localStorage
+        const priceScaleKey = `priceScale_${timeframe}`;
+        const priceScaleData = {
+          from: Math.min(topPrice, bottomPrice),
+          to: Math.max(topPrice, bottomPrice),
+        };
+        localStorage.setItem(priceScaleKey, JSON.stringify(priceScaleData));
+
+        // Log in development
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Price Scale Change:', {
+            device: isMobile ? 'MOBILE' : 'DESKTOP',
+            timeframe,
+            priceRange: priceScaleData,
+          });
+        }
+      }
+    };
+
+    // Subscribe to visible logical range changes to also capture price scale changes
+    const combinedSubscription = () => {
+      saveAndLogVisibleRange();
+      saveAndLogPriceScale();
+    };
+
+    // Replace the time scale subscription with combined subscription
+    chart.timeScale().unsubscribeVisibleLogicalRangeChange(saveAndLogVisibleRange);
+    chart.timeScale().subscribeVisibleLogicalRangeChange(combinedSubscription);
 
     // Get all data points to calculate visible range
     const allData = poolsData.flatMap(pool => pool.data);
@@ -441,24 +729,153 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         from: finalFrom as Time,
         to: finalTo as Time,
       });
+
+      // Restore saved price scale if available
+      if (savedPriceRange) {
+        // Need to wait for the chart to fully render
+        setTimeout(() => {
+          if (!candlestickSeriesRef.current || !chartContainerRef.current) return;
+
+          // Get current auto-scaled range to compare
+          const series = candlestickSeriesRef.current;
+          const container = chartContainerRef.current;
+
+          // Get current price range from coordinates
+          const topY = 0;
+          const bottomY = container.clientHeight;
+          const currentTopPrice = series.coordinateToPrice(topY);
+          const currentBottomPrice = series.coordinateToPrice(bottomY);
+
+          if (currentTopPrice !== null && currentBottomPrice !== null) {
+            const currentMin = Math.min(currentTopPrice, currentBottomPrice);
+            const currentMax = Math.max(currentTopPrice, currentBottomPrice);
+            const currentRange = currentMax - currentMin;
+
+            // Calculate how much to adjust scaleMargins
+            const savedMin = savedPriceRange.from;
+            const savedMax = savedPriceRange.to;
+
+            // Calculate the relative difference
+            const topDiff = (currentMax - savedMax) / currentRange;
+            const bottomDiff = (savedMin - currentMin) / currentRange;
+
+            // Apply adjusted scale margins
+            const baseTopMargin = isMobile ? 0.25 : 0.15;
+            const baseBottomMargin = isMobile ? 0.15 : 0.15;
+
+            chart.priceScale('right').applyOptions({
+              autoScale: false,
+              scaleMargins: {
+                top: Math.max(0, Math.min(0.8, baseTopMargin + topDiff * 0.5)),
+                bottom: Math.max(0, Math.min(0.8, baseBottomMargin + bottomDiff * 0.5)),
+              },
+            });
+
+            if (process.env.NODE_ENV === 'development') {
+              console.log('Restored Price Scale from localStorage:', {
+                device: isMobile ? 'MOBILE' : 'DESKTOP',
+                timeframe,
+                savedRange: { min: savedMin, max: savedMax },
+                currentRange: { min: currentMin, max: currentMax },
+                applied: true,
+              });
+            }
+          }
+        }, 150);
+      }
     }
 
     return () => {
       window.removeEventListener('resize', handleResize);
 
-      // If migration lines exist, trigger fade out and wait
-      if (cleanupLines) {
-        cleanupLines(); // This starts the fade out (500ms)
-        // Delay chart removal to allow fade animation to complete
-        setTimeout(() => {
-          chart.remove();
-        }, 500);
-      } else {
-        // No migration lines, remove immediately
-        chart.remove();
+      // Unsubscribe from chart events
+      chart.unsubscribeClick(handleChartClick);
+      chart.unsubscribeCrosshairMove(handleCrosshairMove);
+
+      // Remove mouse event listeners from chart container
+      const chartContainer = chartContainerRef.current;
+      if (chartContainer) {
+        chartContainer.removeEventListener('mouseup', handleMouseUp);
+        chartContainer.removeEventListener('mouseleave', handleMouseUp);
+      }
+
+      // Cleanup migration lines if they exist
+      if (migrationLinesCleanupRef.current) {
+        migrationLinesCleanupRef.current();
+        migrationLinesCleanupRef.current = null;
+      }
+
+      chart.remove();
+    };
+  }, [poolsData, timeframe, displayMode, showVolume, resetTrigger]);
+
+  // Separate effect to handle migration lines toggle without recreating chart
+  useEffect(() => {
+    if (!chartRef.current || !chartContainerRef.current) return;
+
+    // Cleanup existing migration lines
+    if (migrationLinesCleanupRef.current) {
+      migrationLinesCleanupRef.current();
+      migrationLinesCleanupRef.current = null;
+    }
+
+    // Add new migration lines if enabled
+    if (showMigrationLines) {
+      const migrationLines = Object.values(MIGRATION_DATES).map(migration => ({
+        time: migration.timestamp,
+        color: '#3FAA66',  // Darker ZERA green for lines
+        label: migration.label,
+        lineWidth: 2,
+        labelBackgroundColor: '#0A1F12',  // Ultra dark green background
+        labelTextColor: '#75D29F',  // Lighter green for text pop
+      }));
+
+      const cleanup = drawVerticalLines(
+        chartRef.current,
+        chartContainerRef.current,
+        migrationLines
+      );
+      migrationLinesCleanupRef.current = cleanup || null;
+    }
+
+    return () => {
+      // Cleanup on unmount
+      if (migrationLinesCleanupRef.current) {
+        migrationLinesCleanupRef.current();
+        migrationLinesCleanupRef.current = null;
       }
     };
-  }, [poolsData, timeframe, displayMode, showVolume, showMigrationLines, resetTrigger]);
+  }, [showMigrationLines, resetTrigger]);
+
+  // Separate effect to handle drawing mode changes without recreating chart
+  useEffect(() => {
+    if (!chartRef.current) return;
+
+    chartRef.current.applyOptions({
+      handleScroll: {
+        mouseWheel: !isDrawingMode,
+        pressedMouseMove: !isDrawingMode,
+        horzTouchDrag: !isDrawingMode,
+        vertTouchDrag: !isDrawingMode,
+      },
+      handleScale: {
+        axisPressedMouseMove: {
+          time: !isDrawingMode,
+          price: !isDrawingMode,
+        },
+        mouseWheel: !isDrawingMode,
+        pinch: !isDrawingMode,
+        axisDoubleClickReset: {
+          time: !isDrawingMode,
+          price: !isDrawingMode,
+        },
+      },
+      kineticScroll: {
+        touch: false,
+        mouse: false,
+      },
+    });
+  }, [isDrawingMode]);
 
   return (
     <div className="w-full h-full p-4 md:p-6 relative">
@@ -468,16 +885,233 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         </div>
       )}
 
-      {/* About Info Button - Top Left (Desktop only) */}
-      <button
-        onClick={() => setShowAbout(!showAbout)}
-        className="hidden md:flex absolute top-6 left-6 md:top-8 md:left-8 z-10 w-9 h-9 md:w-10 md:h-10 items-center justify-center bg-black/90 backdrop-blur-sm border-2 border-[#52C97D]/50 rounded-full hover:bg-[#52C97D]/20 hover:border-[#52C97D] transition-all shadow-[0_0_12px_rgba(82,201,125,0.3)]"
-        aria-label="About this chart"
-      >
-        <svg className="w-5 h-5 md:w-5 md:h-5 text-[#52C97D]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      </button>
+      {/* Desktop: Top Left Buttons - Info and Drawing Tools */}
+      <div className="hidden md:flex absolute top-6 left-6 md:top-8 md:left-8 z-10 gap-2">
+        {/* About Info Button */}
+        <button
+          onClick={() => setShowAbout(!showAbout)}
+          className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center bg-black/90 backdrop-blur-sm border-2 border-[#52C97D]/50 rounded-full hover:bg-[#52C97D]/20 hover:border-[#52C97D] transition-all shadow-[0_0_12px_rgba(82,201,125,0.3)]"
+          aria-label="About this chart"
+        >
+          <svg className="w-5 h-5 md:w-5 md:h-5 text-[#52C97D]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </button>
+
+        {/* Drawing Tools Container */}
+        <div className="relative flex items-center">
+          {/* Toggle Drawing Mode Button */}
+          <button
+            onClick={toggleDrawingMode}
+            className={`relative w-9 h-9 md:w-10 md:h-10 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-all ${
+              isDrawingMode
+                ? 'bg-[#52C97D]/30 border-[#52C97D] shadow-[0_0_12px_rgba(82,201,125,0.5)]'
+                : 'bg-black/90 border-[#52C97D]/50 hover:bg-[#52C97D]/20 hover:border-[#52C97D] shadow-[0_0_12px_rgba(82,201,125,0.3)]'
+            }`}
+            aria-label="Toggle drawing mode"
+            title="Toggle Drawing Mode"
+          >
+            <ChartNetwork className="w-5 h-5 text-[#52C97D]" strokeWidth={2} />
+          </button>
+
+          {/* Drawing Tool Buttons - Slide from right of toggle button */}
+          <AnimatePresence>
+            {isDrawingMode && (
+              <motion.div
+                className="flex items-center overflow-hidden"
+                initial={{ width: 0, opacity: 0 }}
+                animate={{ width: 'auto', opacity: 1 }}
+                exit={{ width: 0, opacity: 0 }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
+              >
+                {/* Horizontal Line Tool */}
+                <motion.button
+                  onClick={() => selectDrawingTool('horizontal-line')}
+                  className={`w-9 h-9 md:w-10 md:h-10 ml-6 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
+                    activeDrawingTool === 'horizontal-line'
+                      ? 'bg-[#52C97D]/30 border-[#52C97D] shadow-[0_0_12px_rgba(82,201,125,0.5)]'
+                      : 'bg-black/90 border-[#52C97D]/50 hover:bg-[#52C97D]/20 hover:border-[#52C97D]'
+                  }`}
+                  initial={{ x: 20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  exit={{ x: 20, opacity: 0 }}
+                  transition={{ duration: 0.2, delay: 0.05, ease: 'easeOut' }}
+                  aria-label="Horizontal line tool"
+                  title="Horizontal Line"
+                >
+                  <svg className="w-5 h-5 text-[#52C97D]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12h18" strokeDasharray="4 2" />
+                  </svg>
+                </motion.button>
+
+                {/* Trend Line Tool */}
+                <motion.button
+                  onClick={() => selectDrawingTool('trend-line')}
+                  className={`w-9 h-9 md:w-10 md:h-10 ml-6 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
+                    activeDrawingTool === 'trend-line'
+                      ? 'bg-[#52C97D]/30 border-[#52C97D] shadow-[0_0_12px_rgba(82,201,125,0.5)]'
+                      : 'bg-black/90 border-[#52C97D]/50 hover:bg-[#52C97D]/20 hover:border-[#52C97D]'
+                  }`}
+                  initial={{ x: 20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  exit={{ x: 20, opacity: 0 }}
+                  transition={{ duration: 0.2, delay: 0.1, ease: 'easeOut' }}
+                  aria-label="Trend line tool"
+                  title="Trend Line"
+                >
+                  <svg className="w-5 h-5 text-[#52C97D]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 19l14-14" />
+                  </svg>
+                </motion.button>
+
+                {/* Freehand Pencil Tool */}
+                <motion.button
+                  onClick={() => selectDrawingTool('freehand')}
+                  className={`w-9 h-9 md:w-10 md:h-10 ml-6 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
+                    activeDrawingTool === 'freehand'
+                      ? 'bg-[#52C97D]/30 border-[#52C97D] shadow-[0_0_12px_rgba(82,201,125,0.5)]'
+                      : 'bg-black/90 border-[#52C97D]/50 hover:bg-[#52C97D]/20 hover:border-[#52C97D]'
+                  }`}
+                  initial={{ x: 20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  exit={{ x: 20, opacity: 0 }}
+                  transition={{ duration: 0.2, delay: 0.15, ease: 'easeOut' }}
+                  aria-label="Freehand pencil tool"
+                  title="Freehand Draw"
+                >
+                  <svg className="w-5 h-5 text-[#52C97D]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                  </svg>
+                </motion.button>
+
+                {/* Clear All Drawings Button */}
+                <motion.button
+                  onClick={clearAllDrawings}
+                  className="w-9 h-9 md:w-10 md:h-10 ml-6 flex items-center justify-center bg-black/90 backdrop-blur-sm border-2 border-red-500/50 rounded-full hover:bg-red-500/20 hover:border-red-500 transition-colors"
+                  initial={{ x: 20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  exit={{ x: 20, opacity: 0 }}
+                  transition={{ duration: 0.2, delay: 0.2, ease: 'easeOut' }}
+                  aria-label="Clear all drawings"
+                  title="Clear All Drawings"
+                >
+                  <svg className="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </motion.button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+
+      {/* Mobile: Drawing Tools Button (below hamburger menu) */}
+      <div className="md:hidden fixed top-[60px] left-3 z-[60]">
+        <div className="relative flex flex-col">
+          {/* Toggle Drawing Mode Button */}
+          <button
+            onClick={toggleDrawingMode}
+            className={`w-11 h-11 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-all ${
+              isDrawingMode
+                ? 'bg-[#52C97D]/30 border-[#52C97D] shadow-[0_0_12px_rgba(82,201,125,0.5)]'
+                : 'bg-[#0A1F12]/90 border-[#52C97D] hover:bg-[#0A1F12] shadow-[0_0_12px_rgba(82,201,125,0.3)] hover:shadow-[0_0_16px_rgba(82,201,125,0.5)]'
+            }`}
+            aria-label="Toggle drawing mode"
+            title="Toggle Drawing Mode"
+          >
+            <ChartNetwork className="w-5 h-5 text-[#52C97D]" strokeWidth={2} />
+          </button>
+
+          {/* Drawing Tool Buttons - Slide down from toggle button */}
+          <AnimatePresence>
+            {isDrawingMode && (
+              <motion.div
+                className="flex flex-col overflow-hidden"
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
+              >
+                {/* Horizontal Line Tool */}
+                <motion.button
+                  onClick={() => selectDrawingTool('horizontal-line')}
+                  className={`w-11 h-11 mt-6 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
+                    activeDrawingTool === 'horizontal-line'
+                      ? 'bg-[#52C97D]/30 border-[#52C97D] shadow-[0_0_12px_rgba(82,201,125,0.5)]'
+                      : 'bg-[#0A1F12]/90 border-[#52C97D] hover:bg-[#0A1F12] shadow-[0_0_12px_rgba(82,201,125,0.3)]'
+                  }`}
+                  initial={{ y: -20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -20, opacity: 0 }}
+                  transition={{ duration: 0.2, delay: 0.05, ease: 'easeOut' }}
+                  aria-label="Horizontal line tool"
+                  title="Horizontal Line"
+                >
+                  <svg className="w-5 h-5 text-[#52C97D]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12h18" strokeDasharray="4 2" />
+                  </svg>
+                </motion.button>
+
+                {/* Trend Line Tool */}
+                <motion.button
+                  onClick={() => selectDrawingTool('trend-line')}
+                  className={`w-11 h-11 mt-6 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
+                    activeDrawingTool === 'trend-line'
+                      ? 'bg-[#52C97D]/30 border-[#52C97D] shadow-[0_0_12px_rgba(82,201,125,0.5)]'
+                      : 'bg-[#0A1F12]/90 border-[#52C97D] hover:bg-[#0A1F12] shadow-[0_0_12px_rgba(82,201,125,0.3)]'
+                  }`}
+                  initial={{ y: -20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -20, opacity: 0 }}
+                  transition={{ duration: 0.2, delay: 0.1, ease: 'easeOut' }}
+                  aria-label="Trend line tool"
+                  title="Trend Line"
+                >
+                  <svg className="w-5 h-5 text-[#52C97D]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 19l14-14" />
+                  </svg>
+                </motion.button>
+
+                {/* Freehand Pencil Tool */}
+                <motion.button
+                  onClick={() => selectDrawingTool('freehand')}
+                  className={`w-11 h-11 mt-6 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
+                    activeDrawingTool === 'freehand'
+                      ? 'bg-[#52C97D]/30 border-[#52C97D] shadow-[0_0_12px_rgba(82,201,125,0.5)]'
+                      : 'bg-[#0A1F12]/90 border-[#52C97D] hover:bg-[#0A1F12] shadow-[0_0_12px_rgba(82,201,125,0.3)]'
+                  }`}
+                  initial={{ y: -20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -20, opacity: 0 }}
+                  transition={{ duration: 0.2, delay: 0.15, ease: 'easeOut' }}
+                  aria-label="Freehand pencil tool"
+                  title="Freehand Draw"
+                >
+                  <svg className="w-5 h-5 text-[#52C97D]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                  </svg>
+                </motion.button>
+
+                {/* Clear All Drawings Button */}
+                <motion.button
+                  onClick={clearAllDrawings}
+                  className="w-11 h-11 mt-6 flex items-center justify-center bg-[#0A1F12]/90 backdrop-blur-sm border-2 border-red-500 rounded-full hover:bg-red-500/20 hover:border-red-500 transition-colors shadow-[0_0_12px_rgba(239,68,68,0.3)]"
+                  initial={{ y: -20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -20, opacity: 0 }}
+                  transition={{ duration: 0.2, delay: 0.2, ease: 'easeOut' }}
+                  aria-label="Clear all drawings"
+                  title="Clear All Drawings"
+                >
+                  <svg className="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </motion.button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
 
       {/* About Modal */}
       {showAbout && (
@@ -601,7 +1235,10 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       <div
         ref={chartContainerRef}
         className="w-full h-full"
-        style={{ touchAction: 'manipulation' }}
+        style={{
+          touchAction: 'manipulation',
+          cursor: isDrawingMode ? 'crosshair' : 'default'
+        }}
       />
     </div>
   );

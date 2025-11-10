@@ -32,21 +32,30 @@ function HomeContent() {
     }
   };
 
-  // Chart display preferences - initialize with defaults to prevent hydration mismatch
-  const [displayMode, setDisplayMode] = useState<'price' | 'marketCap'>('price');
-  const [showVolume, setShowVolume] = useState<boolean>(true);
-  const [showMigrationLines, setShowMigrationLines] = useState<boolean>(true);
+  // Chart display preferences - read from localStorage synchronously to prevent hydration mismatch
+  const [displayMode, setDisplayMode] = useState<'price' | 'marketCap'>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('chartDisplayMode') as 'price' | 'marketCap' | null;
+      return saved || 'price';
+    }
+    return 'price';
+  });
 
-  // Load preferences from localStorage after hydration
-  React.useEffect(() => {
-    const savedDisplayMode = localStorage.getItem('chartDisplayMode') as 'price' | 'marketCap' | null;
-    const savedShowVolume = localStorage.getItem('chartShowVolume');
-    const savedShowMigrationLines = localStorage.getItem('chartShowMigrationLines');
+  const [showVolume, setShowVolume] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('chartShowVolume');
+      return saved !== null ? saved !== 'false' : true;
+    }
+    return true;
+  });
 
-    if (savedDisplayMode) setDisplayMode(savedDisplayMode);
-    if (savedShowVolume !== null) setShowVolume(savedShowVolume !== 'false');
-    if (savedShowMigrationLines !== null) setShowMigrationLines(savedShowMigrationLines !== 'false');
-  }, []);
+  const [showMigrationLines, setShowMigrationLines] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('chartShowMigrationLines');
+      return saved !== null ? saved !== 'false' : true;
+    }
+    return true;
+  });
 
   const handleDisplayModeChange = (mode: 'price' | 'marketCap') => {
     setDisplayMode(mode);
@@ -251,7 +260,7 @@ function HomeContent() {
               <div className="w-full bg-gradient-to-r from-[#0A1F12] via-[#1F6338]/20 to-[#0A1F12] border-[3px] border-[#52C97D]/60 border-b-0 flex">
                 <button
                   onClick={() => setMobileMenuTab('settings')}
-                  className={`flex-1 py-4 text-sm font-bold transition-all ${
+                  className={`flex-1 py-3 text-sm font-bold transition-all ${
                     mobileMenuTab === 'settings'
                       ? 'text-[#52C97D] bg-black/50'
                       : 'text-white/60 hover:text-white/80'
@@ -261,7 +270,7 @@ function HomeContent() {
                 </button>
                 <button
                   onClick={() => setMobileMenuTab('about')}
-                  className={`flex-1 py-4 text-sm font-bold transition-all ${
+                  className={`flex-1 py-3 text-sm font-bold transition-all ${
                     mobileMenuTab === 'about'
                       ? 'text-[#52C97D] bg-black/50'
                       : 'text-white/60 hover:text-white/80'
@@ -272,7 +281,7 @@ function HomeContent() {
               </div>
 
               {/* Tab Content */}
-              <div className="w-full max-h-[70vh] overflow-y-auto bg-gradient-to-b from-[#0A1F12] to-black border-[3px] border-[#52C97D]/60 py-4 px-3" style={{ WebkitOverflowScrolling: 'touch' }}>
+              <div className="w-full max-h-[70vh] overflow-y-auto bg-gradient-to-b from-[#0A1F12] to-black border-[3px] border-[#52C97D]/60 py-3 px-2.5" style={{ WebkitOverflowScrolling: 'touch' }}>
                 {mobileMenuTab === 'settings' && (
                   <>
               {/* Main Info Card */}
@@ -294,7 +303,7 @@ function HomeContent() {
                   </div>
                 </a>
 
-                <div className="flex items-center justify-center gap-2 text-[10px] pt-4 pb-3 mt-3">
+                <div className="flex items-center justify-center gap-2 text-[10px] pt-3 pb-2 mt-2">
                   <span className="text-white font-medium">MON3Y</span>
                   <span className="text-white">→</span>
                   <span className="text-white font-medium">Raydium</span>
@@ -303,7 +312,7 @@ function HomeContent() {
                 </div>
 
                 {/* DEX Screener Link */}
-                <div style={{ marginTop: '24px', paddingTop: '24px' }} className="border-t border-[#52C97D]/20">
+                <div style={{ marginTop: '16px', paddingTop: '16px' }} className="border-t border-[#52C97D]/20">
                   <a
                     href="https://dexscreener.com/solana/6oUJD1EHNVBNMeTpytmY2NxKWicz5C2JUbByUrHEsjhc"
                     target="_blank"
@@ -319,13 +328,13 @@ function HomeContent() {
               </div>
 
               {/* Decorative Divider */}
-              <div className="flex items-center justify-center py-3">
+              <div className="flex items-center justify-center py-2">
                 <div className="dashed-divider w-24"></div>
               </div>
 
               {/* Timeframe Toggle Card */}
               <div className="info-card-small">
-                <div className="py-3 px-2">
+                <div className="py-2 px-1.5">
                   <p className="text-white text-[10px] mb-2 text-center">Timeframe</p>
                   <TimeframeToggle
                     currentTimeframe={timeframe}
@@ -338,13 +347,13 @@ function HomeContent() {
               </div>
 
               {/* Decorative Divider */}
-              <div className="flex items-center justify-center py-3">
+              <div className="flex items-center justify-center py-2">
                 <div className="dashed-divider w-24"></div>
               </div>
 
               {/* Chart Controls Card */}
               <div className="info-card-small">
-                <div className="py-3 px-2">
+                <div className="py-2 px-1.5">
                   <ChartControls
                     displayMode={displayMode}
                     onDisplayModeChange={handleDisplayModeChange}
@@ -358,7 +367,7 @@ function HomeContent() {
               </div>
 
               {/* Decorative Divider */}
-              <div className="flex items-center justify-center py-3">
+              <div className="flex items-center justify-center py-2">
                 <div className="dashed-divider w-24"></div>
               </div>
 
@@ -368,7 +377,7 @@ function HomeContent() {
               </div>
 
               {/* Decorative Divider */}
-              <div className="flex items-center justify-center py-3">
+              <div className="flex items-center justify-center py-2">
                 <div className="dashed-divider w-24"></div>
               </div>
 
@@ -378,7 +387,7 @@ function HomeContent() {
                   href="https://x.com/Trenchooooor"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 py-6 bg-black/85 hover:bg-[#52C97D]/15 transition-all cursor-pointer backdrop-blur-xl"
+                  className="flex items-center justify-center gap-2 py-4 bg-black/85 hover:bg-[#52C97D]/15 transition-all cursor-pointer backdrop-blur-xl"
                   style={{ boxShadow: '0 0 12px rgba(31, 99, 56, 0.3), 0 0 24px rgba(31, 99, 56, 0.15)' }}
                 >
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -531,27 +540,27 @@ function HomeContent() {
         {/* Right Section - Token Stats Sidebar */}
         <div className="h-full bg-gradient-to-b from-black via-black to-black border-l-2 border-dashed border-[#52C97D]/60 flex flex-col min-h-0" style={{ boxShadow: '-8px 0 8px rgba(82, 201, 125, 0.2)' }}>
           {/* Scrollable Content */}
-          <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-3 space-y-3 min-h-0">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden px-2.5 py-2 space-y-1.5 min-h-0">
             {/* Main Info Block */}
             <div className="stat-card-highlight">
               <a
                 href="https://zeralabs.org"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-3 mb-3 hover:opacity-80 transition-opacity cursor-pointer group"
+                className="flex items-center gap-2.5 mb-2 hover:opacity-80 transition-opacity cursor-pointer group"
               >
                 <img
                   src="/circle-logo.avif"
                   alt="ZERA"
-                  className="h-8 w-8 group-hover:scale-105 transition-transform"
+                  className="h-7 w-7 group-hover:scale-105 transition-transform"
                 />
                 <div>
-                  <h1 className="text-lg font-bold text-white mb-0 group-hover:text-[#52C97D] transition-colors">ZERA</h1>
-                  <p className="text-white text-[10px]">Complete Price History</p>
+                  <h1 className="text-base font-bold text-white mb-0 group-hover:text-[#52C97D] transition-colors">ZERA</h1>
+                  <p className="text-white text-[9px]">Complete Price History</p>
                 </div>
               </a>
 
-              <div className="flex items-center justify-center gap-2 text-[10px] pt-3 pb-3 mt-3">
+              <div className="flex items-center justify-center gap-1.5 text-[9px] pt-1.5 pb-1.5 mt-1.5">
                 <span className="text-white font-medium">MON3Y</span>
                 <span className="text-white">→</span>
                 <span className="text-white font-medium">Raydium</span>
@@ -560,14 +569,14 @@ function HomeContent() {
               </div>
 
               {/* DEX Screener Link */}
-              <div style={{ marginTop: '24px', paddingTop: '24px' }} className="border-t border-[#52C97D]/20">
+              <div style={{ marginTop: '12px', paddingTop: '12px' }} className="border-t border-[#52C97D]/20">
                 <a
                   href="https://dexscreener.com/solana/6oUJD1EHNVBNMeTpytmY2NxKWicz5C2JUbByUrHEsjhc"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 text-[10px] text-white/70 hover:text-[#52C97D] transition-colors group"
+                  className="flex items-center justify-center gap-1.5 text-[9px] text-white/70 hover:text-[#52C97D] transition-colors group"
                 >
-                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                   </svg>
                   <span>View on DEX Screener</span>
@@ -576,13 +585,13 @@ function HomeContent() {
             </div>
 
             {/* Decorative Divider */}
-            <div className="py-2">
+            <div className="py-0.5">
               <div className="dashed-divider"></div>
             </div>
 
             {/* Timeframe Toggle */}
             <div className="stat-card">
-              <p className="text-white text-[11px] font-medium mb-2 text-center">Timeframe</p>
+              <p className="text-white text-[10px] font-medium mb-1.5 text-center">Timeframe</p>
               <TimeframeToggle
                 currentTimeframe={timeframe}
                 onTimeframeChange={setTimeframe}
@@ -590,7 +599,7 @@ function HomeContent() {
             </div>
 
             {/* Decorative Divider */}
-            <div className="py-2">
+            <div className="py-0.5">
               <div className="dashed-divider"></div>
             </div>
 
@@ -606,7 +615,7 @@ function HomeContent() {
             />
 
             {/* Decorative Divider */}
-            <div className="py-2">
+            <div className="py-0.5">
               <div className="dashed-divider"></div>
             </div>
 
@@ -614,13 +623,13 @@ function HomeContent() {
             <TokenStats stats={timeframeStats || null} isLoading={isStatsLoading} timeframe={timeframe} />
 
             {/* Extra spacing before sticky button */}
-            <div className="h-2"></div>
+            <div className="h-1"></div>
           </div>
 
           {/* Sticky Bottom Section */}
-          <div className="flex-shrink-0 bg-black px-4 pt-2 pb-3 border-t-2 border-dashed border-[#52C97D]/30">
+          <div className="flex-shrink-0 bg-black px-2.5 pt-1 pb-2 border-t-2 border-dashed border-[#52C97D]/30">
             {/* Decorative Divider */}
-            <div className="pb-2">
+            <div className="pb-1">
               <div className="dashed-divider"></div>
             </div>
 
@@ -630,13 +639,13 @@ function HomeContent() {
                 href="https://x.com/Trenchooooor"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 py-5 bg-black/85 hover:bg-[#52C97D]/15 transition-all cursor-pointer backdrop-blur-xl"
+                className="flex items-center justify-center gap-2 py-3 bg-black/85 hover:bg-[#52C97D]/15 transition-all cursor-pointer backdrop-blur-xl"
                 style={{ boxShadow: '0 0 12px rgba(31, 99, 56, 0.3), 0 0 24px rgba(31, 99, 56, 0.15)' }}
               >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" fill="#52C97D"/>
                 </svg>
-                <p className="text-[#52C97D] text-lg font-bold tracking-wider">@Trenchooooor</p>
+                <p className="text-[#52C97D] text-base font-bold tracking-wider">@Trenchooooor</p>
               </a>
             </div>
           </div>

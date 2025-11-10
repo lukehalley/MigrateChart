@@ -95,17 +95,17 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D' }: Token
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-1">
       {/* Price Card */}
       <div className="stat-card">
-        <p className="text-white text-[11px] font-medium mb-2">PRICE (USD)</p>
-        <div className="flex items-center gap-2 mb-1">
-          <p className={`text-white text-xl font-bold select-text ${flashingFields.has('price') ? 'flash-update' : ''}`}>
+        <p className="text-white text-[10px] font-medium mb-1.5">PRICE (USD)</p>
+        <div className="flex items-center gap-2 mb-0.5">
+          <p className={`text-white text-lg font-bold select-text ${flashingFields.has('price') ? 'flash-update' : ''}`}>
             {formatPrice(stats.price)}
           </p>
           <div className="flex items-center gap-1">
-            <div className="w-2 h-2 bg-[#52C97D] rounded-full animate-pulse"></div>
-            <span className="text-[#52C97D] text-[9px] font-bold">LIVE</span>
+            <div className="w-1.5 h-1.5 bg-[#52C97D] rounded-full animate-pulse"></div>
+            <span className="text-[#52C97D] text-[8px] font-bold">LIVE</span>
           </div>
         </div>
         <div className="flex items-center gap-1">
@@ -116,51 +116,51 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D' }: Token
           >
             {formatPercent(stats.priceChange24h)}
           </p>
-          <span className="text-white/50 text-[9px]">({timeframeLabel})</span>
+          <span className="text-white/50 text-[8px]">({timeframeLabel})</span>
         </div>
       </div>
 
       {/* Divider */}
-      <div className="py-3">
+      <div className="py-1">
         <div className="dashed-divider"></div>
       </div>
 
       {/* Liquidity Card */}
       <div className="stat-card">
-        <p className="text-white text-[11px] font-medium mb-2">LIQUIDITY</p>
-        <p className={`text-white text-lg font-bold select-text ${flashingFields.has('liquidity') ? 'flash-update' : ''}`}>
+        <p className="text-white text-[10px] font-medium mb-1">LIQUIDITY</p>
+        <p className={`text-white text-base font-bold select-text ${flashingFields.has('liquidity') ? 'flash-update' : ''}`}>
           {formatNumber(stats.liquidity)}
         </p>
       </div>
 
       {/* Divider */}
-      <div className="py-3">
+      <div className="py-1">
         <div className="dashed-divider"></div>
       </div>
 
       {/* Market Cap Card */}
       <div className="stat-card">
-        <p className="text-white text-[11px] font-medium mb-2">MKT CAP</p>
-        <p className={`text-white text-lg font-bold select-text ${flashingFields.has('marketCap') ? 'flash-update' : ''}`}>
+        <p className="text-white text-[10px] font-medium mb-1">MKT CAP</p>
+        <p className={`text-white text-base font-bold select-text ${flashingFields.has('marketCap') ? 'flash-update' : ''}`}>
           {formatNumber(stats.marketCap)}
         </p>
       </div>
 
       {/* Divider */}
-      <div className="py-3">
+      <div className="py-1">
         <div className="dashed-divider"></div>
       </div>
 
       {/* Volume Card - Dynamic Timeframe */}
       <div className="stat-card">
-        <p className="text-white text-[11px] font-medium mb-2">VOLUME ({timeframeLabel})</p>
-        <p className={`text-white text-lg font-bold select-text ${flashingFields.has('volume') ? 'flash-update' : ''}`}>
+        <p className="text-white text-[10px] font-medium mb-1">VOLUME ({timeframeLabel})</p>
+        <p className={`text-white text-base font-bold select-text ${flashingFields.has('volume') ? 'flash-update' : ''}`}>
           {formatNumber(stats.volume24h)}
         </p>
       </div>
 
       {/* Divider */}
-      <div className="py-3">
+      <div className="py-1">
         <div className="dashed-divider"></div>
       </div>
 
@@ -168,11 +168,11 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D' }: Token
       {stats.fees24h !== undefined && (
         <>
         <div className="stat-card">
-          <p className="text-white text-[11px] font-medium mb-2">FEES ({timeframeLabel})</p>
-          <p className={`text-white text-lg font-bold select-text mb-2 ${flashingFields.has('fees') ? 'flash-update' : ''}`}>
+          <p className="text-white text-[10px] font-medium mb-1">FEES ({timeframeLabel})</p>
+          <p className={`text-white text-base font-bold select-text mb-1.5 ${flashingFields.has('fees') ? 'flash-update' : ''}`}>
             {formatNumber(stats.fees24h)}
           </p>
-          <div className="text-[10px] text-gray-400 space-y-0.5">
+          <div className="text-[9px] text-gray-400 space-y-0.5">
             <div className="flex justify-between">
               <span>Project (80%):</span>
               <span className="text-white font-medium">{formatNumber(stats.fees24h * 0.8)}</span>
@@ -185,7 +185,7 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D' }: Token
         </div>
 
         {/* Divider */}
-        <div className="py-3">
+        <div className="py-1">
           <div className="dashed-divider"></div>
         </div>
         </>
@@ -195,14 +195,14 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D' }: Token
       {stats.holders !== undefined && (
         <>
         <div className="stat-card">
-          <p className="text-white text-[11px] font-medium mb-2">HOLDERS</p>
-          <p className={`text-white text-lg font-bold select-text ${flashingFields.has('holders') ? 'flash-update' : ''}`}>
+          <p className="text-white text-[10px] font-medium mb-1">HOLDERS</p>
+          <p className={`text-white text-base font-bold select-text ${flashingFields.has('holders') ? 'flash-update' : ''}`}>
             {formatCount(stats.holders)}
           </p>
         </div>
 
         {/* Divider */}
-        <div className="py-3">
+        <div className="py-1">
           <div className="dashed-divider"></div>
         </div>
         </>
@@ -212,17 +212,17 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D' }: Token
       {(stats.buyCount24h || stats.sellCount24h) && (
         <>
         <div className="stat-card">
-          <p className="text-white text-[11px] font-medium mb-3 text-center">TXNS (24H)</p>
-          <div className="flex justify-center gap-8 text-sm">
+          <p className="text-white text-[10px] font-medium mb-2 text-center">TXNS (24H)</p>
+          <div className="flex justify-center gap-6 text-sm">
             <div className="text-center">
-              <p className="text-white text-[11px] font-medium mb-1">BUYS</p>
-              <p className={`text-[#52C97D] font-bold text-base select-text ${flashingFields.has('buys') ? 'flash-update' : ''}`}>
+              <p className="text-white text-[9px] font-medium mb-0.5">BUYS</p>
+              <p className={`text-[#52C97D] font-bold text-sm select-text ${flashingFields.has('buys') ? 'flash-update' : ''}`}>
                 {stats.buyCount24h || 0}
               </p>
             </div>
             <div className="text-center">
-              <p className="text-white text-[11px] font-medium mb-1">SELLS</p>
-              <p className={`text-[#ef5350] font-bold text-base select-text ${flashingFields.has('sells') ? 'flash-update' : ''}`}>
+              <p className="text-white text-[9px] font-medium mb-0.5">SELLS</p>
+              <p className={`text-[#ef5350] font-bold text-sm select-text ${flashingFields.has('sells') ? 'flash-update' : ''}`}>
                 {stats.sellCount24h || 0}
               </p>
             </div>
@@ -230,7 +230,7 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D' }: Token
         </div>
 
         {/* Divider */}
-        <div className="py-3">
+        <div className="py-1">
           <div className="dashed-divider"></div>
         </div>
         </>

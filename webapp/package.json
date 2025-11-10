@@ -21,6 +21,7 @@
     "date-fns": "^4.1.0",
     "lightweight-charts": "^4.2.0",
     "lucide-react": "^0.553.0",
+    "motion": "^12.23.24",
     "next": "^16.0.1",
     "next-qrcode": "^2.5.1",
     "postcss": "^8.5.6",
