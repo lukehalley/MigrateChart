@@ -46,9 +46,11 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
   const resetChartPosition = () => {
     const positionKey = `chartPosition_${timeframe}`;
-    const priceScaleKey = `priceScale_${timeframe}`;
+    const priceScaleKeyPrice = `priceScale_${timeframe}_price`;
+    const priceScaleKeyMarketCap = `priceScale_${timeframe}_marketCap`;
     SafeStorage.removeItem(positionKey);
-    SafeStorage.removeItem(priceScaleKey);
+    SafeStorage.removeItem(priceScaleKeyPrice);
+    SafeStorage.removeItem(priceScaleKeyMarketCap);
     setResetTrigger(prev => prev + 1);
   };
 
@@ -113,8 +115,8 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
     // Detect mobile device
     const isMobile = window.innerWidth < 768;
 
-    // Check for saved price scale
-    const priceScaleKey = `priceScale_${timeframe}`;
+    // Check for saved price scale (specific to display mode)
+    const priceScaleKey = `priceScale_${timeframe}_${displayMode}`;
     const savedPriceRange = SafeStorage.getJSON<{ from: number; to: number }>(priceScaleKey);
     const hasCustomPriceScale = savedPriceRange !== null;
 
@@ -573,8 +575,8 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       const bottomPrice = series.coordinateToPrice(bottomY);
 
       if (topPrice !== null && bottomPrice !== null) {
-        // Save to localStorage
-        const priceScaleKey = `priceScale_${timeframe}`;
+        // Save to localStorage (specific to display mode)
+        const priceScaleKey = `priceScale_${timeframe}_${displayMode}`;
         const priceScaleData = {
           from: Math.min(topPrice, bottomPrice),
           to: Math.max(topPrice, bottomPrice),
