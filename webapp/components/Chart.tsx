@@ -119,6 +119,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
     const priceScaleKey = `priceScale_${timeframe}_${displayMode}`;
     const savedPriceRange = SafeStorage.getJSON<{ from: number; to: number }>(priceScaleKey);
     const hasCustomPriceScale = savedPriceRange !== null;
+    console.log(`[LOAD] Price scale ${timeframe}_${displayMode}:`, savedPriceRange, 'HasCustom:', hasCustomPriceScale);
 
     // Create chart
     const chart = createChart(chartContainerRef.current, {
@@ -521,39 +522,18 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
     window.addEventListener('resize', handleResize);
 
-    // Save chart position to localStorage and log in development
+    // Save chart position to localStorage
     const saveAndLogVisibleRange = () => {
       const visibleLogicalRange = chart.timeScale().getVisibleLogicalRange();
       const visibleTimeRange = chart.timeScale().getVisibleRange();
 
       if (visibleLogicalRange && visibleTimeRange) {
-        // Save to localStorage
         const storageKey = `chartPosition_${timeframe}`;
         const positionData = {
           from: visibleTimeRange.from,
           to: visibleTimeRange.to,
         };
         SafeStorage.setJSON(storageKey, positionData);
-
-        // Log in development
-        if (process.env.NODE_ENV === 'development') {
-          const visibleBars = Math.round(visibleLogicalRange.to - visibleLogicalRange.from);
-          const totalBars = allData.length;
-          const currentVisibilityRatio = visibleBars / totalBars;
-
-          console.log('Chart Movement:', {
-            device: isMobile ? 'MOBILE' : 'DESKTOP',
-            timeframe,
-            visibleBars,
-            totalBars,
-            currentVisibilityRatio: currentVisibilityRatio.toFixed(4),
-            currentPercentage: (currentVisibilityRatio * 100).toFixed(2) + '%',
-            visibleTimeRange: {
-              from: new Date((visibleTimeRange.from as number) * 1000).toISOString(),
-              to: new Date((visibleTimeRange.to as number) * 1000).toISOString(),
-            },
-          });
-        }
       }
     };
 
@@ -579,17 +559,8 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
           from: Math.min(topPrice, bottomPrice),
           to: Math.max(topPrice, bottomPrice),
         };
-        SafeStorage.setJSON(priceScaleKey, priceScaleData);
-
-        // Log in development
-        if (process.env.NODE_ENV === 'development') {
-          console.log('Price Scale Change:', {
-            device: isMobile ? 'MOBILE' : 'DESKTOP',
-            timeframe,
-            displayMode,
-            priceRange: priceScaleData,
-          });
-        }
+        const success = SafeStorage.setJSON(priceScaleKey, priceScaleData);
+        console.log(`[SAVE] Price scale ${timeframe}_${displayMode}:`, priceScaleData, 'Success:', success);
       }
     };
 
@@ -642,47 +613,14 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       // For all other timeframes, default to ~30 days of data
       if (timeframe === 'MAX') {
         fromTime = firstTime;
-
-        if (process.env.NODE_ENV === 'development') {
-          console.log('Chart Zoom Parameters (MAX):', {
-            device: isMobile ? 'MOBILE' : 'DESKTOP',
-            timeframe,
-            mode: 'FULL_HISTORY',
-            totalDataPoints: totalPoints,
-            visibleDataPoints: totalPoints,
-            daysCovered: ((lastTime - firstTime) / 86400).toFixed(1),
-          });
-        }
       } else {
-        // Default to 60 days on desktop, 120 days on mobile for better context
+        // Default to 60 days on desktop, 220 days on mobile for better context
         const defaultDays = isMobile ? 220 : 60;
         const DEFAULT_DAYS_SECONDS = defaultDays * 24 * 60 * 60;
         const daysAgo = lastTime - DEFAULT_DAYS_SECONDS;
 
         // Handle edge case: if token is less than default days old, show all available data
         fromTime = Math.max(daysAgo, firstTime);
-
-        const visibleTimeRange = lastTime - fromTime;
-        const daysCovered = visibleTimeRange / 86400;
-
-        // Estimate visible points based on timeframe
-        const approxPointsPerDay = totalPoints / ((lastTime - firstTime) / 86400);
-        const estimatedVisiblePoints = Math.round(approxPointsPerDay * daysCovered);
-
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`Chart Zoom Parameters (${defaultDays}-Day Default):`, {
-            device: isMobile ? 'MOBILE' : 'DESKTOP',
-            timeframe,
-            mode: `${defaultDays}_DAY_WINDOW`,
-            totalDataPoints: totalPoints,
-            estimatedVisiblePoints,
-            daysCovered: daysCovered.toFixed(1),
-            tokenAgeDays: ((lastTime - firstTime) / 86400).toFixed(1),
-            isLessThanDefaultDays: fromTime === firstTime,
-            barSpacing: isMobile ? 3 : 12,
-            rightOffset: isMobile ? 10 : 50,
-          });
-        }
       }
 
       // Check if there's a saved position in localStorage for this timeframe
@@ -696,17 +634,6 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         // Restore saved position
         finalFrom = savedPosition.from;
         finalTo = savedPosition.to;
-
-        if (process.env.NODE_ENV === 'development') {
-          console.log('Restored Chart Position from localStorage:', {
-            device: isMobile ? 'MOBILE' : 'DESKTOP',
-            timeframe,
-            restoredPosition: {
-              from: new Date(finalFrom * 1000).toISOString(),
-              to: new Date(finalTo * 1000).toISOString(),
-            },
-          });
-        }
       } else {
         // No saved position, use default with mobile shift
         const timeWindow = lastTime - fromTime;
@@ -715,27 +642,6 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
         finalFrom = fromTime + shiftAmount;
         finalTo = lastTime + shiftAmount;
-
-        if (process.env.NODE_ENV === 'development') {
-          console.log('Chart Position Details:', {
-            device: isMobile ? 'MOBILE' : 'DESKTOP',
-            timeframe,
-            baseWindow: {
-              fromTime: new Date(fromTime * 1000).toISOString(),
-              toTime: new Date(lastTime * 1000).toISOString(),
-              windowDays: (timeWindow / 86400).toFixed(1),
-            },
-            shift: {
-              shiftRatio: mobileShiftRatio,
-              shiftAmount,
-              shiftDays: (shiftAmount / 86400).toFixed(1),
-            },
-            finalPosition: {
-              from: new Date(finalFrom * 1000).toISOString(),
-              to: new Date(finalTo * 1000).toISOString(),
-            },
-          });
-        }
       }
 
       // Set the visible range to show the calculated window
@@ -751,9 +657,14 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       // Restore saved price scale if available
       // Use requestAnimationFrame for reliable timing after chart render
       if (savedPriceRange) {
+        console.log(`[RESTORE] Attempting to restore price scale ${timeframe}_${displayMode}:`, savedPriceRange);
+
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
-            if (!candlestickSeriesRef.current || !chartContainerRef.current) return;
+            if (!candlestickSeriesRef.current || !chartContainerRef.current) {
+              console.log(`[RESTORE] Failed - series or container missing`);
+              return;
+            }
 
             const series = candlestickSeriesRef.current;
             const container = chartContainerRef.current;
@@ -797,20 +708,14 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                 },
               });
 
-              if (process.env.NODE_ENV === 'development') {
-                console.log('Restored Price Scale:', {
-                  device: isMobile ? 'MOBILE' : 'DESKTOP',
-                  timeframe,
-                  displayMode,
-                  savedRange: { min: savedMin, max: savedMax, range: savedRange },
-                  currentRange: { min: currentMin, max: currentMax, range: currentRange },
-                  zoomFactor: zoomFactor.toFixed(3),
-                  margins: { top: newTopMargin.toFixed(3), bottom: newBottomMargin.toFixed(3) },
-                });
-              }
+              console.log(`[RESTORE] Applied margins - Top: ${newTopMargin.toFixed(3)}, Bottom: ${newBottomMargin.toFixed(3)}, ZoomFactor: ${zoomFactor.toFixed(3)}`);
+            } else {
+              console.log(`[RESTORE] Failed - could not convert coordinates to prices`);
             }
           });
         });
+      } else {
+        console.log(`[RESTORE] No saved price scale found for ${timeframe}_${displayMode}, using auto-scale`);
       }
     }
 

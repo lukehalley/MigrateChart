@@ -33,11 +33,15 @@ Comprehensive audit of the ZERA chart application focusing on state management, 
 
 ## 🟡 HIGH PRIORITY ISSUES
 
-### 4. **localStorage Race Condition: Rapid Timeframe Switching**
-**Location:** `Chart.tsx:520-596`
+### 4. **localStorage Race Condition: Rapid Timeframe Switching** ✅ PARTIALLY FIXED
+**Location:** `Chart.tsx:596-623`
 **Issue:** Multiple subscriptions to `subscribeVisibleLogicalRangeChange` saving to localStorage without debouncing
 **Impact:** On rapid pan/zoom, localStorage gets hammered with writes (performance issue)
-**Fix Required:** Implement debouncing/throttling for localStorage writes
+**Fix Applied:**
+- Implemented 300ms debouncing for price scale saves (wheel/touch events)
+- Still saving time scale changes on every pan (by design for position persistence)
+**Status:** ✅ PRICE SCALE DEBOUNCED, TIME SCALE INTENTIONALLY IMMEDIATE
+**Note:** Time scale position saved immediately for accurate restore, price scale debounced for performance
 
 ### 5. **Drawing Tools: Missing Timeframe Isolation Validation**
 **Location:** `Chart.tsx:257-267`
@@ -46,19 +50,17 @@ Comprehensive audit of the ZERA chart application focusing on state management, 
 **Potential Issue:** Drawing points outside visible range or at non-existent times
 **Fix Required:** Validate drawing time coordinates against current data range on load
 
-### 6. **Price Scale Restoration Timing Issue**
-**Location:** `Chart.tsx:734-785`
+### 6. **Price Scale Restoration Timing Issue** ✅ FIXED
+**Location:** `Chart.tsx:730-810`
 **Issue:** Price scale restoration uses setTimeout(150ms) - arbitrary timing that may fail on slow devices
-**Current Code:**
-```typescript
-if (savedPriceRange) {
-  setTimeout(() => {
-    // Restore price scale
-  }, 150);
-}
-```
 **Problem:** No guarantee chart has fully rendered in 150ms on slow devices/browsers
-**Fix Required:** Use proper render completion detection or requestAnimationFrame callback
+**Fix Applied:**
+- Replaced setTimeout with double requestAnimationFrame for reliable render timing
+- Added proper price scale change detection via wheel/touch events
+- Implemented debouncing (300ms) to prevent excessive localStorage writes
+- Fixed missing time scale subscription cleanup
+- Now tracks price scale changes independently from time scale changes
+**Status:** ✅ RESOLVED
 
 ### 7. **Data Consistency: Migration Filtering**
 **Location:** `Chart.tsx:216-223`
@@ -264,11 +266,11 @@ Drawing mode effect runs (line 851 deps: [isDrawingMode])
 3. ✅ Fix event listener cleanup with proper refs
 4. ✅ Add safe localStorage wrapper with error handling
 
-### Phase 2: High Priority (Next Sprint)
-5. Implement debouncing for localStorage writes
-6. Add drawing coordinate validation on load
-7. Replace setTimeout for price scale with proper timing
-8. Add data sorting validation before filtering
+### Phase 2: High Priority ✅ PARTIALLY COMPLETED
+5. ✅ Implement debouncing for localStorage writes (price scale only)
+6. ⏳ Add drawing coordinate validation on load
+7. ✅ Replace setTimeout for price scale with proper timing (requestAnimationFrame)
+8. ⏳ Add data sorting validation before filtering
 
 ### Phase 3: Medium Priority (Tech Debt)
 9. Refactor resetTrigger pattern
@@ -331,7 +333,13 @@ This audit identified 15 issues across critical, high, medium, and low priority 
    - Separate storage keys for price vs market cap: `priceScale_${timeframe}_${displayMode}`
    - Each mode maintains independent zoom/scale state
    - Prevents scale confusion when switching between modes
-8. ✅ Build verified successfully (multiple times)
+8. ✅ Improved price scale tracking and restoration
+   - Replaced setTimeout(150ms) with double requestAnimationFrame for reliable timing
+   - Added wheel/touch event listeners to track price axis zoom changes
+   - Implemented 300ms debouncing for price scale saves
+   - Fixed missing time scale subscription cleanup
+   - Price scale now persists correctly on page refresh
+9. ✅ Build verified successfully (multiple times)
 
 **Remaining Work:**
 - Phase 2 (High Priority): 8-12 hours - debouncing, validation, timing
