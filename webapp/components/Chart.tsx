@@ -61,7 +61,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         timeVisible: true,
         secondsVisible: false,
         rightOffset: isMobile ? 10 : 50,  // More space on right side by default
-        barSpacing: isMobile ? 3 : 12,  // Slightly thicker candlesticks on mobile for better zoom
+        barSpacing: isMobile ? 2 : 12,  // Tighter spacing on mobile
         minBarSpacing: isMobile ? 0.5 : 0.50,  // Improved minimum spacing for better mobile zoom control
         fixLeftEdge: false,  // Allow scrolling past edges
         fixRightEdge: false,
@@ -259,7 +259,9 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
     if (process.env.NODE_ENV === 'development') {
       const logVisibleRange = () => {
         const visibleLogicalRange = chart.timeScale().getVisibleLogicalRange();
-        if (visibleLogicalRange) {
+        const visibleTimeRange = chart.timeScale().getVisibleRange();
+
+        if (visibleLogicalRange && visibleTimeRange) {
           const visibleBars = Math.round(visibleLogicalRange.to - visibleLogicalRange.from);
           const totalBars = allData.length;
           const currentVisibilityRatio = visibleBars / totalBars;
@@ -271,6 +273,10 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
             totalBars,
             currentVisibilityRatio: currentVisibilityRatio.toFixed(4),
             currentPercentage: (currentVisibilityRatio * 100).toFixed(2) + '%',
+            visibleTimeRange: {
+              from: new Date((visibleTimeRange.from as number) * 1000).toISOString(),
+              to: new Date((visibleTimeRange.to as number) * 1000).toISOString(),
+            },
           });
         }
       };
@@ -305,12 +311,13 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
           });
         }
       } else {
-        // Default to 60 days of data for initial view
-        const SIXTY_DAYS_SECONDS = 60 * 24 * 60 * 60; // 5,184,000 seconds
-        const sixtyDaysAgo = lastTime - SIXTY_DAYS_SECONDS;
+        // Default to 60 days on desktop, 120 days on mobile for better context
+        const defaultDays = isMobile ? 220 : 60;
+        const DEFAULT_DAYS_SECONDS = defaultDays * 24 * 60 * 60;
+        const daysAgo = lastTime - DEFAULT_DAYS_SECONDS;
 
-        // Handle edge case: if token is less than 60 days old, show all available data
-        fromTime = Math.max(sixtyDaysAgo, firstTime);
+        // Handle edge case: if token is less than default days old, show all available data
+        fromTime = Math.max(daysAgo, firstTime);
 
         const visibleTimeRange = lastTime - fromTime;
         const daysCovered = visibleTimeRange / 86400;
@@ -320,15 +327,15 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         const estimatedVisiblePoints = Math.round(approxPointsPerDay * daysCovered);
 
         if (process.env.NODE_ENV === 'development') {
-          console.log('Chart Zoom Parameters (60-Day Default):', {
+          console.log(`Chart Zoom Parameters (${defaultDays}-Day Default):`, {
             device: isMobile ? 'MOBILE' : 'DESKTOP',
             timeframe,
-            mode: '60_DAY_WINDOW',
+            mode: `${defaultDays}_DAY_WINDOW`,
             totalDataPoints: totalPoints,
             estimatedVisiblePoints,
             daysCovered: daysCovered.toFixed(1),
             tokenAgeDays: ((lastTime - firstTime) / 86400).toFixed(1),
-            isLessThan60Days: fromTime === firstTime,
+            isLessThanDefaultDays: fromTime === firstTime,
             barSpacing: isMobile ? 3 : 12,
             rightOffset: isMobile ? 10 : 50,
           });
@@ -340,9 +347,39 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       // Note: We DON'T call fitContent() after this because it would override
       // our custom visible range and show all data. The autoScale: true setting
       // on rightPriceScale will automatically adjust the price axis for visible data.
+
+      // On mobile, shift the view left (showing more recent data) to avoid migration lines being faded at edge
+      const timeWindow = lastTime - fromTime;
+      const mobileShiftRatio = 0.756; // Shift forward to show both migration lines clearly
+      const shiftAmount = isMobile ? Math.floor(timeWindow * mobileShiftRatio) : 0;
+
+      const finalFrom = fromTime + shiftAmount;
+      const finalTo = lastTime + shiftAmount;
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Chart Position Details:', {
+          device: isMobile ? 'MOBILE' : 'DESKTOP',
+          timeframe,
+          baseWindow: {
+            fromTime: new Date(fromTime * 1000).toISOString(),
+            toTime: new Date(lastTime * 1000).toISOString(),
+            windowDays: (timeWindow / 86400).toFixed(1),
+          },
+          shift: {
+            shiftRatio: mobileShiftRatio,
+            shiftAmount,
+            shiftDays: (shiftAmount / 86400).toFixed(1),
+          },
+          finalPosition: {
+            from: new Date(finalFrom * 1000).toISOString(),
+            to: new Date(finalTo * 1000).toISOString(),
+          },
+        });
+      }
+
       chart.timeScale().setVisibleRange({
-        from: fromTime as Time,
-        to: lastTime as Time,
+        from: finalFrom as Time,
+        to: finalTo as Time,
       });
     }
 
