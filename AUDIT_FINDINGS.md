@@ -327,7 +327,11 @@ This audit identified 15 issues across critical, high, medium, and low priority 
    - Initialize state with defaults to match SSR
    - Sync with localStorage after mount using useEffect
    - Eliminates console hydration warnings
-7. ✅ Build verified successfully (multiple times)
+7. ✅ Fixed price scale persistence across display modes
+   - Separate storage keys for price vs market cap: `priceScale_${timeframe}_${displayMode}`
+   - Each mode maintains independent zoom/scale state
+   - Prevents scale confusion when switching between modes
+8. ✅ Build verified successfully (multiple times)
 
 **Remaining Work:**
 - Phase 2 (High Priority): 8-12 hours - debouncing, validation, timing
