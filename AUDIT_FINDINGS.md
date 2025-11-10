@@ -50,17 +50,20 @@ Comprehensive audit of the ZERA chart application focusing on state management, 
 **Potential Issue:** Drawing points outside visible range or at non-existent times
 **Fix Required:** Validate drawing time coordinates against current data range on load
 
-### 6. **Price Scale Restoration Timing Issue** ✅ FIXED
-**Location:** `Chart.tsx:730-810`
-**Issue:** Price scale restoration uses setTimeout(150ms) - arbitrary timing that may fail on slow devices
-**Problem:** No guarantee chart has fully rendered in 150ms on slow devices/browsers
-**Fix Applied:**
-- Replaced setTimeout with double requestAnimationFrame for reliable render timing
-- Added proper price scale change detection via wheel/touch events
-- Implemented debouncing (300ms) to prevent excessive localStorage writes
-- Fixed missing time scale subscription cleanup
-- Now tracks price scale changes independently from time scale changes
-**Status:** ✅ RESOLVED
+### 6. **Price Scale Restoration - Feature Removed** ⚠️ REVERTED
+**Location:** Originally `Chart.tsx:730-810`
+**Issue:** Margin-based price scale persistence is fundamentally broken
+**Problem:**
+- Produces negative price values (mathematically impossible)
+- coordinateToPrice() returns incorrect values after margin manipulation
+- Restoration fails intermittently: "could not convert coordinates to prices"
+- lightweight-charts doesn't provide direct API to set absolute price ranges
+**Decision:** Removed feature entirely, reverted to auto-scale (default behavior)
+**Status:** ⚠️ FEATURE REMOVED - Requires architectural redesign
+**Future Options:**
+- Use visible logical bar range instead of price coordinates
+- Implement custom price scale using chart primitives
+- Wait for lightweight-charts API improvements (priceScale.setVisiblePriceRange())
 
 ### 7. **Data Consistency: Migration Filtering**
 **Location:** `Chart.tsx:216-223`
@@ -329,17 +332,13 @@ This audit identified 15 issues across critical, high, medium, and low priority 
    - Initialize state with defaults to match SSR
    - Sync with localStorage after mount using useEffect
    - Eliminates console hydration warnings
-7. ✅ Fixed price scale persistence across display modes
-   - Separate storage keys for price vs market cap: `priceScale_${timeframe}_${displayMode}`
-   - Each mode maintains independent zoom/scale state
-   - Prevents scale confusion when switching between modes
-8. ✅ Improved price scale tracking and restoration
-   - Replaced setTimeout(150ms) with double requestAnimationFrame for reliable timing
-   - Added wheel/touch event listeners to track price axis zoom changes
-   - Implemented 300ms debouncing for price scale saves
-   - Fixed missing time scale subscription cleanup
-   - Price scale now persists correctly on page refresh
-9. ✅ Build verified successfully (multiple times)
+7. ⚠️ Price scale persistence feature removed (fundamentally broken)
+   - Attempted margin-based approach produced negative/invalid prices
+   - coordinateToPrice() API unreliable for restoration
+   - lightweight-charts lacks direct price range API
+   - Reverted to default auto-scale behavior for reliability
+   - Time scale (X-axis) position persistence still works correctly
+8. ✅ Build verified successfully (multiple times)
 
 **Remaining Work:**
 - Phase 2 (High Priority): 8-12 hours - debouncing, validation, timing
