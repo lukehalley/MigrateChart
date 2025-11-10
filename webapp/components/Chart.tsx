@@ -11,15 +11,33 @@ interface ChartProps {
   displayMode: 'price' | 'marketCap';
   showVolume: boolean;
   showMigrationLines: boolean;
+  onResetPosition?: () => void;
 }
 
-export default function Chart({ poolsData, timeframe, displayMode, showVolume, showMigrationLines }: ChartProps) {
+export default function Chart({ poolsData, timeframe, displayMode, showVolume, showMigrationLines, onResetPosition }: ChartProps) {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const modalContentRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showAbout, setShowAbout] = useState(false);
   const [isAboutClosing, setIsAboutClosing] = useState(false);
+  const [resetTrigger, setResetTrigger] = useState(0);
+
+  const resetChartPosition = () => {
+    const storageKey = `chartPosition_${timeframe}`;
+    localStorage.removeItem(storageKey);
+    setResetTrigger(prev => prev + 1);
+  };
+
+  // Expose reset function to parent
+  useEffect(() => {
+    if (onResetPosition) {
+      (window as any).__resetChartPosition = resetChartPosition;
+    }
+    return () => {
+      delete (window as any).__resetChartPosition;
+    };
+  }, [timeframe, onResetPosition]);
 
   const closeAboutModal = () => {
     setIsAboutClosing(true);
@@ -72,8 +90,8 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       rightPriceScale: {
         borderColor: '#1F6338',  // Deep green border
         scaleMargins: {
-          top: isMobile ? 0.45 : 0.15,    // Mobile: 8% padding, Desktop: 15% padding
-          bottom: isMobile ? 0.45 : 0.15, // Tighter margins on mobile to maximize chart space
+          top: isMobile ? 0.25 : 0.15,    // Mobile: smaller top margin for more chart space
+          bottom: isMobile ? 0.15 : 0.15, // Mobile: larger bottom margin to reduce price axis
         },
         autoScale: true,  // Disable auto-scale to allow manual price scaling
         mode: 0,  // Normal price scale
@@ -255,13 +273,22 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
     window.addEventListener('resize', handleResize);
 
-    // Log visible range changes in development
-    if (process.env.NODE_ENV === 'development') {
-      const logVisibleRange = () => {
-        const visibleLogicalRange = chart.timeScale().getVisibleLogicalRange();
-        const visibleTimeRange = chart.timeScale().getVisibleRange();
+    // Save chart position to localStorage and log in development
+    const saveAndLogVisibleRange = () => {
+      const visibleLogicalRange = chart.timeScale().getVisibleLogicalRange();
+      const visibleTimeRange = chart.timeScale().getVisibleRange();
 
-        if (visibleLogicalRange && visibleTimeRange) {
+      if (visibleLogicalRange && visibleTimeRange) {
+        // Save to localStorage
+        const storageKey = `chartPosition_${timeframe}`;
+        const positionData = {
+          from: visibleTimeRange.from,
+          to: visibleTimeRange.to,
+        };
+        localStorage.setItem(storageKey, JSON.stringify(positionData));
+
+        // Log in development
+        if (process.env.NODE_ENV === 'development') {
           const visibleBars = Math.round(visibleLogicalRange.to - visibleLogicalRange.from);
           const totalBars = allData.length;
           const currentVisibilityRatio = visibleBars / totalBars;
@@ -279,10 +306,10 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
             },
           });
         }
-      };
+      }
+    };
 
-      chart.timeScale().subscribeVisibleLogicalRangeChange(logVisibleRange);
-    }
+    chart.timeScale().subscribeVisibleLogicalRangeChange(saveAndLogVisibleRange);
 
     // Get all data points to calculate visible range
     const allData = poolsData.flatMap(pool => pool.data);
@@ -342,41 +369,74 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         }
       }
 
+      // Check if there's a saved position in localStorage for this timeframe
+      const storageKey = `chartPosition_${timeframe}`;
+      const savedPosition = localStorage.getItem(storageKey);
+
+      let finalFrom: number;
+      let finalTo: number;
+
+      if (savedPosition) {
+        // Restore saved position
+        try {
+          const parsed = JSON.parse(savedPosition);
+          finalFrom = parsed.from;
+          finalTo = parsed.to;
+
+          if (process.env.NODE_ENV === 'development') {
+            console.log('Restored Chart Position from localStorage:', {
+              device: isMobile ? 'MOBILE' : 'DESKTOP',
+              timeframe,
+              restoredPosition: {
+                from: new Date(finalFrom * 1000).toISOString(),
+                to: new Date(finalTo * 1000).toISOString(),
+              },
+            });
+          }
+        } catch (e) {
+          // If parsing fails, use default position
+          const timeWindow = lastTime - fromTime;
+          const mobileShiftRatio = 0.756;
+          const shiftAmount = isMobile ? Math.floor(timeWindow * mobileShiftRatio) : 0;
+          finalFrom = fromTime + shiftAmount;
+          finalTo = lastTime + shiftAmount;
+        }
+      } else {
+        // No saved position, use default with mobile shift
+        const timeWindow = lastTime - fromTime;
+        const mobileShiftRatio = 0.756; // Shift forward to show both migration lines clearly
+        const shiftAmount = isMobile ? Math.floor(timeWindow * mobileShiftRatio) : 0;
+
+        finalFrom = fromTime + shiftAmount;
+        finalTo = lastTime + shiftAmount;
+
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Chart Position Details:', {
+            device: isMobile ? 'MOBILE' : 'DESKTOP',
+            timeframe,
+            baseWindow: {
+              fromTime: new Date(fromTime * 1000).toISOString(),
+              toTime: new Date(lastTime * 1000).toISOString(),
+              windowDays: (timeWindow / 86400).toFixed(1),
+            },
+            shift: {
+              shiftRatio: mobileShiftRatio,
+              shiftAmount,
+              shiftDays: (shiftAmount / 86400).toFixed(1),
+            },
+            finalPosition: {
+              from: new Date(finalFrom * 1000).toISOString(),
+              to: new Date(finalTo * 1000).toISOString(),
+            },
+          });
+        }
+      }
+
       // Set the visible range to show the calculated window
       // The rightOffset in timeScale options will add space on the right
       // Note: We DON'T call fitContent() after this because it would override
       // our custom visible range and show all data. The autoScale: true setting
       // on rightPriceScale will automatically adjust the price axis for visible data.
-
-      // On mobile, shift the view left (showing more recent data) to avoid migration lines being faded at edge
-      const timeWindow = lastTime - fromTime;
-      const mobileShiftRatio = 0.756; // Shift forward to show both migration lines clearly
-      const shiftAmount = isMobile ? Math.floor(timeWindow * mobileShiftRatio) : 0;
-
-      const finalFrom = fromTime + shiftAmount;
-      const finalTo = lastTime + shiftAmount;
-
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Chart Position Details:', {
-          device: isMobile ? 'MOBILE' : 'DESKTOP',
-          timeframe,
-          baseWindow: {
-            fromTime: new Date(fromTime * 1000).toISOString(),
-            toTime: new Date(lastTime * 1000).toISOString(),
-            windowDays: (timeWindow / 86400).toFixed(1),
-          },
-          shift: {
-            shiftRatio: mobileShiftRatio,
-            shiftAmount,
-            shiftDays: (shiftAmount / 86400).toFixed(1),
-          },
-          finalPosition: {
-            from: new Date(finalFrom * 1000).toISOString(),
-            to: new Date(finalTo * 1000).toISOString(),
-          },
-        });
-      }
-
       chart.timeScale().setVisibleRange({
         from: finalFrom as Time,
         to: finalTo as Time,
@@ -398,7 +458,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         chart.remove();
       }
     };
-  }, [poolsData, timeframe, displayMode, showVolume, showMigrationLines]);
+  }, [poolsData, timeframe, displayMode, showVolume, showMigrationLines, resetTrigger]);
 
   return (
     <div className="w-full h-full p-4 md:p-6 relative">

@@ -25,6 +25,13 @@ function HomeContent() {
   const [showCopied, setShowCopied] = useState(false);
   const [mobileMenuTab, setMobileMenuTab] = useState<'settings' | 'about'>('settings');
 
+  // Reset chart position function
+  const handleResetChartPosition = () => {
+    if ((window as any).__resetChartPosition) {
+      (window as any).__resetChartPosition();
+    }
+  };
+
   // Chart display preferences - initialize with defaults to prevent hydration mismatch
   const [displayMode, setDisplayMode] = useState<'price' | 'marketCap'>('price');
   const [showVolume, setShowVolume] = useState<boolean>(true);
@@ -345,6 +352,7 @@ function HomeContent() {
                     onVolumeToggle={handleVolumeToggle}
                     showMigrationLines={showMigrationLines}
                     onMigrationLinesToggle={handleMigrationLinesToggle}
+                    onResetPosition={handleResetChartPosition}
                   />
                 </div>
               </div>
@@ -486,6 +494,7 @@ function HomeContent() {
               displayMode={displayMode}
               showVolume={showVolume}
               showMigrationLines={showMigrationLines}
+              onResetPosition={handleResetChartPosition}
             />
           )}
         </div>
@@ -514,6 +523,7 @@ function HomeContent() {
               displayMode={displayMode}
               showVolume={showVolume}
               showMigrationLines={showMigrationLines}
+              onResetPosition={handleResetChartPosition}
             />
           )}
         </div>
@@ -592,6 +602,7 @@ function HomeContent() {
               onVolumeToggle={handleVolumeToggle}
               showMigrationLines={showMigrationLines}
               onMigrationLinesToggle={handleMigrationLinesToggle}
+              onResetPosition={handleResetChartPosition}
             />
 
             {/* Decorative Divider */}

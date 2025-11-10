@@ -7,6 +7,7 @@ interface ChartControlsProps {
   onVolumeToggle: () => void;
   showMigrationLines: boolean;
   onMigrationLinesToggle: () => void;
+  onResetPosition?: () => void;
 }
 
 export default function ChartControls({
@@ -16,6 +17,7 @@ export default function ChartControls({
   onVolumeToggle,
   showMigrationLines,
   onMigrationLinesToggle,
+  onResetPosition,
 }: ChartControlsProps) {
   return (
     <div className="stat-card" style={{ padding: '24px 16px' }}>
@@ -115,6 +117,26 @@ export default function ChartControls({
             </button>
           </div>
         </div>
+
+        {/* Reset Position Button */}
+        {onResetPosition && (
+          <>
+            {/* Divider */}
+            <div style={{ margin: '0' }} className="border-t border-[#52C97D]/20"></div>
+
+            <div style={{ paddingLeft: '4px', paddingRight: '4px' }}>
+              <button
+                onClick={onResetPosition}
+                className="w-full flex items-center justify-center gap-2 py-2.5 bg-black/60 hover:bg-[#52C97D]/20 border border-[#52C97D]/30 hover:border-[#52C97D]/60 rounded-lg transition-all"
+              >
+                <svg className="w-3.5 h-3.5 text-[#52C97D]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                <span className="text-white text-[10px] font-medium">Reset Position</span>
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
