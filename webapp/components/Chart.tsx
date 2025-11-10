@@ -564,38 +564,42 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       }
     };
 
-    // Combined subscription for time scale changes (saves both position and price scale)
-    const combinedSubscription = () => {
-      saveAndLogVisibleRange();
-      saveAndLogPriceScale();
-    };
+    // Subscribe to time scale changes for position tracking ONLY
+    chart.timeScale().subscribeVisibleLogicalRangeChange(saveAndLogVisibleRange);
 
-    chart.timeScale().subscribeVisibleLogicalRangeChange(combinedSubscription);
-
-    // Track price scale changes using wheel events and touch gestures
+    // Track price scale changes separately using interaction events
+    // We need to save after ANY interaction that might change the price scale
     let priceScaleChangeTimeout: NodeJS.Timeout | null = null;
     const debouncedPriceScaleSave = () => {
       if (priceScaleChangeTimeout) {
         clearTimeout(priceScaleChangeTimeout);
       }
       priceScaleChangeTimeout = setTimeout(() => {
+        console.log('[DEBOUNCE] Saving price scale after interaction...');
         saveAndLogPriceScale();
-      }, 300); // Debounce to avoid excessive saves
+      }, 500); // 500ms debounce - save after user stops interacting
     };
 
-    // Listen for wheel events (price axis zoom)
+    // Listen for ANY wheel event (could be time or price axis)
     const handleWheel = () => {
-      // Save price scale after wheel zoom
+      console.log('[WHEEL] Wheel event detected, will save price scale in 500ms...');
+      debouncedPriceScaleSave();
+    };
+
+    // Listen for mouse up (after dragging price axis)
+    const handleMouseUpForPriceScale = () => {
+      console.log('[MOUSEUP] Mouse up detected, will save price scale in 500ms...');
       debouncedPriceScaleSave();
     };
 
     // Listen for touch events (pinch zoom on mobile)
     const handleTouchEnd = () => {
-      // Save price scale after touch zoom
+      console.log('[TOUCH] Touch end detected, will save price scale in 500ms...');
       debouncedPriceScaleSave();
     };
 
     chartContainer?.addEventListener('wheel', handleWheel, { passive: true });
+    chartContainer?.addEventListener('mouseup', handleMouseUpForPriceScale, { passive: true });
     chartContainer?.addEventListener('touchend', handleTouchEnd, { passive: true });
 
     // Get all data points to calculate visible range
@@ -730,7 +734,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       // Unsubscribe from chart events
       chart.unsubscribeClick(handleChartClick);
       chart.unsubscribeCrosshairMove(handleCrosshairMove);
-      chart.timeScale().unsubscribeVisibleLogicalRangeChange(combinedSubscription);
+      chart.timeScale().unsubscribeVisibleLogicalRangeChange(saveAndLogVisibleRange);
 
       // Remove mouse event listeners from chart container using stored refs
       const chartContainer = chartContainerRef.current;
@@ -744,8 +748,9 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         if (mouseHandlersRef.current.mouseleave) {
           chartContainer.removeEventListener('mouseleave', mouseHandlersRef.current.mouseleave);
         }
-        // Remove wheel and touch event listeners
+        // Remove wheel and touch event listeners for price scale tracking
         chartContainer.removeEventListener('wheel', handleWheel);
+        chartContainer.removeEventListener('mouseup', handleMouseUpForPriceScale);
         chartContainer.removeEventListener('touchend', handleTouchEnd);
       }
 
