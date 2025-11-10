@@ -46,11 +46,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
   const resetChartPosition = () => {
     const positionKey = `chartPosition_${timeframe}`;
-    const priceScaleKeyPrice = `priceScale_${timeframe}_price`;
-    const priceScaleKeyMarketCap = `priceScale_${timeframe}_marketCap`;
     SafeStorage.removeItem(positionKey);
-    SafeStorage.removeItem(priceScaleKeyPrice);
-    SafeStorage.removeItem(priceScaleKeyMarketCap);
     setResetTrigger(prev => prev + 1);
   };
 
@@ -115,11 +111,8 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
     // Detect mobile device
     const isMobile = window.innerWidth < 768;
 
-    // Check for saved price scale (specific to display mode)
-    const priceScaleKey = `priceScale_${timeframe}_${displayMode}`;
-    const savedPriceRange = SafeStorage.getJSON<{ from: number; to: number }>(priceScaleKey);
-    const hasCustomPriceScale = savedPriceRange !== null;
-    console.log(`[LOAD] Price scale ${timeframe}_${displayMode}:`, savedPriceRange, 'HasCustom:', hasCustomPriceScale);
+    // Note: Price scale persistence disabled - the margin-based approach is unreliable
+    // and produces negative price values. Will need a different strategy in the future.
 
     // Create chart
     const chart = createChart(chartContainerRef.current, {
@@ -152,7 +145,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
           top: isMobile ? 0.25 : 0.15,    // Mobile: smaller top margin for more chart space
           bottom: isMobile ? 0.15 : 0.15, // Mobile: larger bottom margin to reduce price axis
         },
-        autoScale: !hasCustomPriceScale,  // Disable auto-scale if we have a custom saved price scale
+        autoScale: true,  // Always use auto-scale for now (price scale persistence is too complex)
         mode: 0,  // Normal price scale
         invertScale: false,
         alignLabels: true,
@@ -537,70 +530,8 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       }
     };
 
-    // Save price scale changes to localStorage using coordinate conversion
-    const saveAndLogPriceScale = () => {
-      if (!chartContainerRef.current || !candlestickSeriesRef.current) return;
-
-      const container = chartContainerRef.current;
-      const series = candlestickSeriesRef.current;
-
-      // Get the top and bottom Y coordinates of the chart
-      const topY = 0;
-      const bottomY = container.clientHeight;
-
-      // Convert to prices
-      const topPrice = series.coordinateToPrice(topY);
-      const bottomPrice = series.coordinateToPrice(bottomY);
-
-      if (topPrice !== null && bottomPrice !== null) {
-        // Save to localStorage (specific to display mode)
-        const priceScaleKey = `priceScale_${timeframe}_${displayMode}`;
-        const priceScaleData = {
-          from: Math.min(topPrice, bottomPrice),
-          to: Math.max(topPrice, bottomPrice),
-        };
-        const success = SafeStorage.setJSON(priceScaleKey, priceScaleData);
-        console.log(`[SAVE] Price scale ${timeframe}_${displayMode}:`, priceScaleData, 'Success:', success);
-      }
-    };
-
-    // Subscribe to time scale changes for position tracking ONLY
+    // Subscribe to time scale changes for position tracking
     chart.timeScale().subscribeVisibleLogicalRangeChange(saveAndLogVisibleRange);
-
-    // Track price scale changes separately using interaction events
-    // We need to save after ANY interaction that might change the price scale
-    let priceScaleChangeTimeout: NodeJS.Timeout | null = null;
-    const debouncedPriceScaleSave = () => {
-      if (priceScaleChangeTimeout) {
-        clearTimeout(priceScaleChangeTimeout);
-      }
-      priceScaleChangeTimeout = setTimeout(() => {
-        console.log('[DEBOUNCE] Saving price scale after interaction...');
-        saveAndLogPriceScale();
-      }, 500); // 500ms debounce - save after user stops interacting
-    };
-
-    // Listen for ANY wheel event (could be time or price axis)
-    const handleWheel = () => {
-      console.log('[WHEEL] Wheel event detected, will save price scale in 500ms...');
-      debouncedPriceScaleSave();
-    };
-
-    // Listen for mouse up (after dragging price axis)
-    const handleMouseUpForPriceScale = () => {
-      console.log('[MOUSEUP] Mouse up detected, will save price scale in 500ms...');
-      debouncedPriceScaleSave();
-    };
-
-    // Listen for touch events (pinch zoom on mobile)
-    const handleTouchEnd = () => {
-      console.log('[TOUCH] Touch end detected, will save price scale in 500ms...');
-      debouncedPriceScaleSave();
-    };
-
-    chartContainer?.addEventListener('wheel', handleWheel, { passive: true });
-    chartContainer?.addEventListener('mouseup', handleMouseUpForPriceScale, { passive: true });
-    chartContainer?.addEventListener('touchend', handleTouchEnd, { passive: true });
 
     // Get all data points to calculate visible range
     const allData = poolsData.flatMap(pool => pool.data);
@@ -658,77 +589,16 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         to: finalTo as Time,
       });
 
-      // Restore saved price scale if available
-      // Use requestAnimationFrame for reliable timing after chart render
-      if (savedPriceRange) {
-        console.log(`[RESTORE] Attempting to restore price scale ${timeframe}_${displayMode}:`, savedPriceRange);
-
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            if (!candlestickSeriesRef.current || !chartContainerRef.current) {
-              console.log(`[RESTORE] Failed - series or container missing`);
-              return;
-            }
-
-            const series = candlestickSeriesRef.current;
-            const container = chartContainerRef.current;
-
-            // Get current auto-scaled range
-            const topY = 0;
-            const bottomY = container.clientHeight;
-            const currentTopPrice = series.coordinateToPrice(topY);
-            const currentBottomPrice = series.coordinateToPrice(bottomY);
-
-            if (currentTopPrice !== null && currentBottomPrice !== null) {
-              const currentMin = Math.min(currentTopPrice, currentBottomPrice);
-              const currentMax = Math.max(currentTopPrice, currentBottomPrice);
-              const currentRange = currentMax - currentMin;
-
-              // Calculate the target range from saved values
-              const savedMin = savedPriceRange.from;
-              const savedMax = savedPriceRange.to;
-              const savedRange = savedMax - savedMin;
-
-              // Calculate zoom factor (how much more/less zoomed compared to auto-scale)
-              const zoomFactor = currentRange / savedRange;
-
-              // Calculate margins needed to achieve the saved range
-              const baseTopMargin = isMobile ? 0.25 : 0.15;
-              const baseBottomMargin = isMobile ? 0.15 : 0.15;
-
-              // Adjust margins based on zoom factor
-              // If zoomFactor > 1, we need more margin (more zoomed out)
-              // If zoomFactor < 1, we need less margin (more zoomed in)
-              const marginAdjustment = (zoomFactor - 1) * 0.5;
-
-              const newTopMargin = Math.max(0.05, Math.min(0.9, baseTopMargin + marginAdjustment));
-              const newBottomMargin = Math.max(0.05, Math.min(0.9, baseBottomMargin + marginAdjustment));
-
-              chart.priceScale('right').applyOptions({
-                autoScale: false,
-                scaleMargins: {
-                  top: newTopMargin,
-                  bottom: newBottomMargin,
-                },
-              });
-
-              console.log(`[RESTORE] Applied margins - Top: ${newTopMargin.toFixed(3)}, Bottom: ${newBottomMargin.toFixed(3)}, ZoomFactor: ${zoomFactor.toFixed(3)}`);
-            } else {
-              console.log(`[RESTORE] Failed - could not convert coordinates to prices`);
-            }
-          });
-        });
-      } else {
-        console.log(`[RESTORE] No saved price scale found for ${timeframe}_${displayMode}, using auto-scale`);
-      }
+      // TODO: Implement proper price scale persistence
+      // The margin-based approach produces negative prices which is invalid.
+      // lightweight-charts doesn't provide a direct API to set price ranges.
+      // Possible solutions to explore:
+      // 1. Use applyOptions with custom price range calculation
+      // 2. Save visible bar indices instead of price values
+      // 3. Use timeScale.scrollToPosition + priceScale.applyOptions coordination
     }
 
     return () => {
-      // Clear any pending debounced saves
-      if (priceScaleChangeTimeout) {
-        clearTimeout(priceScaleChangeTimeout);
-      }
-
       window.removeEventListener('resize', handleResize);
 
       // Unsubscribe from chart events
@@ -748,10 +618,6 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         if (mouseHandlersRef.current.mouseleave) {
           chartContainer.removeEventListener('mouseleave', mouseHandlersRef.current.mouseleave);
         }
-        // Remove wheel and touch event listeners for price scale tracking
-        chartContainer.removeEventListener('wheel', handleWheel);
-        chartContainer.removeEventListener('mouseup', handleMouseUpForPriceScale);
-        chartContainer.removeEventListener('touchend', handleTouchEnd);
       }
 
       // Clear handler refs
