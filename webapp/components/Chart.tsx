@@ -334,27 +334,46 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       }
 
       // coordinateToTime returned null - manually extrapolate
-      // This happens when clicking far beyond the rightOffset area
-      const visibleLogicalRange = timeScale.getVisibleLogicalRange();
-      if (!visibleLogicalRange) return null;
-
-      // Get the time range that's actually visible
+      // This happens when clicking in the rightOffset area beyond data
       const visibleRange = timeScale.getVisibleRange();
       if (!visibleRange) return null;
 
+      // Get the logical range to understand bar spacing
+      const visibleLogicalRange = timeScale.getVisibleLogicalRange();
+      if (!visibleLogicalRange) return null;
+
+      // Get all data to find the last timestamp
+      const lastDataPoint = allData[allData.length - 1];
+      if (!lastDataPoint) return null;
+
+      // Find where the last data point is on screen
+      const lastDataX = timeScale.timeToCoordinate(lastDataPoint.time as Time);
+      if (lastDataX === null) return null;
+
+      // Calculate how far beyond the last data point we clicked
+      const pixelsBeyondData = param.point.x - lastDataX;
+
+      // Calculate time per pixel based on visible bars
+      const visibleBars = visibleLogicalRange.to - visibleLogicalRange.from;
       const containerWidth = chartContainerRef.current?.clientWidth || 0;
-      if (containerWidth === 0) return null;
+      if (containerWidth === 0 || visibleBars === 0) return null;
 
-      // Calculate time per pixel
-      const visibleFrom = visibleRange.from as number;
-      const visibleTo = visibleRange.to as number;
-      const visibleTimeSpan = visibleTo - visibleFrom;
-      const timePerPixel = visibleTimeSpan / containerWidth;
+      const pixelsPerBar = containerWidth / visibleBars;
 
-      // Extrapolate time from pixel position
-      const extrapolatedTime = visibleFrom + (param.point.x * timePerPixel);
+      // Estimate time per bar (assuming hourly candles)
+      // Use the difference between last two data points
+      if (allData.length < 2) return null;
+      const timePerBar = allData[allData.length - 1].time - allData[allData.length - 2].time;
 
-      console.log('[DRAW] Manual extrapolation - x:', param.point.x, '→ time:', extrapolatedTime);
+      // Calculate extrapolated time
+      const barsBeyondData = pixelsBeyondData / pixelsPerBar;
+      const extrapolatedTime = (lastDataPoint.time as number) + (barsBeyondData * timePerBar);
+
+      console.log('[DRAW] Manual extrapolation - x:', param.point.x,
+                  'lastDataX:', lastDataX,
+                  'pixelsBeyond:', pixelsBeyondData.toFixed(0),
+                  'barsBeyond:', barsBeyondData.toFixed(2),
+                  '→ time:', extrapolatedTime);
       return extrapolatedTime as Time;
     };
 
