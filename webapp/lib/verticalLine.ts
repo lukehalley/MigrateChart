@@ -24,20 +24,31 @@ export function drawVerticalLines(
 
   // Create overlay div for custom rendering
   const overlay = document.createElement('div');
-  overlay.style.position = 'absolute';
-  overlay.style.top = '0';
-  overlay.style.left = '0';
-  overlay.style.width = '100%';
-  overlay.style.height = '100%';
-  overlay.style.pointerEvents = 'none';
-  overlay.style.zIndex = '1';
+  overlay.style.cssText = `
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0;
+    transition: opacity 500ms ease-out;
+  `;
 
   container.appendChild(overlay);
 
-  // Function to update line positions
-  const updateLines = () => {
-    overlay.innerHTML = ''; // Clear existing lines
+  // Trigger fade in after element is in DOM
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      overlay.style.opacity = '1';
+    });
+  });
 
+  // Function to update line positions (no fade - instant update for pan/zoom)
+  const updateLines = () => {
+    overlay.innerHTML = ''; // Clear existing lines instantly
+    renderLines();
+  };
+
+  const renderLines = () => {
     const timeScale = chart.timeScale();
     const isMobile = window.innerWidth < 768;
 
@@ -79,7 +90,7 @@ export function drawVerticalLines(
         opacity = 1 - (distanceIntoFade / fadeRange);
       }
 
-      // Draw vertical line with fade
+      // Draw vertical line
       const lineEl = document.createElement('div');
       lineEl.style.position = 'absolute';
       lineEl.style.left = `${coordinate}px`;
@@ -87,12 +98,11 @@ export function drawVerticalLines(
       lineEl.style.bottom = '0';
       lineEl.style.width = '2px';
       lineEl.style.borderLeft = '2px dashed #52C97D';
-      lineEl.style.opacity = String(0.6 * opacity); // Apply fade to base opacity
+      lineEl.style.opacity = String(0.6 * opacity);
       lineEl.style.boxShadow = '0 0 8px rgba(82, 201, 125, 0.2)';
-      lineEl.style.transition = 'opacity 0.3s ease-in-out';
       overlay.appendChild(lineEl);
 
-      // Draw label - centered on the line with fade
+      // Draw label - centered on the line
       const labelEl = document.createElement('div');
       labelEl.style.position = 'absolute';
       labelEl.style.left = `${coordinate}px`;
@@ -108,8 +118,7 @@ export function drawVerticalLines(
       labelEl.style.textAlign = 'center';
       labelEl.style.lineHeight = isMobile ? '1.3' : '1.4';
       labelEl.style.boxShadow = `0 0 15px ${line.color}80, inset 0 0 10px ${line.color}20`;
-      labelEl.style.opacity = String(opacity); // Apply fade effect
-      labelEl.style.transition = 'opacity 0.3s ease-in-out';
+      labelEl.style.opacity = String(opacity);
       labelEl.style.whiteSpace = 'nowrap';
       labelEl.innerHTML = line.label; // Use innerHTML to support <br/> tags
       overlay.appendChild(labelEl);
@@ -117,12 +126,16 @@ export function drawVerticalLines(
   };
 
   // Initial draw
-  updateLines();
+  renderLines();
 
   // Update on time scale changes
   chart.timeScale().subscribeVisibleLogicalRangeChange(updateLines);
 
   return () => {
-    overlay.remove();
+    // Fade out by changing opacity
+    overlay.style.opacity = '0';
+    setTimeout(() => {
+      overlay.remove();
+    }, 500); // Match transition duration
   };
 }

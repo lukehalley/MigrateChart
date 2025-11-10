@@ -1,10 +1,11 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import React, { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
 import Chart from '@/components/Chart';
 import TimeframeToggle from '@/components/TimeframeToggle';
+import ChartControls from '@/components/ChartControls';
 import TokenStats from '@/components/TokenStats';
 import { fetchAllPoolsData, fetchTokenStats } from '@/lib/api';
 import { PoolData, Timeframe, POOLS } from '@/lib/types';
@@ -15,13 +16,46 @@ function HomeContent() {
 
   // Get timeframe from URL or default to '1D'
   const urlTimeframe = searchParams.get('timeframe') as Timeframe | null;
-  const validTimeframes: Timeframe[] = ['1H', '4H', '8H', '1D', '1W'];
+  const validTimeframes: Timeframe[] = ['1H', '4H', '8H', '1D', '1W', 'MAX'];
   const initialTimeframe = urlTimeframe && validTimeframes.includes(urlTimeframe) ? urlTimeframe : '1D';
 
   const [timeframe, setTimeframeState] = useState<Timeframe>(initialTimeframe);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [isMenuClosing, setIsMenuClosing] = useState(false);
   const [showCopied, setShowCopied] = useState(false);
+
+  // Chart display preferences - initialize with defaults to prevent hydration mismatch
+  const [displayMode, setDisplayMode] = useState<'price' | 'marketCap'>('price');
+  const [showVolume, setShowVolume] = useState<boolean>(true);
+  const [showMigrationLines, setShowMigrationLines] = useState<boolean>(true);
+
+  // Load preferences from localStorage after hydration
+  React.useEffect(() => {
+    const savedDisplayMode = localStorage.getItem('chartDisplayMode') as 'price' | 'marketCap' | null;
+    const savedShowVolume = localStorage.getItem('chartShowVolume');
+    const savedShowMigrationLines = localStorage.getItem('chartShowMigrationLines');
+
+    if (savedDisplayMode) setDisplayMode(savedDisplayMode);
+    if (savedShowVolume !== null) setShowVolume(savedShowVolume !== 'false');
+    if (savedShowMigrationLines !== null) setShowMigrationLines(savedShowMigrationLines !== 'false');
+  }, []);
+
+  const handleDisplayModeChange = (mode: 'price' | 'marketCap') => {
+    setDisplayMode(mode);
+    localStorage.setItem('chartDisplayMode', mode);
+  };
+
+  const handleVolumeToggle = () => {
+    const newShowVolume = !showVolume;
+    setShowVolume(newShowVolume);
+    localStorage.setItem('chartShowVolume', String(newShowVolume));
+  };
+
+  const handleMigrationLinesToggle = () => {
+    const newShowMigrationLines = !showMigrationLines;
+    setShowMigrationLines(newShowMigrationLines);
+    localStorage.setItem('chartShowMigrationLines', String(newShowMigrationLines));
+  };
 
   // Update URL when timeframe changes
   const setTimeframe = (newTimeframe: Timeframe) => {
@@ -89,6 +123,54 @@ function HomeContent() {
     }
   );
 
+  // Calculate timeframe-specific stats from chart data
+  const timeframeStats = React.useMemo(() => {
+    if (!poolsData || poolsData.length === 0 || !tokenStats) return null;
+
+    // Get the most recent pool data (Meteora)
+    const currentPoolData = poolsData.find(p => p.pool_name === 'zera_Meteora');
+    if (!currentPoolData || currentPoolData.data.length === 0) return tokenStats;
+
+    const data = currentPoolData.data;
+    const now = Math.floor(Date.now() / 1000);
+
+    // Calculate timeframe duration in seconds
+    const timeframeSeconds: Record<Timeframe, number> = {
+      '1H': 3600,
+      '4H': 4 * 3600,
+      '8H': 8 * 3600,
+      '1D': 24 * 3600,
+      '1W': 7 * 24 * 3600,
+      'MAX': now - data[0].time, // From first data point to now
+    };
+
+    const duration = timeframeSeconds[timeframe];
+    const startTime = now - duration;
+
+    // Filter data for selected timeframe
+    const timeframeData = data.filter(d => d.time >= startTime);
+
+    if (timeframeData.length === 0) return tokenStats;
+
+    // Calculate volume for timeframe
+    const volumeForTimeframe = timeframeData.reduce((sum, d) => sum + (d.volume || 0), 0);
+
+    // Calculate price change for timeframe
+    const firstPrice = timeframeData[0].close;
+    const lastPrice = timeframeData[timeframeData.length - 1].close;
+    const priceChangePercent = ((lastPrice - firstPrice) / firstPrice) * 100;
+
+    // Calculate fees based on volume
+    const feesForTimeframe = volumeForTimeframe * 0.01; // 1% fee
+
+    return {
+      ...tokenStats,
+      volume24h: volumeForTimeframe,
+      priceChange24h: priceChangePercent,
+      fees24h: feesForTimeframe,
+    };
+  }, [poolsData, tokenStats, timeframe]);
+
   return (
     <main className="w-screen h-screen overflow-hidden grid grid-rows-[auto_1fr]">
       {/* Donation Banner */}
@@ -154,24 +236,44 @@ function HomeContent() {
             <div className="flex flex-col items-center mt-16 py-8 px-4 pointer-events-auto">
               {/* Main Info Card */}
               <div className="info-card-small w-[85vw] max-w-[320px]">
-                <div className="flex items-center gap-3 mb-4">
+                <a
+                  href="https://zeralabs.org"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 mb-4 hover:opacity-80 transition-opacity cursor-pointer group"
+                >
                   <img
                     src="/circle-logo.avif"
                     alt="ZERA"
-                    className="h-8 w-8"
+                    className="h-8 w-8 group-hover:scale-105 transition-transform"
                   />
                   <div>
-                    <h1 className="text-lg font-bold text-white mb-0">ZERA</h1>
+                    <h1 className="text-lg font-bold text-white mb-0 group-hover:text-[#52C97D] transition-colors">ZERA</h1>
                     <p className="text-white text-[10px]">Complete Price History</p>
                   </div>
-                </div>
+                </a>
 
-                <div className="flex items-center justify-center gap-2 text-[10px] pt-4 pb-2 mt-3">
+                <div className="flex items-center justify-center gap-2 text-[10px] pt-4 pb-3 mt-3">
                   <span className="text-white font-medium">MON3Y</span>
                   <span className="text-white">→</span>
                   <span className="text-white font-medium">Raydium</span>
                   <span className="text-white">→</span>
                   <span className="text-[#52C97D] font-bold">Meteora</span>
+                </div>
+
+                {/* DEX Screener Link */}
+                <div style={{ marginTop: '24px', paddingTop: '24px' }} className="border-t border-[#52C97D]/20">
+                  <a
+                    href="https://dexscreener.com/solana/6oUJD1EHNVBNMeTpytmY2NxKWicz5C2JUbByUrHEsjhc"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 text-[10px] text-white/70 hover:text-[#52C97D] transition-colors group"
+                  >
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                    <span>View on DEX Screener</span>
+                  </a>
                 </div>
               </div>
 
@@ -199,9 +301,28 @@ function HomeContent() {
                 <div className="dashed-divider w-24"></div>
               </div>
 
+              {/* Chart Controls Card */}
+              <div className="info-card-small w-[85vw] max-w-[320px]">
+                <div className="py-4 px-3">
+                  <ChartControls
+                    displayMode={displayMode}
+                    onDisplayModeChange={handleDisplayModeChange}
+                    showVolume={showVolume}
+                    onVolumeToggle={handleVolumeToggle}
+                    showMigrationLines={showMigrationLines}
+                    onMigrationLinesToggle={handleMigrationLinesToggle}
+                  />
+                </div>
+              </div>
+
+              {/* Decorative Divider */}
+              <div className="flex items-center justify-center py-6">
+                <div className="dashed-divider w-24"></div>
+              </div>
+
               {/* Token Stats */}
               <div className="w-[85vw] max-w-[320px]">
-                <TokenStats stats={tokenStats || null} isLoading={isStatsLoading} />
+                <TokenStats stats={timeframeStats || null} isLoading={isStatsLoading} timeframe={timeframe} />
               </div>
 
               {/* Decorative Divider */}
@@ -244,15 +365,21 @@ function HomeContent() {
           )}
 
           {!isLoading && !error && poolsData && (
-            <Chart poolsData={poolsData} timeframe={timeframe} />
+            <Chart
+              poolsData={poolsData}
+              timeframe={timeframe}
+              displayMode={displayMode}
+              showVolume={showVolume}
+              showMigrationLines={showMigrationLines}
+            />
           )}
         </div>
       </div>
 
       {/* Desktop View - Grid Layout */}
-      <div className="hidden md:grid md:grid-cols-[9fr_1fr] w-full h-full overflow-hidden">
+      <div className="hidden md:grid md:grid-cols-[9fr_1fr] w-full h-full overflow-hidden min-h-0">
         {/* Left Section - Chart */}
-        <div className="h-full relative overflow-hidden">
+        <div className="h-full relative overflow-hidden min-h-0">
           {error && (
             <div className="flex items-center justify-center h-full">
               <div className="text-red">Error loading chart data</div>
@@ -266,34 +393,60 @@ function HomeContent() {
           )}
 
           {!isLoading && !error && poolsData && (
-            <Chart poolsData={poolsData} timeframe={timeframe} />
+            <Chart
+              poolsData={poolsData}
+              timeframe={timeframe}
+              displayMode={displayMode}
+              showVolume={showVolume}
+              showMigrationLines={showMigrationLines}
+            />
           )}
         </div>
 
         {/* Right Section - Token Stats Sidebar */}
-        <div className="h-full bg-gradient-to-b from-black via-black to-black border-l-2 border-dashed border-[#52C97D]/60 grid grid-rows-[1fr_auto]" style={{ boxShadow: '-8px 0 8px rgba(82, 201, 125, 0.2)' }}>
+        <div className="h-full bg-gradient-to-b from-black via-black to-black border-l-2 border-dashed border-[#52C97D]/60 flex flex-col min-h-0" style={{ boxShadow: '-8px 0 8px rgba(82, 201, 125, 0.2)' }}>
           {/* Scrollable Content */}
-          <div className="overflow-y-auto overflow-x-hidden px-6 py-4 space-y-4">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden px-6 py-4 space-y-4 min-h-0">
             {/* Main Info Block */}
             <div className="stat-card-highlight">
-              <div className="flex items-center gap-3 mb-3">
+              <a
+                href="https://zeralabs.org"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 mb-3 hover:opacity-80 transition-opacity cursor-pointer group"
+              >
                 <img
                   src="/circle-logo.avif"
                   alt="ZERA"
-                  className="h-8 w-8"
+                  className="h-8 w-8 group-hover:scale-105 transition-transform"
                 />
                 <div>
-                  <h1 className="text-lg font-bold text-white mb-0">ZERA</h1>
+                  <h1 className="text-lg font-bold text-white mb-0 group-hover:text-[#52C97D] transition-colors">ZERA</h1>
                   <p className="text-white text-[10px]">Complete Price History</p>
                 </div>
-              </div>
+              </a>
 
-              <div className="flex items-center justify-center gap-2 text-[10px] pt-3 pb-1 mt-3">
+              <div className="flex items-center justify-center gap-2 text-[10px] pt-3 pb-3 mt-3">
                 <span className="text-white font-medium">MON3Y</span>
                 <span className="text-white">→</span>
                 <span className="text-white font-medium">Raydium</span>
                 <span className="text-white">→</span>
                 <span className="text-[#52C97D] font-bold">Meteora</span>
+              </div>
+
+              {/* DEX Screener Link */}
+              <div style={{ marginTop: '24px', paddingTop: '24px' }} className="border-t border-[#52C97D]/20">
+                <a
+                  href="https://dexscreener.com/solana/6oUJD1EHNVBNMeTpytmY2NxKWicz5C2JUbByUrHEsjhc"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 text-[10px] text-white/70 hover:text-[#52C97D] transition-colors group"
+                >
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                  <span>View on DEX Screener</span>
+                </a>
               </div>
             </div>
 
@@ -316,14 +469,32 @@ function HomeContent() {
               <div className="dashed-divider"></div>
             </div>
 
+            {/* Chart Controls */}
+            <ChartControls
+              displayMode={displayMode}
+              onDisplayModeChange={handleDisplayModeChange}
+              showVolume={showVolume}
+              onVolumeToggle={handleVolumeToggle}
+              showMigrationLines={showMigrationLines}
+              onMigrationLinesToggle={handleMigrationLinesToggle}
+            />
+
+            {/* Decorative Divider */}
+            <div className="py-4">
+              <div className="dashed-divider"></div>
+            </div>
+
             {/* Token Stats */}
-            <TokenStats stats={tokenStats || null} isLoading={isStatsLoading} />
+            <TokenStats stats={timeframeStats || null} isLoading={isStatsLoading} timeframe={timeframe} />
+
+            {/* Extra spacing before sticky button */}
+            <div className="h-4"></div>
           </div>
 
-          {/* Bottom Fixed Section */}
-          <div className="bg-black px-6 pt-4 pb-12">
+          {/* Sticky Bottom Section */}
+          <div className="flex-shrink-0 bg-black px-6 pt-3 pb-4 border-t-2 border-dashed border-[#52C97D]/30">
             {/* Decorative Divider */}
-            <div className="pb-6">
+            <div className="pb-4">
               <div className="dashed-divider"></div>
             </div>
 
@@ -333,7 +504,7 @@ function HomeContent() {
                 href="https://x.com/Trenchooooor"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 py-14 bg-black/85 hover:bg-[#52C97D]/15 transition-all cursor-pointer backdrop-blur-xl"
+                className="flex items-center justify-center gap-2 py-8 bg-black/85 hover:bg-[#52C97D]/15 transition-all cursor-pointer backdrop-blur-xl"
                 style={{ boxShadow: '0 0 12px rgba(31, 99, 56, 0.3), 0 0 24px rgba(31, 99, 56, 0.15)' }}
               >
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

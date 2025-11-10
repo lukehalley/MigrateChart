@@ -1,16 +1,20 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { TokenStats as TokenStatsType } from '@/lib/types';
+import { TokenStats as TokenStatsType, Timeframe } from '@/lib/types';
 
 interface TokenStatsProps {
   stats: TokenStatsType | null;
   isLoading: boolean;
+  timeframe?: Timeframe;
 }
 
-export default function TokenStats({ stats, isLoading }: TokenStatsProps) {
+export default function TokenStats({ stats, isLoading, timeframe = '1D' }: TokenStatsProps) {
   const prevStats = useRef<TokenStatsType | null>(null);
   const [flashingFields, setFlashingFields] = useState<Set<string>>(new Set());
+
+  // Format timeframe label for display
+  const timeframeLabel = timeframe === 'MAX' ? 'ALL TIME' : timeframe;
 
   useEffect(() => {
     if (!stats || !prevStats.current) {
@@ -112,13 +116,16 @@ export default function TokenStats({ stats, isLoading }: TokenStatsProps) {
             <span className="text-[#52C97D] text-[9px] font-bold">LIVE</span>
           </div>
         </div>
-        <p
-          className={`text-sm font-semibold select-text ${
-            stats.priceChange24h >= 0 ? 'text-[#52C97D]' : 'text-[#ef5350]'
-          } ${flashingFields.has('priceChange') ? 'flash-update' : ''}`}
-        >
-          {formatPercent(stats.priceChange24h)}
-        </p>
+        <div className="flex items-center gap-1">
+          <p
+            className={`text-sm font-semibold select-text ${
+              stats.priceChange24h >= 0 ? 'text-[#52C97D]' : 'text-[#ef5350]'
+            } ${flashingFields.has('priceChange') ? 'flash-update' : ''}`}
+          >
+            {formatPercent(stats.priceChange24h)}
+          </p>
+          <span className="text-white/50 text-[9px]">({timeframeLabel})</span>
+        </div>
       </div>
 
       {/* Divider */}
@@ -152,9 +159,9 @@ export default function TokenStats({ stats, isLoading }: TokenStatsProps) {
         <div className="dashed-divider"></div>
       </div>
 
-      {/* Volume 24H Card */}
+      {/* Volume Card - Dynamic Timeframe */}
       <div className="stat-card">
-        <p className="text-white text-[11px] font-medium mb-2">VOLUME (24H)</p>
+        <p className="text-white text-[11px] font-medium mb-2">VOLUME ({timeframeLabel})</p>
         <p className={`text-white text-lg font-bold select-text ${flashingFields.has('volume') ? 'flash-update' : ''}`}>
           {formatNumber(stats.volume24h)}
         </p>
@@ -165,11 +172,11 @@ export default function TokenStats({ stats, isLoading }: TokenStatsProps) {
         <div className="dashed-divider"></div>
       </div>
 
-      {/* Fees 24H Card */}
+      {/* Fees Card - Dynamic Timeframe */}
       {stats.fees24h !== undefined && (
         <>
         <div className="stat-card">
-          <p className="text-white text-[11px] font-medium mb-2">FEES (24H)</p>
+          <p className="text-white text-[11px] font-medium mb-2">FEES ({timeframeLabel})</p>
           <p className={`text-white text-lg font-bold select-text mb-2 ${flashingFields.has('fees') ? 'flash-update' : ''}`}>
             {formatNumber(stats.fees24h)}
           </p>
@@ -213,16 +220,16 @@ export default function TokenStats({ stats, isLoading }: TokenStatsProps) {
       {(stats.buyCount24h || stats.sellCount24h) && (
         <>
         <div className="stat-card">
-          <p className="text-white text-[11px] font-medium mb-3">TXNS (24H)</p>
+          <p className="text-white text-[11px] font-medium mb-3 text-center">TXNS (24H)</p>
           <div className="flex justify-center gap-8 text-sm">
-            <div>
-              <p className="text-white text-[11px] font-medium">BUYS</p>
+            <div className="text-center">
+              <p className="text-white text-[11px] font-medium mb-1">BUYS</p>
               <p className={`text-[#52C97D] font-bold text-base select-text ${flashingFields.has('buys') ? 'flash-update' : ''}`}>
                 {stats.buyCount24h || 0}
               </p>
             </div>
-            <div>
-              <p className="text-white text-[11px] font-medium">SELLS</p>
+            <div className="text-center">
+              <p className="text-white text-[11px] font-medium mb-1">SELLS</p>
               <p className={`text-[#ef5350] font-bold text-base select-text ${flashingFields.has('sells') ? 'flash-update' : ''}`}>
                 {stats.sellCount24h || 0}
               </p>

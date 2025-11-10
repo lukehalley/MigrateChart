@@ -163,7 +163,8 @@ a {
 .stat-card {
   background: transparent;
   border: none;
-  padding: 16px 8px;
+  padding: 20px 12px;
+  margin: 8px 0;
   transition: all 0.2s ease;
 }
 
@@ -171,8 +172,9 @@ a {
 .stat-card-highlight {
   background: transparent;
   border: none;
-  padding: 16px 8px;
-  padding-bottom: 16px;
+  padding: 20px 12px;
+  padding-bottom: 20px;
+  margin: 8px 0;
   transition: all 0.2s ease;
 }
 
