@@ -557,8 +557,6 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       }
     };
 
-    chart.timeScale().subscribeVisibleLogicalRangeChange(saveAndLogVisibleRange);
-
     // Save price scale changes to localStorage using coordinate conversion
     const saveAndLogPriceScale = () => {
       if (!chartContainerRef.current || !candlestickSeriesRef.current) return;
@@ -588,21 +586,46 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
           console.log('Price Scale Change:', {
             device: isMobile ? 'MOBILE' : 'DESKTOP',
             timeframe,
+            displayMode,
             priceRange: priceScaleData,
           });
         }
       }
     };
 
-    // Subscribe to visible logical range changes to also capture price scale changes
+    // Combined subscription for time scale changes (saves both position and price scale)
     const combinedSubscription = () => {
       saveAndLogVisibleRange();
       saveAndLogPriceScale();
     };
 
-    // Replace the time scale subscription with combined subscription
-    chart.timeScale().unsubscribeVisibleLogicalRangeChange(saveAndLogVisibleRange);
     chart.timeScale().subscribeVisibleLogicalRangeChange(combinedSubscription);
+
+    // Track price scale changes using wheel events and touch gestures
+    let priceScaleChangeTimeout: NodeJS.Timeout | null = null;
+    const debouncedPriceScaleSave = () => {
+      if (priceScaleChangeTimeout) {
+        clearTimeout(priceScaleChangeTimeout);
+      }
+      priceScaleChangeTimeout = setTimeout(() => {
+        saveAndLogPriceScale();
+      }, 300); // Debounce to avoid excessive saves
+    };
+
+    // Listen for wheel events (price axis zoom)
+    const handleWheel = () => {
+      // Save price scale after wheel zoom
+      debouncedPriceScaleSave();
+    };
+
+    // Listen for touch events (pinch zoom on mobile)
+    const handleTouchEnd = () => {
+      // Save price scale after touch zoom
+      debouncedPriceScaleSave();
+    };
+
+    chartContainer?.addEventListener('wheel', handleWheel, { passive: true });
+    chartContainer?.addEventListener('touchend', handleTouchEnd, { passive: true });
 
     // Get all data points to calculate visible range
     const allData = poolsData.flatMap(pool => pool.data);
@@ -726,66 +749,83 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       });
 
       // Restore saved price scale if available
+      // Use requestAnimationFrame for reliable timing after chart render
       if (savedPriceRange) {
-        // Need to wait for the chart to fully render
-        setTimeout(() => {
-          if (!candlestickSeriesRef.current || !chartContainerRef.current) return;
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            if (!candlestickSeriesRef.current || !chartContainerRef.current) return;
 
-          // Get current auto-scaled range to compare
-          const series = candlestickSeriesRef.current;
-          const container = chartContainerRef.current;
+            const series = candlestickSeriesRef.current;
+            const container = chartContainerRef.current;
 
-          // Get current price range from coordinates
-          const topY = 0;
-          const bottomY = container.clientHeight;
-          const currentTopPrice = series.coordinateToPrice(topY);
-          const currentBottomPrice = series.coordinateToPrice(bottomY);
+            // Get current auto-scaled range
+            const topY = 0;
+            const bottomY = container.clientHeight;
+            const currentTopPrice = series.coordinateToPrice(topY);
+            const currentBottomPrice = series.coordinateToPrice(bottomY);
 
-          if (currentTopPrice !== null && currentBottomPrice !== null) {
-            const currentMin = Math.min(currentTopPrice, currentBottomPrice);
-            const currentMax = Math.max(currentTopPrice, currentBottomPrice);
-            const currentRange = currentMax - currentMin;
+            if (currentTopPrice !== null && currentBottomPrice !== null) {
+              const currentMin = Math.min(currentTopPrice, currentBottomPrice);
+              const currentMax = Math.max(currentTopPrice, currentBottomPrice);
+              const currentRange = currentMax - currentMin;
 
-            // Calculate how much to adjust scaleMargins
-            const savedMin = savedPriceRange.from;
-            const savedMax = savedPriceRange.to;
+              // Calculate the target range from saved values
+              const savedMin = savedPriceRange.from;
+              const savedMax = savedPriceRange.to;
+              const savedRange = savedMax - savedMin;
 
-            // Calculate the relative difference
-            const topDiff = (currentMax - savedMax) / currentRange;
-            const bottomDiff = (savedMin - currentMin) / currentRange;
+              // Calculate zoom factor (how much more/less zoomed compared to auto-scale)
+              const zoomFactor = currentRange / savedRange;
 
-            // Apply adjusted scale margins
-            const baseTopMargin = isMobile ? 0.25 : 0.15;
-            const baseBottomMargin = isMobile ? 0.15 : 0.15;
+              // Calculate margins needed to achieve the saved range
+              const baseTopMargin = isMobile ? 0.25 : 0.15;
+              const baseBottomMargin = isMobile ? 0.15 : 0.15;
 
-            chart.priceScale('right').applyOptions({
-              autoScale: false,
-              scaleMargins: {
-                top: Math.max(0, Math.min(0.8, baseTopMargin + topDiff * 0.5)),
-                bottom: Math.max(0, Math.min(0.8, baseBottomMargin + bottomDiff * 0.5)),
-              },
-            });
+              // Adjust margins based on zoom factor
+              // If zoomFactor > 1, we need more margin (more zoomed out)
+              // If zoomFactor < 1, we need less margin (more zoomed in)
+              const marginAdjustment = (zoomFactor - 1) * 0.5;
 
-            if (process.env.NODE_ENV === 'development') {
-              console.log('Restored Price Scale from localStorage:', {
-                device: isMobile ? 'MOBILE' : 'DESKTOP',
-                timeframe,
-                savedRange: { min: savedMin, max: savedMax },
-                currentRange: { min: currentMin, max: currentMax },
-                applied: true,
+              const newTopMargin = Math.max(0.05, Math.min(0.9, baseTopMargin + marginAdjustment));
+              const newBottomMargin = Math.max(0.05, Math.min(0.9, baseBottomMargin + marginAdjustment));
+
+              chart.priceScale('right').applyOptions({
+                autoScale: false,
+                scaleMargins: {
+                  top: newTopMargin,
+                  bottom: newBottomMargin,
+                },
               });
+
+              if (process.env.NODE_ENV === 'development') {
+                console.log('Restored Price Scale:', {
+                  device: isMobile ? 'MOBILE' : 'DESKTOP',
+                  timeframe,
+                  displayMode,
+                  savedRange: { min: savedMin, max: savedMax, range: savedRange },
+                  currentRange: { min: currentMin, max: currentMax, range: currentRange },
+                  zoomFactor: zoomFactor.toFixed(3),
+                  margins: { top: newTopMargin.toFixed(3), bottom: newBottomMargin.toFixed(3) },
+                });
+              }
             }
-          }
-        }, 150);
+          });
+        });
       }
     }
 
     return () => {
+      // Clear any pending debounced saves
+      if (priceScaleChangeTimeout) {
+        clearTimeout(priceScaleChangeTimeout);
+      }
+
       window.removeEventListener('resize', handleResize);
 
       // Unsubscribe from chart events
       chart.unsubscribeClick(handleChartClick);
       chart.unsubscribeCrosshairMove(handleCrosshairMove);
+      chart.timeScale().unsubscribeVisibleLogicalRangeChange(combinedSubscription);
 
       // Remove mouse event listeners from chart container using stored refs
       const chartContainer = chartContainerRef.current;
@@ -799,6 +839,9 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         if (mouseHandlersRef.current.mouseleave) {
           chartContainer.removeEventListener('mouseleave', mouseHandlersRef.current.mouseleave);
         }
+        // Remove wheel and touch event listeners
+        chartContainer.removeEventListener('wheel', handleWheel);
+        chartContainer.removeEventListener('touchend', handleTouchEnd);
       }
 
       // Clear handler refs
