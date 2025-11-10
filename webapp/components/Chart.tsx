@@ -318,85 +318,124 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       });
     }
 
+    // Helper function to get or extrapolate time coordinate
+    const getTimeCoordinate = (param: MouseEventParams): Time | null => {
+      if (param.time) return param.time; // Within data range
+
+      // Beyond data range - extrapolate time based on X coordinate
+      if (!param.point) return null;
+
+      const timeScale = chart.timeScale();
+
+      // Try to convert coordinate to time (lightweight-charts should handle this)
+      const coordinateTime = timeScale.coordinateToTime(param.point.x);
+      if (coordinateTime !== null) {
+        console.log('[EXTRAPOLATE] Using coordinateToTime:', coordinateTime);
+        return coordinateTime;
+      }
+
+      // If coordinateToTime fails, use visible range extrapolation
+      const visibleRange = timeScale.getVisibleRange();
+      if (!visibleRange) return null;
+
+      const containerWidth = chartContainerRef.current?.clientWidth || 0;
+      if (containerWidth === 0) return null;
+
+      // Calculate time based on pixel position
+      const visibleTime = (visibleRange.to as number) - (visibleRange.from as number);
+      const timePerPixel = visibleTime / containerWidth;
+      const extrapolatedTime = (visibleRange.from as number) + (param.point.x * timePerPixel);
+
+      console.log('[EXTRAPOLATE] Calculated time:', extrapolatedTime, 'at x:', param.point.x);
+      return extrapolatedTime as Time;
+    };
+
     // Add mouse event handlers for drawing tools
     const handleChartClick = (param: MouseEventParams) => {
-      console.log('Chart clicked!', {
-        isDrawingMode: drawingStateRef.current.isDrawingMode(),
-        hasPoint: !!param.point,
-        hasTime: !!param.time,
-        activeToolType: drawingStateRef.current.getActiveToolType()
-      });
+      if (!drawingStateRef.current.isDrawingMode()) return;
 
-      if (!drawingStateRef.current.isDrawingMode() || !param.point || !param.time) return;
-
-      const series = candlestickSeriesRef.current;
-      if (!series) {
-        console.log('No series found');
+      if (!param.point) {
+        console.log('[CLICK] Ignored - no point coordinate');
         return;
       }
+
+      const series = candlestickSeriesRef.current;
+      const drawingPrimitive = drawingPrimitiveRef.current;
+      if (!series || !drawingPrimitive) return;
 
       const price = series.coordinateToPrice(param.point.y);
       if (price === null) {
-        console.log('Could not convert to price');
+        console.log('[CLICK] Ignored - invalid price coordinate');
         return;
       }
 
-      const drawingPrimitive = drawingPrimitiveRef.current;
-      if (!drawingPrimitive) {
-        console.log('No drawing primitive');
+      // Get time (or extrapolate if beyond data)
+      const time = getTimeCoordinate(param);
+      if (time === null) {
+        console.log('[CLICK] Ignored - could not determine time');
         return;
       }
 
       const activeToolType = drawingStateRef.current.getActiveToolType();
 
       if (activeToolType === 'horizontal-line') {
-        console.log('Adding horizontal line at price:', price);
-        // Add horizontal line at clicked price
+        // Horizontal lines don't need time coordinate
         drawingPrimitive.addHorizontalLine(price);
-
-        // Save to localStorage
         const storageKey = `drawings_${timeframe}`;
         SafeStorage.setJSON(storageKey, drawingPrimitive.getDrawings());
+        console.log('[DRAWING] Horizontal line added at price:', price);
       } else if (activeToolType === 'trend-line') {
         const tempPoint = drawingStateRef.current.getTempPoint();
 
         if (!tempPoint) {
-          // First click - store the point and add a preview line
-          drawingStateRef.current.setTempPoint({ time: param.time, price });
+          // First click
+          console.log('[TREND] First point - time:', time, 'price:', price);
+          drawingStateRef.current.setTempPoint({ time, price });
           drawingStateRef.current.setIsDrawing(true);
-          // Add a temporary trend line that will be updated as mouse moves
-          drawingPrimitive.addTrendLine({ time: param.time, price }, { time: param.time, price });
+          drawingPrimitive.addTrendLine({ time, price }, { time, price });
         } else {
-          // Second click - the line already exists from first click, just update it
-          drawingPrimitive.updateLastTrendLinePoint2({ time: param.time, price });
+          // Second click - complete the line
+          console.log('[TREND] Second point - time:', time, 'price:', price);
+          drawingPrimitive.updateLastTrendLinePoint2({ time, price });
           drawingStateRef.current.setTempPoint(null);
           drawingStateRef.current.setIsDrawing(false);
 
-          // Save to localStorage
           const storageKey = `drawings_${timeframe}`;
           SafeStorage.setJSON(storageKey, drawingPrimitive.getDrawings());
         }
       }
-      // Freehand drawing is handled by mouse down/move/up events, not click
     };
 
     // Handle mouse down for freehand drawing
     const handleMouseDown = (param: MouseEventParams) => {
       const activeToolType = drawingStateRef.current.getActiveToolType();
       if (!drawingStateRef.current.isDrawingMode() || activeToolType !== 'freehand') return;
-      if (!param.point || !param.time) return;
+
+      if (!param.point) {
+        console.log('[FREEHAND] Start ignored - no point coordinate');
+        return;
+      }
 
       const series = candlestickSeriesRef.current;
-      if (!series) return;
+      const drawingPrimitive = drawingPrimitiveRef.current;
+      if (!series || !drawingPrimitive) return;
 
       const price = series.coordinateToPrice(param.point.y);
-      if (price === null) return;
+      if (price === null) {
+        console.log('[FREEHAND] Start ignored - invalid price');
+        return;
+      }
 
-      const drawingPrimitive = drawingPrimitiveRef.current;
-      if (!drawingPrimitive) return;
+      // Get or extrapolate time
+      const time = getTimeCoordinate(param);
+      if (time === null) {
+        console.log('[FREEHAND] Start ignored - could not determine time');
+        return;
+      }
 
       // Start a new freehand drawing
-      drawingPrimitive.startFreehand({ time: param.time, price });
+      console.log('[FREEHAND] Started at time:', time, 'price:', price);
+      drawingPrimitive.startFreehand({ time, price });
       drawingStateRef.current.setIsDrawing(true);
     };
 
@@ -418,47 +457,67 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       SafeStorage.setJSON(storageKey, drawingPrimitive.getDrawings());
     };
 
+    // Throttle freehand drawing to prevent performance issues
+    let lastFreehandPointTime = 0;
+    const FREEHAND_THROTTLE_MS = 16; // ~60fps max
+
     const handleCrosshairMove = (param: MouseEventParams) => {
       const activeToolType = drawingStateRef.current.getActiveToolType();
 
       // Update preview for trend line while drawing
       if (
+        drawingStateRef.current.isDrawingMode() &&
         drawingStateRef.current.isDrawing() &&
-        activeToolType === 'trend-line' &&
-        param.point &&
-        param.time
+        activeToolType === 'trend-line'
       ) {
+        if (!param.point) return;
+
         const series = candlestickSeriesRef.current;
         if (!series) return;
 
         const price = series.coordinateToPrice(param.point.y);
         if (price === null) return;
+
+        // Get or extrapolate time
+        const time = getTimeCoordinate(param);
+        if (time === null) return;
 
         const drawingPrimitive = drawingPrimitiveRef.current;
         const tempPoint = drawingStateRef.current.getTempPoint();
 
         if (drawingPrimitive && tempPoint) {
-          // Update the preview line
-          drawingPrimitive.updateLastTrendLinePoint2({ time: param.time, price });
+          drawingPrimitive.updateLastTrendLinePoint2({ time, price });
         }
       }
 
-      // Add points to freehand drawing while mouse is down
+      // Add points to freehand drawing while mouse is down (with throttling)
       if (
+        drawingStateRef.current.isDrawingMode() &&
         drawingStateRef.current.isDrawing() &&
-        activeToolType === 'freehand' &&
-        param.point &&
-        param.time
+        activeToolType === 'freehand'
       ) {
+        // Throttle to prevent adding too many points
+        const now = Date.now();
+        if (now - lastFreehandPointTime < FREEHAND_THROTTLE_MS) {
+          return;
+        }
+        lastFreehandPointTime = now;
+
+        if (!param.point) return;
+
         const series = candlestickSeriesRef.current;
         if (!series) return;
 
         const price = series.coordinateToPrice(param.point.y);
         if (price === null) return;
 
+        // Get or extrapolate time
+        const time = getTimeCoordinate(param);
+        if (time === null) return;
+
         const drawingPrimitive = drawingPrimitiveRef.current;
         if (drawingPrimitive) {
-          drawingPrimitive.addFreehandPoint({ time: param.time, price });
+          drawingPrimitive.addFreehandPoint({ time, price });
         }
       }
     };
