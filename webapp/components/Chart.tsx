@@ -318,117 +318,35 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       });
     }
 
-    // Helper function to get time coordinate (allows drawing beyond data range)
-    const getTimeCoordinate = (param: MouseEventParams): Time | null => {
-      if (param.time) return param.time; // Within data range
-
-      // Beyond data range - need to extrapolate manually
-      if (!param.point) return null;
-
-      const timeScale = chart.timeScale();
-
-      // Try coordinateToTime first (works for most cases)
-      const coordinateTime = timeScale.coordinateToTime(param.point.x);
-      if (coordinateTime !== null) {
-        return coordinateTime;
-      }
-
-      // coordinateToTime returned null - manually extrapolate
-      // This happens when clicking in the rightOffset area beyond data
-      const visibleRange = timeScale.getVisibleRange();
-      if (!visibleRange) return null;
-
-      // Get the logical range to understand bar spacing
-      const visibleLogicalRange = timeScale.getVisibleLogicalRange();
-      if (!visibleLogicalRange) return null;
-
-      // Get all data to find the last timestamp
-      const lastDataPoint = allData[allData.length - 1];
-      if (!lastDataPoint) return null;
-
-      // Find where the last data point is on screen
-      const lastDataX = timeScale.timeToCoordinate(lastDataPoint.time as Time);
-      if (lastDataX === null) return null;
-
-      // Calculate how far beyond the last data point we clicked
-      const pixelsBeyondData = param.point.x - lastDataX;
-
-      // Calculate time per pixel based on visible bars
-      const visibleBars = visibleLogicalRange.to - visibleLogicalRange.from;
-      const containerWidth = chartContainerRef.current?.clientWidth || 0;
-      if (containerWidth === 0 || visibleBars === 0) return null;
-
-      const pixelsPerBar = containerWidth / visibleBars;
-
-      // Estimate time per bar (assuming hourly candles)
-      // Use the difference between last two data points
-      if (allData.length < 2) return null;
-      const timePerBar = allData[allData.length - 1].time - allData[allData.length - 2].time;
-
-      // Calculate extrapolated time
-      const barsBeyondData = pixelsBeyondData / pixelsPerBar;
-      const extrapolatedTime = (lastDataPoint.time as number) + (barsBeyondData * timePerBar);
-
-      console.log('[DRAW] Manual extrapolation - x:', param.point.x,
-                  'lastDataX:', lastDataX,
-                  'pixelsBeyond:', pixelsBeyondData.toFixed(0),
-                  'barsBeyond:', barsBeyondData.toFixed(2),
-                  '→ time:', extrapolatedTime);
-      return extrapolatedTime as Time;
-    };
-
     // Add mouse event handlers for drawing tools
     const handleChartClick = (param: MouseEventParams) => {
       if (!drawingStateRef.current.isDrawingMode()) return;
-
-      if (!param.point) {
-        console.log('[CLICK] Ignored - no point coordinate');
-        return;
-      }
+      if (!param.point || !param.time) return; // Must be within data range
 
       const series = candlestickSeriesRef.current;
       const drawingPrimitive = drawingPrimitiveRef.current;
       if (!series || !drawingPrimitive) return;
 
       const price = series.coordinateToPrice(param.point.y);
-      if (price === null) {
-        console.log('[CLICK] Ignored - invalid price coordinate');
-        return;
-      }
-
-      // Get time (or extrapolate if beyond data)
-      const time = getTimeCoordinate(param);
-      if (time === null) {
-        console.log('[CLICK] Ignored - could not determine time');
-        return;
-      }
+      if (price === null) return;
 
       const activeToolType = drawingStateRef.current.getActiveToolType();
 
       if (activeToolType === 'horizontal-line') {
-        // Horizontal lines don't need time coordinate
         drawingPrimitive.addHorizontalLine(price);
-        const storageKey = `drawings_${timeframe}`;
-        SafeStorage.setJSON(storageKey, drawingPrimitive.getDrawings());
-        console.log('[DRAWING] Horizontal line added at price:', price);
+        SafeStorage.setJSON(`drawings_${timeframe}`, drawingPrimitive.getDrawings());
       } else if (activeToolType === 'trend-line') {
         const tempPoint = drawingStateRef.current.getTempPoint();
 
         if (!tempPoint) {
-          // First click
-          console.log('[TREND] First point - time:', time, 'price:', price);
-          drawingStateRef.current.setTempPoint({ time, price });
+          drawingStateRef.current.setTempPoint({ time: param.time, price });
           drawingStateRef.current.setIsDrawing(true);
-          drawingPrimitive.addTrendLine({ time, price }, { time, price });
+          drawingPrimitive.addTrendLine({ time: param.time, price }, { time: param.time, price });
         } else {
-          // Second click - complete the line
-          console.log('[TREND] Second point - time:', time, 'price:', price);
-          drawingPrimitive.updateLastTrendLinePoint2({ time, price });
+          drawingPrimitive.updateLastTrendLinePoint2({ time: param.time, price });
           drawingStateRef.current.setTempPoint(null);
           drawingStateRef.current.setIsDrawing(false);
-
-          const storageKey = `drawings_${timeframe}`;
-          SafeStorage.setJSON(storageKey, drawingPrimitive.getDrawings());
+          SafeStorage.setJSON(`drawings_${timeframe}`, drawingPrimitive.getDrawings());
         }
       }
     };
@@ -437,32 +355,16 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
     const handleMouseDown = (param: MouseEventParams) => {
       const activeToolType = drawingStateRef.current.getActiveToolType();
       if (!drawingStateRef.current.isDrawingMode() || activeToolType !== 'freehand') return;
-
-      if (!param.point) {
-        console.log('[FREEHAND] Start ignored - no point coordinate');
-        return;
-      }
+      if (!param.point || !param.time) return; // Must be within data range
 
       const series = candlestickSeriesRef.current;
       const drawingPrimitive = drawingPrimitiveRef.current;
       if (!series || !drawingPrimitive) return;
 
       const price = series.coordinateToPrice(param.point.y);
-      if (price === null) {
-        console.log('[FREEHAND] Start ignored - invalid price');
-        return;
-      }
+      if (price === null) return;
 
-      // Get or extrapolate time
-      const time = getTimeCoordinate(param);
-      if (time === null) {
-        console.log('[FREEHAND] Start ignored - could not determine time');
-        return;
-      }
-
-      // Start a new freehand drawing
-      console.log('[FREEHAND] Started at time:', time, 'price:', price);
-      drawingPrimitive.startFreehand({ time, price });
+      drawingPrimitive.startFreehand({ time: param.time, price });
       drawingStateRef.current.setIsDrawing(true);
     };
 
@@ -495,25 +397,21 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       if (
         drawingStateRef.current.isDrawingMode() &&
         drawingStateRef.current.isDrawing() &&
-        activeToolType === 'trend-line'
+        activeToolType === 'trend-line' &&
+        param.point &&
+        param.time
       ) {
-        if (!param.point) return;
-
         const series = candlestickSeriesRef.current;
         if (!series) return;
 
         const price = series.coordinateToPrice(param.point.y);
         if (price === null) return;
 
-        // Get or extrapolate time
-        const time = getTimeCoordinate(param);
-        if (time === null) return;
-
         const drawingPrimitive = drawingPrimitiveRef.current;
         const tempPoint = drawingStateRef.current.getTempPoint();
 
         if (drawingPrimitive && tempPoint) {
-          drawingPrimitive.updateLastTrendLinePoint2({ time, price });
+          drawingPrimitive.updateLastTrendLinePoint2({ time: param.time, price });
         }
       }
 
@@ -521,7 +419,9 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       if (
         drawingStateRef.current.isDrawingMode() &&
         drawingStateRef.current.isDrawing() &&
-        activeToolType === 'freehand'
+        activeToolType === 'freehand' &&
+        param.point &&
+        param.time
       ) {
         // Throttle to prevent adding too many points
         const now = Date.now();
@@ -530,21 +430,15 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         }
         lastFreehandPointTime = now;
 
-        if (!param.point) return;
-
         const series = candlestickSeriesRef.current;
         if (!series) return;
 
         const price = series.coordinateToPrice(param.point.y);
         if (price === null) return;
 
-        // Get or extrapolate time
-        const time = getTimeCoordinate(param);
-        if (time === null) return;
-
         const drawingPrimitive = drawingPrimitiveRef.current;
         if (drawingPrimitive) {
-          drawingPrimitive.addFreehandPoint({ time, price });
+          drawingPrimitive.addFreehandPoint({ time: param.time, price });
         }
       }
     };
@@ -570,10 +464,9 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       const price = series.coordinateToPrice(y);
       const time = chart.timeScale().coordinateToTime(x);
 
-      // Always call handleMouseDown with coordinates - it will handle extrapolation
-      // Even if time is null (beyond data), getTimeCoordinate() will extrapolate it
-      if (price !== null) {
-        handleMouseDown({ point: { x, y }, time: time || undefined } as MouseEventParams);
+      // Only allow drawing within data range
+      if (price !== null && time !== null) {
+        handleMouseDown({ point: { x, y }, time } as MouseEventParams);
       }
     };
 

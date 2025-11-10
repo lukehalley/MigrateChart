@@ -109,53 +109,13 @@ class DrawingPaneView implements ISeriesPrimitivePaneView {
     const y1 = this._series.priceToCoordinate(line.point1.price);
     const y2 = this._series.priceToCoordinate(line.point2.price);
 
-    // Prices must be valid
-    if (y1 === null || y2 === null) return;
-
     // Get time scale from the chart
     const timeScale = this._chart.timeScale();
-    let x1 = timeScale.timeToCoordinate(line.point1.time);
-    let x2 = timeScale.timeToCoordinate(line.point2.time);
+    const x1 = timeScale.timeToCoordinate(line.point1.time);
+    const x2 = timeScale.timeToCoordinate(line.point2.time);
 
-    // If time coordinates are null (beyond visible data), extrapolate to canvas edges
-    const visibleRange = timeScale.getVisibleRange();
-    if (!visibleRange) return;
-
-    // Get canvas width from context
-    const canvasWidth = ctx.canvas.width / window.devicePixelRatio;
-
-    // Skip rendering if both points are beyond visible range
-    // But allow partial rendering if only one point is beyond
-    if (x1 === null && x2 === null) return;
-
-    // If coordinates are null, manually calculate them for extrapolated times
-    if (x1 === null || x2 === null) {
-      const time1 = line.point1.time as number;
-      const time2 = line.point2.time as number;
-      const visibleFrom = visibleRange.from as number;
-      const visibleTo = visibleRange.to as number;
-      const visibleTimeSpan = visibleTo - visibleFrom;
-      const timePerPixel = visibleTimeSpan / canvasWidth;
-
-      if (x1 === null) {
-        // Calculate X coordinate for extrapolated time1
-        const timeDiffFromVisible = time1 - visibleFrom;
-        const calculatedX = timeDiffFromVisible / timePerPixel;
-        x1 = Math.max(0, Math.min(canvasWidth, calculatedX)) as any;
-        console.log('[RENDER] Extrapolated x1:', calculatedX, 'clamped:', x1);
-      }
-
-      if (x2 === null) {
-        // Calculate X coordinate for extrapolated time2
-        const timeDiffFromVisible = time2 - visibleFrom;
-        const calculatedX = timeDiffFromVisible / timePerPixel;
-        x2 = Math.max(0, Math.min(canvasWidth, calculatedX)) as any;
-        console.log('[RENDER] Extrapolated x2:', calculatedX, 'clamped:', x2);
-      }
-    }
-
-    // Final check - if still null, skip rendering
-    if (x1 === null || x2 === null) return;
+    // Skip if any coordinate is invalid
+    if (y1 === null || y2 === null || x1 === null || x2 === null) return;
 
     ctx.strokeStyle = line.color;
     ctx.lineWidth = 2;
