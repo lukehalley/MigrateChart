@@ -254,9 +254,9 @@ function HomeContent() {
             <div className="hidden sm:block h-10 w-px bg-[#52C97D]/30"></div>
 
             {/* Center: Address with better visibility */}
-            <div className="flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto">
+            <div className="flex items-center justify-center gap-1.5 sm:gap-2 w-full sm:w-auto">
               <motion.div
-                className="flex items-center gap-2 bg-black/60 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg border border-[#52C97D]/40 flex-1 sm:flex-initial overflow-hidden"
+                className="flex items-center gap-2 bg-black/60 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg border border-[#52C97D]/40 overflow-hidden"
                 whileHover={{ borderColor: 'rgba(82, 201, 125, 0.7)' }}
               >
                 <code className="text-[#52C97D] text-[10px] sm:text-sm font-mono select-all truncate">
