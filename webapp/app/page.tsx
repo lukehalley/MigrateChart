@@ -107,15 +107,17 @@ function HomeContent() {
     const x = (rect.left + rect.width / 2) / window.innerWidth;
     const y = (rect.top + rect.height / 2) / window.innerHeight;
 
-    // Cute confetti burst in brand colors
+    // Cute confetti burst in brand colors - explodes downward
     confetti({
       particleCount: 40,
+      angle: 270, // Shoot downward (270 degrees)
       spread: 60,
       origin: { x, y },
       colors: ['#52C97D', '#1F6338', '#FFD700', '#FFA500'],
-      startVelocity: 25,
-      decay: 0.9,
+      startVelocity: 30,
+      decay: 0.92,
       scalar: 0.8,
+      gravity: 1.2, // Slightly increased gravity for nice downward flow
     });
   };
 
