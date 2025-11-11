@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { X } from 'lucide-react';
+import { Heart, Copy, Check } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function DonationBanner() {
-  const [isVisible, setIsVisible] = useState(true);
   const [showCopied, setShowCopied] = useState(false);
   const solanaAddress = 'G9fXGu1LvtZesdQYjsWQTj1QeMpc97CJ6vWhX3rgeapb';
 
@@ -14,52 +14,104 @@ export default function DonationBanner() {
     setTimeout(() => setShowCopied(false), 2000);
   };
 
-  if (!isVisible) return null;
-
   return (
-    <div className="relative bg-gradient-to-r from-[#0A1F12]/95 via-black/95 to-[#0A1F12]/95 border-b border-[#52C97D]/30 backdrop-blur-sm py-6 sm:py-8">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center justify-between gap-4">
-          {/* Left: Message */}
-          <div className="flex items-center gap-3 min-w-0 my-2">
-            <span className="text-white/70 text-xs sm:text-sm whitespace-nowrap">
-              Buy Me A Coffee (Solana Network)
-            </span>
-            <span className="hidden sm:inline text-[#52C97D]/50">•</span>
+    <motion.div
+      className="relative bg-gradient-to-r from-[#0A1F12] via-[#1F6338]/30 to-[#0A1F12] border-b-2 border-[#52C97D]/50 backdrop-blur-sm shadow-[0_4px_20px_rgba(82,201,125,0.25)]"
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: 'easeOut' }}
+    >
+      {/* Animated gradient overlay */}
+      <motion.div
+        className="absolute inset-0 bg-gradient-to-r from-transparent via-[#52C97D]/20 to-transparent opacity-50"
+        animate={{
+          x: ['-100%', '100%'],
+        }}
+        transition={{
+          duration: 4,
+          repeat: Infinity,
+          ease: 'linear'
+        }}
+      />
 
-            {/* Address - clickable to copy */}
-            <button
-              onClick={handleCopy}
-              className="flex items-center gap-2 min-w-0 group"
-              title="Click to copy address"
+      <div className="w-full relative">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 py-4">
+
+          {/* Left: Call to Action with Icon */}
+          <div className="flex items-center gap-2.5">
+            <motion.div
+              animate={{
+                scale: [1, 1.15, 1],
+              }}
+              transition={{
+                duration: 1.5,
+                repeat: Infinity,
+                ease: 'easeInOut'
+              }}
             >
-              <span className="text-[#52C97D] text-xs sm:text-sm font-mono truncate">
-                {solanaAddress}
-              </span>
-
-              {/* Copy icon */}
-              {showCopied ? (
-                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#52C97D] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              ) : (
-                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#52C97D]/60 group-hover:text-[#52C97D] transition-colors flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                </svg>
-              )}
-            </button>
+              <Heart className="w-5 h-5 sm:w-6 sm:h-6 text-[#52C97D] fill-[#52C97D]" />
+            </motion.div>
+            <div className="text-center sm:text-left">
+              <p className="text-white font-bold text-sm sm:text-base leading-tight">
+                Support This Free Tool
+              </p>
+              <p className="text-white/70 text-xs leading-tight">
+                Donate via Solana Network
+              </p>
+            </div>
           </div>
 
-          {/* Right: Close button */}
-          <button
-            onClick={() => setIsVisible(false)}
-            className="text-white/40 hover:text-white/70 transition-colors flex-shrink-0 p-1 my-2"
-            aria-label="Dismiss banner"
-          >
-            <X className="w-4 h-4" />
-          </button>
+          <div className="hidden sm:block h-10 w-px bg-[#52C97D]/30"></div>
+
+          {/* Center: Address with better visibility */}
+          <div className="flex items-center gap-2">
+            <motion.div
+              className="flex items-center gap-2 bg-black/60 px-3 sm:px-4 py-2 rounded-lg border border-[#52C97D]/40"
+              whileHover={{ borderColor: 'rgba(82, 201, 125, 0.7)' }}
+            >
+              <code className="text-[#52C97D] text-xs sm:text-sm font-mono select-all">
+                {solanaAddress}
+              </code>
+            </motion.div>
+
+            <motion.button
+              onClick={handleCopy}
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-[#52C97D] text-black font-bold text-sm rounded-lg shadow-lg w-[100px]"
+              whileHover={{
+                scale: 1.05,
+                boxShadow: '0 0 20px rgba(82, 201, 125, 0.5)'
+              }}
+              title="Copy address to clipboard"
+            >
+              <AnimatePresence mode="wait">
+                {showCopied ? (
+                  <motion.div
+                    key="check"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="flex items-center gap-2"
+                  >
+                    <Check className="w-4 h-4" />
+                    <span className="hidden sm:inline">Copied!</span>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="copy"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="flex items-center gap-2"
+                  >
+                    <Copy className="w-4 h-4" />
+                    <span className="hidden sm:inline">Copy</span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.button>
+          </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
