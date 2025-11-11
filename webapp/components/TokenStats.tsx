@@ -95,7 +95,7 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D' }: Token
   }
 
   return (
-    <div className="space-y-1">
+    <div className="space-y-0">
       {/* Price Card */}
       <div className="stat-card">
         <p className="text-white text-[10px] font-medium mb-1">PRICE (USD)</p>
@@ -121,9 +121,7 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D' }: Token
       </div>
 
       {/* Divider */}
-      <div className="py-0.5">
-        <div className="dashed-divider"></div>
-      </div>
+      <div className="dashed-divider"></div>
 
       {/* Liquidity Card */}
       <div className="stat-card">
@@ -131,11 +129,6 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D' }: Token
         <p className={`text-white text-base font-bold select-text ${flashingFields.has('liquidity') ? 'flash-update' : ''}`}>
           {formatNumber(stats.liquidity)}
         </p>
-      </div>
-
-      {/* Divider */}
-      <div className="py-0.5">
-        <div className="dashed-divider"></div>
       </div>
 
       {/* Market Cap Card */}
@@ -147,9 +140,7 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D' }: Token
       </div>
 
       {/* Divider */}
-      <div className="py-0.5">
-        <div className="dashed-divider"></div>
-      </div>
+      <div className="dashed-divider"></div>
 
       {/* Volume Card - Dynamic Timeframe */}
       <div className="stat-card">
@@ -157,11 +148,6 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D' }: Token
         <p className={`text-white text-base font-bold select-text ${flashingFields.has('volume') ? 'flash-update' : ''}`}>
           {formatNumber(stats.volume24h)}
         </p>
-      </div>
-
-      {/* Divider */}
-      <div className="py-0.5">
-        <div className="dashed-divider"></div>
       </div>
 
       {/* Fees Card - Dynamic Timeframe */}
@@ -189,9 +175,7 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D' }: Token
         </div>
 
         {/* Divider */}
-        <div className="py-0.5">
-          <div className="dashed-divider"></div>
-        </div>
+        <div className="dashed-divider"></div>
         </>
       )}
 
@@ -206,9 +190,7 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D' }: Token
         </div>
 
         {/* Divider */}
-        <div className="py-0.5">
-          <div className="dashed-divider"></div>
-        </div>
+        <div className="dashed-divider"></div>
         </>
       )}
 
@@ -231,11 +213,6 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D' }: Token
               </p>
             </div>
           </div>
-        </div>
-
-        {/* Divider */}
-        <div className="py-0.5">
-          <div className="dashed-divider"></div>
         </div>
         </>
       )}

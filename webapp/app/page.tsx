@@ -613,9 +613,9 @@ function HomeContent() {
         </div>
 
         {/* Right Section - Token Stats Sidebar */}
-        <div className="h-full bg-gradient-to-b from-black via-black to-black border-l-2 border-dashed border-[#52C97D]/60 flex flex-col min-h-0" style={{ boxShadow: '-8px 0 8px rgba(82, 201, 125, 0.2)' }}>
+        <div className="h-full bg-gradient-to-b from-black via-black to-black flex flex-col min-h-0" style={{ boxShadow: '-8px 0 8px rgba(82, 201, 125, 0.2)' }}>
           {/* Scrollable Content */}
-          <div className="flex-1 overflow-y-auto overflow-x-hidden px-2.5 py-2 space-y-1.5 min-h-0">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden px-2.5 py-2 space-y-0 min-h-0">
             {/* Main Info Block */}
             <div className="stat-card-highlight">
               <a
@@ -660,9 +660,7 @@ function HomeContent() {
             </div>
 
             {/* Decorative Divider */}
-            <div className="py-0.5">
-              <div className="dashed-divider"></div>
-            </div>
+            <div className="dashed-divider"></div>
 
             {/* Timeframe Toggle */}
             <div className="stat-card">
@@ -674,17 +672,13 @@ function HomeContent() {
             </div>
 
             {/* Decorative Divider */}
-            <div className="py-0.5">
-              <div className="dashed-divider"></div>
-            </div>
+            <div className="dashed-divider"></div>
 
             {/* Token Stats */}
             <TokenStats stats={timeframeStats || null} isLoading={isStatsLoading} timeframe={timeframe} />
 
             {/* Decorative Divider */}
-            <div className="py-0.5">
-              <div className="dashed-divider"></div>
-            </div>
+            <div className="dashed-divider"></div>
 
             {/* Chart Controls */}
             <ChartControls
@@ -702,27 +696,23 @@ function HomeContent() {
           </div>
 
           {/* Sticky Bottom Section */}
-          <div className="flex-shrink-0 bg-black px-2.5 pt-1 pb-2 border-t-2 border-dashed border-[#52C97D]/30">
+          <div className="flex-shrink-0 bg-black">
             {/* Decorative Divider */}
-            <div className="pb-1">
-              <div className="dashed-divider"></div>
-            </div>
+            <div className="dashed-divider"></div>
 
             {/* Follow Section */}
-            <div>
-              <a
-                href="https://x.com/Trenchooooor"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 py-3 bg-black/85 hover:bg-[#52C97D]/15 transition-all cursor-pointer backdrop-blur-xl"
-                style={{ boxShadow: '0 0 12px rgba(31, 99, 56, 0.3), 0 0 24px rgba(31, 99, 56, 0.15)' }}
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" fill="#52C97D"/>
-                </svg>
-                <p className="text-[#52C97D] text-base font-bold tracking-wider">@Trenchooooor</p>
-              </a>
-            </div>
+            <a
+              href="https://x.com/Trenchooooor"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 py-3 bg-black/85 hover:bg-[#52C97D]/15 transition-all cursor-pointer backdrop-blur-xl w-full"
+              style={{ boxShadow: '0 0 12px rgba(31, 99, 56, 0.3), 0 0 24px rgba(31, 99, 56, 0.15)' }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" fill="#52C97D"/>
+              </svg>
+              <p className="text-[#52C97D] text-base font-bold tracking-wider">@Trenchooooor</p>
+            </a>
           </div>
         </div>
       </div>
