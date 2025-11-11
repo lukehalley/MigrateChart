@@ -9,6 +9,15 @@ import { DrawingToolsPrimitive, DrawingStateManager, DrawingType } from '@/lib/d
 import { motion, AnimatePresence } from 'motion/react';
 import { SafeStorage } from '@/lib/localStorage';
 import { formatMarketCap } from '@/lib/utils';
+import {
+  calculateSMA,
+  calculateEMA,
+  calculateRSI,
+  calculateBollingerBands,
+  IndicatorType,
+  INDICATORS,
+  OHLCData
+} from '@/lib/indicators';
 
 interface ChartProps {
   poolsData: PoolData[];
@@ -35,6 +44,14 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
   const [isDrawingMode, setIsDrawingMode] = useState(false);
   const [activeDrawingTool, setActiveDrawingTool] = useState<DrawingType | null>(null);
   const candlestickSeriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null);
+
+  // Indicators state
+  const [enabledIndicators, setEnabledIndicators] = useState<Set<IndicatorType>>(() => {
+    // Load from localStorage on mount
+    const saved = SafeStorage.getJSON<IndicatorType[]>('enabledIndicators');
+    return new Set(saved || []);
+  });
+  const [showIndicatorMenu, setShowIndicatorMenu] = useState(false);
 
   // Store migration lines cleanup function
   const migrationLinesCleanupRef = useRef<(() => void) | null>(null);
@@ -104,6 +121,23 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
     const storageKey = `drawings_${timeframe}`;
     SafeStorage.removeItem(storageKey);
   };
+
+  const toggleIndicator = (indicator: IndicatorType) => {
+    setEnabledIndicators(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(indicator)) {
+        newSet.delete(indicator);
+      } else {
+        newSet.add(indicator);
+      }
+      return newSet;
+    });
+  };
+
+  // Save enabled indicators to localStorage when they change
+  useEffect(() => {
+    SafeStorage.setJSON('enabledIndicators', Array.from(enabledIndicators));
+  }, [enabledIndicators]);
 
   useEffect(() => {
     if (!chartContainerRef.current || poolsData.length === 0) return;
@@ -316,6 +350,139 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         volumeSeries.push(volumeSeriesRef);
       }
     });
+
+    // Add indicators
+    if (enabledIndicators.size > 0) {
+      // Get all data combined for indicator calculations
+      // Use a Map to deduplicate by timestamp (keep the latest value for each timestamp)
+      const dataMap = new Map<number, OHLCData>();
+
+      poolsData.forEach(pool => {
+        pool.data.forEach(d => {
+          const ohlc: OHLCData = {
+            time: d.time,
+            open: displayMode === 'marketCap' ? d.open * 1_000_000_000 : d.open,
+            high: displayMode === 'marketCap' ? d.high * 1_000_000_000 : d.high,
+            low: displayMode === 'marketCap' ? d.low * 1_000_000_000 : d.low,
+            close: displayMode === 'marketCap' ? d.close * 1_000_000_000 : d.close,
+          };
+          // Keep the latest value for duplicate timestamps
+          dataMap.set(d.time, ohlc);
+        });
+      });
+
+      // Convert map to sorted array
+      const allData: OHLCData[] = Array.from(dataMap.values())
+        .sort((a, b) => a.time - b.time);
+
+      enabledIndicators.forEach(indicator => {
+        const config = INDICATORS[indicator];
+
+        if (indicator === 'sma20' || indicator === 'sma50' || indicator === 'sma200') {
+          const period = config.period!;
+          const smaData = calculateSMA(allData, period);
+          if (smaData.length > 0) {
+            const smaLine = chart.addLineSeries({
+              color: config.color,
+              lineWidth: 2,
+              title: config.label,
+              priceLineVisible: false,
+              lastValueVisible: true,
+            });
+            smaLine.setData(smaData);
+          }
+        } else if (indicator === 'ema20' || indicator === 'ema50' || indicator === 'ema200') {
+          const period = config.period!;
+          const emaData = calculateEMA(allData, period);
+          if (emaData.length > 0) {
+            const emaLine = chart.addLineSeries({
+              color: config.color,
+              lineWidth: 2,
+              title: config.label,
+              priceLineVisible: false,
+              lastValueVisible: true,
+            });
+            emaLine.setData(emaData);
+          }
+        } else if (indicator === 'rsi') {
+          const rsiData = calculateRSI(allData, 14);
+          if (rsiData.length > 0) {
+            const rsiLine = chart.addLineSeries({
+              color: config.color,
+              lineWidth: 2,
+              title: config.label,
+              priceScaleId: 'rsi',
+              priceLineVisible: false,
+              lastValueVisible: true,
+            });
+            rsiLine.setData(rsiData);
+
+            // Configure RSI price scale (0-100)
+            chart.priceScale('rsi').applyOptions({
+              scaleMargins: {
+                top: 0.85,
+                bottom: 0,
+              },
+              borderVisible: false,
+            });
+
+            // Add reference lines at 30 and 70
+            const rsiSeries30 = chart.addLineSeries({
+              color: '#666666',
+              lineWidth: 1,
+              priceScaleId: 'rsi',
+              priceLineVisible: false,
+              lastValueVisible: false,
+              lineStyle: 1, // Dashed
+            });
+            rsiSeries30.setData(rsiData.map(d => ({ time: d.time, value: 30 })));
+
+            const rsiSeries70 = chart.addLineSeries({
+              color: '#666666',
+              lineWidth: 1,
+              priceScaleId: 'rsi',
+              priceLineVisible: false,
+              lastValueVisible: false,
+              lineStyle: 1, // Dashed
+            });
+            rsiSeries70.setData(rsiData.map(d => ({ time: d.time, value: 70 })));
+          }
+        } else if (indicator === 'bb') {
+          const bbData = calculateBollingerBands(allData, 20, 2);
+          if (bbData.length > 0) {
+            // Upper band
+            const upperLine = chart.addLineSeries({
+              color: config.color,
+              lineWidth: 1,
+              title: 'BB Upper',
+              priceLineVisible: false,
+              lastValueVisible: false,
+            });
+            upperLine.setData(bbData.map(d => ({ time: d.time, value: d.upper })));
+
+            // Middle band (SMA)
+            const middleLine = chart.addLineSeries({
+              color: config.color,
+              lineWidth: 2,
+              title: config.label,
+              priceLineVisible: false,
+              lastValueVisible: true,
+            });
+            middleLine.setData(bbData.map(d => ({ time: d.time, value: d.middle })));
+
+            // Lower band
+            const lowerLine = chart.addLineSeries({
+              color: config.color,
+              lineWidth: 1,
+              title: 'BB Lower',
+              priceLineVisible: false,
+              lastValueVisible: false,
+            });
+            lowerLine.setData(bbData.map(d => ({ time: d.time, value: d.lower })));
+          }
+        }
+      });
+    }
 
     // Configure volume price scale
     if (showVolume) {
@@ -612,7 +779,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
       chart.remove();
     };
-  }, [poolsData, timeframe, displayMode, showVolume, resetTrigger]);
+  }, [poolsData, timeframe, displayMode, showVolume, resetTrigger, enabledIndicators]);
 
   // Separate effect to handle migration lines toggle without recreating chart
   useEffect(() => {
@@ -721,7 +888,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         </div>
       )}
 
-      {/* Desktop: Top Left Buttons - Info and Drawing Tools */}
+      {/* Desktop: Top Left Buttons - Info, Indicators and Drawing Tools */}
       <div className="hidden md:flex absolute top-6 left-6 md:top-8 md:left-8 z-10 gap-2">
         {/* About Info Button */}
         <button
@@ -733,6 +900,83 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </button>
+
+        {/* Indicators Button */}
+        <div className="relative">
+          <button
+            onClick={() => setShowIndicatorMenu(!showIndicatorMenu)}
+            className={`w-9 h-9 md:w-10 md:h-10 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-all ${
+              showIndicatorMenu || enabledIndicators.size > 0
+                ? 'bg-[#52C97D]/30 border-[#52C97D] shadow-[0_0_12px_rgba(82,201,125,0.5)]'
+                : 'bg-black/90 border-[#52C97D]/50 hover:bg-[#52C97D]/20 hover:border-[#52C97D] shadow-[0_0_12px_rgba(82,201,125,0.3)]'
+            }`}
+            aria-label="Technical indicators"
+            title="Technical Indicators"
+          >
+            <svg className="w-5 h-5 text-[#52C97D]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+            </svg>
+            {enabledIndicators.size > 0 && (
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#52C97D] text-black text-xs font-bold rounded-full flex items-center justify-center">
+                {enabledIndicators.size}
+              </span>
+            )}
+          </button>
+
+          {/* Indicators Dropdown */}
+          <AnimatePresence>
+            {showIndicatorMenu && (
+              <motion.div
+                className="absolute top-12 left-0 bg-black/95 backdrop-blur-sm border-2 border-[#52C97D]/50 rounded-lg p-3 min-w-[200px] shadow-[0_0_20px_rgba(82,201,125,0.3)]"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className="text-[#52C97D] text-xs font-bold mb-2 px-1">Moving Averages</div>
+                <div className="space-y-1 mb-3">
+                  {(['sma20', 'sma50', 'sma200', 'ema20', 'ema50', 'ema200'] as IndicatorType[]).map(ind => (
+                    <button
+                      key={ind}
+                      onClick={() => toggleIndicator(ind)}
+                      className={`w-full flex items-center gap-2 px-3 py-2 rounded transition-colors ${
+                        enabledIndicators.has(ind)
+                          ? 'bg-[#52C97D]/20 border border-[#52C97D]'
+                          : 'hover:bg-white/5 border border-transparent'
+                      }`}
+                    >
+                      <div
+                        className="w-3 h-3 rounded-sm"
+                        style={{ backgroundColor: INDICATORS[ind].color }}
+                      />
+                      <span className="text-white text-sm">{INDICATORS[ind].label}</span>
+                    </button>
+                  ))}
+                </div>
+                <div className="text-[#52C97D] text-xs font-bold mb-2 px-1 pt-2 border-t border-[#52C97D]/30">Indicators</div>
+                <div className="space-y-1">
+                  {(['rsi', 'bb'] as IndicatorType[]).map(ind => (
+                    <button
+                      key={ind}
+                      onClick={() => toggleIndicator(ind)}
+                      className={`w-full flex items-center gap-2 px-3 py-2 rounded transition-colors ${
+                        enabledIndicators.has(ind)
+                          ? 'bg-[#52C97D]/20 border border-[#52C97D]'
+                          : 'hover:bg-white/5 border border-transparent'
+                      }`}
+                    >
+                      <div
+                        className="w-3 h-3 rounded-sm"
+                        style={{ backgroundColor: INDICATORS[ind].color }}
+                      />
+                      <span className="text-white text-sm">{INDICATORS[ind].label}</span>
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
         {/* Drawing Tools Container */}
         <div className="relative flex items-center gap-2">
