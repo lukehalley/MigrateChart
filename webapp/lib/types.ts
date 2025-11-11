@@ -69,11 +69,11 @@ export const MIGRATION_DATES = {
 export type Timeframe = '1H' | '4H' | '8H' | '1D' | 'MAX';
 
 export const TIMEFRAME_TO_JUPITER_INTERVAL: Record<Timeframe, string> = {
-  '1H': '1_HOUR',
-  '4H': '4_HOUR',
-  '8H': '8_HOUR',
-  '1D': '1_DAY',
-  'MAX': '1_DAY', // MAX uses 1 day intervals for complete history
+  '1H': '5_MINUTE',   // Use 5-minute candles for 1H (gives ~12 data points)
+  '4H': '15_MINUTE',  // Use 15-minute candles for 4H (gives ~16 data points)
+  '8H': '30_MINUTE',  // Use 30-minute candles for 8H (gives ~16 data points)
+  '1D': '1_HOUR',     // Use 1-hour candles for 1D (gives ~24 data points)
+  'MAX': '1_DAY',     // MAX uses 1 day intervals for complete history
 } as const;
 
 export interface TokenStats {

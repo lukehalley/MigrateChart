@@ -98,7 +98,7 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D' }: Token
     <div className="space-y-1">
       {/* Price Card */}
       <div className="stat-card">
-        <p className="text-white text-[10px] font-medium mb-1.5">PRICE (USD)</p>
+        <p className="text-white text-[10px] font-medium mb-1">PRICE (USD)</p>
         <div className="flex items-center gap-2 mb-0.5">
           <p className={`text-white text-lg font-bold select-text ${flashingFields.has('price') ? 'flash-update' : ''}`}>
             {formatPrice(stats.price)}
@@ -121,7 +121,7 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D' }: Token
       </div>
 
       {/* Divider */}
-      <div className="py-1">
+      <div className="py-0.5">
         <div className="dashed-divider"></div>
       </div>
 
@@ -134,7 +134,7 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D' }: Token
       </div>
 
       {/* Divider */}
-      <div className="py-1">
+      <div className="py-0.5">
         <div className="dashed-divider"></div>
       </div>
 
@@ -147,7 +147,7 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D' }: Token
       </div>
 
       {/* Divider */}
-      <div className="py-1">
+      <div className="py-0.5">
         <div className="dashed-divider"></div>
       </div>
 
@@ -160,7 +160,7 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D' }: Token
       </div>
 
       {/* Divider */}
-      <div className="py-1">
+      <div className="py-0.5">
         <div className="dashed-divider"></div>
       </div>
 
@@ -169,23 +169,27 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D' }: Token
         <>
         <div className="stat-card">
           <p className="text-white text-[10px] font-medium mb-1">FEES ({timeframeLabel})</p>
-          <p className={`text-white text-base font-bold select-text mb-1.5 ${flashingFields.has('fees') ? 'flash-update' : ''}`}>
-            {formatNumber(stats.fees24h)}
-          </p>
-          <div className="text-[9px] text-gray-400 space-y-0.5">
-            <div className="flex justify-between">
-              <span>Project (80%):</span>
-              <span className="text-white font-medium">{formatNumber(stats.fees24h * 0.8)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Meteora (20%):</span>
-              <span className="text-white font-medium">{formatNumber(stats.fees24h * 0.2)}</span>
+          <div className="flex items-center gap-2">
+            {/* Total on left */}
+            <p className={`text-white text-base font-bold select-text ${flashingFields.has('fees') ? 'flash-update' : ''}`}>
+              {formatNumber(stats.fees24h)}
+            </p>
+            {/* Split on right - values then labels */}
+            <div className="flex-1 text-[8px] text-gray-400 space-y-0.5">
+              <div className="flex items-center justify-end gap-1">
+                <span className="text-white font-medium">{formatNumber(stats.fees24h * 0.8)}</span>
+                <span>(Project 80%)</span>
+              </div>
+              <div className="flex items-center justify-end gap-1">
+                <span className="text-white font-medium">{formatNumber(stats.fees24h * 0.2)}</span>
+                <span>(Meteora 20%)</span>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Divider */}
-        <div className="py-1">
+        <div className="py-0.5">
           <div className="dashed-divider"></div>
         </div>
         </>
@@ -202,7 +206,7 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D' }: Token
         </div>
 
         {/* Divider */}
-        <div className="py-1">
+        <div className="py-0.5">
           <div className="dashed-divider"></div>
         </div>
         </>
@@ -212,7 +216,7 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D' }: Token
       {(stats.buyCount24h || stats.sellCount24h) && (
         <>
         <div className="stat-card">
-          <p className="text-white text-[10px] font-medium mb-2 text-center">TXNS (24H)</p>
+          <p className="text-white text-[10px] font-medium mb-1 text-center">TXNS (24H)</p>
           <div className="flex justify-center gap-6 text-sm">
             <div className="text-center">
               <p className="text-white text-[9px] font-medium mb-0.5">BUYS</p>
@@ -230,7 +234,7 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D' }: Token
         </div>
 
         {/* Divider */}
-        <div className="py-1">
+        <div className="py-0.5">
           <div className="dashed-divider"></div>
         </div>
         </>

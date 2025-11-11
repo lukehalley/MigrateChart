@@ -183,9 +183,11 @@ function HomeContent() {
     const volumeForTimeframe = timeframeData.reduce((sum, d) => sum + (d.volume || 0), 0);
 
     // Calculate price change for timeframe
+    // Use the first candle's close as the starting price
     const firstPrice = timeframeData[0].close;
-    const lastPrice = timeframeData[timeframeData.length - 1].close;
-    const priceChangePercent = firstPrice !== 0 ? ((lastPrice - firstPrice) / firstPrice) * 100 : 0;
+    // Use the live current price instead of the last candle's close for accuracy
+    const currentPrice = tokenStats.price;
+    const priceChangePercent = firstPrice !== 0 ? ((currentPrice - firstPrice) / firstPrice) * 100 : 0;
 
     // Calculate fees ONLY from Meteora migration date forward (when fees started being collected)
     const meteoraData = timeframeData.filter(d => d.time >= METEORA_MIGRATION);
