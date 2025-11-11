@@ -290,3 +290,29 @@ export async function fetchTokenStats(poolAddress: string): Promise<TokenStats |
     return null;
   }
 }
+
+// Fetch wallet balance via server-side API route to avoid CORS issues
+export async function fetchWalletBalance(walletAddress: string): Promise<number> {
+  try {
+    const response = await fetch(`/api/wallet-balance?address=${walletAddress}`, {
+      next: { revalidate: 60 }, // Cache for 1 minute
+    });
+
+    if (!response.ok) {
+      console.error(`API error: ${response.status}`);
+      return 0;
+    }
+
+    const data = await response.json();
+
+    if (data.error) {
+      console.error('Error fetching wallet balance:', data.error);
+      return 0;
+    }
+
+    return data.balance || 0;
+  } catch (error) {
+    console.error('Error fetching wallet balance:', error);
+    return 0;
+  }
+}

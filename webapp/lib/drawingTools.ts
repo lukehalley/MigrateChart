@@ -259,6 +259,14 @@ export class DrawingToolsPrimitive implements ISeriesPrimitive<Time> {
     this._requestUpdate?.();
   }
 
+  // Remove the last drawing (used for canceling in-progress drawings)
+  removeLastDrawing(): void {
+    if (this._drawings.length > 0) {
+      this._drawings.pop();
+      this._requestUpdate?.();
+    }
+  }
+
   // Clear all drawings
   clearAllDrawings(): void {
     this._drawings = [];

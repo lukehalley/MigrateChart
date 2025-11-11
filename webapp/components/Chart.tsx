@@ -682,6 +682,37 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
     });
   }, [isDrawingMode]);
 
+  // Handle ESC key to cancel trend line drawing
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Only handle ESC key
+      if (event.key !== 'Escape') return;
+
+      const drawingState = drawingStateRef.current;
+      const drawingPrimitive = drawingPrimitiveRef.current;
+
+      // Check if we're currently drawing a trend line
+      if (
+        drawingState.isDrawing() &&
+        drawingState.getActiveToolType() === 'trend-line' &&
+        drawingPrimitive
+      ) {
+        // Cancel the drawing
+        drawingPrimitive.removeLastDrawing();
+        drawingState.setTempPoint(null);
+        drawingState.setIsDrawing(false);
+      }
+    };
+
+    // Add event listener
+    window.addEventListener('keydown', handleKeyDown);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
   return (
     <div className="w-full h-full p-4 md:p-6 relative">
       {isLoading && (
@@ -993,31 +1024,43 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
                 {/* How To Use */}
                 <div style={{ marginBottom: '24px' }}>
-                  <h3 style={{ marginBottom: '16px' }} className="text-[#52C97D] text-base md:text-lg font-bold tracking-wider uppercase">How To Use</h3>
+                  <h3 style={{ marginBottom: '16px' }} className="text-[#52C97D] text-base md:text-lg font-bold tracking-wider uppercase">Chart Controls</h3>
                   <div style={{ display: 'grid', gap: '10px' }}>
                     <div style={{ padding: '16px 20px' }} className="flex items-start gap-4 bg-black/50 border-2 border-[#52C97D]/30 rounded-lg hover:border-[#52C97D]/50 transition-all">
                       <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[#52C97D] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                      <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs md:text-sm">Select timeframes (1H to MAX) from the sidebar</span>
+                      <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs md:text-sm">Timeframes: 1H, 4H, 8H, 1D, or MAX</span>
                     </div>
                     <div style={{ padding: '16px 20px' }} className="flex items-start gap-4 bg-black/50 border-2 border-[#52C97D]/30 rounded-lg hover:border-[#52C97D]/50 transition-all">
                       <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[#52C97D] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
                       </svg>
-                      <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs md:text-sm">Zoom: Mouse wheel or pinch on mobile</span>
+                      <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs md:text-sm">Zoom with mouse wheel or pinch gesture</span>
                     </div>
                     <div style={{ padding: '16px 20px' }} className="flex items-start gap-4 bg-black/50 border-2 border-[#52C97D]/30 rounded-lg hover:border-[#52C97D]/50 transition-all">
                       <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[#52C97D] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11l5-5m0 0l5 5m-5-5v12" />
                       </svg>
-                      <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs md:text-sm">Pan: Click and drag or swipe</span>
+                      <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs md:text-sm">Pan by dragging or swiping</span>
+                    </div>
+                    <div style={{ padding: '16px 20px' }} className="flex items-start gap-4 bg-black/50 border-2 border-[#52C97D]/30 rounded-lg hover:border-[#52C97D]/50 transition-all">
+                      <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[#52C97D] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                      </svg>
+                      <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs md:text-sm">Drawing tools: horizontal lines, trend lines, freehand</span>
+                    </div>
+                    <div style={{ padding: '16px 20px' }} className="flex items-start gap-4 bg-black/50 border-2 border-[#52C97D]/30 rounded-lg hover:border-[#52C97D]/50 transition-all">
+                      <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[#52C97D] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                      <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs md:text-sm">Press ESC to cancel trend line drawing</span>
                     </div>
                     <div style={{ padding: '16px 20px' }} className="flex items-start gap-4 bg-black/50 border-2 border-[#52C97D]/30 rounded-lg hover:border-[#52C97D]/50 transition-all">
                       <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[#52C97D] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                       </svg>
-                      <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs md:text-sm">Migration events shown as vertical green lines</span>
+                      <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs md:text-sm">Green vertical lines mark pool migrations</span>
                     </div>
                   </div>
                 </div>

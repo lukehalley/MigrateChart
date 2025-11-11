@@ -10,7 +10,7 @@ import Chart from '@/components/Chart';
 import TimeframeToggle from '@/components/TimeframeToggle';
 import ChartControls from '@/components/ChartControls';
 import TokenStats from '@/components/TokenStats';
-import { fetchAllPoolsData, fetchTokenStats } from '@/lib/api';
+import { fetchAllPoolsData, fetchTokenStats, fetchWalletBalance } from '@/lib/api';
 import { PoolData, Timeframe, POOLS } from '@/lib/types';
 import { SafeStorage } from '@/lib/localStorage';
 
@@ -161,6 +161,20 @@ function HomeContent() {
     }
   );
 
+  // Fetch wallet balance for donation goal
+  const { data: walletBalance = 0 } = useSWR(
+    `wallet-balance-${solanaAddress}`,
+    () => fetchWalletBalance(solanaAddress),
+    {
+      refreshInterval: 60000, // Refresh every minute
+      revalidateOnFocus: true,
+      revalidateOnReconnect: true,
+      dedupingInterval: 30000,
+      errorRetryInterval: 15000,
+      errorRetryCount: 3,
+    }
+  );
+
   // Calculate timeframe-specific stats from chart data
   const timeframeStats = React.useMemo(() => {
     if (!poolsData || poolsData.length === 0 || !tokenStats) return null;
@@ -246,49 +260,23 @@ function HomeContent() {
           }}
         />
 
-        <div className="w-full relative px-3 sm:px-0">
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 py-3 sm:py-4">
-
-            {/* Left: Call to Action with Icon */}
-            <div className="flex items-center gap-2">
+        <div className="w-full relative px-3 sm:px-6">
+          {/* Desktop: 3-column layout */}
+          <div className="hidden sm:flex items-center justify-center gap-4 py-4">
+            {/* Column 1: Address Bar + Copy Button */}
+            <div className="flex items-center justify-center gap-2">
               <motion.div
-                animate={{
-                  scale: [1, 1.15, 1],
-                }}
-                transition={{
-                  duration: 1.5,
-                  repeat: Infinity,
-                  ease: 'easeInOut'
-                }}
-              >
-                <Heart className="w-4 h-4 sm:w-6 sm:h-6 text-[#52C97D] fill-[#52C97D]" />
-              </motion.div>
-              <div className="text-center sm:text-left">
-                <p className="text-white font-bold text-xs sm:text-base leading-tight">
-                  Support This Free Tool
-                </p>
-                <p className="text-white/70 text-[10px] sm:text-xs leading-tight">
-                  Donate via Solana Network
-                </p>
-              </div>
-            </div>
-
-            <div className="hidden sm:block h-10 w-px bg-[#52C97D]/30"></div>
-
-            {/* Center: Address with better visibility */}
-            <div className="flex items-center justify-center gap-1.5 sm:gap-2 w-full sm:w-auto">
-              <motion.div
-                className="flex items-center gap-2 bg-black/60 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg border border-[#52C97D]/40 overflow-hidden"
+                className="flex items-center gap-2 bg-black/60 px-4 py-[11px] rounded-lg border border-[#52C97D]/40 overflow-hidden flex-shrink min-w-0 h-[48px]"
                 whileHover={{ borderColor: 'rgba(82, 201, 125, 0.7)' }}
               >
-                <code className="text-[#52C97D] text-[10px] sm:text-sm font-mono select-all truncate">
+                <code className="text-[#52C97D] text-sm font-mono select-all truncate">
                   {solanaAddress}
                 </code>
               </motion.div>
 
               <motion.button
                 onClick={handleCopy}
-                className="flex items-center justify-center gap-1.5 p-2 sm:px-4 sm:py-2 bg-[#52C97D] text-black font-bold text-xs sm:text-sm rounded-lg shadow-lg sm:w-[100px]"
+                className="flex items-center justify-center gap-1.5 px-4 py-[11px] bg-[#52C97D] text-black font-bold text-sm rounded-lg shadow-lg w-[100px] flex-shrink-0 h-[48px]"
                 whileHover={{
                   scale: 1.05,
                   boxShadow: '0 0 20px rgba(82, 201, 125, 0.5)'
@@ -305,7 +293,7 @@ function HomeContent() {
                       className="flex items-center gap-2"
                     >
                       <Check className="w-4 h-4" />
-                      <span className="hidden sm:inline">Copied!</span>
+                      <span>Copied!</span>
                     </motion.div>
                   ) : (
                     <motion.div
@@ -316,7 +304,166 @@ function HomeContent() {
                       className="flex items-center gap-2"
                     >
                       <Copy className="w-4 h-4" />
-                      <span className="hidden sm:inline">Copy</span>
+                      <span>Copy</span>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.button>
+            </div>
+
+            {/* Divider */}
+            <div className="h-12 w-px bg-[#52C97D]/30"></div>
+
+            {/* Column 2: Donate Message */}
+            <div className="flex items-center justify-center gap-2">
+              <motion.div
+                className="flex items-center justify-center"
+                animate={{
+                  scale: [1, 1.15, 1],
+                }}
+                transition={{
+                  duration: 1.5,
+                  repeat: Infinity,
+                  ease: 'easeInOut'
+                }}
+              >
+                <Heart className="w-6 h-6 text-[#52C97D] fill-[#52C97D]" />
+              </motion.div>
+              <div className="flex flex-col gap-0.5 items-center justify-center">
+                <p className="text-white font-bold text-base leading-tight">
+                  Support This Free Tool
+                </p>
+                <p className="text-white/70 text-xs leading-tight">
+                  Donate via Solana Network
+                </p>
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div className="h-12 w-px bg-[#52C97D]/30"></div>
+
+            {/* Column 3: Donate Goal */}
+            <div className="flex items-center justify-center">
+              <div className="flex items-center justify-center gap-3 bg-black/60 px-4 py-[11px] rounded-lg border border-[#52C97D]/30 h-[48px]">
+                <span className="text-white/70 text-sm font-medium whitespace-nowrap">Goal:</span>
+                <div className="relative w-32 h-2 bg-black/60 rounded-full overflow-hidden border border-[#52C97D]/30">
+                  <motion.div
+                    className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#52C97D] to-[#3FAA66] rounded-full"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.min((walletBalance / 10) * 100, 100)}%` }}
+                    transition={{ duration: 0.8, ease: 'easeOut' }}
+                  />
+                  {/* Shine effect */}
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                    animate={{
+                      x: ['-100%', '200%'],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      repeatDelay: 1,
+                      ease: 'linear'
+                    }}
+                  />
+                </div>
+                <span className="text-[#52C97D] text-sm font-bold whitespace-nowrap">{walletBalance.toFixed(2)} / 10 SOL</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile: Stacked layout */}
+          <div className="flex sm:hidden flex-col items-center gap-3 py-3">
+            {/* Call to Action */}
+            <div className="flex items-center gap-2">
+              <motion.div
+                animate={{
+                  scale: [1, 1.15, 1],
+                }}
+                transition={{
+                  duration: 1.5,
+                  repeat: Infinity,
+                  ease: 'easeInOut'
+                }}
+              >
+                <Heart className="w-4 h-4 text-[#52C97D] fill-[#52C97D]" />
+              </motion.div>
+              <div className="text-center">
+                <p className="text-white font-bold text-xs leading-tight">
+                  Support This Free Tool
+                </p>
+                <p className="text-white/70 text-[10px] leading-tight">
+                  Donate via Solana Network
+                </p>
+              </div>
+            </div>
+
+            {/* Donation Goal Progress Bar */}
+            <div className="w-full px-2">
+              <div className="flex items-center justify-between gap-2 mb-1">
+                <span className="text-white/70 text-[10px] font-medium">Goal Progress</span>
+                <span className="text-[#52C97D] text-[10px] font-bold">{walletBalance.toFixed(2)} / 10 SOL</span>
+              </div>
+              <div className="relative h-2 bg-black/60 rounded-full overflow-hidden border border-[#52C97D]/30">
+                <motion.div
+                  className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#52C97D] to-[#3FAA66] rounded-full"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${Math.min((walletBalance / 10) * 100, 100)}%` }}
+                  transition={{ duration: 0.8, ease: 'easeOut' }}
+                />
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                  animate={{
+                    x: ['-100%', '200%'],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    repeatDelay: 1,
+                    ease: 'linear'
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Address and Copy Button */}
+            <div className="flex items-center justify-center gap-1.5 w-full px-2">
+              <motion.div
+                className="flex items-center gap-2 bg-black/60 px-2.5 py-1.5 rounded-lg border border-[#52C97D]/40 overflow-hidden flex-1 min-w-0"
+                whileHover={{ borderColor: 'rgba(82, 201, 125, 0.7)' }}
+              >
+                <code className="text-[#52C97D] text-[10px] font-mono select-all truncate">
+                  {solanaAddress}
+                </code>
+              </motion.div>
+
+              <motion.button
+                onClick={handleCopy}
+                className="flex items-center justify-center gap-1.5 p-2 bg-[#52C97D] text-black font-bold text-xs rounded-lg shadow-lg"
+                whileHover={{
+                  scale: 1.05,
+                  boxShadow: '0 0 20px rgba(82, 201, 125, 0.5)'
+                }}
+                title="Copy address to clipboard"
+              >
+                <AnimatePresence mode="wait">
+                  {showCopied ? (
+                    <motion.div
+                      key="check"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                    >
+                      <Check className="w-4 h-4" />
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="copy"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                    >
+                      <Copy className="w-4 h-4" />
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -533,31 +680,43 @@ function HomeContent() {
 
                     {/* How To Use */}
                     <div style={{ marginBottom: '16px' }}>
-                      <h3 style={{ marginBottom: '12px' }} className="text-[#52C97D] text-base font-bold tracking-wider uppercase">How To Use</h3>
+                      <h3 style={{ marginBottom: '12px' }} className="text-[#52C97D] text-base font-bold tracking-wider uppercase">Chart Controls</h3>
                       <div style={{ display: 'grid', gap: '8px' }}>
                         <div style={{ padding: '12px 16px' }} className="flex items-start gap-3 bg-black/50 border-2 border-[#52C97D]/30 rounded-lg hover:border-[#52C97D]/50 transition-all">
                           <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[#52C97D] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
-                          <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs">Select timeframes (1H to MAX) from the sidebar</span>
+                          <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs">Timeframes: 1H, 4H, 8H, 1D, or MAX</span>
                         </div>
                         <div style={{ padding: '12px 16px' }} className="flex items-start gap-3 bg-black/50 border-2 border-[#52C97D]/30 rounded-lg hover:border-[#52C97D]/50 transition-all">
                           <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[#52C97D] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
                           </svg>
-                          <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs">Zoom: Mouse wheel or pinch on mobile</span>
+                          <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs">Zoom with mouse wheel or pinch gesture</span>
                         </div>
                         <div style={{ padding: '12px 16px' }} className="flex items-start gap-3 bg-black/50 border-2 border-[#52C97D]/30 rounded-lg hover:border-[#52C97D]/50 transition-all">
                           <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[#52C97D] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11l5-5m0 0l5 5m-5-5v12" />
                           </svg>
-                          <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs">Pan: Click and drag or swipe</span>
+                          <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs">Pan by dragging or swiping</span>
+                        </div>
+                        <div style={{ padding: '12px 16px' }} className="flex items-start gap-3 bg-black/50 border-2 border-[#52C97D]/30 rounded-lg hover:border-[#52C97D]/50 transition-all">
+                          <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[#52C97D] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                          </svg>
+                          <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs">Drawing tools: horizontal lines, trend lines, freehand</span>
+                        </div>
+                        <div style={{ padding: '12px 16px' }} className="flex items-start gap-3 bg-black/50 border-2 border-[#52C97D]/30 rounded-lg hover:border-[#52C97D]/50 transition-all">
+                          <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[#52C97D] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                          <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs">Press ESC to cancel trend line drawing</span>
                         </div>
                         <div style={{ padding: '12px 16px' }} className="flex items-start gap-3 bg-black/50 border-2 border-[#52C97D]/30 rounded-lg hover:border-[#52C97D]/50 transition-all">
                           <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[#52C97D] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                           </svg>
-                          <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs">Migration events shown as vertical green lines</span>
+                          <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs">Green vertical lines mark pool migrations</span>
                         </div>
                       </div>
                     </div>
