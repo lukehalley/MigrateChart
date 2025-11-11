@@ -43,6 +43,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
   const drawingStateRef = useRef<DrawingStateManager>(new DrawingStateManager());
   const [isDrawingMode, setIsDrawingMode] = useState(false);
   const [activeDrawingTool, setActiveDrawingTool] = useState<DrawingType | null>(null);
+  const [drawingCount, setDrawingCount] = useState(0);
   const candlestickSeriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null);
 
   // Indicators state
@@ -103,6 +104,11 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
     setIsDrawingMode(newMode);
     drawingStateRef.current.setDrawingMode(newMode);
 
+    // Close indicator menu when opening drawing mode
+    if (newMode) {
+      setShowIndicatorMenu(false);
+    }
+
     if (!newMode) {
       setActiveDrawingTool(null);
       drawingStateRef.current.setActiveToolType(null);
@@ -123,6 +129,27 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
     // Clear from localStorage
     const storageKey = `drawings_${timeframe}`;
     SafeStorage.removeItem(storageKey);
+    // Update drawing count
+    setDrawingCount(0);
+  };
+
+  const undoLastDrawing = () => {
+    const drawingPrimitive = drawingPrimitiveRef.current;
+    if (!drawingPrimitive) return;
+
+    // Remove the last drawing
+    drawingPrimitive.removeLastDrawing();
+
+    // Update localStorage with remaining drawings
+    const storageKey = `drawings_${timeframe}`;
+    const remainingDrawings = drawingPrimitive.getDrawings();
+    if (remainingDrawings.length > 0) {
+      SafeStorage.setJSON(storageKey, remainingDrawings);
+    } else {
+      SafeStorage.removeItem(storageKey);
+    }
+    // Update drawing count
+    setDrawingCount(remainingDrawings.length);
   };
 
   const toggleIndicator = (indicator: IndicatorType) => {
@@ -312,9 +339,13 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
             // Clear old time-based drawings - they won't render correctly
             console.log('Clearing old time-based drawings - please redraw them');
             SafeStorage.setJSON(storageKey, []);
+            setDrawingCount(0);
           } else {
             drawingPrimitive.setDrawings(drawings);
+            setDrawingCount(drawings.length);
           }
+        } else {
+          setDrawingCount(0);
         }
 
         isFirstSeries = false;
@@ -533,7 +564,9 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
       if (activeToolType === 'horizontal-line') {
         drawingPrimitive.addHorizontalLine(price);
-        SafeStorage.setJSON(`drawings_${timeframe}`, drawingPrimitive.getDrawings());
+        const updatedDrawings = drawingPrimitive.getDrawings();
+        SafeStorage.setJSON(`drawings_${timeframe}`, updatedDrawings);
+        setDrawingCount(updatedDrawings.length);
       } else if (activeToolType === 'trend-line') {
         const tempPoint = drawingStateRef.current.getTempPoint();
 
@@ -545,7 +578,9 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
           drawingPrimitive.updateLastTrendLinePoint2({ logical, price });
           drawingStateRef.current.setTempPoint(null);
           drawingStateRef.current.setIsDrawing(false);
-          SafeStorage.setJSON(`drawings_${timeframe}`, drawingPrimitive.getDrawings());
+          const updatedDrawings = drawingPrimitive.getDrawings();
+          SafeStorage.setJSON(`drawings_${timeframe}`, updatedDrawings);
+          setDrawingCount(updatedDrawings.length);
         }
       }
     };
@@ -586,7 +621,9 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
       // Save to localStorage
       const storageKey = `drawings_${timeframe}`;
-      SafeStorage.setJSON(storageKey, drawingPrimitive.getDrawings());
+      const updatedDrawings = drawingPrimitive.getDrawings();
+      SafeStorage.setJSON(storageKey, updatedDrawings);
+      setDrawingCount(updatedDrawings.length);
     };
 
     // Throttle freehand drawing to prevent performance issues
@@ -1039,7 +1076,10 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         {/* Indicators Button */}
         <div className="relative">
           <button
-            onClick={() => setShowIndicatorMenu(!showIndicatorMenu)}
+            onClick={() => {
+              setShowIndicatorMenu(!showIndicatorMenu);
+              if (!showIndicatorMenu) setIsDrawingMode(false); // Close drawing menu when opening indicators
+            }}
             className={`w-9 h-9 md:w-10 md:h-10 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-all ${
               showIndicatorMenu || enabledIndicators.size > 0
                 ? 'bg-[#52C97D]/30 border-[#52C97D] shadow-[0_0_12px_rgba(82,201,125,0.5)]'
@@ -1199,18 +1239,44 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   </svg>
                 </motion.button>
 
-                {/* Clear All Drawings Button */}
+                {/* Undo Last Drawing Button */}
                 <motion.button
-                  onClick={clearAllDrawings}
-                  className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center bg-black/90 backdrop-blur-sm border-2 border-red-500/50 rounded-full hover:bg-red-500/20 hover:border-red-500 transition-colors"
+                  onClick={drawingCount > 0 ? undoLastDrawing : undefined}
+                  disabled={drawingCount === 0}
+                  className={`w-9 h-9 md:w-10 md:h-10 flex items-center justify-center bg-black/90 backdrop-blur-sm border-2 rounded-full transition-all ${
+                    drawingCount === 0
+                      ? 'border-yellow-500/20 opacity-30 cursor-not-allowed'
+                      : 'border-yellow-500/50 hover:bg-yellow-500/20 hover:border-yellow-500 cursor-pointer'
+                  }`}
                   initial={{ x: 20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   exit={{ x: 20, opacity: 0 }}
                   transition={{ duration: 0.2, delay: 0.2, ease: 'easeOut' }}
-                  aria-label="Clear all drawings"
-                  title="Clear All Drawings"
+                  aria-label="Undo last drawing"
+                  title={drawingCount === 0 ? "No drawings to undo" : "Undo Last Drawing"}
                 >
-                  <svg className="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className={`w-5 h-5 ${drawingCount === 0 ? 'text-yellow-500/30' : 'text-yellow-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                  </svg>
+                </motion.button>
+
+                {/* Clear All Drawings Button */}
+                <motion.button
+                  onClick={drawingCount > 0 ? clearAllDrawings : undefined}
+                  disabled={drawingCount === 0}
+                  className={`w-9 h-9 md:w-10 md:h-10 flex items-center justify-center bg-black/90 backdrop-blur-sm border-2 rounded-full transition-all ${
+                    drawingCount === 0
+                      ? 'border-red-500/20 opacity-30 cursor-not-allowed'
+                      : 'border-red-500/50 hover:bg-red-500/20 hover:border-red-500 cursor-pointer'
+                  }`}
+                  initial={{ x: 20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  exit={{ x: 20, opacity: 0 }}
+                  transition={{ duration: 0.2, delay: 0.25, ease: 'easeOut' }}
+                  aria-label="Clear all drawings"
+                  title={drawingCount === 0 ? "No drawings to clear" : "Clear All Drawings"}
+                >
+                  <svg className={`w-5 h-5 ${drawingCount === 0 ? 'text-red-500/30' : 'text-red-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                   </svg>
                 </motion.button>
@@ -1226,7 +1292,10 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
           {/* Indicators Button */}
           <div className="relative">
             <button
-              onClick={() => setShowIndicatorMenu(!showIndicatorMenu)}
+              onClick={() => {
+                setShowIndicatorMenu(!showIndicatorMenu);
+                if (!showIndicatorMenu) setIsDrawingMode(false); // Close drawing menu when opening indicators
+              }}
               className={`w-11 h-11 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-all ${
                 showIndicatorMenu || enabledIndicators.size > 0
                   ? 'bg-[#52C97D]/30 border-[#52C97D] shadow-[0_0_12px_rgba(82,201,125,0.5)]'
@@ -1384,18 +1453,44 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   </svg>
                 </motion.button>
 
-                {/* Clear All Drawings Button */}
+                {/* Undo Last Drawing Button */}
                 <motion.button
-                  onClick={clearAllDrawings}
-                  className="w-11 h-11 flex items-center justify-center bg-[#0A1F12]/90 backdrop-blur-sm border-2 border-red-500 rounded-full hover:bg-red-500/20 hover:border-red-500 transition-colors shadow-[0_0_12px_rgba(239,68,68,0.3)]"
+                  onClick={drawingCount > 0 ? undoLastDrawing : undefined}
+                  disabled={drawingCount === 0}
+                  className={`w-11 h-11 flex items-center justify-center bg-[#0A1F12]/90 backdrop-blur-sm border-2 rounded-full transition-all ${
+                    drawingCount === 0
+                      ? 'border-yellow-500/20 opacity-30 cursor-not-allowed shadow-none'
+                      : 'border-yellow-500 hover:bg-yellow-500/20 cursor-pointer shadow-[0_0_12px_rgba(234,179,8,0.3)]'
+                  }`}
                   initial={{ y: -20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   exit={{ y: -20, opacity: 0 }}
                   transition={{ duration: 0.2, delay: 0.2, ease: 'easeOut' }}
-                  aria-label="Clear all drawings"
-                  title="Clear All Drawings"
+                  aria-label="Undo last drawing"
+                  title={drawingCount === 0 ? "No drawings to undo" : "Undo Last Drawing"}
                 >
-                  <svg className="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className={`w-5 h-5 ${drawingCount === 0 ? 'text-yellow-500/30' : 'text-yellow-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                  </svg>
+                </motion.button>
+
+                {/* Clear All Drawings Button */}
+                <motion.button
+                  onClick={drawingCount > 0 ? clearAllDrawings : undefined}
+                  disabled={drawingCount === 0}
+                  className={`w-11 h-11 flex items-center justify-center bg-[#0A1F12]/90 backdrop-blur-sm border-2 rounded-full transition-all ${
+                    drawingCount === 0
+                      ? 'border-red-500/20 opacity-30 cursor-not-allowed shadow-none'
+                      : 'border-red-500 hover:bg-red-500/20 cursor-pointer shadow-[0_0_12px_rgba(239,68,68,0.3)]'
+                  }`}
+                  initial={{ y: -20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -20, opacity: 0 }}
+                  transition={{ duration: 0.2, delay: 0.25, ease: 'easeOut' }}
+                  aria-label="Clear all drawings"
+                  title={drawingCount === 0 ? "No drawings to clear" : "Clear All Drawings"}
+                >
+                  <svg className={`w-5 h-5 ${drawingCount === 0 ? 'text-red-500/30' : 'text-red-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                   </svg>
                 </motion.button>
