@@ -139,7 +139,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         fixRightEdge: false,
         lockVisibleTimeRangeOnResize: false,
         rightBarStaysOnScroll: true,
-        shiftVisibleRangeOnNewBar: true,  // Auto-scroll for new data
+        shiftVisibleRangeOnNewBar: false,  // Don't auto-scroll - preserve user's position
       },
       rightPriceScale: {
         borderColor: '#1F6338',  // Deep green border

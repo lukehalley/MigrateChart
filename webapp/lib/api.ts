@@ -66,7 +66,11 @@ export async function fetchJupiterData(tokenAddress: string, timeframe: Timefram
       }
       return response.json();
     });
-    return data.candles || [];
+
+    // Jupiter API already returns candles in the correct object format
+    // {time, open, high, low, close, volume}
+    const candles: OHLCData[] = data.candles || [];
+    return candles;
   } catch (error) {
     console.error(`Error fetching Jupiter data:`, error);
     return [];
