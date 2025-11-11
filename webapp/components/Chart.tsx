@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { createChart, IChartApi, ISeriesApi, CandlestickData, Time, MouseEventParams } from 'lightweight-charts';
+import { createChart, IChartApi, ISeriesApi, CandlestickData, Time, MouseEventParams, Logical } from 'lightweight-charts';
 import { ChartNetwork } from 'lucide-react';
 import { PoolData, MIGRATION_DATES, POOLS, Timeframe } from '@/lib/types';
 import { drawVerticalLines } from '@/lib/verticalLine';
@@ -296,7 +296,22 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         const storageKey = `drawings_${timeframe}`;
         const drawings = SafeStorage.getJSON<any[]>(storageKey);
         if (drawings && Array.isArray(drawings)) {
-          drawingPrimitive.setDrawings(drawings);
+          // Check if drawings use old time-based format
+          const hasOldFormat = drawings.some((d: any) => {
+            if (d.type === 'trend-line' || d.type === 'freehand') {
+              const point = d.type === 'trend-line' ? d.point1 : d.points?.[0];
+              return point && 'time' in point && !('logical' in point);
+            }
+            return false;
+          });
+
+          if (hasOldFormat) {
+            // Clear old time-based drawings - they won't render correctly
+            console.log('Clearing old time-based drawings - please redraw them');
+            SafeStorage.setJSON(storageKey, []);
+          } else {
+            drawingPrimitive.setDrawings(drawings);
+          }
         }
 
         isFirstSeries = false;
@@ -498,7 +513,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
     // Add mouse event handlers for drawing tools
     const handleChartClick = (param: MouseEventParams) => {
       if (!drawingStateRef.current.isDrawingMode()) return;
-      if (!param.point || !param.time) return; // Must be within data range
+      if (!param.point) return;
 
       const series = candlestickSeriesRef.current;
       const drawingPrimitive = drawingPrimitiveRef.current;
@@ -506,6 +521,10 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
       const price = series.coordinateToPrice(param.point.y);
       if (price === null) return;
+
+      // Use logical coordinates - works anywhere on the chart including rightOffset area
+      const logical = chart.timeScale().coordinateToLogical(param.point.x);
+      if (logical === null) return;
 
       const activeToolType = drawingStateRef.current.getActiveToolType();
 
@@ -516,11 +535,11 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         const tempPoint = drawingStateRef.current.getTempPoint();
 
         if (!tempPoint) {
-          drawingStateRef.current.setTempPoint({ time: param.time, price });
+          drawingStateRef.current.setTempPoint({ logical, price });
           drawingStateRef.current.setIsDrawing(true);
-          drawingPrimitive.addTrendLine({ time: param.time, price }, { time: param.time, price });
+          drawingPrimitive.addTrendLine({ logical, price }, { logical, price });
         } else {
-          drawingPrimitive.updateLastTrendLinePoint2({ time: param.time, price });
+          drawingPrimitive.updateLastTrendLinePoint2({ logical, price });
           drawingStateRef.current.setTempPoint(null);
           drawingStateRef.current.setIsDrawing(false);
           SafeStorage.setJSON(`drawings_${timeframe}`, drawingPrimitive.getDrawings());
@@ -532,7 +551,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
     const handleMouseDown = (param: MouseEventParams) => {
       const activeToolType = drawingStateRef.current.getActiveToolType();
       if (!drawingStateRef.current.isDrawingMode() || activeToolType !== 'freehand') return;
-      if (!param.point || !param.time) return; // Must be within data range
+      if (!param.point) return;
 
       const series = candlestickSeriesRef.current;
       const drawingPrimitive = drawingPrimitiveRef.current;
@@ -541,7 +560,11 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       const price = series.coordinateToPrice(param.point.y);
       if (price === null) return;
 
-      drawingPrimitive.startFreehand({ time: param.time, price });
+      // Use logical coordinates - works anywhere on the chart including rightOffset area
+      const logical = chart.timeScale().coordinateToLogical(param.point.x);
+      if (logical === null) return;
+
+      drawingPrimitive.startFreehand({ logical, price });
       drawingStateRef.current.setIsDrawing(true);
     };
 
@@ -575,8 +598,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         drawingStateRef.current.isDrawingMode() &&
         drawingStateRef.current.isDrawing() &&
         activeToolType === 'trend-line' &&
-        param.point &&
-        param.time
+        param.point
       ) {
         const series = candlestickSeriesRef.current;
         if (!series) return;
@@ -584,11 +606,15 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         const price = series.coordinateToPrice(param.point.y);
         if (price === null) return;
 
+        // Use logical coordinates - works anywhere on the chart including rightOffset area
+        const logical = chart.timeScale().coordinateToLogical(param.point.x);
+        if (logical === null) return;
+
         const drawingPrimitive = drawingPrimitiveRef.current;
         const tempPoint = drawingStateRef.current.getTempPoint();
 
         if (drawingPrimitive && tempPoint) {
-          drawingPrimitive.updateLastTrendLinePoint2({ time: param.time, price });
+          drawingPrimitive.updateLastTrendLinePoint2({ logical, price });
         }
       }
 
@@ -597,8 +623,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         drawingStateRef.current.isDrawingMode() &&
         drawingStateRef.current.isDrawing() &&
         activeToolType === 'freehand' &&
-        param.point &&
-        param.time
+        param.point
       ) {
         // Throttle to prevent adding too many points
         const now = Date.now();
@@ -613,9 +638,13 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         const price = series.coordinateToPrice(param.point.y);
         if (price === null) return;
 
+        // Use logical coordinates - works anywhere on the chart including rightOffset area
+        const logical = chart.timeScale().coordinateToLogical(param.point.x);
+        if (logical === null) return;
+
         const drawingPrimitive = drawingPrimitiveRef.current;
         if (drawingPrimitive) {
-          drawingPrimitive.addFreehandPoint({ time: param.time, price });
+          drawingPrimitive.addFreehandPoint({ logical, price });
         }
       }
     };
@@ -639,12 +668,12 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       if (!series) return;
 
       const price = series.coordinateToPrice(y);
+      if (price === null) return;
+
       const time = chart.timeScale().coordinateToTime(x);
 
-      // Only allow drawing within data range
-      if (price !== null && time !== null) {
-        handleMouseDown({ point: { x, y }, time } as MouseEventParams);
-      }
+      // Pass to handleMouseDown which will extrapolate time if needed
+      handleMouseDown({ point: { x, y }, time } as MouseEventParams);
     };
 
     // Store handlers in ref for proper cleanup

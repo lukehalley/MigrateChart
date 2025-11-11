@@ -6,13 +6,14 @@ import {
   ISeriesPrimitivePaneView,
   SeriesPrimitivePaneViewZOrder,
   IChartApi,
+  Logical,
 } from 'lightweight-charts';
 
 // Types for drawing objects
 export type DrawingType = 'horizontal-line' | 'trend-line' | 'freehand';
 
 export interface DrawingPoint {
-  time: Time;
+  logical: number; // Using logical index instead of time - works beyond data range
   price: number;
 }
 
@@ -109,10 +110,11 @@ class DrawingPaneView implements ISeriesPrimitivePaneView {
     const y1 = this._series.priceToCoordinate(line.point1.price);
     const y2 = this._series.priceToCoordinate(line.point2.price);
 
-    // Get time scale from the chart
+    // Get time scale from the chart and use logical coordinates
+    // logicalToCoordinate works for ANY logical value, including beyond data range
     const timeScale = this._chart.timeScale();
-    const x1 = timeScale.timeToCoordinate(line.point1.time);
-    const x2 = timeScale.timeToCoordinate(line.point2.time);
+    const x1 = timeScale.logicalToCoordinate(line.point1.logical as Logical);
+    const x2 = timeScale.logicalToCoordinate(line.point2.logical as Logical);
 
     // Skip if any coordinate is invalid
     if (y1 === null || y2 === null || x1 === null || x2 === null) return;
@@ -143,7 +145,8 @@ class DrawingPaneView implements ISeriesPrimitivePaneView {
     for (let i = 0; i < freehand.points.length; i++) {
       const point = freehand.points[i];
       const y = this._series.priceToCoordinate(point.price);
-      const x = timeScale.timeToCoordinate(point.time);
+      // Use logicalToCoordinate - works for ANY logical value
+      const x = timeScale.logicalToCoordinate(point.logical as Logical);
 
       if (y === null || x === null) continue;
 
