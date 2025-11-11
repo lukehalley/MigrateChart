@@ -132,8 +132,8 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         timeVisible: true,
         secondsVisible: false,
         rightOffset: isMobile ? 10 : 50,  // More space on right side by default
-        barSpacing: isMobile ? 2 : 12,  // Tighter spacing on mobile
-        minBarSpacing: isMobile ? 0.5 : 0.50,  // Improved minimum spacing for better mobile zoom control
+        barSpacing: isMobile ? 2 : 12,  // Keep consistent 12px spacing
+        minBarSpacing: 0.001,  // Very small minimum to allow zooming out on finer timeframes with many candles
         fixLeftEdge: false,  // Allow scrolling past edges
         fixRightEdge: false,
         lockVisibleTimeRangeOnResize: false,
@@ -531,19 +531,9 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
       let fromTime: number;
 
-      // For MAX timeframe, show all data
-      // For all other timeframes, default to ~30 days of data
-      if (timeframe === 'MAX') {
-        fromTime = firstTime;
-      } else {
-        // Default to 60 days on desktop, 220 days on mobile for better context
-        const defaultDays = isMobile ? 220 : 60;
-        const DEFAULT_DAYS_SECONDS = defaultDays * 24 * 60 * 60;
-        const daysAgo = lastTime - DEFAULT_DAYS_SECONDS;
-
-        // Handle edge case: if token is less than default days old, show all available data
-        fromTime = Math.max(daysAgo, firstTime);
-      }
+      // Show all data for all timeframes - users can zoom in/out as needed
+      // The minBarSpacing: 0.001 allows full zoom out capability
+      fromTime = firstTime;
 
       // Check if there's a saved position in localStorage for this timeframe
       const storageKey = `chartPosition_${timeframe}`;
