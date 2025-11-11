@@ -27,6 +27,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
   const [showAbout, setShowAbout] = useState(false);
   const [isAboutClosing, setIsAboutClosing] = useState(false);
   const [resetTrigger, setResetTrigger] = useState(0);
+  const [chartVersion, setChartVersion] = useState(0);
 
   // Drawing tools state
   const drawingPrimitiveRef = useRef<DrawingToolsPrimitive | null>(null);
@@ -193,6 +194,9 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
     });
 
     chartRef.current = chart;
+
+    // Increment chart version to trigger migration lines redraw
+    setChartVersion(prev => prev + 1);
 
     // Add candlestick series for each pool
     const migrations = Object.values(MIGRATION_DATES);
@@ -646,7 +650,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         migrationLinesCleanupRef.current = null;
       }
     };
-  }, [showMigrationLines, resetTrigger, timeframe, displayMode, showVolume]);
+  }, [showMigrationLines, chartVersion]);
 
   // Separate effect to handle drawing mode changes without recreating chart
   useEffect(() => {
