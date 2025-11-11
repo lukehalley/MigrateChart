@@ -8,6 +8,7 @@ import { drawVerticalLines } from '@/lib/verticalLine';
 import { DrawingToolsPrimitive, DrawingStateManager, DrawingType } from '@/lib/drawingTools';
 import { motion, AnimatePresence } from 'motion/react';
 import { SafeStorage } from '@/lib/localStorage';
+import { formatMarketCap } from '@/lib/utils';
 
 interface ChartProps {
   poolsData: PoolData[];
@@ -234,11 +235,16 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         wickDownColor: '#ef5350',
         priceLineVisible: false,
         lastValueVisible: false,
-        priceFormat: {
-          type: 'price',
-          precision: displayMode === 'marketCap' ? 0 : 5,
-          minMove: displayMode === 'marketCap' ? 1 : 0.00001,
-        },
+        priceFormat: displayMode === 'marketCap'
+          ? {
+              type: 'custom',
+              formatter: formatMarketCap,
+            }
+          : {
+              type: 'price',
+              precision: 5,
+              minMove: 0.00001,
+            },
       });
 
       // Attach drawing tools to the first candlestick series
