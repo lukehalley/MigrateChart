@@ -68,8 +68,8 @@ export function drawVerticalLines(
 
       // Calculate price axis width for fade effect
       const priceAxisWidth = isMobile ? 60 : 80;
-      const fadeStartDistance = isMobile ? 50 : 150; // Reduced threshold on mobile - labels stay visible longer
-      const fadeEndDistance = isMobile ? 20 : 50; // Fade completes closer to axis on mobile
+      const fadeStartDistance = isMobile ? 30 : 80; // Very minimal fade - labels stay visible much longer
+      const fadeEndDistance = isMobile ? 10 : 30; // Fade completes right at the axis edge
       const fadeStart = container.clientWidth - priceAxisWidth - fadeStartDistance;
       const fadeEnd = container.clientWidth - priceAxisWidth - fadeEndDistance;
 

@@ -34,11 +34,11 @@ export default function DonationBanner() {
         }}
       />
 
-      <div className="w-full relative">
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 py-4">
+      <div className="w-full relative px-3 sm:px-0">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 py-3 sm:py-4">
 
           {/* Left: Call to Action with Icon */}
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
             <motion.div
               animate={{
                 scale: [1, 1.15, 1],
@@ -49,13 +49,13 @@ export default function DonationBanner() {
                 ease: 'easeInOut'
               }}
             >
-              <Heart className="w-5 h-5 sm:w-6 sm:h-6 text-[#52C97D] fill-[#52C97D]" />
+              <Heart className="w-4 h-4 sm:w-6 sm:h-6 text-[#52C97D] fill-[#52C97D]" />
             </motion.div>
             <div className="text-center sm:text-left">
-              <p className="text-white font-bold text-sm sm:text-base leading-tight">
+              <p className="text-white font-bold text-xs sm:text-base leading-tight">
                 Support This Free Tool
               </p>
-              <p className="text-white/70 text-xs leading-tight">
+              <p className="text-white/70 text-[10px] sm:text-xs leading-tight">
                 Donate via Solana Network
               </p>
             </div>
@@ -64,19 +64,19 @@ export default function DonationBanner() {
           <div className="hidden sm:block h-10 w-px bg-[#52C97D]/30"></div>
 
           {/* Center: Address with better visibility */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto">
             <motion.div
-              className="flex items-center gap-2 bg-black/60 px-3 sm:px-4 py-2 rounded-lg border border-[#52C97D]/40"
+              className="flex items-center gap-2 bg-black/60 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg border border-[#52C97D]/40 flex-1 sm:flex-initial overflow-hidden"
               whileHover={{ borderColor: 'rgba(82, 201, 125, 0.7)' }}
             >
-              <code className="text-[#52C97D] text-xs sm:text-sm font-mono select-all">
+              <code className="text-[#52C97D] text-[10px] sm:text-sm font-mono select-all truncate">
                 {solanaAddress}
               </code>
             </motion.div>
 
             <motion.button
               onClick={handleCopy}
-              className="flex items-center justify-center gap-2 px-4 py-2 bg-[#52C97D] text-black font-bold text-sm rounded-lg shadow-lg w-[100px]"
+              className="flex items-center justify-center gap-1.5 p-2 sm:px-4 sm:py-2 bg-[#52C97D] text-black font-bold text-xs sm:text-sm rounded-lg shadow-lg sm:w-[100px]"
               whileHover={{
                 scale: 1.05,
                 boxShadow: '0 0 20px rgba(82, 201, 125, 0.5)'

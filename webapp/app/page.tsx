@@ -154,6 +154,9 @@ function HomeContent() {
     const data = currentPoolData.data;
     const now = Math.floor(Date.now() / 1000);
 
+    // Meteora migration timestamp - fees only started being collected from this point
+    const METEORA_MIGRATION = 1762300800; // November 5, 2025
+
     // Calculate timeframe duration in seconds
     const timeframeSeconds: Record<Timeframe, number> = {
       '1H': 3600,
@@ -184,8 +187,10 @@ function HomeContent() {
     const lastPrice = timeframeData[timeframeData.length - 1].close;
     const priceChangePercent = firstPrice !== 0 ? ((lastPrice - firstPrice) / firstPrice) * 100 : 0;
 
-    // Calculate fees based on volume
-    const feesForTimeframe = volumeForTimeframe * 0.01; // 1% fee
+    // Calculate fees ONLY from Meteora migration date forward (when fees started being collected)
+    const meteoraData = timeframeData.filter(d => d.time >= METEORA_MIGRATION);
+    const volumeForFees = meteoraData.reduce((sum, d) => sum + (d.volume || 0), 0);
+    const feesForTimeframe = volumeForFees * 0.01; // 1% fee
 
     return {
       ...tokenStats,
@@ -217,11 +222,11 @@ function HomeContent() {
           }}
         />
 
-        <div className="w-full relative">
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 py-4">
+        <div className="w-full relative px-3 sm:px-0">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 py-3 sm:py-4">
 
             {/* Left: Call to Action with Icon */}
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2">
               <motion.div
                 animate={{
                   scale: [1, 1.15, 1],
@@ -232,13 +237,13 @@ function HomeContent() {
                   ease: 'easeInOut'
                 }}
               >
-                <Heart className="w-5 h-5 sm:w-6 sm:h-6 text-[#52C97D] fill-[#52C97D]" />
+                <Heart className="w-4 h-4 sm:w-6 sm:h-6 text-[#52C97D] fill-[#52C97D]" />
               </motion.div>
               <div className="text-center sm:text-left">
-                <p className="text-white font-bold text-sm sm:text-base leading-tight">
+                <p className="text-white font-bold text-xs sm:text-base leading-tight">
                   Support This Free Tool
                 </p>
-                <p className="text-white/70 text-xs leading-tight">
+                <p className="text-white/70 text-[10px] sm:text-xs leading-tight">
                   Donate via Solana Network
                 </p>
               </div>
@@ -247,19 +252,19 @@ function HomeContent() {
             <div className="hidden sm:block h-10 w-px bg-[#52C97D]/30"></div>
 
             {/* Center: Address with better visibility */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto">
               <motion.div
-                className="flex items-center gap-2 bg-black/60 px-3 sm:px-4 py-2 rounded-lg border border-[#52C97D]/40"
+                className="flex items-center gap-2 bg-black/60 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg border border-[#52C97D]/40 flex-1 sm:flex-initial overflow-hidden"
                 whileHover={{ borderColor: 'rgba(82, 201, 125, 0.7)' }}
               >
-                <code className="text-[#52C97D] text-xs sm:text-sm font-mono select-all">
+                <code className="text-[#52C97D] text-[10px] sm:text-sm font-mono select-all truncate">
                   {solanaAddress}
                 </code>
               </motion.div>
 
               <motion.button
                 onClick={handleCopy}
-                className="flex items-center justify-center gap-2 px-4 py-2 bg-[#52C97D] text-black font-bold text-sm rounded-lg shadow-lg w-[100px]"
+                className="flex items-center justify-center gap-1.5 p-2 sm:px-4 sm:py-2 bg-[#52C97D] text-black font-bold text-xs sm:text-sm rounded-lg shadow-lg sm:w-[100px]"
                 whileHover={{
                   scale: 1.05,
                   boxShadow: '0 0 20px rgba(82, 201, 125, 0.5)'
@@ -302,7 +307,7 @@ function HomeContent() {
         {/* Mobile Menu Toggle Button - Floating hamburger menu */}
         <button
           onClick={() => showMobileMenu ? closeMobileMenu() : setShowMobileMenu(true)}
-          className="fixed top-3 left-3 z-[60] w-11 h-11 flex items-center justify-center bg-[#0A1F12]/90 hover:bg-[#0A1F12] border-2 border-[#52C97D] shadow-[0_0_12px_rgba(82,201,125,0.3)] hover:shadow-[0_0_16px_rgba(82,201,125,0.5)] transition-all backdrop-blur-sm"
+          className="absolute top-3 left-3 z-[60] w-11 h-11 flex items-center justify-center bg-[#0A1F12]/90 hover:bg-[#0A1F12] border-2 border-[#52C97D] shadow-[0_0_12px_rgba(82,201,125,0.3)] hover:shadow-[0_0_16px_rgba(82,201,125,0.5)] transition-all backdrop-blur-sm"
           aria-label="Toggle menu"
         >
           <div className="flex flex-col gap-1.5">
@@ -402,8 +407,8 @@ function HomeContent() {
 
               {/* Timeframe Toggle Card */}
               <div className="info-card-small">
-                <div className="py-2 px-1.5">
-                  <p className="text-white text-[10px] mb-2 text-center">Timeframe</p>
+                <div className="py-1.5 px-1.5">
+                  <p className="text-white text-[10px] mb-1 text-center">Timeframe</p>
                   <TimeframeToggle
                     currentTimeframe={timeframe}
                     onTimeframeChange={(newTimeframe) => {
@@ -412,6 +417,16 @@ function HomeContent() {
                     }}
                   />
                 </div>
+              </div>
+
+              {/* Decorative Divider */}
+              <div className="flex items-center justify-center py-2">
+                <div className="dashed-divider w-24"></div>
+              </div>
+
+              {/* Token Stats */}
+              <div>
+                <TokenStats stats={timeframeStats || null} isLoading={isStatsLoading} timeframe={timeframe} />
               </div>
 
               {/* Decorative Divider */}
@@ -432,16 +447,6 @@ function HomeContent() {
                     onResetPosition={handleResetChartPosition}
                   />
                 </div>
-              </div>
-
-              {/* Decorative Divider */}
-              <div className="flex items-center justify-center py-2">
-                <div className="dashed-divider w-24"></div>
-              </div>
-
-              {/* Token Stats */}
-              <div>
-                <TokenStats stats={timeframeStats || null} isLoading={isStatsLoading} timeframe={timeframe} />
               </div>
 
               {/* Decorative Divider */}
@@ -659,12 +664,20 @@ function HomeContent() {
 
             {/* Timeframe Toggle */}
             <div className="stat-card">
-              <p className="text-white text-[10px] font-medium mb-1.5 text-center">Timeframe</p>
+              <p className="text-white text-[10px] font-medium mb-1 text-center">Timeframe</p>
               <TimeframeToggle
                 currentTimeframe={timeframe}
                 onTimeframeChange={setTimeframe}
               />
             </div>
+
+            {/* Decorative Divider */}
+            <div className="py-0.5">
+              <div className="dashed-divider"></div>
+            </div>
+
+            {/* Token Stats */}
+            <TokenStats stats={timeframeStats || null} isLoading={isStatsLoading} timeframe={timeframe} />
 
             {/* Decorative Divider */}
             <div className="py-0.5">
@@ -681,14 +694,6 @@ function HomeContent() {
               onMigrationLinesToggle={handleMigrationLinesToggle}
               onResetPosition={handleResetChartPosition}
             />
-
-            {/* Decorative Divider */}
-            <div className="py-0.5">
-              <div className="dashed-divider"></div>
-            </div>
-
-            {/* Token Stats */}
-            <TokenStats stats={timeframeStats || null} isLoading={isStatsLoading} timeframe={timeframe} />
 
             {/* Extra spacing before sticky button */}
             <div className="h-1"></div>

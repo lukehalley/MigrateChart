@@ -817,7 +817,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       </div>
 
       {/* Mobile: Drawing Tools Button (below hamburger menu) */}
-      <div className="md:hidden fixed top-[60px] left-3 z-[60]">
+      <div className="md:hidden absolute top-[60px] left-3 z-30">
         <div className="relative flex flex-col gap-2">
           {/* Toggle Drawing Mode Button */}
           <button
