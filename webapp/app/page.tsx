@@ -188,8 +188,12 @@ function HomeContent() {
     const startTime = now - duration;
 
     // Filter data for selected timeframe and sort by time ascending
+    // Use > instead of >= and subtract one extra period to ensure we get the starting candle
+    const candleInterval = timeframe === '1H' ? 3600 : timeframe === '4H' ? 4 * 3600 : timeframe === '8H' ? 8 * 3600 : 24 * 3600;
+    const adjustedStartTime = startTime - candleInterval; // Look back one extra candle period
+
     const timeframeData = data
-      .filter(d => d.time >= startTime)
+      .filter(d => d.time >= adjustedStartTime)
       .sort((a, b) => a.time - b.time);
 
     if (timeframeData.length === 0) return tokenStats;
