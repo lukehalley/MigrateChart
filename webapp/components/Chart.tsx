@@ -56,12 +56,15 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
   // Store migration lines cleanup function
   const migrationLinesCleanupRef = useRef<(() => void) | null>(null);
 
-  // Store mouse event handlers for proper cleanup
+  // Store mouse and touch event handlers for proper cleanup
   const mouseHandlersRef = useRef<{
     mousedown: ((e: MouseEvent) => void) | null;
     mouseup: ((e: MouseEvent) => void) | null;
     mouseleave: ((e: MouseEvent) => void) | null;
-  }>({ mousedown: null, mouseup: null, mouseleave: null });
+    touchstart: ((e: TouchEvent) => void) | null;
+    touchmove: ((e: TouchEvent) => void) | null;
+    touchend: ((e: TouchEvent) => void) | null;
+  }>({ mousedown: null, mouseup: null, mouseleave: null, touchstart: null, touchmove: null, touchend: null });
 
   const resetChartPosition = () => {
     const positionKey = `chartPosition_${timeframe}`;
@@ -672,20 +675,110 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
       const time = chart.timeScale().coordinateToTime(x);
 
-      // Pass to handleMouseDown which will extrapolate time if needed
+      // Pass to handleMouseDown which will convert to logical coordinates
       handleMouseDown({ point: { x, y }, time } as MouseEventParams);
+    };
+
+    // Touch event handlers for mobile/tablet support
+    const handleNativeTouchStart = (e: TouchEvent) => {
+      if (!drawingStateRef.current.isDrawingMode()) return;
+
+      const chartContainer = chartContainerRef.current;
+      if (!chartContainer) return;
+
+      // Only handle single touch for drawing
+      if (e.touches.length !== 1) return;
+
+      // Prevent default to avoid scrolling while drawing
+      e.preventDefault();
+
+      const touch = e.touches[0];
+      const rect = chartContainer.getBoundingClientRect();
+      const x = touch.clientX - rect.left;
+      const y = touch.clientY - rect.top;
+
+      const series = candlestickSeriesRef.current;
+      if (!series) return;
+
+      const price = series.coordinateToPrice(y);
+      if (price === null) return;
+
+      const time = chart.timeScale().coordinateToTime(x);
+
+      // For trend lines and horizontal lines, use click handler
+      const activeToolType = drawingStateRef.current.getActiveToolType();
+      if (activeToolType === 'trend-line' || activeToolType === 'horizontal-line') {
+        handleChartClick({ point: { x, y }, time } as MouseEventParams);
+      } else if (activeToolType === 'freehand') {
+        // For freehand, start the drawing
+        handleMouseDown({ point: { x, y }, time } as MouseEventParams);
+      }
+    };
+
+    const handleNativeTouchMove = (e: TouchEvent) => {
+      if (!drawingStateRef.current.isDrawingMode()) return;
+      if (!drawingStateRef.current.isDrawing()) return;
+
+      const chartContainer = chartContainerRef.current;
+      if (!chartContainer) return;
+
+      if (e.touches.length !== 1) return;
+
+      // Prevent default to avoid scrolling while drawing
+      e.preventDefault();
+
+      const touch = e.touches[0];
+      const rect = chartContainer.getBoundingClientRect();
+      const x = touch.clientX - rect.left;
+      const y = touch.clientY - rect.top;
+
+      const series = candlestickSeriesRef.current;
+      if (!series) return;
+
+      const price = series.coordinateToPrice(y);
+      if (price === null) return;
+
+      const time = chart.timeScale().coordinateToTime(x);
+
+      // Update the drawing preview/continue freehand
+      handleCrosshairMove({ point: { x, y }, time } as MouseEventParams);
+    };
+
+    const handleNativeTouchEnd = (e: TouchEvent) => {
+      if (!drawingStateRef.current.isDrawingMode()) return;
+
+      // Prevent default behavior
+      e.preventDefault();
+
+      const activeToolType = drawingStateRef.current.getActiveToolType();
+
+      // For freehand drawing, finish it
+      if (activeToolType === 'freehand' && drawingStateRef.current.isDrawing()) {
+        handleMouseUp();
+      }
+      // For trend lines, the second tap will be handled by touchstart -> handleChartClick
     };
 
     // Store handlers in ref for proper cleanup
     mouseHandlersRef.current.mousedown = handleNativeMouseDown;
     mouseHandlersRef.current.mouseup = handleMouseUp;
     mouseHandlersRef.current.mouseleave = handleMouseUp;
+    mouseHandlersRef.current.touchstart = handleNativeTouchStart;
+    mouseHandlersRef.current.touchmove = handleNativeTouchMove;
+    mouseHandlersRef.current.touchend = handleNativeTouchEnd;
 
     const chartContainer = chartContainerRef.current;
     if (chartContainer) {
+      // Mouse events
       chartContainer.addEventListener('mousedown', handleNativeMouseDown);
       chartContainer.addEventListener('mouseup', handleMouseUp);
-      chartContainer.addEventListener('mouseleave', handleMouseUp); // Also finish on mouse leave
+      chartContainer.addEventListener('mouseleave', handleMouseUp);
+
+      // Touch events
+      chartContainer.addEventListener('touchstart', handleNativeTouchStart, { passive: false });
+      chartContainer.addEventListener('touchmove', handleNativeTouchMove, { passive: false });
+      chartContainer.addEventListener('touchend', handleNativeTouchEnd, { passive: false });
+      chartContainer.addEventListener('touchcancel', handleNativeTouchEnd, { passive: false });
     }
 
     // Migration lines will be handled in a separate effect
@@ -783,9 +876,10 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       chart.unsubscribeCrosshairMove(handleCrosshairMove);
       chart.timeScale().unsubscribeVisibleLogicalRangeChange(saveAndLogVisibleRange);
 
-      // Remove mouse event listeners from chart container using stored refs
+      // Remove mouse and touch event listeners from chart container using stored refs
       const chartContainer = chartContainerRef.current;
       if (chartContainer) {
+        // Remove mouse event listeners
         if (mouseHandlersRef.current.mousedown) {
           chartContainer.removeEventListener('mousedown', mouseHandlersRef.current.mousedown);
         }
@@ -795,10 +889,22 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         if (mouseHandlersRef.current.mouseleave) {
           chartContainer.removeEventListener('mouseleave', mouseHandlersRef.current.mouseleave);
         }
+
+        // Remove touch event listeners
+        if (mouseHandlersRef.current.touchstart) {
+          chartContainer.removeEventListener('touchstart', mouseHandlersRef.current.touchstart);
+        }
+        if (mouseHandlersRef.current.touchmove) {
+          chartContainer.removeEventListener('touchmove', mouseHandlersRef.current.touchmove);
+        }
+        if (mouseHandlersRef.current.touchend) {
+          chartContainer.removeEventListener('touchend', mouseHandlersRef.current.touchend);
+          chartContainer.removeEventListener('touchcancel', mouseHandlersRef.current.touchend);
+        }
       }
 
       // Clear handler refs
-      mouseHandlersRef.current = { mousedown: null, mouseup: null, mouseleave: null };
+      mouseHandlersRef.current = { mousedown: null, mouseup: null, mouseleave: null, touchstart: null, touchmove: null, touchend: null };
 
       // Cleanup migration lines if they exist
       if (migrationLinesCleanupRef.current) {
