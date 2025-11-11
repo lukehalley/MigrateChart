@@ -387,7 +387,7 @@ function HomeContent() {
                 </div>
 
                 {/* DEX Screener Link */}
-                <div style={{ marginTop: '16px', paddingTop: '16px' }} className="border-t border-[#52C97D]/20">
+                <div style={{ marginTop: '16px', paddingTop: '16px', paddingBottom: '4px' }} className="border-t border-[#52C97D]/20">
                   <a
                     href="https://dexscreener.com/solana/6oUJD1EHNVBNMeTpytmY2NxKWicz5C2JUbByUrHEsjhc"
                     target="_blank"
@@ -644,7 +644,7 @@ function HomeContent() {
               </div>
 
               {/* DEX Screener Link */}
-              <div style={{ marginTop: '12px', paddingTop: '12px' }} className="border-t border-[#52C97D]/20">
+              <div style={{ marginTop: '12px', paddingTop: '12px', paddingBottom: '4px' }} className="border-t border-[#52C97D]/20">
                 <a
                   href="https://dexscreener.com/solana/6oUJD1EHNVBNMeTpytmY2NxKWicz5C2JUbByUrHEsjhc"
                   target="_blank"
