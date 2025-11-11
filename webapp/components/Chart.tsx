@@ -1085,9 +1085,86 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         </div>
       </div>
 
-      {/* Mobile: Drawing Tools Button (below hamburger menu) */}
+      {/* Mobile: Indicators and Drawing Tools Buttons (below hamburger menu) */}
       <div className="md:hidden absolute top-[60px] left-3 z-30">
         <div className="relative flex flex-col gap-2">
+          {/* Indicators Button */}
+          <div className="relative">
+            <button
+              onClick={() => setShowIndicatorMenu(!showIndicatorMenu)}
+              className={`w-11 h-11 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-all ${
+                showIndicatorMenu || enabledIndicators.size > 0
+                  ? 'bg-[#52C97D]/30 border-[#52C97D] shadow-[0_0_12px_rgba(82,201,125,0.5)]'
+                  : 'bg-[#0A1F12]/90 border-[#52C97D] hover:bg-[#0A1F12] shadow-[0_0_12px_rgba(82,201,125,0.3)] hover:shadow-[0_0_16px_rgba(82,201,125,0.5)]'
+              }`}
+              aria-label="Technical indicators"
+              title="Technical Indicators"
+            >
+              <svg className="w-5 h-5 text-[#52C97D]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+              </svg>
+              {enabledIndicators.size > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#52C97D] text-black text-xs font-bold rounded-full flex items-center justify-center">
+                  {enabledIndicators.size}
+                </span>
+              )}
+            </button>
+
+            {/* Indicators Dropdown */}
+            <AnimatePresence>
+              {showIndicatorMenu && (
+                <motion.div
+                  className="absolute top-0 left-14 bg-black/95 backdrop-blur-sm border-2 border-[#52C97D]/50 rounded-lg p-3 min-w-[200px] shadow-[0_0_20px_rgba(82,201,125,0.3)]"
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -10 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <div className="text-[#52C97D] text-xs font-bold mb-2 px-1">Moving Averages</div>
+                  <div className="space-y-1 mb-3">
+                    {(['sma20', 'sma50', 'sma200', 'ema20', 'ema50', 'ema200'] as IndicatorType[]).map(ind => (
+                      <button
+                        key={ind}
+                        onClick={() => toggleIndicator(ind)}
+                        className={`w-full flex items-center gap-2 px-3 py-2 rounded transition-colors ${
+                          enabledIndicators.has(ind)
+                            ? 'bg-[#52C97D]/20 border border-[#52C97D]'
+                            : 'hover:bg-white/5 border border-transparent'
+                        }`}
+                      >
+                        <div
+                          className="w-3 h-3 rounded-sm"
+                          style={{ backgroundColor: INDICATORS[ind].color }}
+                        />
+                        <span className="text-white text-sm">{INDICATORS[ind].label}</span>
+                      </button>
+                    ))}
+                  </div>
+                  <div className="text-[#52C97D] text-xs font-bold mb-2 px-1 pt-2 border-t border-[#52C97D]/30">Indicators</div>
+                  <div className="space-y-1">
+                    {(['rsi', 'bb'] as IndicatorType[]).map(ind => (
+                      <button
+                        key={ind}
+                        onClick={() => toggleIndicator(ind)}
+                        className={`w-full flex items-center gap-2 px-3 py-2 rounded transition-colors ${
+                          enabledIndicators.has(ind)
+                            ? 'bg-[#52C97D]/20 border border-[#52C97D]'
+                            : 'hover:bg-white/5 border border-transparent'
+                        }`}
+                      >
+                        <div
+                          className="w-3 h-3 rounded-sm"
+                          style={{ backgroundColor: INDICATORS[ind].color }}
+                        />
+                        <span className="text-white text-sm">{INDICATORS[ind].label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
           {/* Toggle Drawing Mode Button */}
           <button
             onClick={toggleDrawingMode}

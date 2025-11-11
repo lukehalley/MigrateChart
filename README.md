@@ -2,6 +2,8 @@
 
 A comprehensive tool to track the complete price history of ZERA token, including its previous incarnation as M0N3Y and all pool migrations on Solana.
 
+**Live Chart**: [zera-chart.vercel.app](https://zera-chart.vercel.app)
+
 ## Overview
 
 This project consolidates price data from three different liquidity pools to create a unified historical price timeline:

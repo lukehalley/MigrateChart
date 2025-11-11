@@ -2,6 +2,8 @@
 
 A Next.js web application that displays an interactive, real-time price chart for the ZERA token, tracking its complete history across all pool migrations (M0N3Y → ZERA Raydium → ZERA Meteora).
 
+**Live App**: [zera-chart.vercel.app](https://zera-chart.vercel.app)
+
 ## Features
 
 - 📊 **Interactive Candlestick Chart** - Built with TradingView's lightweight-charts library
