@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Copy, Check } from 'lucide-react';
+import confetti from 'canvas-confetti';
 import Chart from '@/components/Chart';
 import TimeframeToggle from '@/components/TimeframeToggle';
 import ChartControls from '@/components/ChartControls';
@@ -96,10 +97,26 @@ function HomeContent() {
 
   // Handle copy address
   const solanaAddress = 'G9fXGu1LvtZesdQYjsWQTj1QeMpc97CJ6vWhX3rgeapb';
-  const handleCopy = () => {
+  const handleCopy = (event: React.MouseEvent<HTMLButtonElement>) => {
     navigator.clipboard.writeText(solanaAddress);
     setShowCopied(true);
     setTimeout(() => setShowCopied(false), 2000);
+
+    // Get button position for confetti origin
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = (rect.left + rect.width / 2) / window.innerWidth;
+    const y = (rect.top + rect.height / 2) / window.innerHeight;
+
+    // Cute confetti burst in brand colors
+    confetti({
+      particleCount: 40,
+      spread: 60,
+      origin: { x, y },
+      colors: ['#52C97D', '#1F6338', '#FFD700', '#FFA500'],
+      startVelocity: 25,
+      decay: 0.9,
+      scalar: 0.8,
+    });
   };
 
   // Fetch data with SWR for automatic revalidation
