@@ -1241,6 +1241,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
                 {/* Undo Last Drawing Button */}
                 <motion.button
+                  key="undo-button"
                   onClick={drawingCount > 0 ? undoLastDrawing : undefined}
                   disabled={drawingCount === 0}
                   className={`w-9 h-9 md:w-10 md:h-10 flex items-center justify-center bg-black/90 backdrop-blur-sm border-2 rounded-full transition-all ${
@@ -1248,10 +1249,11 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                       ? 'border-yellow-500/20 opacity-30 cursor-not-allowed'
                       : 'border-yellow-500/50 hover:bg-yellow-500/20 hover:border-yellow-500 cursor-pointer'
                   }`}
-                  initial={{ x: 20, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
+                  initial={false}
+                  animate={{ opacity: 1 }}
                   exit={{ x: 20, opacity: 0 }}
                   transition={{ duration: 0.2, delay: 0.2, ease: 'easeOut' }}
+                  style={{ x: 0 }}
                   aria-label="Undo last drawing"
                   title={drawingCount === 0 ? "No drawings to undo" : "Undo Last Drawing"}
                 >
@@ -1262,6 +1264,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
                 {/* Clear All Drawings Button */}
                 <motion.button
+                  key="clear-button"
                   onClick={drawingCount > 0 ? clearAllDrawings : undefined}
                   disabled={drawingCount === 0}
                   className={`w-9 h-9 md:w-10 md:h-10 flex items-center justify-center bg-black/90 backdrop-blur-sm border-2 rounded-full transition-all ${
@@ -1269,10 +1272,11 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                       ? 'border-red-500/20 opacity-30 cursor-not-allowed'
                       : 'border-red-500/50 hover:bg-red-500/20 hover:border-red-500 cursor-pointer'
                   }`}
-                  initial={{ x: 20, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
+                  initial={false}
+                  animate={{ opacity: 1 }}
                   exit={{ x: 20, opacity: 0 }}
                   transition={{ duration: 0.2, delay: 0.25, ease: 'easeOut' }}
+                  style={{ x: 0 }}
                   aria-label="Clear all drawings"
                   title={drawingCount === 0 ? "No drawings to clear" : "Clear All Drawings"}
                 >
@@ -1455,6 +1459,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
                 {/* Undo Last Drawing Button */}
                 <motion.button
+                  key="undo-button-mobile"
                   onClick={drawingCount > 0 ? undoLastDrawing : undefined}
                   disabled={drawingCount === 0}
                   className={`w-11 h-11 flex items-center justify-center bg-[#0A1F12]/90 backdrop-blur-sm border-2 rounded-full transition-all ${
@@ -1462,10 +1467,11 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                       ? 'border-yellow-500/20 opacity-30 cursor-not-allowed shadow-none'
                       : 'border-yellow-500 hover:bg-yellow-500/20 cursor-pointer shadow-[0_0_12px_rgba(234,179,8,0.3)]'
                   }`}
-                  initial={{ y: -20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
+                  initial={false}
+                  animate={{ opacity: 1 }}
                   exit={{ y: -20, opacity: 0 }}
                   transition={{ duration: 0.2, delay: 0.2, ease: 'easeOut' }}
+                  style={{ y: 0 }}
                   aria-label="Undo last drawing"
                   title={drawingCount === 0 ? "No drawings to undo" : "Undo Last Drawing"}
                 >
@@ -1476,6 +1482,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
                 {/* Clear All Drawings Button */}
                 <motion.button
+                  key="clear-button-mobile"
                   onClick={drawingCount > 0 ? clearAllDrawings : undefined}
                   disabled={drawingCount === 0}
                   className={`w-11 h-11 flex items-center justify-center bg-[#0A1F12]/90 backdrop-blur-sm border-2 rounded-full transition-all ${
@@ -1483,10 +1490,11 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                       ? 'border-red-500/20 opacity-30 cursor-not-allowed shadow-none'
                       : 'border-red-500 hover:bg-red-500/20 cursor-pointer shadow-[0_0_12px_rgba(239,68,68,0.3)]'
                   }`}
-                  initial={{ y: -20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
+                  initial={false}
+                  animate={{ opacity: 1 }}
                   exit={{ y: -20, opacity: 0 }}
                   transition={{ duration: 0.2, delay: 0.25, ease: 'easeOut' }}
+                  style={{ y: 0 }}
                   aria-label="Clear all drawings"
                   title={drawingCount === 0 ? "No drawings to clear" : "Clear All Drawings"}
                 >
