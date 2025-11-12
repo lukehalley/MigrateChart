@@ -261,11 +261,11 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D' }: Token
         </>
       )}
 
-      {/* Transactions Card */}
+      {/* Transactions Card - Always shows 24H since DexScreener only provides 24H data */}
       {(stats.buyCount24h || stats.sellCount24h) && (
         <>
         <div className="stat-card">
-          <p className="text-white text-[10px] font-medium mb-1 text-center">TXNS (24H)</p>
+          <p className="text-white text-[10px] font-medium mb-1 text-center">TXNS (LIVE 24H)</p>
           <div className="flex justify-center gap-6 text-sm">
             <div className="text-center">
               <p className="text-white text-[9px] font-medium mb-0.5">BUYS</p>

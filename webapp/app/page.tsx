@@ -225,29 +225,32 @@ function HomeContent() {
     const duration = timeframeSeconds[timeframe];
     const startTime = now - duration;
 
-    // Filter data for selected timeframe and sort by time ascending
-    // Use > instead of >= and subtract one extra period to ensure we get the starting candle
-    const candleInterval = timeframe === '1H' ? 3600 : timeframe === '4H' ? 4 * 3600 : timeframe === '8H' ? 8 * 3600 : 24 * 3600;
-    const adjustedStartTime = startTime - candleInterval; // Look back one extra candle period
+    // Sort data by time ascending
+    const sortedData = [...data].sort((a, b) => a.time - b.time);
 
-    const timeframeData = data
-      .filter(d => d.time >= adjustedStartTime)
-      .sort((a, b) => a.time - b.time);
+    // Find the candle closest to but not after the startTime for the starting price
+    // This gives us the price at the beginning of the timeframe
+    let startingPrice = sortedData[0].close;
+    for (let i = 0; i < sortedData.length; i++) {
+      if (sortedData[i].time <= startTime) {
+        startingPrice = sortedData[i].close;
+      } else {
+        break;
+      }
+    }
+
+    // Filter data for volume/fees calculation - only candles within the timeframe
+    const timeframeData = sortedData.filter(d => d.time > startTime);
 
     if (timeframeData.length === 0) return tokenStats;
 
-    // If we only have one data point, return tokenStats 24h change
-    if (timeframeData.length === 1) return tokenStats;
-
-    // Calculate volume for timeframe
+    // Calculate volume for timeframe (only candles after startTime)
     const volumeForTimeframe = timeframeData.reduce((sum, d) => sum + (d.volume || 0), 0);
 
     // Calculate price change for timeframe
-    // Use the first candle's close as the starting price
-    const firstPrice = timeframeData[0].close;
     // Use the live current price instead of the last candle's close for accuracy
     const currentPrice = tokenStats.price;
-    const priceChangePercent = firstPrice !== 0 ? ((currentPrice - firstPrice) / firstPrice) * 100 : 0;
+    const priceChangePercent = startingPrice !== 0 ? ((currentPrice - startingPrice) / startingPrice) * 100 : 0;
 
     // Calculate fees ONLY from Meteora migration date forward (when fees started being collected)
     const meteoraData = timeframeData.filter(d => d.time >= METEORA_MIGRATION);
