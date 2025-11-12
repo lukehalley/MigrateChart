@@ -25,10 +25,14 @@ interface ChartProps {
   displayMode: 'price' | 'marketCap';
   showVolume: boolean;
   showMigrationLines: boolean;
+  isLogScale: boolean;
+  onLogScaleToggle: () => void;
+  isAutoScale: boolean;
+  onAutoScaleToggle: () => void;
   onResetPosition?: () => void;
 }
 
-export default function Chart({ poolsData, timeframe, displayMode, showVolume, showMigrationLines, onResetPosition }: ChartProps) {
+export default function Chart({ poolsData, timeframe, displayMode, showVolume, showMigrationLines, isLogScale, onLogScaleToggle, isAutoScale, onAutoScaleToggle, onResetPosition }: ChartProps) {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const modalContentRef = useRef<HTMLDivElement>(null);
@@ -211,8 +215,8 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
           top: isMobile ? 0.25 : 0.15,    // Mobile: smaller top margin for more chart space
           bottom: isMobile ? 0.15 : 0.15, // Mobile: larger bottom margin to reduce price axis
         },
-        autoScale: true,  // Always use auto-scale for now (price scale persistence is too complex)
-        mode: 0,  // Normal price scale
+        autoScale: isAutoScale,
+        mode: isLogScale ? 1 : 0,  // 1 = logarithmic, 0 = normal
         invertScale: false,
         alignLabels: true,
         minimumWidth: 0,
@@ -951,7 +955,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
       chart.remove();
     };
-  }, [poolsData, timeframe, displayMode, showVolume, resetTrigger, enabledIndicators]);
+  }, [poolsData, timeframe, displayMode, showVolume, resetTrigger, enabledIndicators, isLogScale, isAutoScale]);
 
   // Separate effect to handle migration lines toggle without recreating chart
   useEffect(() => {

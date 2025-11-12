@@ -41,6 +41,8 @@ function HomeContent() {
   const [displayMode, setDisplayMode] = useState<'price' | 'marketCap'>('price');
   const [showVolume, setShowVolume] = useState<boolean>(true);
   const [showMigrationLines, setShowMigrationLines] = useState<boolean>(true);
+  const [isLogScale, setIsLogScale] = useState<boolean>(false);
+  const [isAutoScale, setIsAutoScale] = useState<boolean>(true);
 
   // Sync with localStorage after component mounts (client-side only)
   useEffect(() => {
@@ -57,6 +59,16 @@ function HomeContent() {
     const savedShowMigrationLines = SafeStorage.getItem('chartShowMigrationLines');
     if (savedShowMigrationLines !== null) {
       setShowMigrationLines(savedShowMigrationLines !== 'false');
+    }
+
+    const savedLogScale = SafeStorage.getItem('chartLogScale');
+    if (savedLogScale !== null) {
+      setIsLogScale(savedLogScale === 'true');
+    }
+
+    const savedAutoScale = SafeStorage.getItem('chartAutoScale');
+    if (savedAutoScale !== null) {
+      setIsAutoScale(savedAutoScale !== 'false');
     }
   }, []);
 
@@ -75,6 +87,18 @@ function HomeContent() {
     const newShowMigrationLines = !showMigrationLines;
     setShowMigrationLines(newShowMigrationLines);
     SafeStorage.setItem('chartShowMigrationLines', String(newShowMigrationLines));
+  };
+
+  const handleLogScaleToggle = () => {
+    const newLogScale = !isLogScale;
+    setIsLogScale(newLogScale);
+    SafeStorage.setItem('chartLogScale', String(newLogScale));
+  };
+
+  const handleAutoScaleToggle = () => {
+    const newAutoScale = !isAutoScale;
+    setIsAutoScale(newAutoScale);
+    SafeStorage.setItem('chartAutoScale', String(newAutoScale));
   };
 
   // Update URL when timeframe changes
@@ -615,6 +639,10 @@ function HomeContent() {
                     onVolumeToggle={handleVolumeToggle}
                     showMigrationLines={showMigrationLines}
                     onMigrationLinesToggle={handleMigrationLinesToggle}
+                    isLogScale={isLogScale}
+                    onLogScaleToggle={handleLogScaleToggle}
+                    isAutoScale={isAutoScale}
+                    onAutoScaleToggle={handleAutoScaleToggle}
                     onResetPosition={handleResetChartPosition}
                   />
                 </div>
@@ -759,6 +787,10 @@ function HomeContent() {
               displayMode={displayMode}
               showVolume={showVolume}
               showMigrationLines={showMigrationLines}
+              isLogScale={isLogScale}
+              onLogScaleToggle={handleLogScaleToggle}
+              isAutoScale={isAutoScale}
+              onAutoScaleToggle={handleAutoScaleToggle}
               onResetPosition={handleResetChartPosition}
             />
           )}
@@ -788,6 +820,10 @@ function HomeContent() {
               displayMode={displayMode}
               showVolume={showVolume}
               showMigrationLines={showMigrationLines}
+              isLogScale={isLogScale}
+              onLogScaleToggle={handleLogScaleToggle}
+              isAutoScale={isAutoScale}
+              onAutoScaleToggle={handleAutoScaleToggle}
               onResetPosition={handleResetChartPosition}
             />
           )}
@@ -869,6 +905,10 @@ function HomeContent() {
               onVolumeToggle={handleVolumeToggle}
               showMigrationLines={showMigrationLines}
               onMigrationLinesToggle={handleMigrationLinesToggle}
+              isLogScale={isLogScale}
+              onLogScaleToggle={handleLogScaleToggle}
+              isAutoScale={isAutoScale}
+              onAutoScaleToggle={handleAutoScaleToggle}
               onResetPosition={handleResetChartPosition}
             />
 
