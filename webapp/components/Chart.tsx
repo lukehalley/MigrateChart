@@ -111,9 +111,8 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
     // Close indicator menu when opening drawing mode
     if (newMode) {
       setShowIndicatorMenu(false);
-    }
-
-    if (!newMode) {
+    } else {
+      // Clean up when closing drawing mode
       setActiveDrawingTool(null);
       drawingStateRef.current.setActiveToolType(null);
     }
@@ -1081,8 +1080,15 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         <div className="relative">
           <button
             onClick={() => {
-              setShowIndicatorMenu(!showIndicatorMenu);
-              if (!showIndicatorMenu) setIsDrawingMode(false); // Close drawing menu when opening indicators
+              const newMenuState = !showIndicatorMenu;
+              setShowIndicatorMenu(newMenuState);
+              // Close drawing mode when opening indicators menu
+              if (newMenuState) {
+                setIsDrawingMode(false);
+                drawingStateRef.current.setDrawingMode(false);
+                setActiveDrawingTool(null);
+                drawingStateRef.current.setActiveToolType(null);
+              }
             }}
             className={`w-9 h-9 md:w-10 md:h-10 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-all ${
               showIndicatorMenu || enabledIndicators.size > 0
@@ -1301,8 +1307,15 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
           <div className="relative">
             <button
               onClick={() => {
-                setShowIndicatorMenu(!showIndicatorMenu);
-                if (!showIndicatorMenu) setIsDrawingMode(false); // Close drawing menu when opening indicators
+                const newMenuState = !showIndicatorMenu;
+                setShowIndicatorMenu(newMenuState);
+                // Close drawing mode when opening indicators menu
+                if (newMenuState) {
+                  setIsDrawingMode(false);
+                  drawingStateRef.current.setDrawingMode(false);
+                  setActiveDrawingTool(null);
+                  drawingStateRef.current.setActiveToolType(null);
+                }
               }}
               className={`w-11 h-11 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-all ${
                 showIndicatorMenu || enabledIndicators.size > 0
