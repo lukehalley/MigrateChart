@@ -7,9 +7,10 @@ interface TokenStatsProps {
   stats: TokenStatsType | null;
   isLoading: boolean;
   timeframe?: Timeframe;
+  displayMode?: 'price' | 'marketCap';
 }
 
-export default function TokenStats({ stats, isLoading, timeframe = '1D' }: TokenStatsProps) {
+export default function TokenStats({ stats, isLoading, timeframe = '1D', displayMode = 'price' }: TokenStatsProps) {
   const prevStats = useRef<TokenStatsType | null>(null);
   const [flashingFields, setFlashingFields] = useState<Set<string>>(new Set());
 
@@ -165,45 +166,68 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D' }: Token
     <div className="space-y-0">
       {/* Price Card */}
       <div className="stat-card">
-        <p className="text-white text-[10px] font-medium mb-1">PRICE (USD)</p>
-        <div className="flex items-center gap-2 mb-0.5">
-          <p className={`text-white text-lg font-bold select-text ${flashingFields.has('price') ? 'flash-update' : ''}`}>
-            {formatPrice(stats.price)}
-          </p>
-          <div className="flex items-center gap-1">
-            <div className="w-1.5 h-1.5 bg-[#52C97D] rounded-full animate-pulse"></div>
-            <span className="text-[#52C97D] text-[8px] font-bold">LIVE</span>
+        <div className="flex items-start gap-2">
+          {/* Current price on left */}
+          <div className="flex-1">
+            <p className="text-white text-[10px] font-medium mb-1">PRICE (USD)</p>
+            <p className={`text-white text-lg font-bold select-text mb-0.5 ${flashingFields.has('price') ? 'flash-update' : ''}`}>
+              {formatPrice(stats.price)}
+            </p>
+            <p
+              className={`text-sm font-semibold select-text ${
+                stats.priceChange24h >= 0 ? 'text-[#52C97D]' : 'text-[#ef5350]'
+              } ${flashingFields.has('priceChange') ? 'flash-update' : ''}`}
+            >
+              {formatPercent(stats.priceChange24h)}
+            </p>
           </div>
-        </div>
-        <div className="flex items-center gap-1">
-          <p
-            className={`text-sm font-semibold select-text ${
-              stats.priceChange24h >= 0 ? 'text-[#52C97D]' : 'text-[#ef5350]'
-            } ${flashingFields.has('priceChange') ? 'flash-update' : ''}`}
-          >
-            {formatPercent(stats.priceChange24h)}
-          </p>
-          <span className="text-white/50 text-[8px]">({timeframeLabel})</span>
+          {/* ATH price and market cap on right */}
+          {stats.allTimeHighMarketCap !== undefined && (
+            <div className="flex-1">
+              {displayMode === 'price' ? (
+                <>
+                  <p className="text-white text-[10px] font-medium mb-1">PRICE (ATH)</p>
+                  <p className="text-white text-lg font-bold select-text mb-0.5">
+                    {formatPrice(stats.allTimeHighMarketCap / 1_000_000_000)}
+                  </p>
+                  <p className="text-white/70 text-xs font-medium select-text">
+                    {formatNumber(stats.allTimeHighMarketCap)}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="text-white text-[10px] font-medium mb-1">MKT CAP (ATH)</p>
+                  <p className="text-white text-lg font-bold select-text mb-0.5">
+                    {formatNumber(stats.allTimeHighMarketCap)}
+                  </p>
+                </>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
       {/* Divider */}
       <div className="dashed-divider"></div>
 
-      {/* Liquidity Card */}
+      {/* Liquidity and Market Cap Combined Card */}
       <div className="stat-card">
-        <p className="text-white text-[10px] font-medium mb-1">LIQUIDITY</p>
-        <p className={`text-white text-base font-bold select-text ${flashingFields.has('liquidity') ? 'flash-update' : ''}`}>
-          {formatNumber(stats.liquidity)}
-        </p>
-      </div>
-
-      {/* Market Cap Card */}
-      <div className="stat-card">
-        <p className="text-white text-[10px] font-medium mb-1">MKT CAP</p>
-        <p className={`text-white text-base font-bold select-text ${flashingFields.has('marketCap') ? 'flash-update' : ''}`}>
-          {formatNumber(stats.marketCap)}
-        </p>
+        <div className="flex items-start gap-2">
+          {/* Liquidity on left */}
+          <div className="flex-1">
+            <p className="text-white text-[10px] font-medium mb-1">LIQUIDITY</p>
+            <p className={`text-white text-base font-bold select-text ${flashingFields.has('liquidity') ? 'flash-update' : ''}`}>
+              {formatNumber(stats.liquidity)}
+            </p>
+          </div>
+          {/* Market cap on right */}
+          <div className="flex-1">
+            <p className="text-white text-[10px] font-medium mb-1">MKT CAP</p>
+            <p className={`text-white text-base font-bold select-text ${flashingFields.has('marketCap') ? 'flash-update' : ''}`}>
+              {formatNumber(stats.marketCap)}
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Divider */}
@@ -211,33 +235,67 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D' }: Token
 
       {/* Volume Card - Dynamic Timeframe */}
       <div className="stat-card">
-        <p className="text-white text-[10px] font-medium mb-1">VOLUME ({timeframeLabel})</p>
-        <p className={`text-white text-base font-bold select-text ${flashingFields.has('volume') ? 'flash-update' : ''}`}>
-          {formatNumber(stats.volume24h)}
-        </p>
+        <div className="flex items-start gap-2">
+          {/* Timeframe volume on left */}
+          <div className="flex-1">
+            <p className="text-white text-[10px] font-medium mb-1">VOLUME</p>
+            <p className={`text-white text-base font-bold select-text ${flashingFields.has('volume') ? 'flash-update' : ''}`}>
+              {formatNumber(stats.volume24h)}
+            </p>
+          </div>
+          {/* All-time volume on right - only show if not already showing all time */}
+          {stats.allTimeVolume !== undefined && timeframeLabel !== 'ALL TIME' && (
+            <div className="flex-1">
+              <p className="text-white text-[10px] font-medium mb-1">VOLUME (ALL TIME)</p>
+              <p className="text-white text-base font-bold select-text">
+                {formatNumber(stats.allTimeVolume)}
+              </p>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Fees Card - Dynamic Timeframe */}
       {stats.fees24h !== undefined && (
         <>
         <div className="stat-card">
-          <p className="text-white text-[10px] font-medium mb-1">FEES ({timeframeLabel})</p>
-          <div className="flex items-center gap-2">
-            {/* Total on left */}
-            <p className={`text-white text-base font-bold select-text ${flashingFields.has('fees') ? 'flash-update' : ''}`}>
-              {formatNumber(stats.fees24h)}
-            </p>
-            {/* Split on right - values then labels */}
-            <div className="flex-1 text-[8px] text-gray-400 space-y-0.5">
-              <div className="flex items-center justify-end gap-1">
-                <span className="text-white font-medium">{formatNumber(stats.fees24h * 0.8)}</span>
-                <span>(Project 80%)</span>
-              </div>
-              <div className="flex items-center justify-end gap-1">
-                <span className="text-white font-medium">{formatNumber(stats.fees24h * 0.2)}</span>
-                <span>(Meteora 20%)</span>
+          <div className="flex items-start gap-2">
+            {/* Timeframe fees on left with split */}
+            <div className="flex-1">
+              <p className="text-white text-[10px] font-medium mb-1">FEES</p>
+              <p className={`text-white text-base font-bold select-text mb-0.5 ${flashingFields.has('fees') ? 'flash-update' : ''}`}>
+                {formatNumber(stats.fees24h * 0.8)}
+              </p>
+              <div className="text-[8px] text-gray-400 space-y-0.5">
+                <div className="flex items-center gap-1">
+                  <span className="text-white font-medium">{formatNumber(stats.fees24h)}</span>
+                  <span>(Total)</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="text-white font-medium">{formatNumber(stats.fees24h * 0.2)}</span>
+                  <span>(Meteora 20%)</span>
+                </div>
               </div>
             </div>
+            {/* All-time fees on right with split - only show if not already showing all time */}
+            {stats.allTimeFees !== undefined && timeframeLabel !== 'ALL TIME' && (
+              <div className="flex-1">
+                <p className="text-white text-[10px] font-medium mb-1">FEES (ALL TIME)</p>
+                <p className="text-white text-base font-bold select-text mb-0.5">
+                  {formatNumber(stats.allTimeFees * 0.8)}
+                </p>
+                <div className="text-[8px] text-gray-400 space-y-0.5">
+                  <div className="flex items-center gap-1">
+                    <span className="text-white font-medium">{formatNumber(stats.allTimeFees)}</span>
+                    <span>(Total)</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="text-white font-medium">{formatNumber(stats.allTimeFees * 0.2)}</span>
+                    <span>(Meteora 20%)</span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -265,17 +323,18 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D' }: Token
       {(stats.buyCount24h || stats.sellCount24h) && (
         <>
         <div className="stat-card">
-          <p className="text-white text-[10px] font-medium mb-1 text-center">TXNS (LIVE 24H)</p>
-          <div className="flex justify-center gap-6 text-sm">
-            <div className="text-center">
-              <p className="text-white text-[9px] font-medium mb-0.5">BUYS</p>
-              <p className={`text-[#52C97D] font-bold text-sm select-text ${flashingFields.has('buys') ? 'flash-update' : ''}`}>
+          <div className="flex items-start gap-2">
+            {/* Buys on left */}
+            <div className="flex-1">
+              <p className="text-white text-[10px] font-medium mb-1">BUYS (24H)</p>
+              <p className={`text-[#52C97D] text-base font-bold select-text ${flashingFields.has('buys') ? 'flash-update' : ''}`}>
                 {stats.buyCount24h || 0}
               </p>
             </div>
-            <div className="text-center">
-              <p className="text-white text-[9px] font-medium mb-0.5">SELLS</p>
-              <p className={`text-[#ef5350] font-bold text-sm select-text ${flashingFields.has('sells') ? 'flash-update' : ''}`}>
+            {/* Sells on right */}
+            <div className="flex-1">
+              <p className="text-white text-[10px] font-medium mb-1">SELLS (24H)</p>
+              <p className={`text-[#ef5350] text-base font-bold select-text ${flashingFields.has('sells') ? 'flash-update' : ''}`}>
                 {stats.sellCount24h || 0}
               </p>
             </div>

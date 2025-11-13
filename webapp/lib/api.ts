@@ -271,13 +271,43 @@ export async function fetchTokenStats(poolAddress: string): Promise<TokenStats |
     const volume24h = parseFloat(pair.volume?.h24 || '0');
     const fees24h = volume24h * 0.01; // 1% fee on volume
 
+    // Fetch all-time data for both tokens to calculate total volume
+    const [mon3yData, zeraData] = await Promise.all([
+      fetchJupiterData(MON3Y_TOKEN, 'MAX'),
+      fetchJupiterData(ZERA_TOKEN, 'MAX'),
+    ]);
+
+    // Calculate all-time volume
+    const allTimeVolume = [...mon3yData, ...zeraData].reduce((sum, candle) => {
+      return sum + candle.volume;
+    }, 0);
+
+    // Calculate all-time fees (1% of total volume)
+    const allTimeFees = allTimeVolume * 0.01;
+
+    // Calculate all-time high market cap and liquidity from price data
+    // Using circulating supply of 1 billion tokens
+    const CIRCULATING_SUPPLY = 1_000_000_000;
+    const allPrices = [...mon3yData, ...zeraData].map(candle => candle.high);
+    const allTimeHighPrice = allPrices.length > 0 ? Math.max(...allPrices) : 0;
+    const allTimeHighMarketCap = allTimeHighPrice * CIRCULATING_SUPPLY;
+
+    // For liquidity, we'd need historical liquidity data which isn't available in OHLCV
+    // So we'll just track the current liquidity as the reference point
+    const currentLiquidity = parseFloat(pair.liquidity?.usd || '0');
+    const currentMarketCap = parseFloat(pair.fdv || pair.marketCap || '0');
+
     return {
       price: parseFloat(pair.priceUsd || '0'),
       priceChange24h: parseFloat(pair.priceChange?.h24 || '0'),
       volume24h,
       fees24h,
-      marketCap: parseFloat(pair.fdv || pair.marketCap || '0'),
-      liquidity: parseFloat(pair.liquidity?.usd || '0'),
+      allTimeVolume,
+      allTimeFees,
+      marketCap: currentMarketCap,
+      allTimeHighMarketCap,
+      liquidity: currentLiquidity,
+      allTimeHighLiquidity: currentLiquidity, // Use current as reference since we don't have historical liquidity
       holders: holderCount,
       buyCount24h: pair.txns?.h24?.buys,
       sellCount24h: pair.txns?.h24?.sells,

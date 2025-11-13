@@ -203,6 +203,24 @@ function HomeContent() {
   const timeframeStats = React.useMemo(() => {
     if (!poolsData || poolsData.length === 0 || !tokenStats) return null;
 
+    // For MAX timeframe, use the all-time values directly from tokenStats
+    if (timeframe === 'MAX') {
+      // Get all pool data for MAX timeframe price calculation
+      const allData = poolsData.flatMap(p => p.data).sort((a, b) => a.time - b.time);
+      if (allData.length === 0) return tokenStats;
+
+      const startingPrice = allData[0].close;
+      const currentPrice = tokenStats.price;
+      const priceChangePercent = startingPrice !== 0 ? ((currentPrice - startingPrice) / startingPrice) * 100 : 0;
+
+      return {
+        ...tokenStats,
+        volume24h: tokenStats.allTimeVolume || tokenStats.volume24h,
+        priceChange24h: priceChangePercent,
+        fees24h: tokenStats.allTimeFees || tokenStats.fees24h,
+      };
+    }
+
     // Get the most recent pool data (Meteora)
     const currentPoolData = poolsData.find(p => p.pool_name === 'zera_Meteora');
     if (!currentPoolData || currentPoolData.data.length === 0) return tokenStats;
@@ -568,9 +586,13 @@ function HomeContent() {
                     alt="ZERA"
                     className="h-8 w-8 group-hover:scale-105 transition-transform"
                   />
-                  <div>
+                  <div className="flex-1">
                     <h1 className="text-lg font-bold text-white mb-0 group-hover:text-[#52C97D] transition-colors">ZERA</h1>
                     <p className="text-white text-[10px]">Complete Price History</p>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <div className="w-1.5 h-1.5 bg-[#52C97D] rounded-full animate-pulse"></div>
+                    <span className="text-[#52C97D] text-[8px] font-bold">LIVE</span>
                   </div>
                 </a>
 
@@ -624,7 +646,7 @@ function HomeContent() {
 
               {/* Token Stats */}
               <div>
-                <TokenStats stats={timeframeStats || null} isLoading={isStatsLoading} timeframe={timeframe} />
+                <TokenStats stats={timeframeStats || null} isLoading={isStatsLoading} timeframe={timeframe} displayMode={displayMode} />
               </div>
 
               {/* Decorative Divider */}
@@ -849,9 +871,13 @@ function HomeContent() {
                   alt="ZERA"
                   className="h-7 w-7 group-hover:scale-105 transition-transform"
                 />
-                <div>
+                <div className="flex-1">
                   <h1 className="text-base font-bold text-white mb-0 group-hover:text-[#52C97D] transition-colors">ZERA</h1>
                   <p className="text-white text-[9px]">Complete Price History</p>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-1.5 h-1.5 bg-[#52C97D] rounded-full animate-pulse"></div>
+                  <span className="text-[#52C97D] text-[8px] font-bold">LIVE</span>
                 </div>
               </a>
 
@@ -895,7 +921,7 @@ function HomeContent() {
             <div className="dashed-divider"></div>
 
             {/* Token Stats */}
-            <TokenStats stats={timeframeStats || null} isLoading={isStatsLoading} timeframe={timeframe} />
+            <TokenStats stats={timeframeStats || null} isLoading={isStatsLoading} timeframe={timeframe} displayMode={displayMode} />
 
             {/* Decorative Divider */}
             <div className="dashed-divider"></div>
