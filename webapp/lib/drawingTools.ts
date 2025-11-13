@@ -228,29 +228,36 @@ class DrawingPaneView implements ISeriesPrimitivePaneView {
       return price.toFixed(6);
     };
 
-    // Create measurement text - show price difference and percentage
-    const measurementText = `${formatPrice(priceChange)} (${priceChangePercent.toFixed(2)}%) · ${barDistance} bars`;
+    // Create measurement text - show price difference and bar count
+    const detailsText = `${formatPrice(priceChange)} · ${barDistance} bars`;
+    const percentText = `${priceChangePercent.toFixed(2)}%`;
 
-    // Position label at midpoint
+    // Position label at top center of rectangle
     const midX = (x1 + x2) / 2;
-    const midY = (y1 + y2) / 2;
+    const topY = Math.min(y1, y2);
 
-    // Measure text for background box
-    ctx.font = 'bold 12px Inter, system-ui, -apple-system, sans-serif';
-    const textMetrics = ctx.measureText(measurementText);
+    // Draw percentage text above the box
+    ctx.font = 'bold 14px Inter, system-ui, -apple-system, sans-serif';
+    ctx.fillStyle = ruler.color;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText(percentText, midX, topY - 24); // 24px above the box
+
+    // Draw details box below percentage
+    ctx.font = 'bold 11px Inter, system-ui, -apple-system, sans-serif';
+    const textMetrics = ctx.measureText(detailsText);
     const textWidth = textMetrics.width;
-    const textHeight = 16;
+    const textHeight = 14;
     const padding = 6;
 
-    // Draw background box with green theme
-    ctx.fillStyle = ruler.color; // Solid green background
-    ctx.strokeStyle = ruler.color;
-    ctx.lineWidth = 2;
+    // Position box just above the rectangle
     const boxX = midX - textWidth / 2 - padding;
-    const boxY = midY - textHeight / 2 - padding;
+    const boxY = topY - 20;
     const boxWidth = textWidth + padding * 2;
     const boxHeight = textHeight + padding * 2;
 
+    // Draw background box with green theme
+    ctx.fillStyle = ruler.color;
     ctx.beginPath();
     ctx.roundRect(boxX, boxY, boxWidth, boxHeight, 4);
     ctx.fill();
@@ -259,7 +266,7 @@ class DrawingPaneView implements ISeriesPrimitivePaneView {
     ctx.fillStyle = '#000000';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(measurementText, midX, midY);
+    ctx.fillText(detailsText, midX, boxY + boxHeight / 2);
   }
 }
 
