@@ -10,6 +10,7 @@ import Chart from '@/components/Chart';
 import TimeframeToggle from '@/components/TimeframeToggle';
 import ChartControls from '@/components/ChartControls';
 import TokenStats from '@/components/TokenStats';
+import { ZeraLoadingLogo } from '@/components/ZeraLoadingLogo';
 import { fetchAllPoolsData, fetchTokenStats, fetchWalletBalance } from '@/lib/api';
 import { PoolData, Timeframe, POOLS } from '@/lib/types';
 import { SafeStorage } from '@/lib/localStorage';
@@ -801,7 +802,7 @@ function HomeContent() {
 
           {isLoading && (
             <div className="flex items-center justify-center h-full">
-              <div className="text-textMuted">Loading...</div>
+              <ZeraLoadingLogo />
             </div>
           )}
 
@@ -834,7 +835,7 @@ function HomeContent() {
 
           {isLoading && (
             <div className="flex items-center justify-center h-full">
-              <div className="text-textMuted">Loading...</div>
+              <ZeraLoadingLogo />
             </div>
           )}
 
@@ -972,11 +973,7 @@ function HomeContent() {
 
 export default function Home() {
   return (
-    <Suspense fallback={
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-textMuted">Loading...</div>
-      </div>
-    }>
+    <Suspense fallback={null}>
       <HomeContent />
     </Suspense>
   );
