@@ -187,17 +187,14 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D', display
               {displayMode === 'price' ? (
                 <>
                   <p className="text-white text-[10px] font-medium mb-1">PRICE (ATH)</p>
-                  <p className="text-white text-lg font-bold select-text mb-0.5">
+                  <p className="text-white text-lg font-bold select-text">
                     {formatPrice(stats.allTimeHighMarketCap / 1_000_000_000)}
-                  </p>
-                  <p className="text-white/70 text-xs font-medium select-text">
-                    {formatNumber(stats.allTimeHighMarketCap)}
                   </p>
                 </>
               ) : (
                 <>
                   <p className="text-white text-[10px] font-medium mb-1">MKT CAP (ATH)</p>
-                  <p className="text-white text-lg font-bold select-text mb-0.5">
+                  <p className="text-white text-lg font-bold select-text">
                     {formatNumber(stats.allTimeHighMarketCap)}
                   </p>
                 </>
