@@ -1,5 +1,10 @@
 import { GeckoTerminalResponse, OHLCData, PoolData, POOLS, Timeframe, TIMEFRAME_TO_JUPITER_INTERVAL, TokenStats } from './types';
 import { rateLimiter, getApiNameFromUrl } from './rateLimiter';
+import {
+  getCachedOHLCData,
+  saveCachedOHLCData,
+  mergeOHLCData,
+} from './cacheService';
 
 const BASE_URL = 'https://api.geckoterminal.com/api/v2';
 const NETWORK = 'solana';
@@ -54,9 +59,16 @@ export async function fetchPoolData(
 export async function fetchJupiterData(tokenAddress: string, timeframe: Timeframe = '1H'): Promise<OHLCData[]> {
   const now = Date.now();
   const interval = TIMEFRAME_TO_JUPITER_INTERVAL[timeframe];
-  const url = `${JUPITER_API}/${tokenAddress}?interval=${interval}&to=${now}&candles=3000&type=price&quote=usd`;
 
   try {
+    // Step 1: Try to get cached data first
+    console.log(`[API] Checking cache for ${tokenAddress} ${timeframe}`);
+    const cachedData = await getCachedOHLCData(tokenAddress, timeframe);
+
+    // Step 2: Fetch fresh data from Jupiter API
+    console.log(`[API] Fetching fresh data from Jupiter for ${tokenAddress} ${timeframe}`);
+    const url = `${JUPITER_API}/${tokenAddress}?interval=${interval}&to=${now}&candles=3000&type=price&quote=usd`;
+
     const data = await rateLimiter.execute('jupiter', async () => {
       const response = await fetch(url);
       if (!response.ok) {
@@ -69,10 +81,32 @@ export async function fetchJupiterData(tokenAddress: string, timeframe: Timefram
 
     // Jupiter API already returns candles in the correct object format
     // {time, open, high, low, close, volume}
-    const candles: OHLCData[] = data.candles || [];
-    return candles;
+    const freshCandles: OHLCData[] = data.candles || [];
+
+    // Step 3: Merge cached data with fresh data
+    const mergedData = mergeOHLCData(cachedData, freshCandles);
+    console.log(`[API] Merged ${cachedData.length} cached + ${freshCandles.length} fresh = ${mergedData.length} total candles`);
+
+    // Step 4: Save new complete candles to cache (async, don't wait)
+    saveCachedOHLCData(tokenAddress, timeframe, freshCandles).catch(err => {
+      console.error('[API] Error saving to cache (non-blocking):', err);
+    });
+
+    return mergedData;
   } catch (error) {
     console.error(`Error fetching Jupiter data:`, error);
+
+    // If API fails, return cached data as fallback
+    try {
+      const cachedData = await getCachedOHLCData(tokenAddress, timeframe);
+      if (cachedData.length > 0) {
+        console.log(`[API] Using cached data as fallback (${cachedData.length} candles)`);
+        return cachedData;
+      }
+    } catch (cacheError) {
+      console.error('[API] Cache fallback also failed:', cacheError);
+    }
+
     return [];
   }
 }

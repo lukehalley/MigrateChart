@@ -1,4 +1,10 @@
 {
+  "scripts": {
+    "dev": "cd webapp && npm run dev",
+    "build": "cd webapp && npm run build",
+    "start": "cd webapp && npm run start",
+    "lint": "cd webapp && npm run lint"
+  },
   "devDependencies": {
     "shadcn": "^3.5.0"
   }
