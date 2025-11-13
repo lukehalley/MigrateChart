@@ -236,33 +236,34 @@ class DrawingPaneView implements ISeriesPrimitivePaneView {
     const midX = (x1 + x2) / 2;
     const topY = Math.min(y1, y2);
 
-    // Draw percentage text above the box
-    ctx.font = 'bold 14px Inter, system-ui, -apple-system, sans-serif';
-    ctx.fillStyle = ruler.color;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'bottom';
-    ctx.fillText(percentText, midX, topY - 24); // 24px above the box
-
-    // Draw details box below percentage
+    // Measure details box dimensions first
     ctx.font = 'bold 11px Inter, system-ui, -apple-system, sans-serif';
     const textMetrics = ctx.measureText(detailsText);
     const textWidth = textMetrics.width;
     const textHeight = 14;
     const padding = 6;
-
-    // Position box just above the rectangle
-    const boxX = midX - textWidth / 2 - padding;
-    const boxY = topY - 20;
-    const boxWidth = textWidth + padding * 2;
     const boxHeight = textHeight + padding * 2;
 
-    // Draw background box with green theme
+    // Position details box above the rectangle with more clearance
+    const boxX = midX - textWidth / 2 - padding;
+    const boxY = topY - boxHeight - 30; // 30px clearance above rectangle
+    const boxWidth = textWidth + padding * 2;
+
+    // Draw percentage text above the details box
+    ctx.font = 'bold 14px Inter, system-ui, -apple-system, sans-serif';
+    ctx.fillStyle = ruler.color;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText(percentText, midX, boxY - 4); // 4px above the details box
+
+    // Draw details box with green theme
     ctx.fillStyle = ruler.color;
     ctx.beginPath();
     ctx.roundRect(boxX, boxY, boxWidth, boxHeight, 4);
     ctx.fill();
 
-    // Draw text in black for contrast against green background
+    // Draw details text in black for contrast against green background
+    ctx.font = 'bold 11px Inter, system-ui, -apple-system, sans-serif';
     ctx.fillStyle = '#000000';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';

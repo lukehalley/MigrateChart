@@ -245,21 +245,21 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         mouse: false,
       },
       handleScroll: {
-        mouseWheel: true,
-        pressedMouseMove: true,
-        horzTouchDrag: true,
-        vertTouchDrag: true,  // Enable vertical dragging for price axis
+        mouseWheel: !isDrawingMode,
+        pressedMouseMove: !isDrawingMode,
+        horzTouchDrag: !isDrawingMode,
+        vertTouchDrag: !isDrawingMode,
       },
       handleScale: {
         axisPressedMouseMove: {
-          time: true,
-          price: true,  // Enable price axis scaling by dragging
+          time: !isDrawingMode,
+          price: !isDrawingMode,
         },
-        mouseWheel: true,
-        pinch: true,  // Enable pinch zoom
+        mouseWheel: !isDrawingMode,
+        pinch: !isDrawingMode,
         axisDoubleClickReset: {
-          time: true,
-          price: true,  // Double-click to reset price scale
+          time: !isDrawingMode,
+          price: !isDrawingMode,
         },
       },
     });
@@ -1066,7 +1066,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         mouse: false,
       },
     });
-  }, [isDrawingMode]);
+  }, [isDrawingMode, chartVersion]);
 
   // Handle ESC key to cancel trend line drawing
   useEffect(() => {
