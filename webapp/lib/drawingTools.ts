@@ -10,7 +10,7 @@ import {
 } from 'lightweight-charts';
 
 // Types for drawing objects
-export type DrawingType = 'horizontal-line' | 'trend-line' | 'freehand';
+export type DrawingType = 'horizontal-line' | 'trend-line' | 'freehand' | 'ruler';
 
 export interface DrawingPoint {
   logical: number; // Using logical index instead of time - works beyond data range
@@ -39,7 +39,15 @@ export interface FreehandDrawing {
   color: string;
 }
 
-export type Drawing = HorizontalLineDrawing | TrendLineDrawing | FreehandDrawing;
+export interface RulerDrawing {
+  type: 'ruler';
+  id: string;
+  point1: DrawingPoint;
+  point2: DrawingPoint;
+  color: string;
+}
+
+export type Drawing = HorizontalLineDrawing | TrendLineDrawing | FreehandDrawing | RulerDrawing;
 
 // Pane View for rendering drawings
 class DrawingPaneView implements ISeriesPrimitivePaneView {
@@ -74,6 +82,8 @@ class DrawingPaneView implements ISeriesPrimitivePaneView {
               this._drawTrendLine(ctx, drawing);
             } else if (drawing.type === 'freehand') {
               this._drawFreehand(ctx, drawing);
+            } else if (drawing.type === 'ruler') {
+              this._drawRuler(ctx, drawing, scope);
             }
           });
 
@@ -159,6 +169,97 @@ class DrawingPaneView implements ISeriesPrimitivePaneView {
     }
 
     ctx.stroke();
+  }
+
+  private _drawRuler(
+    ctx: CanvasRenderingContext2D,
+    ruler: RulerDrawing,
+    scope: any
+  ) {
+    if (!this._chart) return;
+
+    const y1 = this._series.priceToCoordinate(ruler.point1.price);
+    const y2 = this._series.priceToCoordinate(ruler.point2.price);
+
+    const timeScale = this._chart.timeScale();
+    const x1 = timeScale.logicalToCoordinate(ruler.point1.logical as Logical);
+    const x2 = timeScale.logicalToCoordinate(ruler.point2.logical as Logical);
+
+    if (y1 === null || y2 === null || x1 === null || x2 === null) return;
+
+    // Calculate rectangle dimensions
+    const rectX = Math.min(x1, x2);
+    const rectY = Math.min(y1, y2);
+    const rectWidth = Math.abs(x2 - x1);
+    const rectHeight = Math.abs(y2 - y1);
+
+    // Draw filled rectangle with transparency
+    ctx.fillStyle = ruler.color + '20'; // 20 = ~12% opacity in hex
+    ctx.fillRect(rectX, rectY, rectWidth, rectHeight);
+
+    // Draw rectangle border
+    ctx.strokeStyle = ruler.color;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(rectX, rectY, rectWidth, rectHeight);
+
+    // Draw corner circles
+    ctx.fillStyle = ruler.color;
+    ctx.beginPath();
+    ctx.arc(x1, y1, 4, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(x2, y2, 4, 0, 2 * Math.PI);
+    ctx.fill();
+
+    // Calculate measurements
+    // Use the higher and lower prices regardless of which point is which
+    const highPrice = Math.max(ruler.point1.price, ruler.point2.price);
+    const lowPrice = Math.min(ruler.point1.price, ruler.point2.price);
+    const priceChange = highPrice - lowPrice;
+
+    // Calculate percentage change from the lower price
+    const priceChangePercent = ((priceChange / lowPrice) * 100);
+    const barDistance = Math.abs(Math.round(ruler.point2.logical - ruler.point1.logical));
+
+    // Format price change with appropriate precision
+    const formatPrice = (price: number) => {
+      if (Math.abs(price) >= 1) return price.toFixed(2);
+      if (Math.abs(price) >= 0.01) return price.toFixed(4);
+      return price.toFixed(6);
+    };
+
+    // Create measurement text - show price difference and percentage
+    const measurementText = `${formatPrice(priceChange)} (${priceChangePercent.toFixed(2)}%) · ${barDistance} bars`;
+
+    // Position label at midpoint
+    const midX = (x1 + x2) / 2;
+    const midY = (y1 + y2) / 2;
+
+    // Measure text for background box
+    ctx.font = 'bold 12px Inter, system-ui, -apple-system, sans-serif';
+    const textMetrics = ctx.measureText(measurementText);
+    const textWidth = textMetrics.width;
+    const textHeight = 16;
+    const padding = 6;
+
+    // Draw background box with green theme
+    ctx.fillStyle = ruler.color; // Solid green background
+    ctx.strokeStyle = ruler.color;
+    ctx.lineWidth = 2;
+    const boxX = midX - textWidth / 2 - padding;
+    const boxY = midY - textHeight / 2 - padding;
+    const boxWidth = textWidth + padding * 2;
+    const boxHeight = textHeight + padding * 2;
+
+    ctx.beginPath();
+    ctx.roundRect(boxX, boxY, boxWidth, boxHeight, 4);
+    ctx.fill();
+
+    // Draw text in black for contrast against green background
+    ctx.fillStyle = '#000000';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(measurementText, midX, midY);
   }
 }
 
@@ -254,6 +355,33 @@ export class DrawingToolsPrimitive implements ISeriesPrimitive<Time> {
   finishFreehand(): void {
     // Just mark it as complete, no special action needed
     this._requestUpdate?.();
+  }
+
+  // Add a ruler measurement
+  addRuler(
+    point1: DrawingPoint,
+    point2: DrawingPoint,
+    color: string = '#52C97D'
+  ): string {
+    const id = `r-${Date.now()}-${Math.random()}`;
+    this._drawings.push({
+      type: 'ruler',
+      id,
+      point1,
+      point2,
+      color,
+    });
+    this._requestUpdate?.();
+    return id;
+  }
+
+  // Update the last ruler's second point (for preview while drawing)
+  updateLastRulerPoint2(point: DrawingPoint): void {
+    const lastDrawing = this._drawings[this._drawings.length - 1];
+    if (lastDrawing && lastDrawing.type === 'ruler') {
+      lastDrawing.point2 = point;
+      this._requestUpdate?.();
+    }
   }
 
   // Remove a drawing by ID

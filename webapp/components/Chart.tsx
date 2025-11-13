@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { createChart, IChartApi, ISeriesApi, CandlestickData, Time, MouseEventParams, Logical } from 'lightweight-charts';
-import { ChartNetwork } from 'lucide-react';
+import { ChartNetwork, Ruler } from 'lucide-react';
 import { PoolData, MIGRATION_DATES, POOLS, Timeframe } from '@/lib/types';
 import { drawVerticalLines } from '@/lib/verticalLine';
 import { DrawingToolsPrimitive, DrawingStateManager, DrawingType } from '@/lib/drawingTools';
@@ -165,6 +165,10 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       }
       return newSet;
     });
+  };
+
+  const clearAllIndicators = () => {
+    setEnabledIndicators(new Set());
   };
 
   // Save enabled indicators to localStorage when they change
@@ -585,6 +589,21 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
           SafeStorage.setJSON(`drawings_${timeframe}`, updatedDrawings);
           setDrawingCount(updatedDrawings.length);
         }
+      } else if (activeToolType === 'ruler') {
+        const tempPoint = drawingStateRef.current.getTempPoint();
+
+        if (!tempPoint) {
+          drawingStateRef.current.setTempPoint({ logical, price });
+          drawingStateRef.current.setIsDrawing(true);
+          drawingPrimitive.addRuler({ logical, price }, { logical, price });
+        } else {
+          drawingPrimitive.updateLastRulerPoint2({ logical, price });
+          drawingStateRef.current.setTempPoint(null);
+          drawingStateRef.current.setIsDrawing(false);
+          const updatedDrawings = drawingPrimitive.getDrawings();
+          SafeStorage.setJSON(`drawings_${timeframe}`, updatedDrawings);
+          setDrawingCount(updatedDrawings.length);
+        }
       }
     };
 
@@ -658,6 +677,31 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
         if (drawingPrimitive && tempPoint) {
           drawingPrimitive.updateLastTrendLinePoint2({ logical, price });
+        }
+      }
+
+      // Update preview for ruler while drawing
+      if (
+        drawingStateRef.current.isDrawingMode() &&
+        drawingStateRef.current.isDrawing() &&
+        activeToolType === 'ruler' &&
+        param.point
+      ) {
+        const series = candlestickSeriesRef.current;
+        if (!series) return;
+
+        const price = series.coordinateToPrice(param.point.y);
+        if (price === null) return;
+
+        // Use logical coordinates - works anywhere on the chart including rightOffset area
+        const logical = chart.timeScale().coordinateToLogical(param.point.x);
+        if (logical === null) return;
+
+        const drawingPrimitive = drawingPrimitiveRef.current;
+        const tempPoint = drawingStateRef.current.getTempPoint();
+
+        if (drawingPrimitive && tempPoint) {
+          drawingPrimitive.updateLastRulerPoint2({ logical, price });
         }
       }
 
@@ -745,9 +789,9 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
       const time = chart.timeScale().coordinateToTime(x);
 
-      // For trend lines and horizontal lines, use click handler
+      // For trend lines, rulers, and horizontal lines, use click handler
       const activeToolType = drawingStateRef.current.getActiveToolType();
-      if (activeToolType === 'trend-line' || activeToolType === 'horizontal-line') {
+      if (activeToolType === 'trend-line' || activeToolType === 'horizontal-line' || activeToolType === 'ruler') {
         handleChartClick({ point: { x, y }, time } as MouseEventParams);
       } else if (activeToolType === 'freehand') {
         // For freehand, start the drawing
@@ -1033,12 +1077,17 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       const drawingState = drawingStateRef.current;
       const drawingPrimitive = drawingPrimitiveRef.current;
 
-      // Check if we're currently drawing a trend line
+      // Check if we're currently drawing a trend line or ruler
+      const activeToolType = drawingState.getActiveToolType();
       if (
         drawingState.isDrawing() &&
-        drawingState.getActiveToolType() === 'trend-line' &&
+        (activeToolType === 'trend-line' || activeToolType === 'ruler') &&
         drawingPrimitive
       ) {
+        // Prevent default ESC behavior only when actually canceling a drawing
+        event.preventDefault();
+        event.stopPropagation();
+
         // Cancel the drawing
         drawingPrimitive.removeLastDrawing();
         drawingState.setTempPoint(null);
@@ -1057,6 +1106,11 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
   return (
     <div className="w-full h-full p-4 md:p-6 relative">
+      <style jsx>{`
+        :global(.tv-lightweight-charts) :global(canvas:nth-child(2)) {
+          filter: drop-shadow(0 0 6px rgba(82, 201, 125, 0.5)) drop-shadow(0 0 3px rgba(82, 201, 125, 0.3));
+        }
+      `}</style>
       {isLoading && (
         <div className="flex items-center justify-center h-full">
           <div className="text-textMuted">Loading chart...</div>
@@ -1118,7 +1172,18 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
               >
-                <div className="text-[#52C97D] text-xs font-bold mb-2 px-1">Moving Averages</div>
+                <div className="flex items-center justify-between mb-2 px-1">
+                  <div className="text-[#52C97D] text-xs font-bold">Moving Averages</div>
+                  {enabledIndicators.size > 0 && (
+                    <button
+                      onClick={clearAllIndicators}
+                      className="text-red-500 text-xs hover:text-red-400 transition-colors"
+                      title="Clear All Indicators"
+                    >
+                      Clear All
+                    </button>
+                  )}
+                </div>
                 <div className="space-y-1 mb-3">
                   {(['sma20', 'sma50', 'sma200', 'ema20', 'ema50', 'ema200'] as IndicatorType[]).map(ind => (
                     <button
@@ -1249,6 +1314,24 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   </svg>
                 </motion.button>
 
+                {/* Ruler/Measure Tool */}
+                <motion.button
+                  onClick={() => selectDrawingTool('ruler')}
+                  className={`w-9 h-9 md:w-10 md:h-10 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
+                    activeDrawingTool === 'ruler'
+                      ? 'bg-[#52C97D]/30 border-[#52C97D] shadow-[0_0_12px_rgba(82,201,125,0.5)]'
+                      : 'bg-black/90 border-[#52C97D]/50 hover:bg-[#52C97D]/20 hover:border-[#52C97D]'
+                  }`}
+                  initial={{ x: 20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  exit={{ x: 20, opacity: 0 }}
+                  transition={{ duration: 0.2, delay: 0.2, ease: 'easeOut' }}
+                  aria-label="Ruler measurement tool"
+                  title="Ruler/Measure"
+                >
+                  <Ruler className="w-5 h-5 text-[#52C97D]" strokeWidth={2} />
+                </motion.button>
+
                 {/* Undo Last Drawing Button */}
                 <motion.button
                   key="undo-button"
@@ -1262,7 +1345,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   initial={false}
                   animate={{ opacity: 1 }}
                   exit={{ x: 20, opacity: 0 }}
-                  transition={{ duration: 0.2, delay: 0.2, ease: 'easeOut' }}
+                  transition={{ duration: 0.2, delay: 0.25, ease: 'easeOut' }}
                   style={{ x: 0 }}
                   aria-label="Undo last drawing"
                   title={drawingCount === 0 ? "No drawings to undo" : "Undo Last Drawing"}
@@ -1285,7 +1368,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   initial={false}
                   animate={{ opacity: 1 }}
                   exit={{ x: 20, opacity: 0 }}
-                  transition={{ duration: 0.2, delay: 0.25, ease: 'easeOut' }}
+                  transition={{ duration: 0.2, delay: 0.3, ease: 'easeOut' }}
                   style={{ x: 0 }}
                   aria-label="Clear all drawings"
                   title={drawingCount === 0 ? "No drawings to clear" : "Clear All Drawings"}
@@ -1345,7 +1428,18 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   exit={{ opacity: 0, x: -10 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <div className="text-[#52C97D] text-xs font-bold mb-2 px-1">Moving Averages</div>
+                  <div className="flex items-center justify-between mb-2 px-1">
+                    <div className="text-[#52C97D] text-xs font-bold">Moving Averages</div>
+                    {enabledIndicators.size > 0 && (
+                      <button
+                        onClick={clearAllIndicators}
+                        className="text-red-500 text-xs hover:text-red-400 transition-colors"
+                        title="Clear All Indicators"
+                      >
+                        Clear All
+                      </button>
+                    )}
+                  </div>
                   <div className="space-y-1 mb-3">
                     {(['sma20', 'sma50', 'sma200', 'ema20', 'ema50', 'ema200'] as IndicatorType[]).map(ind => (
                       <button
@@ -1474,6 +1568,24 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   </svg>
                 </motion.button>
 
+                {/* Ruler/Measure Tool */}
+                <motion.button
+                  onClick={() => selectDrawingTool('ruler')}
+                  className={`w-11 h-11 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
+                    activeDrawingTool === 'ruler'
+                      ? 'bg-[#52C97D]/30 border-[#52C97D] shadow-[0_0_12px_rgba(82,201,125,0.5)]'
+                      : 'bg-[#0A1F12]/90 border-[#52C97D] hover:bg-[#0A1F12] shadow-[0_0_12px_rgba(82,201,125,0.3)]'
+                  }`}
+                  initial={{ y: -20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -20, opacity: 0 }}
+                  transition={{ duration: 0.2, delay: 0.2, ease: 'easeOut' }}
+                  aria-label="Ruler measurement tool"
+                  title="Ruler/Measure"
+                >
+                  <Ruler className="w-5 h-5 text-[#52C97D]" strokeWidth={2} />
+                </motion.button>
+
                 {/* Undo Last Drawing Button */}
                 <motion.button
                   key="undo-button-mobile"
@@ -1487,7 +1599,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   initial={false}
                   animate={{ opacity: 1 }}
                   exit={{ y: -20, opacity: 0 }}
-                  transition={{ duration: 0.2, delay: 0.2, ease: 'easeOut' }}
+                  transition={{ duration: 0.2, delay: 0.25, ease: 'easeOut' }}
                   style={{ y: 0 }}
                   aria-label="Undo last drawing"
                   title={drawingCount === 0 ? "No drawings to undo" : "Undo Last Drawing"}
@@ -1510,7 +1622,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   initial={false}
                   animate={{ opacity: 1 }}
                   exit={{ y: -20, opacity: 0 }}
-                  transition={{ duration: 0.2, delay: 0.25, ease: 'easeOut' }}
+                  transition={{ duration: 0.2, delay: 0.3, ease: 'easeOut' }}
                   style={{ y: 0 }}
                   aria-label="Clear all drawings"
                   title={drawingCount === 0 ? "No drawings to clear" : "Clear All Drawings"}
