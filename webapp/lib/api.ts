@@ -5,6 +5,14 @@ import {
   saveCachedOHLCData,
   mergeOHLCData,
 } from './cacheService';
+import {
+  getCachedStats,
+  saveCachedStats,
+  getCachedHolderCount,
+  saveCachedHolderCount,
+  getCachedMetadata,
+  saveCachedMetadata,
+} from './statsCacheService';
 
 const BASE_URL = 'https://api.geckoterminal.com/api/v2';
 const NETWORK = 'solana';
@@ -255,6 +263,14 @@ const JUPITER_HOLDERS_API = 'https://datapi.jup.ag/v1/holders';
 
 export async function fetchHolderCount(tokenAddress: string): Promise<number | undefined> {
   try {
+    // Step 1: Try to get cached holder count first
+    const cachedCount = await getCachedHolderCount(tokenAddress);
+    if (cachedCount !== null) {
+      return cachedCount;
+    }
+
+    // Step 2: Fetch fresh data from API
+    console.log(`[API] Fetching fresh holder count for ${tokenAddress}`);
     const data = await rateLimiter.execute('jupiter', async () => {
       const response = await fetch(`${JUPITER_HOLDERS_API}/${tokenAddress}`, {
         next: { revalidate: 300 }, // Cache for 5 minutes
@@ -270,7 +286,16 @@ export async function fetchHolderCount(tokenAddress: string): Promise<number | u
     });
 
     // The API returns { count: number }
-    return data?.count;
+    const count = data?.count;
+
+    // Step 3: Save to cache (async, don't wait)
+    if (count !== undefined) {
+      saveCachedHolderCount(tokenAddress, count).catch(err => {
+        console.error('[API] Error saving holder count to cache (non-blocking):', err);
+      });
+    }
+
+    return count;
   } catch (error) {
     console.error(`Error fetching holder count for token ${tokenAddress}:`, error);
     return undefined;
@@ -279,6 +304,67 @@ export async function fetchHolderCount(tokenAddress: string): Promise<number | u
 
 export async function fetchTokenStats(poolAddress: string): Promise<TokenStats | null> {
   try {
+    // Step 1: Check for cached all-time stats (MON3Y + ZERA combined)
+    const cachedMon3yStats = await getCachedStats(MON3Y_TOKEN);
+    const cachedZeraStats = await getCachedStats(ZERA_TOKEN);
+
+    let allTimeVolume: number;
+    let allTimeFees: number;
+    let allTimeHighPrice: number;
+    let allTimeHighMarketCap: number;
+
+    // If we have cached stats for both tokens, use them
+    if (cachedMon3yStats && cachedZeraStats) {
+      console.log('[API] Using cached all-time stats');
+      allTimeVolume = cachedMon3yStats.all_time_volume + cachedZeraStats.all_time_volume;
+      allTimeFees = cachedMon3yStats.all_time_fees + cachedZeraStats.all_time_fees;
+      allTimeHighPrice = Math.max(cachedMon3yStats.all_time_high_price, cachedZeraStats.all_time_high_price);
+      allTimeHighMarketCap = Math.max(cachedMon3yStats.all_time_high_market_cap, cachedZeraStats.all_time_high_market_cap);
+    } else {
+      // Fetch all-time data for both tokens to calculate total volume
+      console.log('[API] Computing all-time stats from historical data');
+      const [mon3yData, zeraData] = await Promise.all([
+        fetchJupiterData(MON3Y_TOKEN, 'MAX'),
+        fetchJupiterData(ZERA_TOKEN, 'MAX'),
+      ]);
+
+      // Calculate all-time volume
+      const mon3yVolume = mon3yData.reduce((sum, candle) => sum + candle.volume, 0);
+      const zeraVolume = zeraData.reduce((sum, candle) => sum + candle.volume, 0);
+      allTimeVolume = mon3yVolume + zeraVolume;
+
+      // Calculate all-time fees (1% of total volume)
+      allTimeFees = allTimeVolume * 0.01;
+
+      // Calculate all-time high market cap and liquidity from price data
+      // Using circulating supply of 1 billion tokens
+      const CIRCULATING_SUPPLY = 1_000_000_000;
+      const mon3yPrices = mon3yData.map(candle => candle.high);
+      const zeraPrices = zeraData.map(candle => candle.high);
+      const mon3yHighPrice = mon3yPrices.length > 0 ? Math.max(...mon3yPrices) : 0;
+      const zeraHighPrice = zeraPrices.length > 0 ? Math.max(...zeraPrices) : 0;
+      allTimeHighPrice = Math.max(mon3yHighPrice, zeraHighPrice);
+      allTimeHighMarketCap = allTimeHighPrice * CIRCULATING_SUPPLY;
+
+      // Save individual token stats to cache (async, don't wait)
+      saveCachedStats({
+        token_address: MON3Y_TOKEN,
+        all_time_volume: mon3yVolume,
+        all_time_fees: mon3yVolume * 0.01,
+        all_time_high_price: mon3yHighPrice,
+        all_time_high_market_cap: mon3yHighPrice * CIRCULATING_SUPPLY,
+      }).catch(err => console.error('[API] Error saving MON3Y stats (non-blocking):', err));
+
+      saveCachedStats({
+        token_address: ZERA_TOKEN,
+        all_time_volume: zeraVolume,
+        all_time_fees: zeraVolume * 0.01,
+        all_time_high_price: zeraHighPrice,
+        all_time_high_market_cap: zeraHighPrice * CIRCULATING_SUPPLY,
+      }).catch(err => console.error('[API] Error saving ZERA stats (non-blocking):', err));
+    }
+
+    // Step 2: Fetch current market data from DexScreener
     const data = await rateLimiter.execute('dexscreener', async () => {
       const response = await fetch(`${DEXSCREENER_API}/pairs/solana/${poolAddress}`, {
         next: { revalidate: 60 }, // Cache for 1 minute
@@ -299,37 +385,24 @@ export async function fetchTokenStats(poolAddress: string): Promise<TokenStats |
       return null;
     }
 
-    // Fetch holder count for ZERA token
+    // Step 3: Fetch holder count (with caching)
     const holderCount = await fetchHolderCount(ZERA_TOKEN);
 
+    // Step 4: Extract current market data
     const volume24h = parseFloat(pair.volume?.h24 || '0');
     const fees24h = volume24h * 0.01; // 1% fee on volume
-
-    // Fetch all-time data for both tokens to calculate total volume
-    const [mon3yData, zeraData] = await Promise.all([
-      fetchJupiterData(MON3Y_TOKEN, 'MAX'),
-      fetchJupiterData(ZERA_TOKEN, 'MAX'),
-    ]);
-
-    // Calculate all-time volume
-    const allTimeVolume = [...mon3yData, ...zeraData].reduce((sum, candle) => {
-      return sum + candle.volume;
-    }, 0);
-
-    // Calculate all-time fees (1% of total volume)
-    const allTimeFees = allTimeVolume * 0.01;
-
-    // Calculate all-time high market cap and liquidity from price data
-    // Using circulating supply of 1 billion tokens
-    const CIRCULATING_SUPPLY = 1_000_000_000;
-    const allPrices = [...mon3yData, ...zeraData].map(candle => candle.high);
-    const allTimeHighPrice = allPrices.length > 0 ? Math.max(...allPrices) : 0;
-    const allTimeHighMarketCap = allTimeHighPrice * CIRCULATING_SUPPLY;
-
-    // For liquidity, we'd need historical liquidity data which isn't available in OHLCV
-    // So we'll just track the current liquidity as the reference point
     const currentLiquidity = parseFloat(pair.liquidity?.usd || '0');
     const currentMarketCap = parseFloat(pair.fdv || pair.marketCap || '0');
+
+    // Step 5: Cache metadata (async, don't wait)
+    saveCachedMetadata({
+      token_address: ZERA_TOKEN,
+      pool_address: poolAddress,
+      token_symbol: 'ZERA',
+      twitter_url: pair.info?.socials?.find((s: any) => s.type === 'twitter')?.url,
+      telegram_url: pair.info?.socials?.find((s: any) => s.type === 'telegram')?.url,
+      website_url: pair.info?.websites?.[0]?.url,
+    }).catch(err => console.error('[API] Error saving metadata (non-blocking):', err));
 
     return {
       price: parseFloat(pair.priceUsd || '0'),
