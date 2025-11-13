@@ -19,8 +19,8 @@ export function ZeraLoadingLogo() {
         <svg
           version="1.1"
           xmlns="http://www.w3.org/2000/svg"
-          width="187"
-          height="41.5"
+          width="561"
+          height="124.5"
           viewBox="0 0 374 83"
         >
           <path
