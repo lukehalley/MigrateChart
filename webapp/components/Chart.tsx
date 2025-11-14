@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { createChart, IChartApi, ISeriesApi, CandlestickData, Time, MouseEventParams, Logical } from 'lightweight-charts';
 import { ChartNetwork, Ruler } from 'lucide-react';
-import { PoolData, MIGRATION_DATES, POOLS, Timeframe } from '@/lib/types';
+import { PoolData, Timeframe, MigrationConfig } from '@/lib/types';
 import { drawVerticalLines } from '@/lib/verticalLine';
 import { DrawingToolsPrimitive, DrawingStateManager, DrawingType } from '@/lib/drawingTools';
 import { motion, AnimatePresence } from 'motion/react';
@@ -25,6 +25,8 @@ interface ChartProps {
   displayMode: 'price' | 'marketCap';
   showVolume: boolean;
   showMigrationLines: boolean;
+  migrations: MigrationConfig[];
+  primaryColor: string;
   isLogScale: boolean;
   onLogScaleToggle: () => void;
   isAutoScale: boolean;
@@ -34,7 +36,7 @@ interface ChartProps {
   onOpenMobileMenu?: () => void;
 }
 
-export default function Chart({ poolsData, timeframe, displayMode, showVolume, showMigrationLines, isLogScale, onLogScaleToggle, isAutoScale, onAutoScaleToggle, onResetPosition, showMobileMenu, onOpenMobileMenu }: ChartProps) {
+export default function Chart({ poolsData, timeframe, displayMode, showVolume, showMigrationLines, migrations, primaryColor, isLogScale, onLogScaleToggle, isAutoScale, onAutoScaleToggle, onResetPosition, showMobileMenu, onOpenMobileMenu }: ChartProps) {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const modalContentRef = useRef<HTMLDivElement>(null);
@@ -230,16 +232,16 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       crosshair: {
         mode: 0, // Free moving
         vertLine: {
-          color: '#52C97D',  // Bright ZERA green - pops!
+          color: primaryColor,
           width: 1,
           style: 0,  // Solid line
-          labelBackgroundColor: '#52C97D',
+          labelBackgroundColor: primaryColor,
         },
         horzLine: {
-          color: '#52C97D',  // Bright ZERA green - pops!
+          color: primaryColor,
           width: 1,
           style: 0,  // Solid line
-          labelBackgroundColor: '#52C97D',
+          labelBackgroundColor: primaryColor,
         },
       },
       kineticScroll: {
@@ -271,11 +273,6 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
     // Increment chart version to trigger migration lines redraw
     setChartVersion(prev => prev + 1);
 
-    // Add candlestick series for each pool
-    const migrations = Object.values(MIGRATION_DATES);
-    const migration1 = migrations[0].timestamp;
-    const migration2 = migrations[1].timestamp;
-
     // Store volume series references for toggling
     const volumeSeries: ISeriesApi<'Histogram'>[] = [];
 
@@ -285,13 +282,8 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
     poolsData.forEach((poolData) => {
       if (poolData.data.length === 0) return;
 
-      // Filter data based on migrations
-      let filteredData = [...poolData.data];
-      if (poolData.pool_name === 'mon3y') {
-        filteredData = filteredData.filter(d => d.time < migration1);
-      } else if (poolData.pool_name === 'zera_Raydium') {
-        filteredData = filteredData.filter(d => d.time < migration2);
-      }
+      // No need to filter by migrations - data is already filtered by backend
+      const filteredData = [...poolData.data];
 
       if (filteredData.length === 0) return;
 
@@ -305,10 +297,10 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
       // Create candlestick series
       const candlestickSeries = chart.addCandlestickSeries({
-        upColor: '#52C97D',
+        upColor: primaryColor,
         downColor: '#ef5350',
         borderVisible: false,
-        wickUpColor: '#52C97D',
+        wickUpColor: primaryColor,
         wickDownColor: '#ef5350',
         priceLineVisible: false,
         lastValueVisible: false,
@@ -400,7 +392,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
           .map(d => ({
             time: d.time as Time,
             value: d.volume,
-            color: d.close >= d.open ? '#52C97D40' : '#ef535040',
+            color: d.close >= d.open ? `${primaryColor}40` : '#ef535040',
           }))
           .sort((a, b) => (a.time as number) - (b.time as number));
 
@@ -1015,14 +1007,21 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       }
 
       // Add new migration lines if enabled
-      if (showMigrationLines && chartRef.current && chartContainerRef.current) {
-        const migrationLines = Object.values(MIGRATION_DATES).map(migration => ({
-          time: migration.timestamp,
-          color: '#3FAA66',  // Darker ZERA green for lines
+      if (showMigrationLines && chartRef.current && chartContainerRef.current && migrations.length > 0) {
+        // Parse RGB from primaryColor to create darker variant
+        const hex = primaryColor.replace('#', '');
+        const r = Math.max(0, parseInt(hex.substring(0, 2), 16) - 20);
+        const g = Math.max(0, parseInt(hex.substring(2, 4), 16) - 20);
+        const b = Math.max(0, parseInt(hex.substring(4, 6), 16) - 20);
+        const darkerColor = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+
+        const migrationLines = migrations.map(migration => ({
+          time: migration.migrationTimestamp,
+          color: darkerColor,
           label: migration.label,
           lineWidth: 2,
-          labelBackgroundColor: '#0A1F12',  // Ultra dark green background
-          labelTextColor: '#75D29F',  // Lighter green for text pop
+          labelBackgroundColor: '#0A1F12',
+          labelTextColor: primaryColor,
         }));
 
         const cleanup = drawVerticalLines(

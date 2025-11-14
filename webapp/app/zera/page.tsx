@@ -222,10 +222,10 @@ function HomeContent() {
     }
   );
 
-  // Fetch wallet balance for donation goal
+  // Fetch wallet balance for donation goal (only if address is available)
   const { data: walletBalance = 0 } = useSWR(
-    `wallet-balance-${solanaAddress}`,
-    () => fetchWalletBalance(solanaAddress),
+    solanaAddress ? `wallet-balance-${solanaAddress}` : null,
+    () => solanaAddress ? fetchWalletBalance(solanaAddress) : Promise.resolve(0),
     {
       refreshInterval: 60000, // Refresh every minute
       revalidateOnFocus: true,
@@ -236,10 +236,12 @@ function HomeContent() {
     }
   );
 
-  // Fetch ZERA token balance for donation goal
+  // Fetch token balance for donation goal (only if address is available)
+  // Use the current token address
+  const currentTokenAddress = currentProject?.pools?.[currentProject.pools.length - 1]?.tokenAddress;
   const { data: zeraTokenBalance = 0 } = useSWR(
-    `zera-token-balance-${solanaAddress}`,
-    () => fetchZeraTokenBalance(solanaAddress),
+    solanaAddress && currentTokenAddress ? `token-balance-${solanaAddress}-${currentTokenAddress}` : null,
+    () => solanaAddress ? fetchZeraTokenBalance(solanaAddress) : Promise.resolve(0),
     {
       refreshInterval: 60000, // Refresh every minute
       revalidateOnFocus: true,
@@ -974,6 +976,8 @@ function HomeContent() {
                   displayMode={displayMode}
                   showVolume={showVolume}
                   showMigrationLines={showMigrationLines}
+                  migrations={currentProject.migrations}
+                  primaryColor={currentProject.primaryColor}
                   isLogScale={isLogScale}
                   onLogScaleToggle={handleLogScaleToggle}
                   isAutoScale={isAutoScale}
@@ -1029,6 +1033,8 @@ function HomeContent() {
                   displayMode={displayMode}
                   showVolume={showVolume}
                   showMigrationLines={showMigrationLines}
+                  migrations={currentProject.migrations}
+                  primaryColor={currentProject.primaryColor}
                   isLogScale={isLogScale}
                   onLogScaleToggle={handleLogScaleToggle}
                   isAutoScale={isAutoScale}
