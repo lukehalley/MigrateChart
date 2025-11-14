@@ -350,6 +350,8 @@ function HomeContent() {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
+        onTouchStart={(e) => e.preventDefault()}
+        onTouchMove={(e) => e.preventDefault()}
       >
         {/* Animated gradient overlay */}
         <motion.div
@@ -505,9 +507,9 @@ function HomeContent() {
           </div>
 
           {/* Mobile: Stacked layout */}
-          <div className="flex sm:hidden flex-col items-center gap-3 py-3">
+          <div className="flex sm:hidden flex-col items-center gap-2 py-2">
             {/* Call to Action */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <motion.div
                 animate={{
                   scale: [1, 1.15, 1],
@@ -533,12 +535,12 @@ function HomeContent() {
             {/* Donation Goal Progress Bars - Stacked */}
             <div className="w-full px-2">
               {/* ZERA Token Balance */}
-              <div className="mb-3">
-                <div className="flex items-center justify-between gap-2 mb-1">
+              <div className="mb-2">
+                <div className="flex items-center justify-between gap-2 mb-0.5">
                   <span className="text-white/70 text-[10px] font-medium">ZERA Tokens</span>
                   <span className="text-[#52C97D] text-[10px] font-bold">{zeraTokenBalance.toFixed(0)} / {formatGoalNumber(zeraGoal)}</span>
                 </div>
-                <div className="relative h-2 bg-black/60 rounded-full overflow-hidden border border-[#52C97D]/30">
+                <div className="relative h-1.5 bg-black/60 rounded-full overflow-hidden border border-[#52C97D]/30">
                   <motion.div
                     className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#52C97D] to-[#3FAA66] rounded-full"
                     initial={{ width: 0 }}
@@ -562,11 +564,11 @@ function HomeContent() {
 
               {/* SOL Balance */}
               <div>
-                <div className="flex items-center justify-between gap-2 mb-1">
+                <div className="flex items-center justify-between gap-2 mb-0.5">
                   <span className="text-white/70 text-[10px] font-medium">Solana (SOL)</span>
                   <span className="text-[#52C97D] text-[10px] font-bold">{walletBalance.toFixed(2)} / {formatGoalNumber(solGoal)}</span>
                 </div>
-                <div className="relative h-2 bg-black/60 rounded-full overflow-hidden border border-[#52C97D]/30">
+                <div className="relative h-1.5 bg-black/60 rounded-full overflow-hidden border border-[#52C97D]/30">
                   <motion.div
                     className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#52C97D] to-[#3FAA66] rounded-full"
                     initial={{ width: 0 }}
@@ -638,19 +640,6 @@ function HomeContent() {
 
       {/* Mobile View */}
       <div className="md:hidden w-full h-full relative overflow-hidden">
-        {/* Mobile Menu Toggle Button - Floating hamburger menu */}
-        <button
-          onClick={() => showMobileMenu ? closeMobileMenu() : setShowMobileMenu(true)}
-          className="absolute top-3 left-3 z-[60] w-11 h-11 flex items-center justify-center bg-[#0A1F12]/90 hover:bg-[#0A1F12] border-2 border-[#52C97D] shadow-[0_0_12px_rgba(82,201,125,0.3)] hover:shadow-[0_0_16px_rgba(82,201,125,0.5)] transition-all backdrop-blur-sm"
-          aria-label="Toggle menu"
-        >
-          <div className="flex flex-col gap-1.5">
-            <div className={`w-6 h-0.5 bg-[#52C97D] transition-all duration-300 ${showMobileMenu ? 'rotate-45 translate-y-2' : ''}`}></div>
-            <div className={`w-6 h-0.5 bg-[#52C97D] transition-all duration-300 ${showMobileMenu ? 'opacity-0' : ''}`}></div>
-            <div className={`w-6 h-0.5 bg-[#52C97D] transition-all duration-300 ${showMobileMenu ? '-rotate-45 -translate-y-2' : ''}`}></div>
-          </div>
-        </button>
-
         {/* Mobile Popup Menu */}
         {showMobileMenu && (
         <>
@@ -661,10 +650,20 @@ function HomeContent() {
           />
 
           {/* Popup Content */}
-          <div className={`md:hidden fixed inset-0 z-50 ${isMenuClosing ? 'animate-fade-out' : 'animate-fade-in'} overflow-y-auto flex items-center justify-center p-4 pointer-events-none`}>
-            <div className="flex flex-col items-center mt-16 pointer-events-auto w-[85vw] max-w-[320px]">
+          <div className={`md:hidden fixed inset-0 z-50 ${isMenuClosing ? 'animate-fade-out' : 'animate-fade-in'} flex items-center justify-center py-6 px-4 pointer-events-none`}>
+            <div className="flex flex-col pointer-events-auto w-full max-w-[340px] max-h-[calc(100vh-3rem)] relative">
+              {/* Close X Button - Top Right */}
+              <button
+                onClick={closeMobileMenu}
+                className="absolute -top-3 -right-3 z-[60] w-10 h-10 rounded-full flex items-center justify-center bg-[#0A1F12] border-2 border-[#52C97D] shadow-[0_0_12px_rgba(82,201,125,0.3)] hover:shadow-[0_0_16px_rgba(82,201,125,0.5)] transition-all backdrop-blur-sm"
+                aria-label="Close menu"
+              >
+                <svg className="w-5 h-5 text-[#52C97D]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
               {/* Tab Navigation */}
-              <div className="w-full bg-gradient-to-r from-[#0A1F12] via-[#1F6338]/20 to-[#0A1F12] border-[3px] border-[#52C97D]/60 border-b-0 flex">
+              <div className="w-full bg-gradient-to-r from-[#0A1F12] via-[#1F6338]/20 to-[#0A1F12] border-[3px] border-[#52C97D]/60 border-b-0 flex flex-shrink-0">
                 <button
                   onClick={() => setMobileMenuTab('settings')}
                   className={`flex-1 py-3 text-sm font-bold transition-all ${
@@ -688,7 +687,7 @@ function HomeContent() {
               </div>
 
               {/* Tab Content */}
-              <div className="w-full max-h-[70vh] overflow-y-auto bg-gradient-to-b from-[#0A1F12] to-black border-[3px] border-[#52C97D]/60 py-3 px-2.5" style={{ WebkitOverflowScrolling: 'touch' }}>
+              <div className="w-full flex-1 overflow-y-auto bg-gradient-to-b from-[#0A1F12] to-black border-[3px] border-[#52C97D]/60 py-3 px-2.5" style={{ WebkitOverflowScrolling: 'touch' }}>
                 {mobileMenuTab === 'settings' && (
                   <>
               {/* Main Info Card */}
@@ -950,6 +949,8 @@ function HomeContent() {
                   isAutoScale={isAutoScale}
                   onAutoScaleToggle={handleAutoScaleToggle}
                   onResetPosition={handleResetChartPosition}
+                  showMobileMenu={showMobileMenu}
+                  onOpenMobileMenu={() => setShowMobileMenu(true)}
                 />
               </motion.div>
             )}
@@ -1000,6 +1001,8 @@ function HomeContent() {
                   isAutoScale={isAutoScale}
                   onAutoScaleToggle={handleAutoScaleToggle}
                   onResetPosition={handleResetChartPosition}
+                  showMobileMenu={showMobileMenu}
+                  onOpenMobileMenu={() => setShowMobileMenu(true)}
                 />
               </motion.div>
             )}
