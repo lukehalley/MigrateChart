@@ -46,6 +46,32 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
   const [resetTrigger, setResetTrigger] = useState(0);
   const [chartVersion, setChartVersion] = useState(0);
 
+  // Helper to get RGB values from hex color
+  const getRgbFromHex = (hex: string) => {
+    const h = hex.replace('#', '');
+    const r = parseInt(h.substring(0, 2), 16);
+    const g = parseInt(h.substring(2, 4), 16);
+    const b = parseInt(h.substring(4, 6), 16);
+    return { r, g, b };
+  };
+
+  const rgb = getRgbFromHex(primaryColor);
+  const rgbString = `${rgb.r}, ${rgb.g}, ${rgb.b}`;
+
+  // Button style helpers
+  const buttonBaseStyle = {
+    borderColor: `rgba(${rgbString}, 0.5)`,
+    boxShadow: `0 0 12px rgba(${rgbString}, 0.3)`,
+  };
+
+  const buttonActiveStyle = {
+    backgroundColor: `rgba(${rgbString}, 0.3)`,
+    borderColor: primaryColor,
+    boxShadow: `0 0 12px rgba(${rgbString}, 0.5)`,
+  };
+
+  const buttonHoverClass = `hover:bg-[${primaryColor}]/20 hover:border-[${primaryColor}]`;
+
   // Drawing tools state
   const drawingPrimitiveRef = useRef<DrawingToolsPrimitive | null>(null);
   const drawingStateRef = useRef<DrawingStateManager>(new DrawingStateManager());
@@ -1125,10 +1151,11 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         {/* About Info Button */}
         <button
           onClick={() => setShowAbout(!showAbout)}
-          className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center bg-black/90 backdrop-blur-sm border-2 border-[#52C97D]/50 rounded-full hover:bg-[#52C97D]/20 hover:border-[#52C97D] transition-all shadow-[0_0_12px_rgba(82,201,125,0.3)]"
+          className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center bg-black/90 backdrop-blur-sm border-2 rounded-full transition-all"
+          style={buttonBaseStyle}
           aria-label="About this chart"
         >
-          <svg className="w-5 h-5 md:w-5 md:h-5 text-[#52C97D]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-5 h-5 md:w-5 md:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: primaryColor }}>
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </button>
@@ -1147,19 +1174,16 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                 drawingStateRef.current.setActiveToolType(null);
               }
             }}
-            className={`w-9 h-9 md:w-10 md:h-10 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-all ${
-              showIndicatorMenu || enabledIndicators.size > 0
-                ? 'bg-[#52C97D]/30 border-[#52C97D] shadow-[0_0_12px_rgba(82,201,125,0.5)]'
-                : 'bg-black/90 border-[#52C97D]/50 hover:bg-[#52C97D]/20 hover:border-[#52C97D] shadow-[0_0_12px_rgba(82,201,125,0.3)]'
-            }`}
+            className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-all bg-black/90"
+            style={showIndicatorMenu || enabledIndicators.size > 0 ? buttonActiveStyle : buttonBaseStyle}
             aria-label="Technical indicators"
             title="Technical Indicators"
           >
-            <svg className="w-5 h-5 text-[#52C97D]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: primaryColor }}>
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
             </svg>
             {enabledIndicators.size > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#52C97D] text-black text-xs font-bold rounded-full flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 w-5 h-5 text-black text-xs font-bold rounded-full flex items-center justify-center" style={{ backgroundColor: primaryColor }}>
                 {enabledIndicators.size}
               </span>
             )}
@@ -1169,14 +1193,15 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
           <AnimatePresence>
             {showIndicatorMenu && (
               <motion.div
-                className="absolute top-12 left-0 bg-black/95 backdrop-blur-sm border-2 border-[#52C97D]/50 rounded-lg p-3 min-w-[200px] shadow-[0_0_20px_rgba(82,201,125,0.3)]"
+                className="absolute top-12 left-0 bg-black/95 backdrop-blur-sm border-2 rounded-lg p-3 min-w-[200px]"
+                style={{ borderColor: `rgba(${rgbString}, 0.5)`, boxShadow: `0 0 20px rgba(${rgbString}, 0.3)` }}
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
               >
                 <div className="flex items-center justify-between mb-2 px-1">
-                  <div className="text-[#52C97D] text-xs font-bold">Moving Averages</div>
+                  <div className="text-xs font-bold" style={{ color: primaryColor }}>Moving Averages</div>
                   {enabledIndicators.size > 0 && (
                     <button
                       onClick={clearAllIndicators}
@@ -1192,11 +1217,13 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                     <button
                       key={ind}
                       onClick={() => toggleIndicator(ind)}
-                      className={`w-full flex items-center gap-2 px-3 py-2 rounded transition-colors ${
-                        enabledIndicators.has(ind)
-                          ? 'bg-[#52C97D]/20 border border-[#52C97D]'
-                          : 'hover:bg-white/5 border border-transparent'
-                      }`}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded transition-colors border"
+                      style={enabledIndicators.has(ind) ? {
+                        backgroundColor: `rgba(${rgbString}, 0.2)`,
+                        borderColor: primaryColor
+                      } : {
+                        borderColor: 'transparent'
+                      }}
                     >
                       <div
                         className="w-3 h-3 rounded-sm"
@@ -1206,17 +1233,19 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                     </button>
                   ))}
                 </div>
-                <div className="text-[#52C97D] text-xs font-bold mb-2 px-1 pt-2 border-t border-[#52C97D]/30">Indicators</div>
+                <div className="text-xs font-bold mb-2 px-1 pt-2 border-t" style={{ color: primaryColor, borderColor: `rgba(${rgbString}, 0.3)` }}>Indicators</div>
                 <div className="space-y-1">
                   {(['rsi', 'bb'] as IndicatorType[]).map(ind => (
                     <button
                       key={ind}
                       onClick={() => toggleIndicator(ind)}
-                      className={`w-full flex items-center gap-2 px-3 py-2 rounded transition-colors ${
-                        enabledIndicators.has(ind)
-                          ? 'bg-[#52C97D]/20 border border-[#52C97D]'
-                          : 'hover:bg-white/5 border border-transparent'
-                      }`}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded transition-colors border"
+                      style={enabledIndicators.has(ind) ? {
+                        backgroundColor: `rgba(${rgbString}, 0.2)`,
+                        borderColor: primaryColor
+                      } : {
+                        borderColor: 'transparent'
+                      }}
                     >
                       <div
                         className="w-3 h-3 rounded-sm"
@@ -1236,15 +1265,12 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
           {/* Toggle Drawing Mode Button */}
           <button
             onClick={toggleDrawingMode}
-            className={`relative w-9 h-9 md:w-10 md:h-10 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-all ${
-              isDrawingMode
-                ? 'bg-[#52C97D]/30 border-[#52C97D] shadow-[0_0_12px_rgba(82,201,125,0.5)]'
-                : 'bg-black/90 border-[#52C97D]/50 hover:bg-[#52C97D]/20 hover:border-[#52C97D] shadow-[0_0_12px_rgba(82,201,125,0.3)]'
-            }`}
+            className="relative w-9 h-9 md:w-10 md:h-10 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-all bg-black/90"
+            style={isDrawingMode ? buttonActiveStyle : buttonBaseStyle}
             aria-label="Toggle drawing mode"
             title="Toggle Drawing Mode"
           >
-            <ChartNetwork className="w-5 h-5 text-[#52C97D]" strokeWidth={2} />
+            <ChartNetwork className="w-5 h-5" strokeWidth={2} style={{ color: primaryColor }} />
           </button>
 
           {/* Drawing Tool Buttons - Slide from right of toggle button */}
@@ -1262,8 +1288,8 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   onClick={() => selectDrawingTool('horizontal-line')}
                   className={`w-9 h-9 md:w-10 md:h-10 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
                     activeDrawingTool === 'horizontal-line'
-                      ? 'bg-[#52C97D]/30 border-[#52C97D] shadow-[0_0_12px_rgba(82,201,125,0.5)]'
-                      : 'bg-black/90 border-[#52C97D]/50 hover:bg-[#52C97D]/20 hover:border-[#52C97D]'
+                      ? 'bg-[var(--primary-color)]/30 border-[var(--primary-color)] shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)]'
+                      : 'bg-black/90 border-[var(--primary-color)]/50 hover:bg-[var(--primary-color)]/20 hover:border-[var(--primary-color)]'
                   }`}
                   initial={{ x: 20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
@@ -1272,7 +1298,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   aria-label="Horizontal line tool"
                   title="Horizontal Line"
                 >
-                  <svg className="w-5 h-5 text-[#52C97D]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-5 h-5 text-[var(--primary-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12h18" strokeDasharray="4 2" />
                   </svg>
                 </motion.button>
@@ -1282,8 +1308,8 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   onClick={() => selectDrawingTool('trend-line')}
                   className={`w-9 h-9 md:w-10 md:h-10 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
                     activeDrawingTool === 'trend-line'
-                      ? 'bg-[#52C97D]/30 border-[#52C97D] shadow-[0_0_12px_rgba(82,201,125,0.5)]'
-                      : 'bg-black/90 border-[#52C97D]/50 hover:bg-[#52C97D]/20 hover:border-[#52C97D]'
+                      ? 'bg-[var(--primary-color)]/30 border-[var(--primary-color)] shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)]'
+                      : 'bg-black/90 border-[var(--primary-color)]/50 hover:bg-[var(--primary-color)]/20 hover:border-[var(--primary-color)]'
                   }`}
                   initial={{ x: 20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
@@ -1292,7 +1318,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   aria-label="Trend line tool"
                   title="Trend Line"
                 >
-                  <svg className="w-5 h-5 text-[#52C97D]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-5 h-5 text-[var(--primary-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 19l14-14" />
                   </svg>
                 </motion.button>
@@ -1302,8 +1328,8 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   onClick={() => selectDrawingTool('freehand')}
                   className={`w-9 h-9 md:w-10 md:h-10 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
                     activeDrawingTool === 'freehand'
-                      ? 'bg-[#52C97D]/30 border-[#52C97D] shadow-[0_0_12px_rgba(82,201,125,0.5)]'
-                      : 'bg-black/90 border-[#52C97D]/50 hover:bg-[#52C97D]/20 hover:border-[#52C97D]'
+                      ? 'bg-[var(--primary-color)]/30 border-[var(--primary-color)] shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)]'
+                      : 'bg-black/90 border-[var(--primary-color)]/50 hover:bg-[var(--primary-color)]/20 hover:border-[var(--primary-color)]'
                   }`}
                   initial={{ x: 20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
@@ -1312,7 +1338,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   aria-label="Freehand pencil tool"
                   title="Freehand Draw"
                 >
-                  <svg className="w-5 h-5 text-[#52C97D]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-5 h-5 text-[var(--primary-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                   </svg>
                 </motion.button>
@@ -1322,8 +1348,8 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   onClick={() => selectDrawingTool('ruler')}
                   className={`w-9 h-9 md:w-10 md:h-10 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
                     activeDrawingTool === 'ruler'
-                      ? 'bg-[#52C97D]/30 border-[#52C97D] shadow-[0_0_12px_rgba(82,201,125,0.5)]'
-                      : 'bg-black/90 border-[#52C97D]/50 hover:bg-[#52C97D]/20 hover:border-[#52C97D]'
+                      ? 'bg-[var(--primary-color)]/30 border-[var(--primary-color)] shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)]'
+                      : 'bg-black/90 border-[var(--primary-color)]/50 hover:bg-[var(--primary-color)]/20 hover:border-[var(--primary-color)]'
                   }`}
                   initial={{ x: 20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
@@ -1332,7 +1358,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   aria-label="Ruler measurement tool"
                   title="Ruler/Measure"
                 >
-                  <Ruler className="w-5 h-5 text-[#52C97D]" strokeWidth={2} />
+                  <Ruler className="w-5 h-5 text-[var(--primary-color)]" strokeWidth={2} />
                 </motion.button>
 
                 {/* Undo Last Drawing Button */}
@@ -1393,10 +1419,10 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
           {onOpenMobileMenu && (
             <button
               onClick={onOpenMobileMenu}
-              className="w-11 h-11 rounded-full flex items-center justify-center bg-[#0A1F12]/90 hover:bg-[#0A1F12] border-2 border-[#52C97D] shadow-[0_0_12px_rgba(82,201,125,0.3)] hover:shadow-[0_0_16px_rgba(82,201,125,0.5)] transition-all backdrop-blur-sm"
+              className="w-11 h-11 rounded-full flex items-center justify-center bg-[#0A1F12]/90 hover:bg-[#0A1F12] border-2 border-[var(--primary-color)] shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)] hover:shadow-[0_0_16px_rgba(var(--primary-rgb),0.5)] transition-all backdrop-blur-sm"
               aria-label="Open settings"
             >
-              <svg className="w-5 h-5 text-[#52C97D]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-5 h-5 text-[var(--primary-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
@@ -1419,17 +1445,17 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
               }}
               className={`w-11 h-11 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-all ${
                 showIndicatorMenu || enabledIndicators.size > 0
-                  ? 'bg-[#52C97D]/30 border-[#52C97D] shadow-[0_0_12px_rgba(82,201,125,0.5)]'
-                  : 'bg-[#0A1F12]/90 border-[#52C97D] hover:bg-[#0A1F12] shadow-[0_0_12px_rgba(82,201,125,0.3)] hover:shadow-[0_0_16px_rgba(82,201,125,0.5)]'
+                  ? 'bg-[var(--primary-color)]/30 border-[var(--primary-color)] shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)]'
+                  : 'bg-[#0A1F12]/90 border-[var(--primary-color)] hover:bg-[#0A1F12] shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)] hover:shadow-[0_0_16px_rgba(var(--primary-rgb),0.5)]'
               }`}
               aria-label="Technical indicators"
               title="Technical Indicators"
             >
-              <svg className="w-5 h-5 text-[#52C97D]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-5 h-5 text-[var(--primary-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
               </svg>
               {enabledIndicators.size > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#52C97D] text-black text-xs font-bold rounded-full flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-[var(--primary-color)] text-black text-xs font-bold rounded-full flex items-center justify-center">
                   {enabledIndicators.size}
                 </span>
               )}
@@ -1439,14 +1465,14 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
             <AnimatePresence>
               {showIndicatorMenu && (
                 <motion.div
-                  className="absolute top-0 left-14 bg-black/95 backdrop-blur-sm border-2 border-[#52C97D]/50 rounded-lg p-3 min-w-[200px] shadow-[0_0_20px_rgba(82,201,125,0.3)]"
+                  className="absolute top-0 left-14 bg-black/95 backdrop-blur-sm border-2 border-[var(--primary-color)]/50 rounded-lg p-3 min-w-[200px] shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)]"
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -10 }}
                   transition={{ duration: 0.2 }}
                 >
                   <div className="flex items-center justify-between mb-2 px-1">
-                    <div className="text-[#52C97D] text-xs font-bold">Moving Averages</div>
+                    <div className="text-[var(--primary-color)] text-xs font-bold">Moving Averages</div>
                     {enabledIndicators.size > 0 && (
                       <button
                         onClick={clearAllIndicators}
@@ -1464,7 +1490,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                         onClick={() => toggleIndicator(ind)}
                         className={`w-full flex items-center gap-2 px-3 py-2 rounded transition-colors ${
                           enabledIndicators.has(ind)
-                            ? 'bg-[#52C97D]/20 border border-[#52C97D]'
+                            ? 'bg-[var(--primary-color)]/20 border border-[var(--primary-color)]'
                             : 'hover:bg-white/5 border border-transparent'
                         }`}
                       >
@@ -1476,7 +1502,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                       </button>
                     ))}
                   </div>
-                  <div className="text-[#52C97D] text-xs font-bold mb-2 px-1 pt-2 border-t border-[#52C97D]/30">Indicators</div>
+                  <div className="text-[var(--primary-color)] text-xs font-bold mb-2 px-1 pt-2 border-t border-[var(--primary-color)]/30">Indicators</div>
                   <div className="space-y-1">
                     {(['rsi', 'bb'] as IndicatorType[]).map(ind => (
                       <button
@@ -1484,7 +1510,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                         onClick={() => toggleIndicator(ind)}
                         className={`w-full flex items-center gap-2 px-3 py-2 rounded transition-colors ${
                           enabledIndicators.has(ind)
-                            ? 'bg-[#52C97D]/20 border border-[#52C97D]'
+                            ? 'bg-[var(--primary-color)]/20 border border-[var(--primary-color)]'
                             : 'hover:bg-white/5 border border-transparent'
                         }`}
                       >
@@ -1506,13 +1532,13 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
             onClick={toggleDrawingMode}
             className={`w-11 h-11 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-all ${
               isDrawingMode
-                ? 'bg-[#52C97D]/30 border-[#52C97D] shadow-[0_0_12px_rgba(82,201,125,0.5)]'
-                : 'bg-[#0A1F12]/90 border-[#52C97D] hover:bg-[#0A1F12] shadow-[0_0_12px_rgba(82,201,125,0.3)] hover:shadow-[0_0_16px_rgba(82,201,125,0.5)]'
+                ? 'bg-[var(--primary-color)]/30 border-[var(--primary-color)] shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)]'
+                : 'bg-[#0A1F12]/90 border-[var(--primary-color)] hover:bg-[#0A1F12] shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)] hover:shadow-[0_0_16px_rgba(var(--primary-rgb),0.5)]'
             }`}
             aria-label="Toggle drawing mode"
             title="Toggle Drawing Mode"
           >
-            <ChartNetwork className="w-5 h-5 text-[#52C97D]" strokeWidth={2} />
+            <ChartNetwork className="w-5 h-5 text-[var(--primary-color)]" strokeWidth={2} />
           </button>
 
           {/* Drawing Tool Buttons - Slide down from toggle button */}
@@ -1530,8 +1556,8 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   onClick={() => selectDrawingTool('horizontal-line')}
                   className={`w-11 h-11 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
                     activeDrawingTool === 'horizontal-line'
-                      ? 'bg-[#52C97D]/30 border-[#52C97D] shadow-[0_0_12px_rgba(82,201,125,0.5)]'
-                      : 'bg-[#0A1F12]/90 border-[#52C97D] hover:bg-[#0A1F12] shadow-[0_0_12px_rgba(82,201,125,0.3)]'
+                      ? 'bg-[var(--primary-color)]/30 border-[var(--primary-color)] shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)]'
+                      : 'bg-[#0A1F12]/90 border-[var(--primary-color)] hover:bg-[#0A1F12] shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)]'
                   }`}
                   initial={{ y: -20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
@@ -1540,7 +1566,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   aria-label="Horizontal line tool"
                   title="Horizontal Line"
                 >
-                  <svg className="w-5 h-5 text-[#52C97D]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-5 h-5 text-[var(--primary-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12h18" strokeDasharray="4 2" />
                   </svg>
                 </motion.button>
@@ -1550,8 +1576,8 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   onClick={() => selectDrawingTool('trend-line')}
                   className={`w-11 h-11 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
                     activeDrawingTool === 'trend-line'
-                      ? 'bg-[#52C97D]/30 border-[#52C97D] shadow-[0_0_12px_rgba(82,201,125,0.5)]'
-                      : 'bg-[#0A1F12]/90 border-[#52C97D] hover:bg-[#0A1F12] shadow-[0_0_12px_rgba(82,201,125,0.3)]'
+                      ? 'bg-[var(--primary-color)]/30 border-[var(--primary-color)] shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)]'
+                      : 'bg-[#0A1F12]/90 border-[var(--primary-color)] hover:bg-[#0A1F12] shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)]'
                   }`}
                   initial={{ y: -20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
@@ -1560,7 +1586,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   aria-label="Trend line tool"
                   title="Trend Line"
                 >
-                  <svg className="w-5 h-5 text-[#52C97D]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-5 h-5 text-[var(--primary-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 19l14-14" />
                   </svg>
                 </motion.button>
@@ -1570,8 +1596,8 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   onClick={() => selectDrawingTool('freehand')}
                   className={`w-11 h-11 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
                     activeDrawingTool === 'freehand'
-                      ? 'bg-[#52C97D]/30 border-[#52C97D] shadow-[0_0_12px_rgba(82,201,125,0.5)]'
-                      : 'bg-[#0A1F12]/90 border-[#52C97D] hover:bg-[#0A1F12] shadow-[0_0_12px_rgba(82,201,125,0.3)]'
+                      ? 'bg-[var(--primary-color)]/30 border-[var(--primary-color)] shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)]'
+                      : 'bg-[#0A1F12]/90 border-[var(--primary-color)] hover:bg-[#0A1F12] shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)]'
                   }`}
                   initial={{ y: -20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
@@ -1580,7 +1606,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   aria-label="Freehand pencil tool"
                   title="Freehand Draw"
                 >
-                  <svg className="w-5 h-5 text-[#52C97D]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-5 h-5 text-[var(--primary-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                   </svg>
                 </motion.button>
@@ -1590,8 +1616,8 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   onClick={() => selectDrawingTool('ruler')}
                   className={`w-11 h-11 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
                     activeDrawingTool === 'ruler'
-                      ? 'bg-[#52C97D]/30 border-[#52C97D] shadow-[0_0_12px_rgba(82,201,125,0.5)]'
-                      : 'bg-[#0A1F12]/90 border-[#52C97D] hover:bg-[#0A1F12] shadow-[0_0_12px_rgba(82,201,125,0.3)]'
+                      ? 'bg-[var(--primary-color)]/30 border-[var(--primary-color)] shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)]'
+                      : 'bg-[#0A1F12]/90 border-[var(--primary-color)] hover:bg-[#0A1F12] shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)]'
                   }`}
                   initial={{ y: -20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
@@ -1600,7 +1626,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   aria-label="Ruler measurement tool"
                   title="Ruler/Measure"
                 >
-                  <Ruler className="w-5 h-5 text-[#52C97D]" strokeWidth={2} />
+                  <Ruler className="w-5 h-5 text-[var(--primary-color)]" strokeWidth={2} />
                 </motion.button>
 
                 {/* Undo Last Drawing Button */}
@@ -1665,17 +1691,17 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
           {/* Modal Content */}
           <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30 w-[95%] max-w-2xl ${isAboutClosing ? 'animate-fade-out' : 'animate-fade-in'}`}>
-            <div className="bg-gradient-to-b from-[#0A1F12] to-black border-[3px] border-[#52C97D]/60 shadow-[0_0_50px_rgba(82,201,125,0.5)] overflow-hidden">
+            <div className="bg-gradient-to-b from-[#0A1F12] to-black border-[3px] border-[var(--primary-color)]/60 shadow-[0_0_50px_rgba(var(--primary-rgb),0.5)] overflow-hidden">
               {/* Header */}
               <div
                 style={{ padding: '24px 36px' }}
-                className="sticky top-0 z-10 bg-gradient-to-r from-[#0A1F12] via-[#1F6338]/20 to-[#0A1F12] border-b-[3px] border-[#52C97D]/50"
+                className="sticky top-0 z-10 bg-gradient-to-r from-[#0A1F12] via-[#1F6338]/20 to-[#0A1F12] border-b-[3px] border-[var(--primary-color)]/50"
               >
                 <div className="flex items-center justify-between">
-                  <h2 style={{ margin: 0 }} className="text-[#52C97D] text-xl md:text-2xl font-bold tracking-wide">About This Chart</h2>
+                  <h2 style={{ margin: 0 }} className="text-[var(--primary-color)] text-xl md:text-2xl font-bold tracking-wide">About This Chart</h2>
                   <button
                     onClick={closeAboutModal}
-                    className="w-9 h-9 flex items-center justify-center text-white/50 hover:text-[#52C97D] hover:bg-[#52C97D]/10 rounded-full transition-all"
+                    className="w-9 h-9 flex items-center justify-center text-white/50 hover:text-[var(--primary-color)] hover:bg-[var(--primary-color)]/10 rounded-full transition-all"
                     aria-label="Close"
                   >
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1696,28 +1722,28 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
               >
                 {/* What You're Viewing */}
                 <div style={{ marginBottom: '24px' }}>
-                  <h3 style={{ marginBottom: '12px' }} className="text-[#52C97D] text-base md:text-lg font-bold tracking-wider uppercase">What You're Viewing</h3>
+                  <h3 style={{ marginBottom: '12px' }} className="text-[var(--primary-color)] text-base md:text-lg font-bold tracking-wider uppercase">What You're Viewing</h3>
                   <p style={{ paddingLeft: '8px', lineHeight: '1.6', margin: 0 }} className="text-white/90 text-sm md:text-base">
                     The complete price history of the ZERA token from its launch on pump.fun through all pool migrations.
                   </p>
                 </div>
 
                 {/* Divider */}
-                <div style={{ margin: '28px 0' }} className="border-t-2 border-[#52C97D]/30"></div>
+                <div style={{ margin: '28px 0' }} className="border-t-2 border-[var(--primary-color)]/30"></div>
 
                 {/* Token Journey */}
                 <div style={{ marginBottom: '24px' }}>
-                  <h3 style={{ marginBottom: '16px' }} className="text-[#52C97D] text-base md:text-lg font-bold tracking-wider uppercase">Token Journey</h3>
-                  <div style={{ padding: '20px 32px', marginBottom: '12px' }} className="flex items-center justify-center gap-4 bg-black/50 border-2 border-[#52C97D]/40 rounded-lg">
+                  <h3 style={{ marginBottom: '16px' }} className="text-[var(--primary-color)] text-base md:text-lg font-bold tracking-wider uppercase">Token Journey</h3>
+                  <div style={{ padding: '20px 32px', marginBottom: '12px' }} className="flex items-center justify-center gap-4 bg-black/50 border-2 border-[var(--primary-color)]/40 rounded-lg">
                     <span className="text-white text-sm md:text-base font-medium">M0N3Y</span>
-                    <svg className="w-5 h-5 text-[#52C97D]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-5 h-5 text-[var(--primary-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                     </svg>
                     <span className="text-white text-sm md:text-base font-medium">Raydium</span>
-                    <svg className="w-5 h-5 text-[#52C97D]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-5 h-5 text-[var(--primary-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                     </svg>
-                    <span className="text-[#52C97D] text-sm md:text-base font-bold">Meteora</span>
+                    <span className="text-[var(--primary-color)] text-sm md:text-base font-bold">Meteora</span>
                   </div>
                   <p style={{ paddingLeft: '8px', lineHeight: '1.6', margin: 0 }} className="text-white/70 text-xs md:text-sm">
                     ZERA started as M0N3Y on pump.fun, then migrated to Raydium, and finally to Meteora (current pool).
@@ -1725,44 +1751,44 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                 </div>
 
                 {/* Divider */}
-                <div style={{ margin: '28px 0' }} className="border-t-2 border-[#52C97D]/30"></div>
+                <div style={{ margin: '28px 0' }} className="border-t-2 border-[var(--primary-color)]/30"></div>
 
                 {/* How To Use */}
                 <div style={{ marginBottom: '24px' }}>
-                  <h3 style={{ marginBottom: '16px' }} className="text-[#52C97D] text-base md:text-lg font-bold tracking-wider uppercase">Chart Controls</h3>
+                  <h3 style={{ marginBottom: '16px' }} className="text-[var(--primary-color)] text-base md:text-lg font-bold tracking-wider uppercase">Chart Controls</h3>
                   <div style={{ display: 'grid', gap: '10px' }}>
-                    <div style={{ padding: '16px 20px' }} className="flex items-start gap-4 bg-black/50 border-2 border-[#52C97D]/30 rounded-lg hover:border-[#52C97D]/50 transition-all">
-                      <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[#52C97D] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div style={{ padding: '16px 20px' }} className="flex items-start gap-4 bg-black/50 border-2 border-[var(--primary-color)]/30 rounded-lg hover:border-[var(--primary-color)]/50 transition-all">
+                      <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[var(--primary-color)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                       <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs md:text-sm">Timeframes: 1H, 4H, 8H, 1D, or MAX</span>
                     </div>
-                    <div style={{ padding: '16px 20px' }} className="flex items-start gap-4 bg-black/50 border-2 border-[#52C97D]/30 rounded-lg hover:border-[#52C97D]/50 transition-all">
-                      <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[#52C97D] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div style={{ padding: '16px 20px' }} className="flex items-start gap-4 bg-black/50 border-2 border-[var(--primary-color)]/30 rounded-lg hover:border-[var(--primary-color)]/50 transition-all">
+                      <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[var(--primary-color)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
                       </svg>
                       <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs md:text-sm">Zoom with mouse wheel or pinch gesture</span>
                     </div>
-                    <div style={{ padding: '16px 20px' }} className="flex items-start gap-4 bg-black/50 border-2 border-[#52C97D]/30 rounded-lg hover:border-[#52C97D]/50 transition-all">
-                      <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[#52C97D] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div style={{ padding: '16px 20px' }} className="flex items-start gap-4 bg-black/50 border-2 border-[var(--primary-color)]/30 rounded-lg hover:border-[var(--primary-color)]/50 transition-all">
+                      <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[var(--primary-color)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11l5-5m0 0l5 5m-5-5v12" />
                       </svg>
                       <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs md:text-sm">Pan by dragging or swiping</span>
                     </div>
-                    <div style={{ padding: '16px 20px' }} className="flex items-start gap-4 bg-black/50 border-2 border-[#52C97D]/30 rounded-lg hover:border-[#52C97D]/50 transition-all">
-                      <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[#52C97D] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div style={{ padding: '16px 20px' }} className="flex items-start gap-4 bg-black/50 border-2 border-[var(--primary-color)]/30 rounded-lg hover:border-[var(--primary-color)]/50 transition-all">
+                      <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[var(--primary-color)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                       </svg>
                       <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs md:text-sm">Drawing tools: horizontal lines, trend lines, freehand</span>
                     </div>
-                    <div style={{ padding: '16px 20px' }} className="flex items-start gap-4 bg-black/50 border-2 border-[#52C97D]/30 rounded-lg hover:border-[#52C97D]/50 transition-all">
-                      <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[#52C97D] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div style={{ padding: '16px 20px' }} className="flex items-start gap-4 bg-black/50 border-2 border-[var(--primary-color)]/30 rounded-lg hover:border-[var(--primary-color)]/50 transition-all">
+                      <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[var(--primary-color)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                       </svg>
                       <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs md:text-sm">Press ESC to cancel trend line drawing</span>
                     </div>
-                    <div style={{ padding: '16px 20px' }} className="flex items-start gap-4 bg-black/50 border-2 border-[#52C97D]/30 rounded-lg hover:border-[#52C97D]/50 transition-all">
-                      <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[#52C97D] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div style={{ padding: '16px 20px' }} className="flex items-start gap-4 bg-black/50 border-2 border-[var(--primary-color)]/30 rounded-lg hover:border-[var(--primary-color)]/50 transition-all">
+                      <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[var(--primary-color)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                       </svg>
                       <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs md:text-sm">Green vertical lines mark pool migrations</span>
@@ -1771,12 +1797,12 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                 </div>
 
                 {/* Divider */}
-                <div style={{ margin: '28px 0' }} className="border-t-2 border-[#52C97D]/30"></div>
+                <div style={{ margin: '28px 0' }} className="border-t-2 border-[var(--primary-color)]/30"></div>
 
                 {/* Data Sources */}
-                <div style={{ padding: '16px 20px' }} className="text-center bg-black/60 border-2 border-[#52C97D]/40 rounded-lg">
+                <div style={{ padding: '16px 20px' }} className="text-center bg-black/60 border-2 border-[var(--primary-color)]/40 rounded-lg">
                   <p style={{ margin: 0 }} className="text-white/60 text-xs md:text-sm">
-                    <span className="text-[#52C97D] font-bold">Data sources:</span> Jupiter API, DexScreener, GeckoTerminal
+                    <span className="text-[var(--primary-color)] font-bold">Data sources:</span> Jupiter API, DexScreener, GeckoTerminal
                   </p>
                 </div>
               </div>

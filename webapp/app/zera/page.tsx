@@ -20,7 +20,7 @@ import { SafeStorage } from '@/lib/localStorage';
 
 function HomeContent() {
   const { currentProject, isLoading: projectLoading, error: projectError } = useTokenContext();
-  const themeStyles = useTheme(currentProject?.primaryColor || '#52C97D');
+  const themeStyles = useTheme(currentProject?.primaryColor || 'var(--primary-color)');
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -170,7 +170,7 @@ function HomeContent() {
       particleCount: 40,
       spread: 70,
       origin: { x, y },
-      colors: ['#52C97D', '#FFFFFF'],
+      colors: [currentProject?.primaryColor || '#52C97D', '#FFFFFF'],
       startVelocity: 30,
       decay: 0.88,
       scalar: 0.8,
@@ -359,7 +359,7 @@ function HomeContent() {
       <main className="w-screen h-screen overflow-hidden flex items-center justify-center bg-black" style={themeStyles}>
         <TokenLoadingLogo
           svg={currentProject?.loaderSvg || '<svg></svg>'}
-          color={currentProject?.primaryColor || '#52C97D'}
+          color={currentProject?.primaryColor || 'var(--primary-color)'}
         />
       </main>
     );
@@ -391,7 +391,7 @@ function HomeContent() {
       >
         {/* Animated gradient overlay */}
         <motion.div
-          className="absolute inset-0 bg-gradient-to-r from-transparent via-[#52C97D]/20 to-transparent opacity-50"
+          className="absolute inset-0 bg-gradient-to-r from-transparent via-[var(--primary-color)]/20 to-transparent opacity-50"
           animate={{
             x: ['-100%', '100%'],
           }}
@@ -408,17 +408,17 @@ function HomeContent() {
             {/* Column 1: Address Bar + Copy Button */}
             <div className="flex items-center justify-center gap-2">
               <motion.div
-                className="flex items-center gap-2 bg-black/60 px-4 py-[11px] rounded-lg border border-[#52C97D]/40 overflow-hidden flex-shrink min-w-0 h-[48px]"
+                className="flex items-center gap-2 bg-black/60 px-4 py-[11px] rounded-lg border border-[var(--primary-color)]/40 overflow-hidden flex-shrink min-w-0 h-[48px]"
                 whileHover={{ borderColor: 'rgba(82, 201, 125, 0.7)' }}
               >
-                <code className="text-[#52C97D] text-sm font-mono select-all truncate">
+                <code className="text-[var(--primary-color)] text-sm font-mono select-all truncate">
                   {solanaAddress}
                 </code>
               </motion.div>
 
               <motion.button
                 onClick={handleCopy}
-                className="flex items-center justify-center gap-1.5 px-4 py-[11px] bg-[#52C97D] text-black font-bold text-sm rounded-lg shadow-lg w-[100px] flex-shrink-0 h-[48px]"
+                className="flex items-center justify-center gap-1.5 px-4 py-[11px] bg-[var(--primary-color)] text-black font-bold text-sm rounded-lg shadow-lg w-[100px] flex-shrink-0 h-[48px]"
                 whileHover={{
                   scale: 1.05,
                   boxShadow: '0 0 20px rgba(82, 201, 125, 0.5)'
@@ -454,7 +454,7 @@ function HomeContent() {
             </div>
 
             {/* Divider */}
-            <div className="h-12 w-px bg-[#52C97D]/30"></div>
+            <div className="h-12 w-px bg-[var(--primary-color)]/30"></div>
 
             {/* Column 2: Donate Message */}
             <div className="flex items-center justify-center gap-2">
@@ -469,7 +469,7 @@ function HomeContent() {
                   ease: 'easeInOut'
                 }}
               >
-                <Heart className="w-6 h-6 text-[#52C97D] fill-[#52C97D]" />
+                <Heart className="w-6 h-6 text-[var(--primary-color)] fill-[var(--primary-color)]" />
               </motion.div>
               <div className="flex flex-col gap-0.5 items-center justify-center">
                 <p className="text-white font-bold text-base leading-tight">
@@ -482,16 +482,16 @@ function HomeContent() {
             </div>
 
             {/* Divider */}
-            <div className="h-12 w-px bg-[#52C97D]/30"></div>
+            <div className="h-12 w-px bg-[var(--primary-color)]/30"></div>
 
             {/* Column 3: Donate Goal - Stacked Progress Bars */}
             <div className="flex items-center justify-center">
-              <div className="flex flex-col gap-1 bg-black/60 px-4 py-2 rounded-lg border border-[#52C97D]/30">
+              <div className="flex flex-col gap-1 bg-black/60 px-4 py-2 rounded-lg border border-[var(--primary-color)]/30">
                 {/* ZERA Token Balance */}
                 <div className="flex items-center gap-2">
-                  <div className="relative w-28 h-1.5 bg-black/60 rounded-full overflow-hidden border border-[#52C97D]/30">
+                  <div className="relative w-28 h-1.5 bg-black/60 rounded-full overflow-hidden border border-[var(--primary-color)]/30">
                     <motion.div
-                      className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#52C97D] to-[#3FAA66] rounded-full"
+                      className="absolute inset-y-0 left-0 bg-gradient-to-r from-[var(--primary-color)] to-[#3FAA66] rounded-full"
                       initial={{ width: 0 }}
                       animate={{ width: `${Math.min((zeraTokenBalance / zeraGoal) * 100, 100)}%` }}
                       transition={{ duration: 0.8, ease: 'easeOut' }}
@@ -510,14 +510,14 @@ function HomeContent() {
                       }}
                     />
                   </div>
-                  <span className="text-[#52C97D] text-xs font-bold whitespace-nowrap">{zeraTokenBalance.toFixed(0)} / {formatGoalNumber(zeraGoal)} ZERA</span>
+                  <span className="text-[var(--primary-color)] text-xs font-bold whitespace-nowrap">{zeraTokenBalance.toFixed(0)} / {formatGoalNumber(zeraGoal)} ZERA</span>
                 </div>
 
                 {/* SOL Balance */}
                 <div className="flex items-center gap-2">
-                  <div className="relative w-28 h-1.5 bg-black/60 rounded-full overflow-hidden border border-[#52C97D]/30">
+                  <div className="relative w-28 h-1.5 bg-black/60 rounded-full overflow-hidden border border-[var(--primary-color)]/30">
                     <motion.div
-                      className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#52C97D] to-[#3FAA66] rounded-full"
+                      className="absolute inset-y-0 left-0 bg-gradient-to-r from-[var(--primary-color)] to-[#3FAA66] rounded-full"
                       initial={{ width: 0 }}
                       animate={{ width: `${Math.min((walletBalance / solGoal) * 100, 100)}%` }}
                       transition={{ duration: 0.8, ease: 'easeOut' }}
@@ -536,7 +536,7 @@ function HomeContent() {
                       }}
                     />
                   </div>
-                  <span className="text-[#52C97D] text-xs font-bold whitespace-nowrap">{walletBalance.toFixed(2)} / {formatGoalNumber(solGoal)} SOL</span>
+                  <span className="text-[var(--primary-color)] text-xs font-bold whitespace-nowrap">{walletBalance.toFixed(2)} / {formatGoalNumber(solGoal)} SOL</span>
                 </div>
               </div>
             </div>
@@ -556,7 +556,7 @@ function HomeContent() {
                   ease: 'easeInOut'
                 }}
               >
-                <Heart className="w-4 h-4 text-[#52C97D] fill-[#52C97D]" />
+                <Heart className="w-4 h-4 text-[var(--primary-color)] fill-[var(--primary-color)]" />
               </motion.div>
               <div className="text-center">
                 <p className="text-white font-bold text-xs leading-tight">
@@ -574,11 +574,11 @@ function HomeContent() {
               <div className="mb-2">
                 <div className="flex items-center justify-between gap-2 mb-0.5">
                   <span className="text-white/70 text-[10px] font-medium">ZERA Tokens</span>
-                  <span className="text-[#52C97D] text-[10px] font-bold">{zeraTokenBalance.toFixed(0)} / {formatGoalNumber(zeraGoal)}</span>
+                  <span className="text-[var(--primary-color)] text-[10px] font-bold">{zeraTokenBalance.toFixed(0)} / {formatGoalNumber(zeraGoal)}</span>
                 </div>
-                <div className="relative h-1.5 bg-black/60 rounded-full overflow-hidden border border-[#52C97D]/30">
+                <div className="relative h-1.5 bg-black/60 rounded-full overflow-hidden border border-[var(--primary-color)]/30">
                   <motion.div
-                    className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#52C97D] to-[#3FAA66] rounded-full"
+                    className="absolute inset-y-0 left-0 bg-gradient-to-r from-[var(--primary-color)] to-[#3FAA66] rounded-full"
                     initial={{ width: 0 }}
                     animate={{ width: `${Math.min((zeraTokenBalance / zeraGoal) * 100, 100)}%` }}
                     transition={{ duration: 0.8, ease: 'easeOut' }}
@@ -602,11 +602,11 @@ function HomeContent() {
               <div>
                 <div className="flex items-center justify-between gap-2 mb-0.5">
                   <span className="text-white/70 text-[10px] font-medium">Solana (SOL)</span>
-                  <span className="text-[#52C97D] text-[10px] font-bold">{walletBalance.toFixed(2)} / {formatGoalNumber(solGoal)}</span>
+                  <span className="text-[var(--primary-color)] text-[10px] font-bold">{walletBalance.toFixed(2)} / {formatGoalNumber(solGoal)}</span>
                 </div>
-                <div className="relative h-1.5 bg-black/60 rounded-full overflow-hidden border border-[#52C97D]/30">
+                <div className="relative h-1.5 bg-black/60 rounded-full overflow-hidden border border-[var(--primary-color)]/30">
                   <motion.div
-                    className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#52C97D] to-[#3FAA66] rounded-full"
+                    className="absolute inset-y-0 left-0 bg-gradient-to-r from-[var(--primary-color)] to-[#3FAA66] rounded-full"
                     initial={{ width: 0 }}
                     animate={{ width: `${Math.min((walletBalance / solGoal) * 100, 100)}%` }}
                     transition={{ duration: 0.8, ease: 'easeOut' }}
@@ -630,17 +630,17 @@ function HomeContent() {
             {/* Address and Copy Button */}
             <div className="flex items-center justify-center gap-1.5 w-full px-2">
               <motion.div
-                className="flex items-center gap-2 bg-black/60 px-2.5 py-1.5 rounded-lg border border-[#52C97D]/40 overflow-hidden flex-1 min-w-0"
+                className="flex items-center gap-2 bg-black/60 px-2.5 py-1.5 rounded-lg border border-[var(--primary-color)]/40 overflow-hidden flex-1 min-w-0"
                 whileHover={{ borderColor: 'rgba(82, 201, 125, 0.7)' }}
               >
-                <code className="text-[#52C97D] text-[10px] font-mono select-all truncate">
+                <code className="text-[var(--primary-color)] text-[10px] font-mono select-all truncate">
                   {solanaAddress}
                 </code>
               </motion.div>
 
               <motion.button
                 onClick={handleCopy}
-                className="flex items-center justify-center gap-1.5 p-2 bg-[#52C97D] text-black font-bold text-xs rounded-lg shadow-lg"
+                className="flex items-center justify-center gap-1.5 p-2 bg-[var(--primary-color)] text-black font-bold text-xs rounded-lg shadow-lg"
                 whileHover={{
                   scale: 1.05,
                   boxShadow: '0 0 20px rgba(82, 201, 125, 0.5)'
@@ -691,20 +691,20 @@ function HomeContent() {
               {/* Close X Button - Top Right */}
               <button
                 onClick={closeMobileMenu}
-                className="absolute -top-3 -right-3 z-[60] w-10 h-10 rounded-full flex items-center justify-center bg-[#0A1F12] border-2 border-[#52C97D] shadow-[0_0_12px_rgba(82,201,125,0.3)] hover:shadow-[0_0_16px_rgba(82,201,125,0.5)] transition-all backdrop-blur-sm"
+                className="absolute -top-3 -right-3 z-[60] w-10 h-10 rounded-full flex items-center justify-center bg-[#0A1F12] border-2 border-[var(--primary-color)] shadow-[0_0_12px_rgba(82,201,125,0.3)] hover:shadow-[0_0_16px_rgba(82,201,125,0.5)] transition-all backdrop-blur-sm"
                 aria-label="Close menu"
               >
-                <svg className="w-5 h-5 text-[#52C97D]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-5 h-5 text-[var(--primary-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
               {/* Tab Navigation */}
-              <div className="w-full bg-gradient-to-r from-[#0A1F12] via-[#1F6338]/20 to-[#0A1F12] border-[3px] border-[#52C97D]/60 border-b-0 flex flex-shrink-0">
+              <div className="w-full bg-gradient-to-r from-[#0A1F12] via-[#1F6338]/20 to-[#0A1F12] border-[3px] border-[var(--primary-color)]/60 border-b-0 flex flex-shrink-0">
                 <button
                   onClick={() => setMobileMenuTab('settings')}
                   className={`flex-1 py-3 text-sm font-bold transition-all ${
                     mobileMenuTab === 'settings'
-                      ? 'text-[#52C97D] bg-black/50'
+                      ? 'text-[var(--primary-color)] bg-black/50'
                       : 'text-white/60 hover:text-white/80'
                   }`}
                 >
@@ -714,7 +714,7 @@ function HomeContent() {
                   onClick={() => setMobileMenuTab('about')}
                   className={`flex-1 py-3 text-sm font-bold transition-all ${
                     mobileMenuTab === 'about'
-                      ? 'text-[#52C97D] bg-black/50'
+                      ? 'text-[var(--primary-color)] bg-black/50'
                       : 'text-white/60 hover:text-white/80'
                   }`}
                 >
@@ -723,7 +723,7 @@ function HomeContent() {
               </div>
 
               {/* Tab Content */}
-              <div className="w-full flex-1 overflow-y-auto bg-gradient-to-b from-[#0A1F12] to-black border-[3px] border-[#52C97D]/60 py-3 px-2.5" style={{ WebkitOverflowScrolling: 'touch' }}>
+              <div className="w-full flex-1 overflow-y-auto bg-gradient-to-b from-[#0A1F12] to-black border-[3px] border-[var(--primary-color)]/60 py-3 px-2.5" style={{ WebkitOverflowScrolling: 'touch' }}>
                 {mobileMenuTab === 'settings' && (
                   <>
               {/* Main Info Card */}
@@ -751,12 +751,12 @@ function HomeContent() {
                 </div>
 
                 {/* DEX Screener Link */}
-                <div style={{ marginTop: '16px', paddingTop: '16px', paddingBottom: '4px' }} className="border-t border-[#52C97D]/20">
+                <div style={{ marginTop: '16px', paddingTop: '16px', paddingBottom: '4px' }} className="border-t border-[var(--primary-color)]/20">
                   <a
                     href="https://dexscreener.com/solana/6oUJD1EHNVBNMeTpytmY2NxKWicz5C2JUbByUrHEsjhc"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 text-[10px] text-white/70 hover:text-[#52C97D] transition-colors group"
+                    className="flex items-center justify-center gap-2 text-[10px] text-white/70 hover:text-[var(--primary-color)] transition-colors group"
                   >
                     <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -830,13 +830,13 @@ function HomeContent() {
                   href="https://x.com/Trenchooooor"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 py-4 bg-black/85 hover:bg-[#52C97D]/15 transition-all cursor-pointer backdrop-blur-xl"
+                  className="flex items-center justify-center gap-2 py-4 bg-black/85 hover:bg-[var(--primary-color)]/15 transition-all cursor-pointer backdrop-blur-xl"
                   style={{ boxShadow: '0 0 12px rgba(31, 99, 56, 0.3), 0 0 24px rgba(31, 99, 56, 0.15)' }}
                 >
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" fill="#52C97D"/>
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" fill="var(--primary-color)"/>
                   </svg>
-                  <p className="text-[#52C97D] text-base font-bold tracking-wider">@Trenchooooor</p>
+                  <p className="text-[var(--primary-color)] text-base font-bold tracking-wider">@Trenchooooor</p>
                 </a>
               </div>
                   </>
@@ -846,28 +846,28 @@ function HomeContent() {
                   <div style={{ padding: '0 20px' }}>
                     {/* What You're Viewing */}
                     <div style={{ marginBottom: '16px' }}>
-                      <h3 style={{ marginBottom: '8px' }} className="text-[#52C97D] text-base font-bold tracking-wider uppercase">What You're Viewing</h3>
+                      <h3 style={{ marginBottom: '8px' }} className="text-[var(--primary-color)] text-base font-bold tracking-wider uppercase">What You're Viewing</h3>
                       <p style={{ paddingLeft: '8px', lineHeight: '1.6', margin: 0 }} className="text-white/90 text-sm">
                         The complete price history of the ZERA token from its launch on pump.fun through all pool migrations.
                       </p>
                     </div>
 
                     {/* Divider */}
-                    <div style={{ margin: '16px 0' }} className="border-t-2 border-[#52C97D]/30"></div>
+                    <div style={{ margin: '16px 0' }} className="border-t-2 border-[var(--primary-color)]/30"></div>
 
                     {/* Token Journey */}
                     <div style={{ marginBottom: '16px' }}>
-                      <h3 style={{ marginBottom: '12px' }} className="text-[#52C97D] text-base font-bold tracking-wider uppercase">Token Journey</h3>
-                      <div style={{ padding: '16px 20px', marginBottom: '8px' }} className="flex items-center justify-center gap-4 bg-black/50 border-2 border-[#52C97D]/40 rounded-lg">
+                      <h3 style={{ marginBottom: '12px' }} className="text-[var(--primary-color)] text-base font-bold tracking-wider uppercase">Token Journey</h3>
+                      <div style={{ padding: '16px 20px', marginBottom: '8px' }} className="flex items-center justify-center gap-4 bg-black/50 border-2 border-[var(--primary-color)]/40 rounded-lg">
                         <span className="text-white text-sm font-medium">M0N3Y</span>
-                        <svg className="w-5 h-5 text-[#52C97D]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg className="w-5 h-5 text-[var(--primary-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                         </svg>
                         <span className="text-white text-sm font-medium">Raydium</span>
-                        <svg className="w-5 h-5 text-[#52C97D]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg className="w-5 h-5 text-[var(--primary-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                         </svg>
-                        <span className="text-[#52C97D] text-sm font-bold">Meteora</span>
+                        <span className="text-[var(--primary-color)] text-sm font-bold">Meteora</span>
                       </div>
                       <p style={{ paddingLeft: '8px', lineHeight: '1.6', margin: 0 }} className="text-white/70 text-xs">
                         ZERA started as M0N3Y on pump.fun, then migrated to Raydium, and finally to Meteora (current pool).
@@ -875,44 +875,44 @@ function HomeContent() {
                     </div>
 
                     {/* Divider */}
-                    <div style={{ margin: '16px 0' }} className="border-t-2 border-[#52C97D]/30"></div>
+                    <div style={{ margin: '16px 0' }} className="border-t-2 border-[var(--primary-color)]/30"></div>
 
                     {/* How To Use */}
                     <div style={{ marginBottom: '16px' }}>
-                      <h3 style={{ marginBottom: '12px' }} className="text-[#52C97D] text-base font-bold tracking-wider uppercase">Chart Controls</h3>
+                      <h3 style={{ marginBottom: '12px' }} className="text-[var(--primary-color)] text-base font-bold tracking-wider uppercase">Chart Controls</h3>
                       <div style={{ display: 'grid', gap: '8px' }}>
-                        <div style={{ padding: '12px 16px' }} className="flex items-start gap-3 bg-black/50 border-2 border-[#52C97D]/30 rounded-lg hover:border-[#52C97D]/50 transition-all">
-                          <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[#52C97D] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <div style={{ padding: '12px 16px' }} className="flex items-start gap-3 bg-black/50 border-2 border-[var(--primary-color)]/30 rounded-lg hover:border-[var(--primary-color)]/50 transition-all">
+                          <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[var(--primary-color)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
                           <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs">Timeframes: 1H, 4H, 8H, 1D, or MAX</span>
                         </div>
-                        <div style={{ padding: '12px 16px' }} className="flex items-start gap-3 bg-black/50 border-2 border-[#52C97D]/30 rounded-lg hover:border-[#52C97D]/50 transition-all">
-                          <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[#52C97D] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <div style={{ padding: '12px 16px' }} className="flex items-start gap-3 bg-black/50 border-2 border-[var(--primary-color)]/30 rounded-lg hover:border-[var(--primary-color)]/50 transition-all">
+                          <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[var(--primary-color)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
                           </svg>
                           <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs">Zoom with mouse wheel or pinch gesture</span>
                         </div>
-                        <div style={{ padding: '12px 16px' }} className="flex items-start gap-3 bg-black/50 border-2 border-[#52C97D]/30 rounded-lg hover:border-[#52C97D]/50 transition-all">
-                          <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[#52C97D] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <div style={{ padding: '12px 16px' }} className="flex items-start gap-3 bg-black/50 border-2 border-[var(--primary-color)]/30 rounded-lg hover:border-[var(--primary-color)]/50 transition-all">
+                          <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[var(--primary-color)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11l5-5m0 0l5 5m-5-5v12" />
                           </svg>
                           <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs">Pan by dragging or swiping</span>
                         </div>
-                        <div style={{ padding: '12px 16px' }} className="flex items-start gap-3 bg-black/50 border-2 border-[#52C97D]/30 rounded-lg hover:border-[#52C97D]/50 transition-all">
-                          <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[#52C97D] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <div style={{ padding: '12px 16px' }} className="flex items-start gap-3 bg-black/50 border-2 border-[var(--primary-color)]/30 rounded-lg hover:border-[var(--primary-color)]/50 transition-all">
+                          <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[var(--primary-color)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                           </svg>
                           <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs">Drawing tools: horizontal lines, trend lines, freehand</span>
                         </div>
-                        <div style={{ padding: '12px 16px' }} className="flex items-start gap-3 bg-black/50 border-2 border-[#52C97D]/30 rounded-lg hover:border-[#52C97D]/50 transition-all">
-                          <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[#52C97D] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <div style={{ padding: '12px 16px' }} className="flex items-start gap-3 bg-black/50 border-2 border-[var(--primary-color)]/30 rounded-lg hover:border-[var(--primary-color)]/50 transition-all">
+                          <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[var(--primary-color)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                           </svg>
                           <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs">Press ESC to cancel trend line drawing</span>
                         </div>
-                        <div style={{ padding: '12px 16px' }} className="flex items-start gap-3 bg-black/50 border-2 border-[#52C97D]/30 rounded-lg hover:border-[#52C97D]/50 transition-all">
-                          <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[#52C97D] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <div style={{ padding: '12px 16px' }} className="flex items-start gap-3 bg-black/50 border-2 border-[var(--primary-color)]/30 rounded-lg hover:border-[var(--primary-color)]/50 transition-all">
+                          <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[var(--primary-color)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                           </svg>
                           <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs">Green vertical lines mark pool migrations</span>
@@ -921,12 +921,12 @@ function HomeContent() {
                     </div>
 
                     {/* Divider */}
-                    <div style={{ margin: '16px 0' }} className="border-t-2 border-[#52C97D]/30"></div>
+                    <div style={{ margin: '16px 0' }} className="border-t-2 border-[var(--primary-color)]/30"></div>
 
                     {/* Data Sources */}
-                    <div style={{ padding: '12px 16px' }} className="text-center bg-black/60 border-2 border-[#52C97D]/40 rounded-lg">
+                    <div style={{ padding: '12px 16px' }} className="text-center bg-black/60 border-2 border-[var(--primary-color)]/40 rounded-lg">
                       <p style={{ margin: 0 }} className="text-white/60 text-xs">
-                        <span className="text-[#52C97D] font-bold">Data sources:</span> Jupiter API, DexScreener, GeckoTerminal
+                        <span className="text-[var(--primary-color)] font-bold">Data sources:</span> Jupiter API, DexScreener, GeckoTerminal
                       </p>
                     </div>
                   </div>
@@ -1077,12 +1077,12 @@ function HomeContent() {
               </div>
 
               {/* DEX Screener Link */}
-              <div style={{ marginTop: '12px', paddingTop: '12px', paddingBottom: '4px' }} className="border-t border-[#52C97D]/20">
+              <div style={{ marginTop: '12px', paddingTop: '12px', paddingBottom: '4px' }} className="border-t border-[var(--primary-color)]/20">
                 <a
                   href="https://dexscreener.com/solana/6oUJD1EHNVBNMeTpytmY2NxKWicz5C2JUbByUrHEsjhc"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-1.5 text-[9px] text-white/70 hover:text-[#52C97D] transition-colors group"
+                  className="flex items-center justify-center gap-1.5 text-[9px] text-white/70 hover:text-[var(--primary-color)] transition-colors group"
                 >
                   <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -1142,13 +1142,13 @@ function HomeContent() {
               href="https://x.com/Trenchooooor"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 py-3 bg-black/85 hover:bg-[#52C97D]/15 transition-all cursor-pointer backdrop-blur-xl w-full"
+              className="flex items-center justify-center gap-2 py-3 bg-black/85 hover:bg-[var(--primary-color)]/15 transition-all cursor-pointer backdrop-blur-xl w-full"
               style={{ boxShadow: '0 0 12px rgba(31, 99, 56, 0.3), 0 0 24px rgba(31, 99, 56, 0.15)' }}
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" fill="#52C97D"/>
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" fill="var(--primary-color)"/>
               </svg>
-              <p className="text-[#52C97D] text-base font-bold tracking-wider">@Trenchooooor</p>
+              <p className="text-[var(--primary-color)] text-base font-bold tracking-wider">@Trenchooooor</p>
             </a>
           </div>
         </div>
