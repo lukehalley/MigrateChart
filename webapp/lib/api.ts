@@ -157,13 +157,13 @@ export async function fetchAllPoolsData(
     const startMigration = projectConfig.migrations.find(m => m.toPoolId === pool.id);
 
     if (endMigration) {
-      // This pool ends at this migration - show data UP TO AND INCLUDING migration
-      tokenData = tokenData.filter(d => d.time <= endMigration.migrationTimestamp);
+      // This pool ends at this migration - show data UP TO (but not including) migration
+      tokenData = tokenData.filter(d => d.time < endMigration.migrationTimestamp);
     }
 
     if (startMigration) {
-      // This pool starts at this migration - show data FROM migration onwards
-      tokenData = tokenData.filter(d => d.time >= startMigration.migrationTimestamp);
+      // This pool starts at this migration - show data FROM (but not including) migration
+      tokenData = tokenData.filter(d => d.time > startMigration.migrationTimestamp);
     }
 
     result.push({
@@ -174,48 +174,34 @@ export async function fetchAllPoolsData(
     });
   }
 
-  // Add minimal placeholder candles at migration boundaries to anchor vertical lines
-  // These ensure migration lines are visible even when data is filtered by timestamps
+  // Add single placeholder candle at migration boundaries to anchor vertical lines
+  // The placeholder uses the price from the CURRENT pool (not previous) to avoid tiny candlesticks
   for (let i = 0; i < result.length; i++) {
     const poolData = result[i];
-    const pool = projectConfig.pools.find(p => p.poolAddress === poolData.pool_address);
+    const pool = projectConfig.pools[i];
 
-    if (pool && poolData.data.length > 0) {
-      // Check if this pool ends at a migration (needs placeholder at end)
-      const endMigration = projectConfig.migrations.find(m => m.fromPoolId === pool.id);
-      if (endMigration) {
-        const lastCandle = poolData.data[poolData.data.length - 1];
-        // Only add if migration timestamp is not already in data
-        if (!poolData.data.some(c => c.time === endMigration.migrationTimestamp)) {
-          poolData.data.push({
-            time: endMigration.migrationTimestamp,
-            open: lastCandle.close,
-            high: lastCandle.close,
-            low: lastCandle.close,
-            close: lastCandle.close,
-            volume: 0,
-          });
-          poolData.data.sort((a, b) => a.time - b.time);
-        }
-      }
+    // Check if this pool starts at a migration
+    const startMigration = projectConfig.migrations.find(m => m.toPoolId === pool.id);
+    if (startMigration) {
+      // Get the full unfiltered data from the CURRENT pool's token
+      const currentUnfilteredData = tokenDataMap.get(pool.tokenAddress) || [];
 
-      // Check if this pool starts at a migration (needs placeholder at start)
-      const startMigration = projectConfig.migrations.find(m => m.toPoolId === pool.id);
-      if (startMigration && i > 0) {
-        const prevPoolData = result[i - 1];
-        const prevLastCandle = prevPoolData.data[prevPoolData.data.length - 1];
+      // Find the first candle at or after the migration timestamp
+      const candlesAfterMigration = currentUnfilteredData.filter(d => d.time >= startMigration.migrationTimestamp);
+      const closestCandle = candlesAfterMigration.length > 0
+        ? candlesAfterMigration[0]
+        : null;
 
-        // Only add if migration timestamp is not already in data
-        if (prevLastCandle && !poolData.data.some(c => c.time === startMigration.migrationTimestamp)) {
-          poolData.data.unshift({
-            time: startMigration.migrationTimestamp,
-            open: prevLastCandle.close,
-            high: prevLastCandle.close,
-            low: prevLastCandle.close,
-            close: prevLastCandle.close,
-            volume: 0,
-          });
-        }
+      if (closestCandle) {
+        // Add exactly one placeholder at the migration timestamp
+        poolData.data.unshift({
+          time: startMigration.migrationTimestamp,
+          open: closestCandle.open,
+          high: closestCandle.high,
+          low: closestCandle.low,
+          close: closestCandle.close,
+          volume: 0,
+        });
       }
     }
   }
