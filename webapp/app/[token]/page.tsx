@@ -973,7 +973,7 @@ function HomeContent() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.25, ease: 'easeInOut' }}
+                transition={{ duration: 0.4, ease: 'easeInOut' }}
                 className="flex items-center justify-center h-full backdrop-blur-xl"
               >
                 <TokenLoadingLogo
@@ -988,7 +988,7 @@ function HomeContent() {
                 key="chart"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ duration: 0.25, ease: 'easeInOut' }}
+                transition={{ duration: 0.5, ease: 'easeOut' }}
                 className="w-full h-full"
               >
                 <Chart
@@ -1030,7 +1030,7 @@ function HomeContent() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.25, ease: 'easeInOut' }}
+                transition={{ duration: 0.4, ease: 'easeInOut' }}
                 className="flex items-center justify-center h-full backdrop-blur-xl"
               >
                 <TokenLoadingLogo
@@ -1045,7 +1045,7 @@ function HomeContent() {
                 key="chart"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ duration: 0.25, ease: 'easeInOut' }}
+                transition={{ duration: 0.5, ease: 'easeOut' }}
                 className="w-full h-full"
               >
                 <Chart

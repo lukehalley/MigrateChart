@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 110.7 110.8">
+  <!-- Generator: Adobe Illustrator 29.8.3, SVG Export Plug-In . SVG Version: 2.1.1 Build 3)  -->
+  <defs>
+    <style>
+      .st0 {
+        fill: url(#linear-gradient1);
+      }
+
+      .st1 {
+        fill: none;
+      }
+
+      .st2 {
+        fill: url(#radial-gradient);
+      }
+
+      .st3 {
+        fill: url(#radial-gradient1);
+      }
+
+      .st4 {
+        fill: url(#linear-gradient);
+      }
+
+      .st5 {
+        clip-path: url(#clippath);
+      }
+    </style>
+    <clipPath id="clippath">
+      <rect class="st1" x=".8" y=".7" width="109.4" height="109.4"/>
+    </clipPath>
+    <linearGradient id="linear-gradient" x1="251.2" y1="286.8" x2="141.2" y2="286.8" gradientTransform="translate(-146 -204)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#45b975"/>
+      <stop offset="1" stop-color="#006344"/>
+    </linearGradient>
+    <radialGradient id="radial-gradient" cx="3.9" cy="-40.2" fx="3.9" fy="-40.2" r="1.3" gradientTransform="translate(-158.4 2242.4) scale(54.5)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#62be74"/>
+      <stop offset="1" stop-color="#006344" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="linear-gradient1" x1="155.9" y1="232.1" x2="267.7" y2="232.1" gradientTransform="translate(-146 -204)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#009b5e"/>
+      <stop offset=".9" stop-color="#006146"/>
+    </linearGradient>
+    <radialGradient id="radial-gradient1" cx="3.9" cy="-40.2" fx="3.9" fy="-40.2" r="1.3" gradientTransform="translate(-158.4 2241.7) scale(54.5)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#62be74"/>
+      <stop offset="1" stop-color="#006344" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <g class="st5">
+    <g>
+      <path class="st4" d="M.8,55.4v54.7h109.4v-27.3h-27.3l-27.3-27.3H.8Z"/>
+      <path class="st2" d="M.8,55.4v54.7h109.4v-27.3h-27.3l-27.3-27.3H.8Z"/>
+      <path class="st0" d="M.8,28.1h27.3l27.3,27.3h54.7V.7H.8v27.3h0Z"/>
+      <path class="st3" d="M.8,28.1h27.3l27.3,27.3h54.7V.7H.8v27.3h0Z"/>
+    </g>
+  </g>
+</svg>
