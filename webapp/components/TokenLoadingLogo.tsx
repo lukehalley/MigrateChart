@@ -12,7 +12,12 @@ export function TokenLoadingLogo({ svg, color }: TokenLoadingLogoProps) {
     <div className="flex items-center justify-center px-4">
       <motion.div
         className="relative"
-        style={{ width: '240px', height: '240px' }}
+        style={{
+          width: '240px',
+          height: '240px',
+          WebkitTransform: 'translateZ(0)',
+          transform: 'translateZ(0)',
+        }}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -24,7 +29,16 @@ export function TokenLoadingLogo({ svg, color }: TokenLoadingLogoProps) {
         {/* Token logo SVG */}
         <motion.div
           className="w-full h-full flex items-center justify-center"
-          style={{ filter: `drop-shadow(0 0 12px ${color}66)`, color }}
+          style={{
+            filter: `drop-shadow(0 0 12px ${color}66)`,
+            color,
+            WebkitTransform: 'translateZ(0)',
+            transform: 'translateZ(0)',
+            WebkitFontSmoothing: 'antialiased',
+            WebkitBackfaceVisibility: 'hidden',
+            backfaceVisibility: 'hidden',
+            willChange: 'transform, opacity',
+          }}
           dangerouslySetInnerHTML={{ __html: svg }}
           initial={{ opacity: 0.3, scale: 0.9 }}
           animate={{
