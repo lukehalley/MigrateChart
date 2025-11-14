@@ -45,6 +45,22 @@ function HomeContent() {
   const [isLogScale, setIsLogScale] = useState<boolean>(false);
   const [isAutoScale, setIsAutoScale] = useState<boolean>(true);
 
+  // Goal state management - initialize with defaults
+  const [zeraGoal, setZeraGoal] = useState<number>(5000);
+  const [solGoal, setSolGoal] = useState<number>(10);
+
+  // Helper function to format goal numbers
+  const formatGoalNumber = (num: number): string => {
+    if (num >= 1_000_000_000) {
+      return `${(num / 1_000_000_000).toFixed(num % 1_000_000_000 === 0 ? 0 : 1)}B`;
+    } else if (num >= 1_000_000) {
+      return `${(num / 1_000_000).toFixed(num % 1_000_000 === 0 ? 0 : 1)}M`;
+    } else if (num >= 1_000) {
+      return `${(num / 1_000).toFixed(num % 1_000 === 0 ? 0 : 1)}K`;
+    }
+    return num.toString();
+  };
+
   // Sync with localStorage after component mounts (client-side only)
   useEffect(() => {
     const savedDisplayMode = SafeStorage.getItem('chartDisplayMode') as 'price' | 'marketCap' | null;
@@ -70,6 +86,17 @@ function HomeContent() {
     const savedAutoScale = SafeStorage.getItem('chartAutoScale');
     if (savedAutoScale !== null) {
       setIsAutoScale(savedAutoScale !== 'false');
+    }
+
+    // Load saved goals
+    const savedZeraGoal = SafeStorage.getItem('zeraGoal');
+    if (savedZeraGoal !== null) {
+      setZeraGoal(parseFloat(savedZeraGoal));
+    }
+
+    const savedSolGoal = SafeStorage.getItem('solGoal');
+    if (savedSolGoal !== null) {
+      setSolGoal(parseFloat(savedSolGoal));
     }
   }, []);
 
@@ -213,6 +240,23 @@ function HomeContent() {
       errorRetryCount: 3,
     }
   );
+
+  // Auto-scale goals when met
+  useEffect(() => {
+    if (zeraTokenBalance >= zeraGoal && zeraTokenBalance > 0) {
+      const newGoal = zeraGoal * 2;
+      setZeraGoal(newGoal);
+      SafeStorage.setItem('zeraGoal', String(newGoal));
+    }
+  }, [zeraTokenBalance, zeraGoal]);
+
+  useEffect(() => {
+    if (walletBalance >= solGoal && walletBalance > 0) {
+      const newGoal = solGoal * 2;
+      setSolGoal(newGoal);
+      SafeStorage.setItem('solGoal', String(newGoal));
+    }
+  }, [walletBalance, solGoal]);
 
   // Calculate timeframe-specific stats from chart data
   const timeframeStats = React.useMemo(() => {
@@ -411,7 +455,7 @@ function HomeContent() {
                     <motion.div
                       className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#52C97D] to-[#3FAA66] rounded-full"
                       initial={{ width: 0 }}
-                      animate={{ width: `${Math.min((zeraTokenBalance / 5000) * 100, 100)}%` }}
+                      animate={{ width: `${Math.min((zeraTokenBalance / zeraGoal) * 100, 100)}%` }}
                       transition={{ duration: 0.8, ease: 'easeOut' }}
                     />
                     {/* Shine effect */}
@@ -428,7 +472,7 @@ function HomeContent() {
                       }}
                     />
                   </div>
-                  <span className="text-[#52C97D] text-xs font-bold whitespace-nowrap">{zeraTokenBalance.toFixed(0)} / 5K ZERA</span>
+                  <span className="text-[#52C97D] text-xs font-bold whitespace-nowrap">{zeraTokenBalance.toFixed(0)} / {formatGoalNumber(zeraGoal)} ZERA</span>
                 </div>
 
                 {/* SOL Balance */}
@@ -437,7 +481,7 @@ function HomeContent() {
                     <motion.div
                       className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#52C97D] to-[#3FAA66] rounded-full"
                       initial={{ width: 0 }}
-                      animate={{ width: `${Math.min((walletBalance / 10) * 100, 100)}%` }}
+                      animate={{ width: `${Math.min((walletBalance / solGoal) * 100, 100)}%` }}
                       transition={{ duration: 0.8, ease: 'easeOut' }}
                     />
                     {/* Shine effect */}
@@ -454,7 +498,7 @@ function HomeContent() {
                       }}
                     />
                   </div>
-                  <span className="text-[#52C97D] text-xs font-bold whitespace-nowrap">{walletBalance.toFixed(2)} / 10 SOL</span>
+                  <span className="text-[#52C97D] text-xs font-bold whitespace-nowrap">{walletBalance.toFixed(2)} / {formatGoalNumber(solGoal)} SOL</span>
                 </div>
               </div>
             </div>
@@ -492,13 +536,13 @@ function HomeContent() {
               <div className="mb-3">
                 <div className="flex items-center justify-between gap-2 mb-1">
                   <span className="text-white/70 text-[10px] font-medium">ZERA Tokens</span>
-                  <span className="text-[#52C97D] text-[10px] font-bold">{zeraTokenBalance.toFixed(0)} / 5K</span>
+                  <span className="text-[#52C97D] text-[10px] font-bold">{zeraTokenBalance.toFixed(0)} / {formatGoalNumber(zeraGoal)}</span>
                 </div>
                 <div className="relative h-2 bg-black/60 rounded-full overflow-hidden border border-[#52C97D]/30">
                   <motion.div
                     className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#52C97D] to-[#3FAA66] rounded-full"
                     initial={{ width: 0 }}
-                    animate={{ width: `${Math.min((zeraTokenBalance / 5000) * 100, 100)}%` }}
+                    animate={{ width: `${Math.min((zeraTokenBalance / zeraGoal) * 100, 100)}%` }}
                     transition={{ duration: 0.8, ease: 'easeOut' }}
                   />
                   <motion.div
@@ -520,13 +564,13 @@ function HomeContent() {
               <div>
                 <div className="flex items-center justify-between gap-2 mb-1">
                   <span className="text-white/70 text-[10px] font-medium">Solana (SOL)</span>
-                  <span className="text-[#52C97D] text-[10px] font-bold">{walletBalance.toFixed(2)} / 10</span>
+                  <span className="text-[#52C97D] text-[10px] font-bold">{walletBalance.toFixed(2)} / {formatGoalNumber(solGoal)}</span>
                 </div>
                 <div className="relative h-2 bg-black/60 rounded-full overflow-hidden border border-[#52C97D]/30">
                   <motion.div
                     className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#52C97D] to-[#3FAA66] rounded-full"
                     initial={{ width: 0 }}
-                    animate={{ width: `${Math.min((walletBalance / 10) * 100, 100)}%` }}
+                    animate={{ width: `${Math.min((walletBalance / solGoal) * 100, 100)}%` }}
                     transition={{ duration: 0.8, ease: 'easeOut' }}
                   />
                   <motion.div
