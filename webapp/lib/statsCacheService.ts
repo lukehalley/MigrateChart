@@ -8,6 +8,7 @@ import { supabase, isSupabaseConfigured } from './supabase';
 // ========== ALL-TIME STATISTICS CACHE ==========
 
 export interface CachedStats {
+  project_id: string;
   token_address: string;
   all_time_volume: number;
   all_time_fees: number;
@@ -16,7 +17,7 @@ export interface CachedStats {
   updated_at: string;
 }
 
-export async function getCachedStats(tokenAddress: string): Promise<CachedStats | null> {
+export async function getCachedStats(projectId: string, tokenAddress: string): Promise<CachedStats | null> {
   if (!isSupabaseConfigured()) {
     console.log('[Stats Cache] Supabase not configured, skipping cache');
     return null;
@@ -26,6 +27,7 @@ export async function getCachedStats(tokenAddress: string): Promise<CachedStats 
     const { data, error } = await supabase
       .from('stats_cache')
       .select('*')
+      .eq('project_id', projectId)
       .eq('token_address', tokenAddress)
       .gt('updated_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()) // 24 hours
       .single();
@@ -61,7 +63,7 @@ export async function saveCachedStats(stats: Omit<CachedStats, 'updated_at'>): P
         ...stats,
         updated_at: new Date().toISOString(),
       }, {
-        onConflict: 'token_address',
+        onConflict: 'project_id,token_address',
       });
 
     if (error) {
@@ -78,21 +80,23 @@ export async function saveCachedStats(stats: Omit<CachedStats, 'updated_at'>): P
 // ========== HOLDER COUNT CACHE ==========
 
 export interface CachedHolderCount {
+  project_id: string;
   token_address: string;
   holder_count: number;
   updated_at: string;
 }
 
-export async function getCachedHolderCount(tokenAddress: string): Promise<number | null> {
+export async function getCachedHolderCount(projectId: string, tokenAddress: string): Promise<number | null> {
   if (!isSupabaseConfigured()) {
     console.log('[Holder Cache] Supabase not configured, skipping cache');
     return null;
   }
 
   try {
-    const { data, error } = await supabase
+    const { data, error} = await supabase
       .from('holder_cache')
       .select('*')
+      .eq('project_id', projectId)
       .eq('token_address', tokenAddress)
       .gt('updated_at', new Date(Date.now() - 60 * 60 * 1000).toISOString()) // 1 hour
       .single();
@@ -114,7 +118,7 @@ export async function getCachedHolderCount(tokenAddress: string): Promise<number
   }
 }
 
-export async function saveCachedHolderCount(tokenAddress: string, holderCount: number): Promise<void> {
+export async function saveCachedHolderCount(projectId: string, tokenAddress: string, holderCount: number): Promise<void> {
   if (!isSupabaseConfigured()) {
     console.log('[Holder Cache] Supabase not configured, skipping cache save');
     return;
@@ -124,11 +128,12 @@ export async function saveCachedHolderCount(tokenAddress: string, holderCount: n
     const { error } = await supabase
       .from('holder_cache')
       .upsert({
+        project_id: projectId,
         token_address: tokenAddress,
         holder_count: holderCount,
         updated_at: new Date().toISOString(),
       }, {
-        onConflict: 'token_address',
+        onConflict: 'project_id,token_address',
       });
 
     if (error) {
@@ -145,6 +150,7 @@ export async function saveCachedHolderCount(tokenAddress: string, holderCount: n
 // ========== METADATA CACHE ==========
 
 export interface CachedMetadata {
+  project_id: string;
   token_address: string;
   pool_address?: string;
   token_symbol?: string;
@@ -154,7 +160,7 @@ export interface CachedMetadata {
   updated_at: string;
 }
 
-export async function getCachedMetadata(tokenAddress: string): Promise<CachedMetadata | null> {
+export async function getCachedMetadata(projectId: string, tokenAddress: string): Promise<CachedMetadata | null> {
   if (!isSupabaseConfigured()) {
     console.log('[Metadata Cache] Supabase not configured, skipping cache');
     return null;
@@ -164,6 +170,7 @@ export async function getCachedMetadata(tokenAddress: string): Promise<CachedMet
     const { data, error } = await supabase
       .from('metadata_cache')
       .select('*')
+      .eq('project_id', projectId)
       .eq('token_address', tokenAddress)
       .gt('updated_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()) // 7 days
       .single();
@@ -198,7 +205,7 @@ export async function saveCachedMetadata(metadata: Omit<CachedMetadata, 'updated
         ...metadata,
         updated_at: new Date().toISOString(),
       }, {
-        onConflict: 'token_address',
+        onConflict: 'project_id,token_address',
       });
 
     if (error) {

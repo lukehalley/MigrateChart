@@ -7,6 +7,7 @@ import { OHLCData, Timeframe } from './types';
  */
 
 interface CachedOHLCData {
+  project_id: string;
   token_address: string;
   timeframe: string;
   timestamp: number;
@@ -48,6 +49,7 @@ function isCandleComplete(timestamp: number, timeframe: Timeframe): boolean {
  * Get cached OHLC data from Supabase
  */
 export async function getCachedOHLCData(
+  projectId: string,
   tokenAddress: string,
   timeframe: Timeframe
 ): Promise<OHLCData[]> {
@@ -60,6 +62,7 @@ export async function getCachedOHLCData(
     const { data, error } = await supabase
       .from('ohlc_cache')
       .select('*')
+      .eq('project_id', projectId)
       .eq('token_address', tokenAddress)
       .eq('timeframe', timeframe)
       .order('timestamp', { ascending: true });
@@ -96,6 +99,7 @@ export async function getCachedOHLCData(
  * Only caches complete candles (those in the past)
  */
 export async function saveCachedOHLCData(
+  projectId: string,
   tokenAddress: string,
   timeframe: Timeframe,
   data: OHLCData[]
@@ -122,6 +126,7 @@ export async function saveCachedOHLCData(
 
     // Transform to cache format
     const cacheData: CachedOHLCData[] = completeCandles.map(candle => ({
+      project_id: projectId,
       token_address: tokenAddress,
       timeframe,
       timestamp: candle.time,
@@ -136,7 +141,7 @@ export async function saveCachedOHLCData(
     const { error } = await supabase
       .from('ohlc_cache')
       .upsert(cacheData, {
-        onConflict: 'token_address,timeframe,timestamp',
+        onConflict: 'project_id,token_address,timeframe,timestamp',
         ignoreDuplicates: false,
       });
 
