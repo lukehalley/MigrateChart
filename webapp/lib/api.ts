@@ -1,4 +1,4 @@
-import { GeckoTerminalResponse, OHLCData, PoolData, POOLS, Timeframe, TIMEFRAME_TO_JUPITER_INTERVAL, TokenStats } from './types';
+import { GeckoTerminalResponse, OHLCData, PoolData, POOLS, Timeframe, TIMEFRAME_TO_JUPITER_INTERVAL, TokenStats, ProjectConfig, PoolConfig } from './types';
 import { rateLimiter, getApiNameFromUrl } from './rateLimiter';
 import {
   getCachedOHLCData,
@@ -19,8 +19,6 @@ const NETWORK = 'solana';
 
 // Jupiter API for comprehensive historical data
 const JUPITER_API = 'https://datapi.jup.ag/v2/charts';
-const MON3Y_TOKEN = 'ANNTWQsQ9J3PeM6dXLjdzwYcSzr51RREWQnjuuCEpump';
-const ZERA_TOKEN = '8avjtjHAHFqp4g2RR9ALAGBpSTqKPZR8nRbzSTwZERA';
 
 export async function fetchPoolData(
   poolAddress: string,
@@ -64,14 +62,18 @@ export async function fetchPoolData(
   }
 }
 
-export async function fetchJupiterData(tokenAddress: string, timeframe: Timeframe = '1H'): Promise<OHLCData[]> {
+export async function fetchJupiterData(
+  projectId: string,
+  tokenAddress: string,
+  timeframe: Timeframe = '1H'
+): Promise<OHLCData[]> {
   const now = Date.now();
   const interval = TIMEFRAME_TO_JUPITER_INTERVAL[timeframe];
 
   try {
     // Step 1: Try to get cached data first
     console.log(`[API] Checking cache for ${tokenAddress} ${timeframe}`);
-    const cachedData = await getCachedOHLCData(tokenAddress, timeframe);
+    const cachedData = await getCachedOHLCData(projectId, tokenAddress, timeframe);
 
     // Step 2: Fetch fresh data from Jupiter API
     console.log(`[API] Fetching fresh data from Jupiter for ${tokenAddress} ${timeframe}`);
@@ -96,7 +98,7 @@ export async function fetchJupiterData(tokenAddress: string, timeframe: Timefram
     console.log(`[API] Merged ${cachedData.length} cached + ${freshCandles.length} fresh = ${mergedData.length} total candles`);
 
     // Step 4: Save new complete candles to cache (async, don't wait)
-    saveCachedOHLCData(tokenAddress, timeframe, freshCandles).catch(err => {
+    saveCachedOHLCData(projectId, tokenAddress, timeframe, freshCandles).catch(err => {
       console.error('[API] Error saving to cache (non-blocking):', err);
     });
 
@@ -106,7 +108,7 @@ export async function fetchJupiterData(tokenAddress: string, timeframe: Timefram
 
     // If API fails, return cached data as fallback
     try {
-      const cachedData = await getCachedOHLCData(tokenAddress, timeframe);
+      const cachedData = await getCachedOHLCData(projectId, tokenAddress, timeframe);
       if (cachedData.length > 0) {
         console.log(`[API] Using cached data as fallback (${cachedData.length} candles)`);
         return cachedData;
@@ -119,56 +121,81 @@ export async function fetchJupiterData(tokenAddress: string, timeframe: Timefram
   }
 }
 
-export async function fetchAllPoolsData(timeframe: Timeframe = '1H'): Promise<PoolData[]> {
-  // Use Jupiter API for both tokens
-  const [mon3yData, zeraData] = await Promise.all([
-    fetchJupiterData(MON3Y_TOKEN, timeframe),
-    fetchJupiterData(ZERA_TOKEN, timeframe),
-  ]);
+export async function fetchAllPoolsData(
+  projectConfig: ProjectConfig,
+  timeframe: Timeframe = '1H'
+): Promise<PoolData[]> {
+  if (!projectConfig || !projectConfig.pools || projectConfig.pools.length === 0) {
+    console.error('[API] Invalid project config or no pools defined');
+    return [];
+  }
 
-  // Add placeholder candles at migration points for marker anchoring
-  const MIGRATION_1 = 1759363200; // Oct 2, 2025 - MON3Y → Raydium
-  const MIGRATION_2 = 1762300800; // Nov 5, 2025 - Raydium → Meteora
+  // Get unique token addresses from pools
+  const uniqueTokens = Array.from(
+    new Set(projectConfig.pools.map(p => p.tokenAddress))
+  );
 
-  // Add placeholder at first migration if not present
-  const zeraWithMarker = [...zeraData];
-  const hasMarker1 = zeraWithMarker.some(c => c.time === MIGRATION_1);
-  if (!hasMarker1 && zeraWithMarker.length > 0) {
-    // Find surrounding candles to interpolate
-    const before = mon3yData[mon3yData.length - 1];
-    const after = zeraWithMarker[0];
-    if (before && after) {
-      zeraWithMarker.unshift({
-        time: MIGRATION_1,
-        open: before.close,
-        high: before.close,
-        low: before.close,
-        close: before.close,
-        volume: 0,
-      });
+  // Fetch data for all unique tokens in parallel
+  const tokenDataMap = new Map<string, OHLCData[]>();
+  await Promise.all(
+    uniqueTokens.map(async (tokenAddress) => {
+      const data = await fetchJupiterData(projectConfig.id, tokenAddress, timeframe);
+      tokenDataMap.set(tokenAddress, data);
+    })
+  );
+
+  // Build result array matching the pools order
+  const result: PoolData[] = [];
+
+  for (const pool of projectConfig.pools) {
+    const tokenData = tokenDataMap.get(pool.tokenAddress) || [];
+
+    // For intermediate pools (not first or last), keep data empty to avoid chart overlap
+    // Only first and last pools show actual data
+    const isFirstPool = pool.orderIndex === 0;
+    const isLastPool = pool.orderIndex === projectConfig.pools.length - 1;
+
+    result.push({
+      pool_name: pool.poolName,
+      pool_address: pool.poolAddress,
+      token_symbol: pool.tokenSymbol,
+      data: (isFirstPool || isLastPool) ? tokenData : [],
+    });
+  }
+
+  // Add placeholder candles at migration points for visual markers
+  if (projectConfig.migrations && projectConfig.migrations.length > 0) {
+    const lastPoolData = result[result.length - 1];
+    if (lastPoolData && lastPoolData.data.length > 0) {
+      const dataWithMarkers = [...lastPoolData.data];
+
+      // Add placeholder at each migration timestamp if not present
+      for (const migration of projectConfig.migrations) {
+        const hasMarker = dataWithMarkers.some(c => c.time === migration.migrationTimestamp);
+        if (!hasMarker) {
+          // Find surrounding candles to interpolate price
+          const before = dataWithMarkers.find(c => c.time < migration.migrationTimestamp);
+          const after = dataWithMarkers.find(c => c.time > migration.migrationTimestamp);
+          const price = before?.close || after?.open || 0;
+
+          if (price > 0) {
+            dataWithMarkers.push({
+              time: migration.migrationTimestamp,
+              open: price,
+              high: price,
+              low: price,
+              close: price,
+              volume: 0,
+            });
+          }
+        }
+      }
+
+      lastPoolData.data = dataWithMarkers.sort((a, b) => a.time - b.time);
     }
   }
 
-  return [
-    {
-      pool_name: 'mon3y',
-      pool_address: POOLS.mon3y.address,
-      token_symbol: POOLS.mon3y.token_symbol,
-      data: mon3yData,
-    },
-    {
-      pool_name: 'zera_Raydium',
-      pool_address: POOLS.zera_Raydium.address,
-      token_symbol: POOLS.zera_Raydium.token_symbol,
-      data: [],
-    },
-    {
-      pool_name: 'zera_Meteora',
-      pool_address: POOLS.zera_Meteora.address,
-      token_symbol: POOLS.zera_Meteora.token_symbol,
-      data: zeraWithMarker.sort((a, b) => a.time - b.time),
-    },
-  ];
+  return result;
 }
 
 export function findLocalPeaks(data: OHLCData[], window: number = 5): number[] {
@@ -261,10 +288,13 @@ const DEXSCREENER_API = 'https://api.dexscreener.com/latest/dex';
 // Jupiter API for holder count
 const JUPITER_HOLDERS_API = 'https://datapi.jup.ag/v1/holders';
 
-export async function fetchHolderCount(tokenAddress: string): Promise<number | undefined> {
+export async function fetchHolderCount(
+  projectId: string,
+  tokenAddress: string
+): Promise<number | undefined> {
   try {
     // Step 1: Try to get cached holder count first
-    const cachedCount = await getCachedHolderCount(tokenAddress);
+    const cachedCount = await getCachedHolderCount(projectId, tokenAddress);
     if (cachedCount !== null) {
       return cachedCount;
     }
@@ -290,7 +320,7 @@ export async function fetchHolderCount(tokenAddress: string): Promise<number | u
 
     // Step 3: Save to cache (async, don't wait)
     if (count !== undefined) {
-      saveCachedHolderCount(tokenAddress, count).catch(err => {
+      saveCachedHolderCount(projectId, tokenAddress, count).catch(err => {
         console.error('[API] Error saving holder count to cache (non-blocking):', err);
       });
     }
@@ -302,66 +332,69 @@ export async function fetchHolderCount(tokenAddress: string): Promise<number | u
   }
 }
 
-export async function fetchTokenStats(poolAddress: string): Promise<TokenStats | null> {
+export async function fetchTokenStats(
+  projectConfig: ProjectConfig,
+  poolAddress: string
+): Promise<TokenStats | null> {
   try {
-    // Step 1: Check for cached all-time stats (MON3Y + ZERA combined)
-    const cachedMon3yStats = await getCachedStats(MON3Y_TOKEN);
-    const cachedZeraStats = await getCachedStats(ZERA_TOKEN);
+    // Step 1: Check for cached all-time stats for all project tokens
+    const uniqueTokens = Array.from(new Set(projectConfig.pools.map(p => p.tokenAddress)));
+    const cachedStatsPromises = uniqueTokens.map(token => getCachedStats(projectConfig.id, token));
+    const cachedStatsArray = await Promise.all(cachedStatsPromises);
 
     let allTimeVolume: number;
     let allTimeFees: number;
     let allTimeHighPrice: number;
     let allTimeHighMarketCap: number;
 
-    // If we have cached stats for both tokens, use them
-    if (cachedMon3yStats && cachedZeraStats) {
+    // If we have all cached stats, use them
+    const allCached = cachedStatsArray.every(stat => stat !== null);
+    if (allCached) {
       console.log('[API] Using cached all-time stats');
-      allTimeVolume = cachedMon3yStats.all_time_volume + cachedZeraStats.all_time_volume;
-      allTimeFees = cachedMon3yStats.all_time_fees + cachedZeraStats.all_time_fees;
-      allTimeHighPrice = Math.max(cachedMon3yStats.all_time_high_price, cachedZeraStats.all_time_high_price);
-      allTimeHighMarketCap = Math.max(cachedMon3yStats.all_time_high_market_cap, cachedZeraStats.all_time_high_market_cap);
+      allTimeVolume = cachedStatsArray.reduce((sum, stat) => sum + (stat?.all_time_volume || 0), 0);
+      allTimeFees = cachedStatsArray.reduce((sum, stat) => sum + (stat?.all_time_fees || 0), 0);
+      allTimeHighPrice = Math.max(...cachedStatsArray.map(stat => stat?.all_time_high_price || 0));
+      allTimeHighMarketCap = Math.max(...cachedStatsArray.map(stat => stat?.all_time_high_market_cap || 0));
     } else {
-      // Fetch all-time data for both tokens to calculate total volume
+      // Fetch all-time data for all tokens to calculate totals
       console.log('[API] Computing all-time stats from historical data');
-      const [mon3yData, zeraData] = await Promise.all([
-        fetchJupiterData(MON3Y_TOKEN, 'MAX'),
-        fetchJupiterData(ZERA_TOKEN, 'MAX'),
-      ]);
+      const tokenDataPromises = uniqueTokens.map(token => fetchJupiterData(projectConfig.id, token, 'MAX'));
+      const tokenDataArray = await Promise.all(tokenDataPromises);
 
-      // Calculate all-time volume
-      const mon3yVolume = mon3yData.reduce((sum, candle) => sum + candle.volume, 0);
-      const zeraVolume = zeraData.reduce((sum, candle) => sum + candle.volume, 0);
-      allTimeVolume = mon3yVolume + zeraVolume;
+      const CIRCULATING_SUPPLY = 1_000_000_000; // Default 1B, could be made configurable per project
 
-      // Calculate all-time fees (1% of total volume)
-      allTimeFees = allTimeVolume * 0.01;
+      // Calculate stats for each token
+      const tokenStats = uniqueTokens.map((token, idx) => {
+        const data = tokenDataArray[idx];
+        const volume = data.reduce((sum, candle) => sum + candle.volume, 0);
+        const prices = data.map(candle => candle.high);
+        const highPrice = prices.length > 0 ? Math.max(...prices) : 0;
 
-      // Calculate all-time high market cap and liquidity from price data
-      // Using circulating supply of 1 billion tokens
-      const CIRCULATING_SUPPLY = 1_000_000_000;
-      const mon3yPrices = mon3yData.map(candle => candle.high);
-      const zeraPrices = zeraData.map(candle => candle.high);
-      const mon3yHighPrice = mon3yPrices.length > 0 ? Math.max(...mon3yPrices) : 0;
-      const zeraHighPrice = zeraPrices.length > 0 ? Math.max(...zeraPrices) : 0;
-      allTimeHighPrice = Math.max(mon3yHighPrice, zeraHighPrice);
-      allTimeHighMarketCap = allTimeHighPrice * CIRCULATING_SUPPLY;
+        return {
+          token_address: token,
+          volume,
+          highPrice,
+          highMarketCap: highPrice * CIRCULATING_SUPPLY,
+        };
+      });
+
+      // Aggregate stats
+      allTimeVolume = tokenStats.reduce((sum, stat) => sum + stat.volume, 0);
+      allTimeFees = allTimeVolume * 0.01; // 1% fee
+      allTimeHighPrice = Math.max(...tokenStats.map(stat => stat.highPrice));
+      allTimeHighMarketCap = Math.max(...tokenStats.map(stat => stat.highMarketCap));
 
       // Save individual token stats to cache (async, don't wait)
-      saveCachedStats({
-        token_address: MON3Y_TOKEN,
-        all_time_volume: mon3yVolume,
-        all_time_fees: mon3yVolume * 0.01,
-        all_time_high_price: mon3yHighPrice,
-        all_time_high_market_cap: mon3yHighPrice * CIRCULATING_SUPPLY,
-      }).catch(err => console.error('[API] Error saving MON3Y stats (non-blocking):', err));
-
-      saveCachedStats({
-        token_address: ZERA_TOKEN,
-        all_time_volume: zeraVolume,
-        all_time_fees: zeraVolume * 0.01,
-        all_time_high_price: zeraHighPrice,
-        all_time_high_market_cap: zeraHighPrice * CIRCULATING_SUPPLY,
-      }).catch(err => console.error('[API] Error saving ZERA stats (non-blocking):', err));
+      tokenStats.forEach((stat, idx) => {
+        saveCachedStats({
+          project_id: projectConfig.id,
+          token_address: stat.token_address,
+          all_time_volume: stat.volume,
+          all_time_fees: stat.volume * 0.01,
+          all_time_high_price: stat.highPrice,
+          all_time_high_market_cap: stat.highMarketCap,
+        }).catch(err => console.error(`[API] Error saving ${stat.token_address} stats (non-blocking):`, err));
+      });
     }
 
     // Step 2: Fetch current market data from DexScreener
@@ -385,8 +418,11 @@ export async function fetchTokenStats(poolAddress: string): Promise<TokenStats |
       return null;
     }
 
-    // Step 3: Fetch holder count (with caching)
-    const holderCount = await fetchHolderCount(ZERA_TOKEN);
+    // Step 3: Fetch holder count for current token (with caching)
+    // Use the latest/current token address for holder count
+    const currentPool = projectConfig.pools.find(p => p.poolAddress === poolAddress);
+    const currentToken = currentPool?.tokenAddress || projectConfig.pools[projectConfig.pools.length - 1].tokenAddress;
+    const holderCount = await fetchHolderCount(projectConfig.id, currentToken);
 
     // Step 4: Extract current market data
     const volume24h = parseFloat(pair.volume?.h24 || '0');
@@ -396,9 +432,10 @@ export async function fetchTokenStats(poolAddress: string): Promise<TokenStats |
 
     // Step 5: Cache metadata (async, don't wait)
     saveCachedMetadata({
-      token_address: ZERA_TOKEN,
+      project_id: projectConfig.id,
+      token_address: currentToken,
       pool_address: poolAddress,
-      token_symbol: 'ZERA',
+      token_symbol: currentPool?.tokenSymbol || projectConfig.name,
       twitter_url: pair.info?.socials?.find((s: any) => s.type === 'twitter')?.url,
       telegram_url: pair.info?.socials?.find((s: any) => s.type === 'telegram')?.url,
       website_url: pair.info?.websites?.[0]?.url,
