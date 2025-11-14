@@ -174,8 +174,52 @@ export async function fetchAllPoolsData(
     });
   }
 
-  // No need for placeholder candles - migration lines are drawn by Chart component
-  // The vertical line primitive handles positioning without needing data points
+  // Add minimal placeholder candles at migration boundaries to anchor vertical lines
+  // These ensure migration lines are visible even when data is filtered by timestamps
+  for (let i = 0; i < result.length; i++) {
+    const poolData = result[i];
+    const pool = projectConfig.pools.find(p => p.poolAddress === poolData.pool_address);
+
+    if (pool && poolData.data.length > 0) {
+      // Check if this pool ends at a migration (needs placeholder at end)
+      const endMigration = projectConfig.migrations.find(m => m.fromPoolId === pool.id);
+      if (endMigration) {
+        const lastCandle = poolData.data[poolData.data.length - 1];
+        // Only add if migration timestamp is not already in data
+        if (!poolData.data.some(c => c.time === endMigration.migrationTimestamp)) {
+          poolData.data.push({
+            time: endMigration.migrationTimestamp,
+            open: lastCandle.close,
+            high: lastCandle.close,
+            low: lastCandle.close,
+            close: lastCandle.close,
+            volume: 0,
+          });
+          poolData.data.sort((a, b) => a.time - b.time);
+        }
+      }
+
+      // Check if this pool starts at a migration (needs placeholder at start)
+      const startMigration = projectConfig.migrations.find(m => m.toPoolId === pool.id);
+      if (startMigration && i > 0) {
+        const prevPoolData = result[i - 1];
+        const prevLastCandle = prevPoolData.data[prevPoolData.data.length - 1];
+
+        // Only add if migration timestamp is not already in data
+        if (prevLastCandle && !poolData.data.some(c => c.time === startMigration.migrationTimestamp)) {
+          poolData.data.unshift({
+            time: startMigration.migrationTimestamp,
+            open: prevLastCandle.close,
+            high: prevLastCandle.close,
+            low: prevLastCandle.close,
+            close: prevLastCandle.close,
+            volume: 0,
+          });
+        }
+      }
+    }
+  }
+
   return result;
 }
 
