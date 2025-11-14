@@ -487,7 +487,7 @@ function HomeContent() {
             {/* Column 3: Donate Goal - Stacked Progress Bars */}
             <div className="flex items-center justify-center">
               <div className="flex flex-col gap-1 bg-black/60 px-4 py-2 rounded-lg border border-[var(--primary-color)]/30">
-                {/* ZERA Token Balance */}
+                {/* Token Balance */}
                 <div className="flex items-center gap-2">
                   <div className="relative w-28 h-1.5 bg-black/60 rounded-full overflow-hidden border border-[var(--primary-color)]/30">
                     <motion.div

@@ -34,37 +34,9 @@ export interface Migration {
   label: string;
 }
 
-export const POOLS = {
-  mon3y: {
-    address: '95AT5r4i85gfqeew2yR6BYFG8RLrY1d9ztPs7qrSKDVc',
-    name: 'M0N3Y (Original)',
-    token_symbol: 'M0N3Y',
-    color: '#FF6B6B',
-  },
-  zera_Raydium: {
-    address: 'Nn9VMHJTqgG9L9F8SP3GEuFWC5zVuHrADCwehh7N7Di',
-    name: 'ZERA Raydium',
-    token_symbol: 'ZERA',
-    color: '#4ECDC4',
-  },
-  zera_Meteora: {
-    address: '6oUJD1EHNVBNMeTpytmY2NxKWicz5C2JUbByUrHEsjhc',
-    name: 'ZERA Meteora',
-    token_symbol: 'ZERA',
-    color: '#52C97D',
-  },
-} as const;
-
-export const MIGRATION_DATES = {
-  mon3y_to_zera: {
-    timestamp: 1759363200, // October 2, 2025 08:00:00 UTC
-    label: 'M0N3Y<br/>-><br/>ZERA',
-  },
-  zera_Raydium_to_Meteora: {
-    timestamp: 1762300800, // November 5, 2025 08:00:00 UTC
-    label: 'ZERA (Raydium)<br/>-><br/>ZERA (Meteora)',
-  },
-} as const;
+// Legacy POOLS and MIGRATION_DATES constants removed
+// Projects are now loaded dynamically from Supabase database
+// See ProjectConfig, PoolConfig, and MigrationConfig types below
 
 export type Timeframe = '1H' | '4H' | '8H' | '1D' | 'MAX';
 

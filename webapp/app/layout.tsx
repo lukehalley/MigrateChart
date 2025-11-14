@@ -3,8 +3,8 @@ import { Analytics } from '@vercel/analytics/next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'ZERA Price History',
-  description: 'Interactive price chart for ZERA token tracking complete history across M0N3Y → Raydium → Meteora migrations',
+  title: 'Token Migration Chart',
+  description: 'Track complete price history across token migrations with interactive charts and real-time data',
   icons: {
     icon: [
       { url: '/favicon.ico', sizes: 'any' },

@@ -1722,31 +1722,9 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
               >
                 {/* What You're Viewing */}
                 <div style={{ marginBottom: '24px' }}>
-                  <h3 style={{ marginBottom: '12px' }} className="text-[var(--primary-color)] text-base md:text-lg font-bold tracking-wider uppercase">What You're Viewing</h3>
+                  <h3 style={{ marginBottom: '12px' }} className="text-[var(--primary-color)] text-base md:text-lg font-bold tracking-wider uppercase">About This Chart</h3>
                   <p style={{ paddingLeft: '8px', lineHeight: '1.6', margin: 0 }} className="text-white/90 text-sm md:text-base">
-                    The complete price history of the ZERA token from its launch on pump.fun through all pool migrations.
-                  </p>
-                </div>
-
-                {/* Divider */}
-                <div style={{ margin: '28px 0' }} className="border-t-2 border-[var(--primary-color)]/30"></div>
-
-                {/* Token Journey */}
-                <div style={{ marginBottom: '24px' }}>
-                  <h3 style={{ marginBottom: '16px' }} className="text-[var(--primary-color)] text-base md:text-lg font-bold tracking-wider uppercase">Token Journey</h3>
-                  <div style={{ padding: '20px 32px', marginBottom: '12px' }} className="flex items-center justify-center gap-4 bg-black/50 border-2 border-[var(--primary-color)]/40 rounded-lg">
-                    <span className="text-white text-sm md:text-base font-medium">M0N3Y</span>
-                    <svg className="w-5 h-5 text-[var(--primary-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                    </svg>
-                    <span className="text-white text-sm md:text-base font-medium">Raydium</span>
-                    <svg className="w-5 h-5 text-[var(--primary-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                    </svg>
-                    <span className="text-[var(--primary-color)] text-sm md:text-base font-bold">Meteora</span>
-                  </div>
-                  <p style={{ paddingLeft: '8px', lineHeight: '1.6', margin: 0 }} className="text-white/70 text-xs md:text-sm">
-                    ZERA started as M0N3Y on pump.fun, then migrated to Raydium, and finally to Meteora (current pool).
+                    This interactive chart displays complete price history across all pool migrations with real-time data, technical indicators, and drawing tools.
                   </p>
                 </div>
 
