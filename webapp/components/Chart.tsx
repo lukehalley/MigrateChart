@@ -1004,32 +1004,36 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
   useEffect(() => {
     if (!chartRef.current || !chartContainerRef.current) return;
 
-    // Cleanup existing migration lines
-    if (migrationLinesCleanupRef.current) {
-      migrationLinesCleanupRef.current();
-      migrationLinesCleanupRef.current = null;
-    }
+    // Small delay to ensure chart is fully initialized
+    const timeoutId = setTimeout(() => {
+      // Cleanup existing migration lines
+      if (migrationLinesCleanupRef.current) {
+        migrationLinesCleanupRef.current();
+        migrationLinesCleanupRef.current = null;
+      }
 
-    // Add new migration lines if enabled
-    if (showMigrationLines) {
-      const migrationLines = Object.values(MIGRATION_DATES).map(migration => ({
-        time: migration.timestamp,
-        color: '#3FAA66',  // Darker ZERA green for lines
-        label: migration.label,
-        lineWidth: 2,
-        labelBackgroundColor: '#0A1F12',  // Ultra dark green background
-        labelTextColor: '#75D29F',  // Lighter green for text pop
-      }));
+      // Add new migration lines if enabled
+      if (showMigrationLines && chartRef.current && chartContainerRef.current) {
+        const migrationLines = Object.values(MIGRATION_DATES).map(migration => ({
+          time: migration.timestamp,
+          color: '#3FAA66',  // Darker ZERA green for lines
+          label: migration.label,
+          lineWidth: 2,
+          labelBackgroundColor: '#0A1F12',  // Ultra dark green background
+          labelTextColor: '#75D29F',  // Lighter green for text pop
+        }));
 
-      const cleanup = drawVerticalLines(
-        chartRef.current,
-        chartContainerRef.current,
-        migrationLines
-      );
-      migrationLinesCleanupRef.current = cleanup || null;
-    }
+        const cleanup = drawVerticalLines(
+          chartRef.current,
+          chartContainerRef.current,
+          migrationLines
+        );
+        migrationLinesCleanupRef.current = cleanup || null;
+      }
+    }, 50);
 
     return () => {
+      clearTimeout(timeoutId);
       // Cleanup on unmount
       if (migrationLinesCleanupRef.current) {
         migrationLinesCleanupRef.current();

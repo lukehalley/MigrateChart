@@ -12,7 +12,7 @@ export function ZeraLoadingLogo() {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{
-          duration: 0.8,
+          duration: 0.4,
           ease: 'easeInOut',
         }}
       >
@@ -21,10 +21,11 @@ export function ZeraLoadingLogo() {
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 82 83"
           className="w-full h-full"
-          initial={{ opacity: 0, scale: 0.8 }}
+          style={{ filter: 'drop-shadow(0 0 12px rgba(82, 201, 125, 0.4))' }}
+          initial={{ opacity: 0.3, scale: 0.9 }}
           animate={{
-            opacity: [0, 0.6, 1, 0.6],
-            scale: [0.8, 1, 1, 1],
+            opacity: [0.3, 0.7, 1, 0.7],
+            scale: [0.9, 1, 1, 1],
           }}
           transition={{
             duration: 2.5,
