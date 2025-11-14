@@ -260,6 +260,24 @@ function HomeContent() {
     }
   );
 
+  // Stable loading state to prevent flash during transitions
+  const [showLoader, setShowLoader] = useState(true);
+
+  useEffect(() => {
+    const shouldShowLoader = isLoading || projectLoading;
+
+    if (shouldShowLoader) {
+      // Immediately show loader
+      setShowLoader(true);
+    } else {
+      // Delay hiding loader slightly to ensure smooth transition
+      const timer = setTimeout(() => {
+        setShowLoader(false);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading, projectLoading]);
+
   // Auto-scale goals when met
   useEffect(() => {
     if (tokenBalance >= tokenGoal && tokenBalance > 0) {
@@ -967,7 +985,7 @@ function HomeContent() {
           )}
 
           <AnimatePresence mode="wait">
-            {(isLoading || projectLoading) && (
+            {showLoader && (
               <motion.div
                 key="loading"
                 initial={{ opacity: 0 }}
@@ -983,7 +1001,7 @@ function HomeContent() {
               </motion.div>
             )}
 
-            {!isLoading && !projectLoading && !error && poolsData && (
+            {!showLoader && !error && poolsData && (
               <motion.div
                 key="chart"
                 initial={{ opacity: 0 }}
@@ -1024,7 +1042,7 @@ function HomeContent() {
           )}
 
           <AnimatePresence mode="wait">
-            {(isLoading || projectLoading) && (
+            {showLoader && (
               <motion.div
                 key="loading"
                 initial={{ opacity: 0 }}
@@ -1040,7 +1058,7 @@ function HomeContent() {
               </motion.div>
             )}
 
-            {!isLoading && !projectLoading && !error && poolsData && (
+            {!showLoader && !error && poolsData && (
               <motion.div
                 key="chart"
                 initial={{ opacity: 0 }}
