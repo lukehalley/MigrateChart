@@ -382,18 +382,22 @@ export async function fetchTokenStats(
         const highPrice = prices.length > 0 ? Math.max(...prices) : 0;
 
         // Calculate fees based on pool configuration
+        // Find all pools with this token and check which ones have fees
         let fees = 0;
-        const pool = projectConfig.pools.find(p => p.tokenAddress === token);
-        if (pool && pool.feeRate > 0) {
-          // Find when this pool started collecting fees
-          const poolStartMigration = projectConfig.migrations.find(m => m.toPoolId === pool.id);
-          const feeStartTimestamp = poolStartMigration?.migrationTimestamp || 0;
+        const poolsWithToken = projectConfig.pools.filter(p => p.tokenAddress === token);
 
-          // Only count volume from when fees started being collected
-          if (feeStartTimestamp > 0) {
-            const feeEligibleData = data.filter(d => d.time >= feeStartTimestamp);
-            const feeVolume = feeEligibleData.reduce((sum, candle) => sum + candle.volume, 0);
-            fees = feeVolume * pool.feeRate;
+        for (const pool of poolsWithToken) {
+          if (pool.feeRate > 0) {
+            // Find when this pool started collecting fees
+            const poolStartMigration = projectConfig.migrations.find(m => m.toPoolId === pool.id);
+            const feeStartTimestamp = poolStartMigration?.migrationTimestamp || 0;
+
+            // Only count volume from when fees started being collected
+            if (feeStartTimestamp > 0) {
+              const feeEligibleData = data.filter(d => d.time >= feeStartTimestamp);
+              const feeVolume = feeEligibleData.reduce((sum, candle) => sum + candle.volume, 0);
+              fees += feeVolume * pool.feeRate;
+            }
           }
         }
 
