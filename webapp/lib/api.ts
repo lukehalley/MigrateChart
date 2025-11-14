@@ -150,35 +150,27 @@ export async function fetchAllPoolsData(
   for (const pool of projectConfig.pools) {
     let tokenData = tokenDataMap.get(pool.tokenAddress) || [];
 
-    // For intermediate pools (not first or last), keep data empty to avoid chart overlap
-    // Only first and last pools show actual data
-    const isFirstPool = pool.orderIndex === 0;
-    const isLastPool = pool.orderIndex === projectConfig.pools.length - 1;
+    // Find migration that ends this pool's active period
+    const endMigration = projectConfig.migrations.find(m => m.fromPoolId === pool.id);
 
-    // Filter data based on migrations to prevent overlap
-    if (isFirstPool || isLastPool) {
-      // Find migration that ends this pool's active period
-      const endMigration = projectConfig.migrations.find(m => m.fromPoolId === pool.id);
+    // Find migration that starts this pool's active period
+    const startMigration = projectConfig.migrations.find(m => m.toPoolId === pool.id);
 
-      // Find migration that starts this pool's active period
-      const startMigration = projectConfig.migrations.find(m => m.toPoolId === pool.id);
+    if (endMigration) {
+      // This pool ends at this migration - show data BEFORE migration only
+      tokenData = tokenData.filter(d => d.time < endMigration.migrationTimestamp);
+    }
 
-      if (endMigration) {
-        // This pool ends at this migration - show data BEFORE migration only
-        tokenData = tokenData.filter(d => d.time < endMigration.migrationTimestamp);
-      }
-
-      if (startMigration) {
-        // This pool starts at this migration - show data FROM migration onwards
-        tokenData = tokenData.filter(d => d.time >= startMigration.migrationTimestamp);
-      }
+    if (startMigration) {
+      // This pool starts at this migration - show data FROM migration onwards
+      tokenData = tokenData.filter(d => d.time >= startMigration.migrationTimestamp);
     }
 
     result.push({
       pool_name: pool.poolName,
       pool_address: pool.poolAddress,
       token_symbol: pool.tokenSymbol,
-      data: (isFirstPool || isLastPool) ? tokenData : [],
+      data: tokenData,
     });
   }
 
