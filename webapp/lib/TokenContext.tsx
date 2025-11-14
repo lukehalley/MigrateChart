@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import type { ProjectConfig, ProjectListItem } from './types';
 
 interface TokenContextValue {
@@ -17,14 +17,15 @@ const TokenContext = createContext<TokenContextValue | undefined>(undefined);
 export function TokenContextProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
 
   const [currentProject, setCurrentProject] = useState<ProjectConfig | null>(null);
   const [allProjects, setAllProjects] = useState<ProjectListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Get token slug from URL or default to 'zera'
-  const tokenSlug = searchParams.get('token') || 'zera';
+  // Get token slug from URL path (e.g., /zera -> 'zera')
+  const tokenSlug = pathname.split('/')[1] || 'zera';
 
   // Fetch all projects for dropdown
   useEffect(() => {
@@ -71,8 +72,8 @@ export function TokenContextProvider({ children }: { children: ReactNode }) {
   // Switch to different project
   const switchProject = (slug: string) => {
     const params = new URLSearchParams(searchParams.toString());
-    params.set('token', slug);
-    router.push(`/?${params.toString()}`, { scroll: false });
+    const queryString = params.toString();
+    router.push(`/${slug}${queryString ? `?${queryString}` : ''}`, { scroll: false });
   };
 
   return (
