@@ -257,39 +257,25 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D', display
         <>
         <div className="stat-card">
           <div className="flex items-start gap-2">
-            {/* Timeframe fees on left with split */}
+            {/* Timeframe fees - team portion only */}
             <div className="flex-1">
               <p className="text-white text-[10px] font-medium mb-1">FEES</p>
               <p className={`text-white text-base font-bold select-text mb-0.5 ${flashingFields.has('fees') ? 'flash-update' : ''}`}>
-                {formatNumber(stats.fees24h * 0.8)}
+                {formatNumber(stats.fees24h)}
               </p>
-              <div className="text-[8px] text-gray-400 space-y-0.5">
-                <div className="flex items-center gap-1">
-                  <span className="text-white font-medium">{formatNumber(stats.fees24h)}</span>
-                  <span>(Total)</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <span className="text-white font-medium">{formatNumber(stats.fees24h * 0.2)}</span>
-                  <span>(Meteora 20%)</span>
-                </div>
+              <div className="text-[8px] text-gray-400">
+                <span>(Team)</span>
               </div>
             </div>
-            {/* All-time fees on right with split - only show if not already showing all time */}
+            {/* All-time fees - only show if not already showing all time */}
             {stats.allTimeFees !== undefined && timeframeLabel !== 'ALL TIME' && (
               <div className="flex-1">
                 <p className="text-white text-[10px] font-medium mb-1">FEES (ALL TIME)</p>
                 <p className="text-white text-base font-bold select-text mb-0.5">
-                  {formatNumber(stats.allTimeFees * 0.8)}
+                  {formatNumber(stats.allTimeFees)}
                 </p>
-                <div className="text-[8px] text-gray-400 space-y-0.5">
-                  <div className="flex items-center gap-1">
-                    <span className="text-white font-medium">{formatNumber(stats.allTimeFees)}</span>
-                    <span>(Total)</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className="text-white font-medium">{formatNumber(stats.allTimeFees * 0.2)}</span>
-                    <span>(Meteora 20%)</span>
-                  </div>
+                <div className="text-[8px] text-gray-400">
+                  <span>(Team)</span>
                 </div>
               </div>
             )}
