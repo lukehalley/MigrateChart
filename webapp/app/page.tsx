@@ -738,16 +738,24 @@ function HomeContent() {
                 <p className="text-white text-[10px] text-center mb-2">Complete Price History</p>
 
                 <div className="flex items-center justify-center gap-2 text-[10px] pt-3 pb-2 mt-2 flex-wrap">
-                  {currentProject.pools.map((pool, idx) => (
-                    <React.Fragment key={pool.id}>
-                      {idx > 0 && <span className="text-white">→</span>}
-                      <span
-                        className={idx === currentProject.pools.length - 1 ? 'text-[var(--primary-color)] font-bold' : 'text-white font-medium'}
-                      >
-                        {pool.tokenSymbol}
-                      </span>
-                    </React.Fragment>
-                  ))}
+                  {currentProject.pools.map((pool, idx) => {
+                    // First pool: show token symbol (e.g., "M0N3Y")
+                    // Other pools: show DEX name capitalized (e.g., "Raydium")
+                    const displayName = idx === 0
+                      ? pool.tokenSymbol
+                      : pool.dexType.charAt(0).toUpperCase() + pool.dexType.slice(1).replace('_', ' ');
+
+                    return (
+                      <React.Fragment key={pool.id}>
+                        {idx > 0 && <span className="text-white">→</span>}
+                        <span
+                          className={idx === currentProject.pools.length - 1 ? 'text-[var(--primary-color)] font-bold' : 'text-white font-medium'}
+                        >
+                          {displayName}
+                        </span>
+                      </React.Fragment>
+                    );
+                  })}
                 </div>
 
                 {/* DEX Screener Link */}
@@ -1067,16 +1075,23 @@ function HomeContent() {
               <p className="text-white text-[9px] text-center mb-2">Complete Price History</p>
 
               <div className="flex items-center justify-center gap-1.5 text-[9px] pt-1.5 pb-1.5 mt-1.5 flex-wrap">
-                {currentProject.pools.map((pool, idx) => (
-                  <React.Fragment key={pool.id}>
-                    {idx > 0 && <span className="text-white">→</span>}
-                    <span
-                      className={idx === currentProject.pools.length - 1 ? 'text-[var(--primary-color)] font-bold' : 'text-white font-medium'}
-                    >
-                      {pool.tokenSymbol}
-                    </span>
-                  </React.Fragment>
-                ))}
+                {currentProject.pools.map((pool, idx) => {
+                  // First pool: show token symbol, other pools: show DEX name
+                  const displayName = idx === 0
+                    ? pool.tokenSymbol
+                    : pool.dexType.charAt(0).toUpperCase() + pool.dexType.slice(1).replace('_', ' ');
+
+                  return (
+                    <React.Fragment key={pool.id}>
+                      {idx > 0 && <span className="text-white">→</span>}
+                      <span
+                        className={idx === currentProject.pools.length - 1 ? 'text-[var(--primary-color)] font-bold' : 'text-white font-medium'}
+                      >
+                        {displayName}
+                      </span>
+                    </React.Fragment>
+                  );
+                })}
               </div>
 
               {/* DEX Screener Link */}
