@@ -94,6 +94,7 @@ export interface PoolConfig {
   dexType: string;
   color?: string;
   orderIndex: number;
+  feeRate: number; // Decimal fee rate (e.g., 0.008 for 0.8%, 0 for no fees)
   createdAt: string;
 }
 
