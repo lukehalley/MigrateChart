@@ -1,4 +1,4 @@
-import { GeckoTerminalResponse, OHLCData, PoolData, POOLS, Timeframe, TIMEFRAME_TO_JUPITER_INTERVAL, TokenStats, ProjectConfig, PoolConfig } from './types';
+import { GeckoTerminalResponse, OHLCData, PoolData, Timeframe, TIMEFRAME_TO_JUPITER_INTERVAL, TokenStats, ProjectConfig, PoolConfig } from './types';
 import { rateLimiter, getApiNameFromUrl } from './rateLimiter';
 import {
   getCachedOHLCData,
