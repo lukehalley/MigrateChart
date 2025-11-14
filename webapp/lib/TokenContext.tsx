@@ -52,36 +52,39 @@ export function TokenContextProvider({ children }: { children: ReactNode }) {
       try {
         const response = await fetch(`/api/projects/${tokenSlug}`);
         if (!response.ok) {
+          // Project not found, redirect to first available project
+          if (allProjects.length > 0) {
+            const firstProject = allProjects[0].slug;
+            const params = new URLSearchParams(searchParams.toString());
+            const queryString = params.toString();
+            router.replace(`/${firstProject}${queryString ? `?${queryString}` : ''}`);
+            return;
+          } else {
+            // If projects list not loaded yet, fetch it and redirect
+            try {
+              const projectsResponse = await fetch('/api/projects');
+              if (projectsResponse.ok) {
+                const projects = await projectsResponse.json();
+                if (projects.length > 0) {
+                  const firstProject = projects[0].slug;
+                  const params = new URLSearchParams(searchParams.toString());
+                  const queryString = params.toString();
+                  router.replace(`/${firstProject}${queryString ? `?${queryString}` : ''}`);
+                  return;
+                }
+              }
+            } catch (fetchErr) {
+              console.error('Error fetching projects for redirect:', fetchErr);
+            }
+          }
+          // Only throw if redirect failed
           throw new Error(`Failed to fetch project: ${tokenSlug}`);
         }
         const data: ProjectConfig = await response.json();
         setCurrentProject(data);
       } catch (err) {
         console.error('Error fetching project config:', err);
-
-        // If project not found, redirect to first available project
-        if (allProjects.length > 0) {
-          const firstProject = allProjects[0].slug;
-          const params = new URLSearchParams(searchParams.toString());
-          const queryString = params.toString();
-          router.replace(`/${firstProject}${queryString ? `?${queryString}` : ''}`);
-        } else {
-          // If projects list not loaded yet, fetch it and redirect
-          try {
-            const projectsResponse = await fetch('/api/projects');
-            if (projectsResponse.ok) {
-              const projects = await projectsResponse.json();
-              if (projects.length > 0) {
-                const firstProject = projects[0].slug;
-                const params = new URLSearchParams(searchParams.toString());
-                const queryString = params.toString();
-                router.replace(`/${firstProject}${queryString ? `?${queryString}` : ''}`);
-              }
-            }
-          } catch (fetchErr) {
-            console.error('Error fetching projects for redirect:', fetchErr);
-          }
-        }
+        setError(`Failed to load project: ${tokenSlug}`);
       } finally {
         setIsLoading(false);
       }
