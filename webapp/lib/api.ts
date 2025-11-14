@@ -174,44 +174,8 @@ export async function fetchAllPoolsData(
     });
   }
 
-  // Add placeholder candles at migration points for visual markers
-  // Only add markers for migrations that involve each specific pool
-  for (const poolData of result) {
-    if (poolData.data.length > 0 && projectConfig.migrations.length > 0) {
-      const dataWithMarkers = [...poolData.data];
-      const pool = projectConfig.pools.find(p => p.poolAddress === poolData.pool_address);
-
-      if (pool) {
-        // Only add migration markers that this pool is involved in
-        for (const migration of projectConfig.migrations) {
-          // Check if this migration involves this pool (either from or to)
-          if (migration.fromPoolId === pool.id || migration.toPoolId === pool.id) {
-            const hasMarker = dataWithMarkers.some(c => c.time === migration.migrationTimestamp);
-            if (!hasMarker) {
-              // Find surrounding candles to interpolate price
-              const before = dataWithMarkers.find(c => c.time < migration.migrationTimestamp);
-              const after = dataWithMarkers.find(c => c.time > migration.migrationTimestamp);
-              const price = before?.close || after?.open || 0;
-
-              if (price > 0) {
-                dataWithMarkers.push({
-                  time: migration.migrationTimestamp,
-                  open: price,
-                  high: price,
-                  low: price,
-                  close: price,
-                  volume: 0,
-                });
-              }
-            }
-          }
-        }
-
-        poolData.data = dataWithMarkers.sort((a, b) => a.time - b.time);
-      }
-    }
-  }
-
+  // No need for placeholder candles - migration lines are drawn by Chart component
+  // The vertical line primitive handles positioning without needing data points
   return result;
 }
 
