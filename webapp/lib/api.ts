@@ -527,6 +527,3 @@ export async function fetchTokenBalance(walletAddress: string, tokenMint: string
     return 0;
   }
 }
-
-// Legacy export for backward compatibility
-export const fetchZeraTokenBalance = fetchTokenBalance;
