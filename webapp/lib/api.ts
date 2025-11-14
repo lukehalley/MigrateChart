@@ -453,3 +453,29 @@ export async function fetchWalletBalance(walletAddress: string): Promise<number>
     return 0;
   }
 }
+
+// Fetch ZERA token balance via server-side API route to avoid CORS issues
+export async function fetchZeraTokenBalance(walletAddress: string): Promise<number> {
+  try {
+    const response = await fetch(`/api/zera-token-balance?address=${walletAddress}`, {
+      next: { revalidate: 60 }, // Cache for 1 minute
+    });
+
+    if (!response.ok) {
+      console.error(`API error: ${response.status}`);
+      return 0;
+    }
+
+    const data = await response.json();
+
+    if (data.error) {
+      console.error('Error fetching ZERA token balance:', data.error);
+      return 0;
+    }
+
+    return data.balance || 0;
+  } catch (error) {
+    console.error('Error fetching ZERA token balance:', error);
+    return 0;
+  }
+}

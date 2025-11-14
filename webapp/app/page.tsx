@@ -11,7 +11,7 @@ import TimeframeToggle from '@/components/TimeframeToggle';
 import ChartControls from '@/components/ChartControls';
 import TokenStats from '@/components/TokenStats';
 import { ZeraLoadingLogo } from '@/components/ZeraLoadingLogo';
-import { fetchAllPoolsData, fetchTokenStats, fetchWalletBalance } from '@/lib/api';
+import { fetchAllPoolsData, fetchTokenStats, fetchWalletBalance, fetchZeraTokenBalance } from '@/lib/api';
 import { PoolData, Timeframe, POOLS } from '@/lib/types';
 import { SafeStorage } from '@/lib/localStorage';
 
@@ -190,6 +190,20 @@ function HomeContent() {
   const { data: walletBalance = 0 } = useSWR(
     `wallet-balance-${solanaAddress}`,
     () => fetchWalletBalance(solanaAddress),
+    {
+      refreshInterval: 60000, // Refresh every minute
+      revalidateOnFocus: true,
+      revalidateOnReconnect: true,
+      dedupingInterval: 30000,
+      errorRetryInterval: 15000,
+      errorRetryCount: 3,
+    }
+  );
+
+  // Fetch ZERA token balance for donation goal
+  const { data: zeraTokenBalance = 0 } = useSWR(
+    `zera-token-balance-${solanaAddress}`,
+    () => fetchZeraTokenBalance(solanaAddress),
     {
       refreshInterval: 60000, // Refresh every minute
       revalidateOnFocus: true,
@@ -388,32 +402,60 @@ function HomeContent() {
             {/* Divider */}
             <div className="h-12 w-px bg-[#52C97D]/30"></div>
 
-            {/* Column 3: Donate Goal */}
+            {/* Column 3: Donate Goal - Stacked Progress Bars */}
             <div className="flex items-center justify-center">
-              <div className="flex items-center justify-center gap-3 bg-black/60 px-4 py-[11px] rounded-lg border border-[#52C97D]/30 h-[48px]">
-                <span className="text-white/70 text-sm font-medium whitespace-nowrap">Goal:</span>
-                <div className="relative w-32 h-2 bg-black/60 rounded-full overflow-hidden border border-[#52C97D]/30">
-                  <motion.div
-                    className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#52C97D] to-[#3FAA66] rounded-full"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${Math.min((walletBalance / 10) * 100, 100)}%` }}
-                    transition={{ duration: 0.8, ease: 'easeOut' }}
-                  />
-                  {/* Shine effect */}
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-                    animate={{
-                      x: ['-100%', '200%'],
-                    }}
-                    transition={{
-                      duration: 2,
-                      repeat: Infinity,
-                      repeatDelay: 1,
-                      ease: 'linear'
-                    }}
-                  />
+              <div className="flex flex-col gap-1 bg-black/60 px-4 py-2 rounded-lg border border-[#52C97D]/30">
+                {/* ZERA Token Balance */}
+                <div className="flex items-center gap-2">
+                  <div className="relative w-28 h-1.5 bg-black/60 rounded-full overflow-hidden border border-[#52C97D]/30">
+                    <motion.div
+                      className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#52C97D] to-[#3FAA66] rounded-full"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${Math.min((zeraTokenBalance / 5000) * 100, 100)}%` }}
+                      transition={{ duration: 0.8, ease: 'easeOut' }}
+                    />
+                    {/* Shine effect */}
+                    <motion.div
+                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                      animate={{
+                        x: ['-100%', '200%'],
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        repeatDelay: 1,
+                        ease: 'linear'
+                      }}
+                    />
+                  </div>
+                  <span className="text-[#52C97D] text-xs font-bold whitespace-nowrap">{zeraTokenBalance.toFixed(0)} / 5K ZERA</span>
                 </div>
-                <span className="text-[#52C97D] text-sm font-bold whitespace-nowrap">{walletBalance.toFixed(2)} / 10 SOL</span>
+
+                {/* SOL Balance */}
+                <div className="flex items-center gap-2">
+                  <div className="relative w-28 h-1.5 bg-black/60 rounded-full overflow-hidden border border-[#52C97D]/30">
+                    <motion.div
+                      className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#52C97D] to-[#3FAA66] rounded-full"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${Math.min((walletBalance / 10) * 100, 100)}%` }}
+                      transition={{ duration: 0.8, ease: 'easeOut' }}
+                    />
+                    {/* Shine effect */}
+                    <motion.div
+                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                      animate={{
+                        x: ['-100%', '200%'],
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        repeatDelay: 1,
+                        ease: 'linear'
+                      }}
+                    />
+                  </div>
+                  <span className="text-[#52C97D] text-xs font-bold whitespace-nowrap">{walletBalance.toFixed(2)} / 10 SOL</span>
+                </div>
               </div>
             </div>
           </div>
@@ -444,31 +486,62 @@ function HomeContent() {
               </div>
             </div>
 
-            {/* Donation Goal Progress Bar */}
+            {/* Donation Goal Progress Bars - Stacked */}
             <div className="w-full px-2">
-              <div className="flex items-center justify-between gap-2 mb-1">
-                <span className="text-white/70 text-[10px] font-medium">Goal Progress</span>
-                <span className="text-[#52C97D] text-[10px] font-bold">{walletBalance.toFixed(2)} / 10 SOL</span>
+              {/* ZERA Token Balance */}
+              <div className="mb-3">
+                <div className="flex items-center justify-between gap-2 mb-1">
+                  <span className="text-white/70 text-[10px] font-medium">ZERA Tokens</span>
+                  <span className="text-[#52C97D] text-[10px] font-bold">{zeraTokenBalance.toFixed(0)} / 5K</span>
+                </div>
+                <div className="relative h-2 bg-black/60 rounded-full overflow-hidden border border-[#52C97D]/30">
+                  <motion.div
+                    className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#52C97D] to-[#3FAA66] rounded-full"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.min((zeraTokenBalance / 5000) * 100, 100)}%` }}
+                    transition={{ duration: 0.8, ease: 'easeOut' }}
+                  />
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                    animate={{
+                      x: ['-100%', '200%'],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      repeatDelay: 1,
+                      ease: 'linear'
+                    }}
+                  />
+                </div>
               </div>
-              <div className="relative h-2 bg-black/60 rounded-full overflow-hidden border border-[#52C97D]/30">
-                <motion.div
-                  className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#52C97D] to-[#3FAA66] rounded-full"
-                  initial={{ width: 0 }}
-                  animate={{ width: `${Math.min((walletBalance / 10) * 100, 100)}%` }}
-                  transition={{ duration: 0.8, ease: 'easeOut' }}
-                />
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-                  animate={{
-                    x: ['-100%', '200%'],
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    repeatDelay: 1,
-                    ease: 'linear'
-                  }}
-                />
+
+              {/* SOL Balance */}
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-1">
+                  <span className="text-white/70 text-[10px] font-medium">Solana (SOL)</span>
+                  <span className="text-[#52C97D] text-[10px] font-bold">{walletBalance.toFixed(2)} / 10</span>
+                </div>
+                <div className="relative h-2 bg-black/60 rounded-full overflow-hidden border border-[#52C97D]/30">
+                  <motion.div
+                    className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#52C97D] to-[#3FAA66] rounded-full"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.min((walletBalance / 10) * 100, 100)}%` }}
+                    transition={{ duration: 0.8, ease: 'easeOut' }}
+                  />
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                    animate={{
+                      x: ['-100%', '200%'],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      repeatDelay: 1,
+                      ease: 'linear'
+                    }}
+                  />
+                </div>
               </div>
             </div>
 
