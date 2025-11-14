@@ -59,17 +59,28 @@ export function TokenContextProvider({ children }: { children: ReactNode }) {
       } catch (err) {
         console.error('Error fetching project config:', err);
 
-        // If project not found and we have projects list, redirect to first project
+        // If project not found, redirect to first available project
         if (allProjects.length > 0) {
           const firstProject = allProjects[0].slug;
           const params = new URLSearchParams(searchParams.toString());
           const queryString = params.toString();
           router.replace(`/${firstProject}${queryString ? `?${queryString}` : ''}`);
         } else {
-          // Fallback to 'zera' if projects list not loaded yet
-          const params = new URLSearchParams(searchParams.toString());
-          const queryString = params.toString();
-          router.replace(`/zera${queryString ? `?${queryString}` : ''}`);
+          // If projects list not loaded yet, fetch it and redirect
+          try {
+            const projectsResponse = await fetch('/api/projects');
+            if (projectsResponse.ok) {
+              const projects = await projectsResponse.json();
+              if (projects.length > 0) {
+                const firstProject = projects[0].slug;
+                const params = new URLSearchParams(searchParams.toString());
+                const queryString = params.toString();
+                router.replace(`/${firstProject}${queryString ? `?${queryString}` : ''}`);
+              }
+            }
+          } catch (fetchErr) {
+            console.error('Error fetching projects for redirect:', fetchErr);
+          }
         }
       } finally {
         setIsLoading(false);

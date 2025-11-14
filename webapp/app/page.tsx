@@ -15,12 +15,15 @@ async function getFirstProject() {
 
     const projects = await response.json();
 
-    // Return the first project slug, or default to 'zera'
-    return projects[0]?.slug || 'zera';
+    // Return the first project slug, or throw if no projects exist
+    if (projects.length > 0) {
+      return projects[0].slug;
+    }
+
+    throw new Error('No projects found in database');
   } catch (error) {
     console.error('Error fetching projects:', error);
-    // Default to 'zera' if there's an error
-    return 'zera';
+    throw error; // Re-throw to handle at a higher level
   }
 }
 
