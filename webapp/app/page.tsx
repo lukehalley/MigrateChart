@@ -306,11 +306,11 @@ function HomeContent() {
     const now = Math.floor(Date.now() / 1000);
 
     // Get the current pool config to check fee rate and migration start time
-    const currentPool = currentProject.pools[currentProject.pools.length - 1];
+    const currentPool = currentProject?.pools[currentProject.pools.length - 1];
     const feeRate = currentPool?.feeRate || 0;
 
     // Find when this pool started collecting fees (its migration start date)
-    const poolStartMigration = currentProject.migrations.find(m => m.toPoolId === currentPool?.id);
+    const poolStartMigration = currentProject?.migrations.find(m => m.toPoolId === currentPool?.id);
     const feeStartTimestamp = poolStartMigration?.migrationTimestamp || 0;
 
     // Calculate timeframe duration in seconds
