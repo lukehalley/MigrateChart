@@ -93,7 +93,9 @@ export function TokenContextProvider({ children }: { children: ReactNode }) {
     if (tokenSlug) {
       fetchProjectConfig();
     }
-  }, [tokenSlug, allProjects, searchParams, router]);
+    // Note: searchParams intentionally excluded to prevent refetching on timeframe changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tokenSlug, allProjects]);
 
   // Switch to different project
   const switchProject = (slug: string) => {
