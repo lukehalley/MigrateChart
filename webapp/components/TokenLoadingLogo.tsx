@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 
 interface TokenLoadingLogoProps {
   svg: string;
@@ -15,8 +15,6 @@ export function TokenLoadingLogo({ svg, color }: TokenLoadingLogoProps) {
         style={{
           width: '240px',
           height: '240px',
-          WebkitTransform: 'translateZ(0)',
-          transform: 'translateZ(0)',
         }}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -28,18 +26,11 @@ export function TokenLoadingLogo({ svg, color }: TokenLoadingLogoProps) {
       >
         {/* Token logo SVG */}
         <motion.div
-          className="w-full h-full flex items-center justify-center"
+          className="w-full h-full"
           style={{
             filter: `drop-shadow(0 0 12px ${color}66)`,
             color,
-            WebkitTransform: 'translateZ(0)',
-            transform: 'translateZ(0)',
-            WebkitFontSmoothing: 'antialiased',
-            WebkitBackfaceVisibility: 'hidden',
-            backfaceVisibility: 'hidden',
-            willChange: 'transform, opacity',
           }}
-          dangerouslySetInnerHTML={{ __html: svg }}
           initial={{ opacity: 0.3, scale: 0.9 }}
           animate={{
             opacity: [0.3, 0.7, 1, 0.7],
@@ -51,7 +42,17 @@ export function TokenLoadingLogo({ svg, color }: TokenLoadingLogoProps) {
             ease: 'easeInOut',
             times: [0, 0.3, 0.5, 1],
           }}
-        />
+        >
+          <div
+            className="w-full h-full [&>svg]:w-full [&>svg]:h-full"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            dangerouslySetInnerHTML={{ __html: svg }}
+          />
+        </motion.div>
 
         {/* Animated glow effect */}
         <motion.div
