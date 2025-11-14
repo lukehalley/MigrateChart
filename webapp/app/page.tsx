@@ -917,26 +917,43 @@ function HomeContent() {
             </div>
           )}
 
-          {isLoading && (
-            <div className="flex items-center justify-center h-full">
-              <ZeraLoadingLogo />
-            </div>
-          )}
+          <AnimatePresence mode="wait">
+            {isLoading && (
+              <motion.div
+                key="loading"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.5, ease: 'easeInOut' }}
+                className="flex items-center justify-center h-full"
+              >
+                <ZeraLoadingLogo />
+              </motion.div>
+            )}
 
-          {!isLoading && !error && poolsData && (
-            <Chart
-              poolsData={poolsData}
-              timeframe={timeframe}
-              displayMode={displayMode}
-              showVolume={showVolume}
-              showMigrationLines={showMigrationLines}
-              isLogScale={isLogScale}
-              onLogScaleToggle={handleLogScaleToggle}
-              isAutoScale={isAutoScale}
-              onAutoScaleToggle={handleAutoScaleToggle}
-              onResetPosition={handleResetChartPosition}
-            />
-          )}
+            {!isLoading && !error && poolsData && (
+              <motion.div
+                key="chart"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5, ease: 'easeInOut' }}
+                className="w-full h-full"
+              >
+                <Chart
+                  poolsData={poolsData}
+                  timeframe={timeframe}
+                  displayMode={displayMode}
+                  showVolume={showVolume}
+                  showMigrationLines={showMigrationLines}
+                  isLogScale={isLogScale}
+                  onLogScaleToggle={handleLogScaleToggle}
+                  isAutoScale={isAutoScale}
+                  onAutoScaleToggle={handleAutoScaleToggle}
+                  onResetPosition={handleResetChartPosition}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
@@ -950,26 +967,43 @@ function HomeContent() {
             </div>
           )}
 
-          {isLoading && (
-            <div className="flex items-center justify-center h-full">
-              <ZeraLoadingLogo />
-            </div>
-          )}
+          <AnimatePresence mode="wait">
+            {isLoading && (
+              <motion.div
+                key="loading"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.5, ease: 'easeInOut' }}
+                className="flex items-center justify-center h-full"
+              >
+                <ZeraLoadingLogo />
+              </motion.div>
+            )}
 
-          {!isLoading && !error && poolsData && (
-            <Chart
-              poolsData={poolsData}
-              timeframe={timeframe}
-              displayMode={displayMode}
-              showVolume={showVolume}
-              showMigrationLines={showMigrationLines}
-              isLogScale={isLogScale}
-              onLogScaleToggle={handleLogScaleToggle}
-              isAutoScale={isAutoScale}
-              onAutoScaleToggle={handleAutoScaleToggle}
-              onResetPosition={handleResetChartPosition}
-            />
-          )}
+            {!isLoading && !error && poolsData && (
+              <motion.div
+                key="chart"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5, ease: 'easeInOut' }}
+                className="w-full h-full"
+              >
+                <Chart
+                  poolsData={poolsData}
+                  timeframe={timeframe}
+                  displayMode={displayMode}
+                  showVolume={showVolume}
+                  showMigrationLines={showMigrationLines}
+                  isLogScale={isLogScale}
+                  onLogScaleToggle={handleLogScaleToggle}
+                  isAutoScale={isAutoScale}
+                  onAutoScaleToggle={handleAutoScaleToggle}
+                  onResetPosition={handleResetChartPosition}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Right Section - Token Stats Sidebar */}
