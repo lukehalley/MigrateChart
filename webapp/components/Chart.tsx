@@ -287,9 +287,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
       if (filteredData.length === 0) return;
 
-      // Get pool color
-      const poolInfo = POOLS[poolData.pool_name as keyof typeof POOLS];
-      const color = poolInfo?.color || '#4ECDC4';
+      // Pool color is not needed anymore - we use primaryColor for all candles
 
       // For market cap mode, we need circulating supply
       // Using approximate circulating supply of 1 billion tokens
