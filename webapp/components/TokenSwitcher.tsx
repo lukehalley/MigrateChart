@@ -9,12 +9,26 @@ export function TokenSwitcher() {
   const { currentProject, allProjects, switchProject } = useTokenContext();
   const [isOpen, setIsOpen] = useState(false);
 
-  if (!currentProject || allProjects.length <= 1) {
-    // Don't show switcher if only one project or loading
+  if (!currentProject) {
     return (
-      <h1 className="text-lg font-bold text-white">
-        {currentProject?.name || 'Loading...'}
-      </h1>
+      <div className="flex items-center gap-2">
+        <div className="h-8 w-8 bg-gray-700 rounded-full animate-pulse" />
+        <h1 className="text-lg font-bold text-white">Loading...</h1>
+      </div>
+    );
+  }
+
+  // If only one project, show without dropdown
+  if (allProjects.length <= 1) {
+    return (
+      <div className="flex items-center gap-3">
+        <img
+          src={currentProject.logoUrl}
+          alt={currentProject.name}
+          className="h-8 w-8"
+        />
+        <h1 className="text-lg font-bold text-white">{currentProject.name}</h1>
+      </div>
     );
   }
 

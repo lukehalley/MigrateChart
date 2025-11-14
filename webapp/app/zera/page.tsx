@@ -753,7 +753,7 @@ function HomeContent() {
                 {/* DEX Screener Link */}
                 <div style={{ marginTop: '16px', paddingTop: '16px', paddingBottom: '4px' }} className="border-t border-[var(--primary-color)]/20">
                   <a
-                    href="https://dexscreener.com/solana/6oUJD1EHNVBNMeTpytmY2NxKWicz5C2JUbByUrHEsjhc"
+                    href="{`https://dexscreener.com/solana/${currentPoolAddress}`}"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center justify-center gap-2 text-[10px] text-white/70 hover:text-[var(--primary-color)] transition-colors group"
@@ -1079,7 +1079,7 @@ function HomeContent() {
               {/* DEX Screener Link */}
               <div style={{ marginTop: '12px', paddingTop: '12px', paddingBottom: '4px' }} className="border-t border-[var(--primary-color)]/20">
                 <a
-                  href="https://dexscreener.com/solana/6oUJD1EHNVBNMeTpytmY2NxKWicz5C2JUbByUrHEsjhc"
+                  href="{`https://dexscreener.com/solana/${currentPoolAddress}`}"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center gap-1.5 text-[9px] text-white/70 hover:text-[var(--primary-color)] transition-colors group"
