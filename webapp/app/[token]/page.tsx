@@ -261,7 +261,8 @@ function HomeContent() {
   );
 
   // Stable loading state to prevent flash during transitions
-  const [showLoader, setShowLoader] = useState(true);
+  const [showLoader, setShowLoader] = useState(false);
+  const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false);
 
   useEffect(() => {
     const shouldShowLoader = isLoading || projectLoading;
@@ -270,13 +271,19 @@ function HomeContent() {
       // Immediately show loader
       setShowLoader(true);
     } else {
-      // Delay hiding loader slightly to ensure smooth transition
-      const timer = setTimeout(() => {
+      // Mark that we've loaded at least once
+      if (!hasInitiallyLoaded) {
+        setHasInitiallyLoaded(true);
         setShowLoader(false);
-      }, 100);
-      return () => clearTimeout(timer);
+      } else {
+        // Delay hiding loader slightly to ensure smooth transition on subsequent loads
+        const timer = setTimeout(() => {
+          setShowLoader(false);
+        }, 100);
+        return () => clearTimeout(timer);
+      }
     }
-  }, [isLoading, projectLoading]);
+  }, [isLoading, projectLoading, hasInitiallyLoaded]);
 
   // Auto-scale goals when met
   useEffect(() => {
