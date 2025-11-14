@@ -305,8 +305,13 @@ function HomeContent() {
     const data = currentPoolData.data;
     const now = Math.floor(Date.now() / 1000);
 
-    // Meteora migration timestamp - fees only started being collected from this point
-    const METEORA_MIGRATION = 1762300800; // November 5, 2025
+    // Get the current pool config to check fee rate and migration start time
+    const currentPool = currentProject.pools[currentProject.pools.length - 1];
+    const feeRate = currentPool?.feeRate || 0;
+
+    // Find when this pool started collecting fees (its migration start date)
+    const poolStartMigration = currentProject.migrations.find(m => m.toPoolId === currentPool?.id);
+    const feeStartTimestamp = poolStartMigration?.migrationTimestamp || 0;
 
     // Calculate timeframe duration in seconds
     const timeframeSeconds: Record<Timeframe, number> = {
@@ -347,10 +352,14 @@ function HomeContent() {
     const currentPrice = tokenStats.price;
     const priceChangePercent = startingPrice !== 0 ? ((currentPrice - startingPrice) / startingPrice) * 100 : 0;
 
-    // Calculate fees ONLY from Meteora migration date forward (when fees started being collected)
-    const meteoraData = timeframeData.filter(d => d.time >= METEORA_MIGRATION);
-    const volumeForFees = meteoraData.reduce((sum, d) => sum + (d.volume || 0), 0);
-    const feesForTimeframe = volumeForFees * 0.01; // 1% fee
+    // Calculate fees ONLY from the timestamp when this pool started collecting fees
+    // AND only if the pool has a fee_rate > 0
+    let feesForTimeframe = 0;
+    if (feeRate > 0 && feeStartTimestamp > 0) {
+      const feeEligibleData = timeframeData.filter(d => d.time >= feeStartTimestamp);
+      const volumeForFees = feeEligibleData.reduce((sum, d) => sum + (d.volume || 0), 0);
+      feesForTimeframe = volumeForFees * feeRate;
+    }
 
     return {
       ...tokenStats,

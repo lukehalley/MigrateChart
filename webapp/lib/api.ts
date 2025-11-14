@@ -374,16 +374,33 @@ export async function fetchTokenStats(
 
       const CIRCULATING_SUPPLY = 1_000_000_000; // Default 1B, could be made configurable per project
 
-      // Calculate stats for each token
+      // Calculate stats for each token/pool
       const tokenStats = uniqueTokens.map((token, idx) => {
         const data = tokenDataArray[idx];
         const volume = data.reduce((sum, candle) => sum + candle.volume, 0);
         const prices = data.map(candle => candle.high);
         const highPrice = prices.length > 0 ? Math.max(...prices) : 0;
 
+        // Calculate fees based on pool configuration
+        let fees = 0;
+        const pool = projectConfig.pools.find(p => p.tokenAddress === token);
+        if (pool && pool.feeRate > 0) {
+          // Find when this pool started collecting fees
+          const poolStartMigration = projectConfig.migrations.find(m => m.toPoolId === pool.id);
+          const feeStartTimestamp = poolStartMigration?.migrationTimestamp || 0;
+
+          // Only count volume from when fees started being collected
+          if (feeStartTimestamp > 0) {
+            const feeEligibleData = data.filter(d => d.time >= feeStartTimestamp);
+            const feeVolume = feeEligibleData.reduce((sum, candle) => sum + candle.volume, 0);
+            fees = feeVolume * pool.feeRate;
+          }
+        }
+
         return {
           token_address: token,
           volume,
+          fees,
           highPrice,
           highMarketCap: highPrice * CIRCULATING_SUPPLY,
         };
@@ -391,7 +408,7 @@ export async function fetchTokenStats(
 
       // Aggregate stats
       allTimeVolume = tokenStats.reduce((sum, stat) => sum + stat.volume, 0);
-      allTimeFees = allTimeVolume * 0.01; // 1% fee
+      allTimeFees = tokenStats.reduce((sum, stat) => sum + stat.fees, 0);
       allTimeHighPrice = Math.max(...tokenStats.map(stat => stat.highPrice));
       allTimeHighMarketCap = Math.max(...tokenStats.map(stat => stat.highMarketCap));
 
@@ -401,7 +418,7 @@ export async function fetchTokenStats(
           project_id: projectConfig.id,
           token_address: stat.token_address,
           all_time_volume: stat.volume,
-          all_time_fees: stat.volume * 0.01,
+          all_time_fees: stat.fees,
           all_time_high_price: stat.highPrice,
           all_time_high_market_cap: stat.highMarketCap,
         }).catch(err => console.error(`[API] Error saving ${stat.token_address} stats (non-blocking):`, err));

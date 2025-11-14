@@ -80,6 +80,7 @@ export async function GET(
       dexType: p.dex_type,
       color: p.color,
       orderIndex: p.order_index,
+      feeRate: parseFloat(p.fee_rate) || 0,
       createdAt: p.created_at,
     }));
 
