@@ -651,7 +651,7 @@ function HomeContent() {
 
           {/* Popup Content */}
           <div className={`md:hidden fixed inset-0 z-50 ${isMenuClosing ? 'animate-fade-out' : 'animate-fade-in'} flex items-center justify-center py-6 px-4 pointer-events-none`}>
-            <div className="flex flex-col pointer-events-auto w-full max-w-[340px] max-h-[calc(100vh-3rem)] relative">
+            <div className="flex flex-col pointer-events-auto w-full max-w-[340px] max-h-[calc(100vh-4rem)] relative">
               {/* Close X Button - Top Right */}
               <button
                 onClick={closeMobileMenu}
