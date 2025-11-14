@@ -14,7 +14,7 @@ import { TokenLoadingLogo } from '@/components/TokenLoadingLogo';
 import { TokenSwitcher } from '@/components/TokenSwitcher';
 import { TokenContextProvider, useTokenContext } from '@/lib/TokenContext';
 import { useTheme } from '@/lib/useTheme';
-import { fetchAllPoolsData, fetchTokenStats, fetchWalletBalance, fetchZeraTokenBalance } from '@/lib/api';
+import { fetchAllPoolsData, fetchTokenStats, fetchWalletBalance, fetchTokenBalance } from '@/lib/api';
 import { PoolData, Timeframe } from '@/lib/types';
 import { SafeStorage } from '@/lib/localStorage';
 
@@ -51,7 +51,7 @@ function HomeContent() {
   const [isAutoScale, setIsAutoScale] = useState<boolean>(true);
 
   // Goal state management - initialize with defaults
-  const [zeraGoal, setZeraGoal] = useState<number>(5000);
+  const [tokenGoal, setTokenGoal] = useState<number>(5000);
   const [solGoal, setSolGoal] = useState<number>(10);
 
   // Helper function to format goal numbers
@@ -94,9 +94,9 @@ function HomeContent() {
     }
 
     // Load saved goals
-    const savedZeraGoal = SafeStorage.getItem('zeraGoal');
-    if (savedZeraGoal !== null) {
-      setZeraGoal(parseFloat(savedZeraGoal));
+    const savedTokenGoal = SafeStorage.getItem('tokenGoal');
+    if (savedTokenGoal !== null) {
+      setTokenGoal(parseFloat(savedTokenGoal));
     }
 
     const savedSolGoal = SafeStorage.getItem('solGoal');
@@ -239,9 +239,9 @@ function HomeContent() {
   // Fetch token balance for donation goal (only if address is available)
   // Use the current token address
   const currentTokenAddress = currentProject?.pools?.[currentProject.pools.length - 1]?.tokenAddress;
-  const { data: zeraTokenBalance = 0 } = useSWR(
+  const { data: tokenBalance = 0 } = useSWR(
     solanaAddress && currentTokenAddress ? `token-balance-${solanaAddress}-${currentTokenAddress}` : null,
-    () => solanaAddress ? fetchZeraTokenBalance(solanaAddress) : Promise.resolve(0),
+    () => (solanaAddress && currentTokenAddress) ? fetchTokenBalance(solanaAddress, currentTokenAddress) : Promise.resolve(0),
     {
       refreshInterval: 60000, // Refresh every minute
       revalidateOnFocus: true,
@@ -254,12 +254,12 @@ function HomeContent() {
 
   // Auto-scale goals when met
   useEffect(() => {
-    if (zeraTokenBalance >= zeraGoal && zeraTokenBalance > 0) {
-      const newGoal = zeraGoal * 2;
-      setZeraGoal(newGoal);
-      SafeStorage.setItem('zeraGoal', String(newGoal));
+    if (tokenBalance >= tokenGoal && tokenBalance > 0) {
+      const newGoal = tokenGoal * 2;
+      setTokenGoal(newGoal);
+      SafeStorage.setItem('tokenGoal', String(newGoal));
     }
-  }, [zeraTokenBalance, zeraGoal]);
+  }, [tokenBalance, tokenGoal]);
 
   useEffect(() => {
     if (walletBalance >= solGoal && walletBalance > 0) {
@@ -291,8 +291,8 @@ function HomeContent() {
       };
     }
 
-    // Get the most recent pool data (Meteora)
-    const currentPoolData = poolsData.find(p => p.pool_name === 'zera_Meteora');
+    // Get the most recent pool data (last pool in chain)
+    const currentPoolData = poolsData[poolsData.length - 1];
     if (!currentPoolData || currentPoolData.data.length === 0) return tokenStats;
 
     const data = currentPoolData.data;
@@ -493,7 +493,7 @@ function HomeContent() {
                     <motion.div
                       className="absolute inset-y-0 left-0 bg-gradient-to-r from-[var(--primary-color)] to-[#3FAA66] rounded-full"
                       initial={{ width: 0 }}
-                      animate={{ width: `${Math.min((zeraTokenBalance / zeraGoal) * 100, 100)}%` }}
+                      animate={{ width: `${Math.min((tokenBalance / tokenGoal) * 100, 100)}%` }}
                       transition={{ duration: 0.8, ease: 'easeOut' }}
                     />
                     {/* Shine effect */}
@@ -510,7 +510,7 @@ function HomeContent() {
                       }}
                     />
                   </div>
-                  <span className="text-[var(--primary-color)] text-xs font-bold whitespace-nowrap">{zeraTokenBalance.toFixed(0)} / {formatGoalNumber(zeraGoal)} ZERA</span>
+                  <span className="text-[var(--primary-color)] text-xs font-bold whitespace-nowrap">{tokenBalance.toFixed(0)} / {formatGoalNumber(tokenGoal)} {currentProject.pools[currentProject.pools.length - 1]?.tokenSymbol}</span>
                 </div>
 
                 {/* SOL Balance */}
@@ -573,14 +573,14 @@ function HomeContent() {
               {/* ZERA Token Balance */}
               <div className="mb-2">
                 <div className="flex items-center justify-between gap-2 mb-0.5">
-                  <span className="text-white/70 text-[10px] font-medium">ZERA Tokens</span>
-                  <span className="text-[var(--primary-color)] text-[10px] font-bold">{zeraTokenBalance.toFixed(0)} / {formatGoalNumber(zeraGoal)}</span>
+                  <span className="text-white/70 text-[10px] font-medium">{currentProject.pools[currentProject.pools.length - 1]?.tokenSymbol} Tokens</span>
+                  <span className="text-[var(--primary-color)] text-[10px] font-bold">{tokenBalance.toFixed(0)} / {formatGoalNumber(tokenGoal)}</span>
                 </div>
                 <div className="relative h-1.5 bg-black/60 rounded-full overflow-hidden border border-[var(--primary-color)]/30">
                   <motion.div
                     className="absolute inset-y-0 left-0 bg-gradient-to-r from-[var(--primary-color)] to-[#3FAA66] rounded-full"
                     initial={{ width: 0 }}
-                    animate={{ width: `${Math.min((zeraTokenBalance / zeraGoal) * 100, 100)}%` }}
+                    animate={{ width: `${Math.min((tokenBalance / tokenGoal) * 100, 100)}%` }}
                     transition={{ duration: 0.8, ease: 'easeOut' }}
                   />
                   <motion.div
@@ -848,7 +848,7 @@ function HomeContent() {
                     <div style={{ marginBottom: '16px' }}>
                       <h3 style={{ marginBottom: '8px' }} className="text-[var(--primary-color)] text-base font-bold tracking-wider uppercase">What You're Viewing</h3>
                       <p style={{ paddingLeft: '8px', lineHeight: '1.6', margin: 0 }} className="text-white/90 text-sm">
-                        The complete price history of the ZERA token from its launch on pump.fun through all pool migrations.
+                        The complete price history of the {currentProject.name} token from its launch through all pool migrations.
                       </p>
                     </div>
 
@@ -858,19 +858,22 @@ function HomeContent() {
                     {/* Token Journey */}
                     <div style={{ marginBottom: '16px' }}>
                       <h3 style={{ marginBottom: '12px' }} className="text-[var(--primary-color)] text-base font-bold tracking-wider uppercase">Token Journey</h3>
-                      <div style={{ padding: '16px 20px', marginBottom: '8px' }} className="flex items-center justify-center gap-4 bg-black/50 border-2 border-[var(--primary-color)]/40 rounded-lg">
-                        <span className="text-white text-sm font-medium">M0N3Y</span>
-                        <svg className="w-5 h-5 text-[var(--primary-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                        </svg>
-                        <span className="text-white text-sm font-medium">Raydium</span>
-                        <svg className="w-5 h-5 text-[var(--primary-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                        </svg>
-                        <span className="text-[var(--primary-color)] text-sm font-bold">Meteora</span>
+                      <div style={{ padding: '16px 20px', marginBottom: '8px' }} className="flex items-center justify-center gap-4 bg-black/50 border-2 border-[var(--primary-color)]/40 rounded-lg flex-wrap">
+                        {currentProject.pools.map((pool, idx) => (
+                          <React.Fragment key={pool.id}>
+                            {idx > 0 && (
+                              <svg className="w-5 h-5 text-[var(--primary-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                              </svg>
+                            )}
+                            <span className={idx === currentProject.pools.length - 1 ? 'text-[var(--primary-color)] text-sm font-bold' : 'text-white text-sm font-medium'}>
+                              {pool.poolName}
+                            </span>
+                          </React.Fragment>
+                        ))}
                       </div>
                       <p style={{ paddingLeft: '8px', lineHeight: '1.6', margin: 0 }} className="text-white/70 text-xs">
-                        ZERA started as M0N3Y on pump.fun, then migrated to Raydium, and finally to Meteora (current pool).
+                        {currentProject.name} has migrated through {currentProject.migrations.length} pool{currentProject.migrations.length > 1 ? 's' : ''}, with complete price history tracked across all transitions.
                       </p>
                     </div>
 

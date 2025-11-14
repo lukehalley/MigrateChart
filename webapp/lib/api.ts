@@ -502,10 +502,10 @@ export async function fetchWalletBalance(walletAddress: string): Promise<number>
   }
 }
 
-// Fetch ZERA token balance via server-side API route to avoid CORS issues
-export async function fetchZeraTokenBalance(walletAddress: string): Promise<number> {
+// Fetch token balance via server-side API route to avoid CORS issues
+export async function fetchTokenBalance(walletAddress: string, tokenMint: string): Promise<number> {
   try {
-    const response = await fetch(`/api/zera-token-balance?address=${walletAddress}`, {
+    const response = await fetch(`/api/token-balance?address=${walletAddress}&mint=${tokenMint}`, {
       next: { revalidate: 60 }, // Cache for 1 minute
     });
 
@@ -517,13 +517,16 @@ export async function fetchZeraTokenBalance(walletAddress: string): Promise<numb
     const data = await response.json();
 
     if (data.error) {
-      console.error('Error fetching ZERA token balance:', data.error);
+      console.error('Error fetching token balance:', data.error);
       return 0;
     }
 
     return data.balance || 0;
   } catch (error) {
-    console.error('Error fetching ZERA token balance:', error);
+    console.error('Error fetching token balance:', error);
     return 0;
   }
 }
+
+// Legacy export for backward compatibility
+export const fetchZeraTokenBalance = fetchTokenBalance;

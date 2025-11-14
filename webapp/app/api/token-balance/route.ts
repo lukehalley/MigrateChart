@@ -3,16 +3,21 @@ import { NextRequest, NextResponse } from 'next/server';
 // Working Solana RPC endpoint
 const SOLANA_RPC = 'https://api.mainnet-beta.solana.com';
 
-// ZERA token mint address
-const ZERA_TOKEN_MINT = '8avjtjHAHFqp4g2RR9ALAGBpSTqKPZR8nRbzSTwZERA';
-
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const walletAddress = searchParams.get('address');
+  const tokenMint = searchParams.get('mint');
 
   if (!walletAddress) {
     return NextResponse.json(
       { error: 'Wallet address is required' },
+      { status: 400 }
+    );
+  }
+
+  if (!tokenMint) {
+    return NextResponse.json(
+      { error: 'Token mint address is required' },
       { status: 400 }
     );
   }
@@ -31,7 +36,7 @@ export async function GET(request: NextRequest) {
         params: [
           walletAddress,
           {
-            mint: ZERA_TOKEN_MINT,
+            mint: tokenMint,
           },
           {
             encoding: 'jsonParsed',
@@ -76,9 +81,9 @@ export async function GET(request: NextRequest) {
       }
     );
   } catch (error) {
-    console.error('Error fetching ZERA token balance:', error);
+    console.error('Error fetching token balance:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch ZERA token balance' },
+      { error: 'Failed to fetch token balance' },
       { status: 500 }
     );
   }
