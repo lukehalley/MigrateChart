@@ -58,7 +58,19 @@ export function TokenContextProvider({ children }: { children: ReactNode }) {
         setCurrentProject(data);
       } catch (err) {
         console.error('Error fetching project config:', err);
-        setError(`Failed to load project: ${tokenSlug}`);
+
+        // If project not found and we have projects list, redirect to first project
+        if (allProjects.length > 0) {
+          const firstProject = allProjects[0].slug;
+          const params = new URLSearchParams(searchParams.toString());
+          const queryString = params.toString();
+          router.replace(`/${firstProject}${queryString ? `?${queryString}` : ''}`);
+        } else {
+          // Fallback to 'zera' if projects list not loaded yet
+          const params = new URLSearchParams(searchParams.toString());
+          const queryString = params.toString();
+          router.replace(`/zera${queryString ? `?${queryString}` : ''}`);
+        }
       } finally {
         setIsLoading(false);
       }
@@ -67,7 +79,7 @@ export function TokenContextProvider({ children }: { children: ReactNode }) {
     if (tokenSlug) {
       fetchProjectConfig();
     }
-  }, [tokenSlug]);
+  }, [tokenSlug, allProjects, searchParams, router]);
 
   // Switch to different project
   const switchProject = (slug: string) => {
