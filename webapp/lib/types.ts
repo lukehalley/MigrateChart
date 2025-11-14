@@ -94,3 +94,51 @@ export interface TokenStats {
   telegram?: string;
   website?: string;
 }
+
+// Multi-tenant project configuration types
+export interface ProjectConfig {
+  id: string;
+  slug: string;
+  name: string;
+  primaryColor: string;
+  logoUrl: string;
+  loaderSvg: string;
+  donationAddress: string;
+  isDefault: boolean;
+  isActive: boolean;
+  pools: PoolConfig[];
+  migrations: MigrationConfig[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PoolConfig {
+  id: string;
+  projectId: string;
+  poolAddress: string;
+  tokenAddress: string;
+  tokenSymbol: string;
+  poolName: string;
+  dexType: string;
+  color?: string;
+  orderIndex: number;
+  createdAt: string;
+}
+
+export interface MigrationConfig {
+  id: string;
+  projectId: string;
+  fromPoolId: string | null;
+  toPoolId: string;
+  migrationTimestamp: number;
+  label: string;
+  createdAt: string;
+}
+
+// Simple project list item for dropdown
+export interface ProjectListItem {
+  slug: string;
+  name: string;
+  primaryColor: string;
+  logoUrl: string;
+}
