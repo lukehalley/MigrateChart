@@ -10,12 +10,17 @@ import Chart from '@/components/Chart';
 import TimeframeToggle from '@/components/TimeframeToggle';
 import ChartControls from '@/components/ChartControls';
 import TokenStats from '@/components/TokenStats';
-import { ZeraLoadingLogo } from '@/components/ZeraLoadingLogo';
+import { TokenLoadingLogo } from '@/components/TokenLoadingLogo';
+import { TokenSwitcher } from '@/components/TokenSwitcher';
+import { TokenContextProvider, useTokenContext } from '@/lib/TokenContext';
+import { useTheme } from '@/lib/useTheme';
 import { fetchAllPoolsData, fetchTokenStats, fetchWalletBalance, fetchZeraTokenBalance } from '@/lib/api';
-import { PoolData, Timeframe, POOLS } from '@/lib/types';
+import { PoolData, Timeframe } from '@/lib/types';
 import { SafeStorage } from '@/lib/localStorage';
 
 function HomeContent() {
+  const { currentProject, isLoading: projectLoading, error: projectError } = useTokenContext();
+  const themeStyles = useTheme(currentProject?.primaryColor || '#52C97D');
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -147,9 +152,10 @@ function HomeContent() {
     }, 300); // Match animation duration
   };
 
-  // Handle copy address
-  const solanaAddress = 'G9fXGu1LvtZesdQYjsWQTj1QeMpc97CJ6vWhX3rgeapb';
+  // Handle copy address - use project's donation address
+  const solanaAddress = currentProject?.donationAddress || '';
   const handleCopy = (event: React.MouseEvent<HTMLButtonElement>) => {
+    if (!solanaAddress) return;
     navigator.clipboard.writeText(solanaAddress);
     setShowCopied(true);
     setTimeout(() => setShowCopied(false), 2000);
@@ -172,18 +178,21 @@ function HomeContent() {
     });
   };
 
+  // Get the current pool address (last pool in the chain)
+  const currentPoolAddress = currentProject?.pools?.[currentProject.pools.length - 1]?.poolAddress;
+
   // Fetch data with SWR for automatic revalidation
   // Optimized intervals for live updates while respecting rate limits
   const { data: poolsData, error, isLoading } = useSWR<PoolData[]>(
-    `/api/pools/${timeframe}`,
-    () => fetchAllPoolsData(timeframe),
+    currentProject ? `/api/pools/${currentProject.slug}/${timeframe}` : null,
+    () => currentProject ? fetchAllPoolsData(currentProject, timeframe) : Promise.resolve([]),
     {
       // More frequent updates for shorter timeframes
       refreshInterval: timeframe === '1H' ? 60000   // 1 minute for 1H
                      : timeframe === '4H' ? 180000  // 3 minutes for 4H
                      : timeframe === '8H' ? 240000  // 4 minutes for 8H
                      : timeframe === '1D' ? 300000  // 5 minutes for 1D
-                     : 600000,                      // 10 minutes for 1W
+                     : 600000,                      // 10 minutes for MAX
       revalidateOnFocus: true, // Refresh when user returns to tab
       revalidateOnReconnect: true, // Refresh when internet reconnects
       dedupingInterval: 30000, // Dedupe requests within 30s
@@ -195,11 +204,11 @@ function HomeContent() {
     }
   );
 
-  // Fetch token stats for the current Meteora pool
+  // Fetch token stats for the current pool
   // More frequent updates for price/stats which change rapidly
   const { data: tokenStats, isLoading: isStatsLoading } = useSWR(
-    'token-stats',
-    () => fetchTokenStats(POOLS.zera_Meteora.address),
+    currentProject && currentPoolAddress ? `token-stats-${currentProject.slug}` : null,
+    () => currentProject && currentPoolAddress ? fetchTokenStats(currentProject, currentPoolAddress) : Promise.resolve(null),
     {
       refreshInterval: 30000, // Refresh every 30 seconds for live price updates
       revalidateOnFocus: true,
@@ -342,11 +351,36 @@ function HomeContent() {
     };
   }, [poolsData, tokenStats, timeframe]);
 
+  // Show project loading state
+  if (projectLoading || !currentProject) {
+    return (
+      <main className="w-screen h-screen overflow-hidden flex items-center justify-center bg-black" style={themeStyles}>
+        <TokenLoadingLogo
+          svg={currentProject?.loaderSvg || '<svg></svg>'}
+          color={currentProject?.primaryColor || '#52C97D'}
+        />
+      </main>
+    );
+  }
+
+  // Show project error state
+  if (projectError) {
+    return (
+      <main className="w-screen h-screen overflow-hidden flex items-center justify-center bg-black">
+        <div className="text-red-500 text-center">
+          <p className="text-xl font-bold mb-2">Error Loading Project</p>
+          <p>{projectError}</p>
+        </div>
+      </main>
+    );
+  }
+
   return (
-    <main className="w-screen h-screen overflow-hidden grid grid-rows-[auto_1fr]">
+    <main className="w-screen h-screen overflow-hidden grid grid-rows-[auto_1fr]" style={themeStyles}>
       {/* Donation Banner */}
       <motion.div
-        className="relative bg-gradient-to-r from-[#0A1F12] via-[#1F6338]/30 to-[#0A1F12] border-b-2 border-[#52C97D]/50 backdrop-blur-sm shadow-[0_4px_20px_rgba(82,201,125,0.25)]"
+        className="relative bg-gradient-to-r from-[#0A1F12] via-[var(--primary-darker)]/30 to-[#0A1F12] border-b-2 border-[var(--primary-color)]/50 backdrop-blur-sm"
+        style={{ boxShadow: `0 4px 20px rgba(var(--primary-rgb), 0.25)` }}
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
@@ -692,33 +726,26 @@ function HomeContent() {
                   <>
               {/* Main Info Card */}
               <div className="info-card-small">
-                <a
-                  href="https://zeralabs.org"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 mb-4 hover:opacity-80 transition-opacity cursor-pointer group"
-                >
-                  <img
-                    src="/circle-logo.avif"
-                    alt="ZERA"
-                    className="h-8 w-8 group-hover:scale-105 transition-transform"
-                  />
-                  <div className="flex-1">
-                    <h1 className="text-lg font-bold text-white mb-0 group-hover:text-[#52C97D] transition-colors">ZERA</h1>
-                    <p className="text-white text-[10px]">Complete Price History</p>
+                <div className="flex items-center gap-3 mb-4">
+                  <TokenSwitcher />
+                  <div className="flex items-center gap-1 ml-auto">
+                    <div className="w-1.5 h-1.5 bg-[var(--primary-color)] rounded-full animate-pulse"></div>
+                    <span className="text-[var(--primary-color)] text-[8px] font-bold">LIVE</span>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <div className="w-1.5 h-1.5 bg-[#52C97D] rounded-full animate-pulse"></div>
-                    <span className="text-[#52C97D] text-[8px] font-bold">LIVE</span>
-                  </div>
-                </a>
+                </div>
+                <p className="text-white text-[10px] text-center mb-2">Complete Price History</p>
 
-                <div className="flex items-center justify-center gap-2 text-[10px] pt-3 pb-2 mt-2">
-                  <span className="text-white font-medium">MON3Y</span>
-                  <span className="text-white">→</span>
-                  <span className="text-white font-medium">Raydium</span>
-                  <span className="text-white">→</span>
-                  <span className="text-[#52C97D] font-bold">Meteora</span>
+                <div className="flex items-center justify-center gap-2 text-[10px] pt-3 pb-2 mt-2 flex-wrap">
+                  {currentProject.pools.map((pool, idx) => (
+                    <React.Fragment key={pool.id}>
+                      {idx > 0 && <span className="text-white">→</span>}
+                      <span
+                        className={idx === currentProject.pools.length - 1 ? 'text-[var(--primary-color)] font-bold' : 'text-white font-medium'}
+                      >
+                        {pool.tokenSymbol}
+                      </span>
+                    </React.Fragment>
+                  ))}
                 </div>
 
                 {/* DEX Screener Link */}
@@ -926,7 +953,10 @@ function HomeContent() {
                 transition={{ duration: 0.25, ease: 'easeInOut' }}
                 className="flex items-center justify-center h-full backdrop-blur-xl"
               >
-                <ZeraLoadingLogo />
+                <TokenLoadingLogo
+                  svg={currentProject.loaderSvg}
+                  color={currentProject.primaryColor}
+                />
               </motion.div>
             )}
 
@@ -978,7 +1008,10 @@ function HomeContent() {
                 transition={{ duration: 0.25, ease: 'easeInOut' }}
                 className="flex items-center justify-center h-full backdrop-blur-xl"
               >
-                <ZeraLoadingLogo />
+                <TokenLoadingLogo
+                  svg={currentProject.loaderSvg}
+                  color={currentProject.primaryColor}
+                />
               </motion.div>
             )}
 
@@ -1015,33 +1048,26 @@ function HomeContent() {
           <div className="flex-1 overflow-y-auto overflow-x-hidden px-2.5 py-2 space-y-0 min-h-0">
             {/* Main Info Block */}
             <div className="stat-card-highlight">
-              <a
-                href="https://zeralabs.org"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2.5 mb-2 hover:opacity-80 transition-opacity cursor-pointer group"
-              >
-                <img
-                  src="/circle-logo.avif"
-                  alt="ZERA"
-                  className="h-7 w-7 group-hover:scale-105 transition-transform"
-                />
-                <div className="flex-1">
-                  <h1 className="text-base font-bold text-white mb-0 group-hover:text-[#52C97D] transition-colors">ZERA</h1>
-                  <p className="text-white text-[9px]">Complete Price History</p>
+              <div className="flex items-center gap-2.5 mb-2">
+                <TokenSwitcher />
+                <div className="flex items-center gap-1 ml-auto">
+                  <div className="w-1.5 h-1.5 bg-[var(--primary-color)] rounded-full animate-pulse"></div>
+                  <span className="text-[var(--primary-color)] text-[8px] font-bold">LIVE</span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-1.5 h-1.5 bg-[#52C97D] rounded-full animate-pulse"></div>
-                  <span className="text-[#52C97D] text-[8px] font-bold">LIVE</span>
-                </div>
-              </a>
+              </div>
+              <p className="text-white text-[9px] text-center mb-2">Complete Price History</p>
 
-              <div className="flex items-center justify-center gap-1.5 text-[9px] pt-1.5 pb-1.5 mt-1.5">
-                <span className="text-white font-medium">MON3Y</span>
-                <span className="text-white">→</span>
-                <span className="text-white font-medium">Raydium</span>
-                <span className="text-white">→</span>
-                <span className="text-[#52C97D] font-bold">Meteora</span>
+              <div className="flex items-center justify-center gap-1.5 text-[9px] pt-1.5 pb-1.5 mt-1.5 flex-wrap">
+                {currentProject.pools.map((pool, idx) => (
+                  <React.Fragment key={pool.id}>
+                    {idx > 0 && <span className="text-white">→</span>}
+                    <span
+                      className={idx === currentProject.pools.length - 1 ? 'text-[var(--primary-color)] font-bold' : 'text-white font-medium'}
+                    >
+                      {pool.tokenSymbol}
+                    </span>
+                  </React.Fragment>
+                ))}
               </div>
 
               {/* DEX Screener Link */}
@@ -1128,7 +1154,9 @@ function HomeContent() {
 export default function Home() {
   return (
     <Suspense fallback={null}>
-      <HomeContent />
+      <TokenContextProvider>
+        <HomeContent />
+      </TokenContextProvider>
     </Suspense>
   );
 }
