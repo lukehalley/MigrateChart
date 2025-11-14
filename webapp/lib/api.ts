@@ -157,8 +157,8 @@ export async function fetchAllPoolsData(
     const startMigration = projectConfig.migrations.find(m => m.toPoolId === pool.id);
 
     if (endMigration) {
-      // This pool ends at this migration - show data BEFORE migration only
-      tokenData = tokenData.filter(d => d.time < endMigration.migrationTimestamp);
+      // This pool ends at this migration - show data UP TO AND INCLUDING migration
+      tokenData = tokenData.filter(d => d.time <= endMigration.migrationTimestamp);
     }
 
     if (startMigration) {
