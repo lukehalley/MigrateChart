@@ -66,6 +66,13 @@ function HomeContent() {
     return num.toString();
   };
 
+  // Update document title when project changes
+  useEffect(() => {
+    if (currentProject) {
+      document.title = `${currentProject.name} Migration Chart`;
+    }
+  }, [currentProject]);
+
   // Sync with localStorage after component mounts (client-side only)
   useEffect(() => {
     const savedDisplayMode = SafeStorage.getItem('chartDisplayMode') as 'price' | 'marketCap' | null;

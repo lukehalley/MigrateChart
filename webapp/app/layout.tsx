@@ -3,7 +3,7 @@ import { Analytics } from '@vercel/analytics/next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Token Migration Chart',
+  title: 'Migration Chart',
   description: 'Track complete price history across token migrations with interactive charts and real-time data',
   icons: {
     icon: [
