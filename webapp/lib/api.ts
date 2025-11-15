@@ -67,7 +67,7 @@ export async function fetchJupiterData(
   tokenAddress: string,
   timeframe: Timeframe = '1H'
 ): Promise<OHLCData[]> {
-  const now = Date.now();
+  const now = Math.floor(Date.now() / 1000); // Convert to seconds for Jupiter API
   const interval = TIMEFRAME_TO_JUPITER_INTERVAL[timeframe];
 
   try {
