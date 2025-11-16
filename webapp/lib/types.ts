@@ -48,6 +48,14 @@ export const TIMEFRAME_TO_JUPITER_INTERVAL: Record<Timeframe, string> = {
   'MAX': '1_DAY', // MAX uses 1 day intervals for complete history
 } as const;
 
+export const TIMEFRAME_TO_GECKOTERMINAL: Record<Timeframe, string> = {
+  '1H': 'hour',
+  '4H': 'hour', // GeckoTerminal doesn't have 4H, use hour and filter
+  '8H': 'hour', // GeckoTerminal doesn't have 8H, use hour and filter
+  '1D': 'day',
+  'MAX': 'day',
+} as const;
+
 export interface TokenStats {
   price: number;
   priceChange24h: number;

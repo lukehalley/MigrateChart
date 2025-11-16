@@ -1,4 +1,4 @@
-import { GeckoTerminalResponse, OHLCData, PoolData, Timeframe, TIMEFRAME_TO_JUPITER_INTERVAL, TokenStats, ProjectConfig, PoolConfig } from './types';
+import { GeckoTerminalResponse, OHLCData, PoolData, Timeframe, TIMEFRAME_TO_JUPITER_INTERVAL, TIMEFRAME_TO_GECKOTERMINAL, TokenStats, ProjectConfig, PoolConfig } from './types';
 import { rateLimiter, getApiNameFromUrl } from './rateLimiter';
 import {
   getCachedOHLCData,
@@ -24,7 +24,9 @@ export async function fetchPoolData(
   poolAddress: string,
   timeframe: Timeframe = '1H'
 ): Promise<OHLCData[]> {
-  const url = `${BASE_URL}/networks/${NETWORK}/pools/${poolAddress}/ohlcv/${timeframe}`;
+  // Map timeframe to GeckoTerminal's interval format
+  const geckoInterval = TIMEFRAME_TO_GECKOTERMINAL[timeframe];
+  const url = `${BASE_URL}/networks/${NETWORK}/pools/${poolAddress}/ohlcv/${geckoInterval}`;
 
   try {
     const data = await rateLimiter.execute('geckoterminal', async () => {
@@ -48,7 +50,7 @@ export async function fetchPoolData(
 
     // Transform the OHLCV data
     const ohlcvList = data.data.attributes.ohlcv_list;
-    return ohlcvList.map(([timestamp, open, high, low, close, volume]) => ({
+    let candles = ohlcvList.map(([timestamp, open, high, low, close, volume]) => ({
       time: timestamp,
       open,
       high,
@@ -56,6 +58,18 @@ export async function fetchPoolData(
       close,
       volume,
     }));
+
+    // For 4H and 8H, we get hourly data from GeckoTerminal - filter to approximate the timeframe
+    // This isn't perfect but gives users data while Jupiter is down
+    if (timeframe === '4H') {
+      // Take every 4th candle for 4H approximation
+      candles = candles.filter((_, index) => index % 4 === 0);
+    } else if (timeframe === '8H') {
+      // Take every 8th candle for 8H approximation
+      candles = candles.filter((_, index) => index % 8 === 0);
+    }
+
+    return candles;
   } catch (error) {
     console.error(`Error fetching data for pool ${poolAddress}:`, error);
     return [];
@@ -65,7 +79,8 @@ export async function fetchPoolData(
 export async function fetchJupiterData(
   projectId: string,
   tokenAddress: string,
-  timeframe: Timeframe = '1H'
+  timeframe: Timeframe = '1H',
+  poolAddress?: string // Optional pool address for GeckoTerminal fallback
 ): Promise<OHLCData[]> {
   const now = Math.floor(Date.now() / 1000); // Convert to seconds for Jupiter API
   const interval = TIMEFRAME_TO_JUPITER_INTERVAL[timeframe];
@@ -93,20 +108,56 @@ export async function fetchJupiterData(
     // {time, open, high, low, close, volume}
     const freshCandles: OHLCData[] = data.candles || [];
 
+    // Step 2.5: If Jupiter returns empty candles and we have a poolAddress, fall back to GeckoTerminal
+    if (freshCandles.length === 0 && poolAddress) {
+      console.log(`[API] Jupiter returned empty candles, falling back to GeckoTerminal for ${poolAddress} ${timeframe}`);
+      try {
+        const geckoData = await fetchPoolData(poolAddress, timeframe);
+        if (geckoData.length > 0) {
+          console.log(`[API] GeckoTerminal fallback successful: ${geckoData.length} candles`);
+          // Merge with cached data
+          const mergedGeckoData = mergeOHLCData(cachedData, geckoData);
+          // Save to cache
+          saveCachedOHLCData(projectId, tokenAddress, timeframe, geckoData).catch(err => {
+            console.error('[API] Error saving GeckoTerminal data to cache (non-blocking):', err);
+          });
+          return mergedGeckoData;
+        }
+      } catch (geckoError) {
+        console.error('[API] GeckoTerminal fallback failed:', geckoError);
+      }
+    }
+
     // Step 3: Merge cached data with fresh data
     const mergedData = mergeOHLCData(cachedData, freshCandles);
     console.log(`[API] Merged ${cachedData.length} cached + ${freshCandles.length} fresh = ${mergedData.length} total candles`);
 
     // Step 4: Save new complete candles to cache (async, don't wait)
-    saveCachedOHLCData(projectId, tokenAddress, timeframe, freshCandles).catch(err => {
-      console.error('[API] Error saving to cache (non-blocking):', err);
-    });
+    if (freshCandles.length > 0) {
+      saveCachedOHLCData(projectId, tokenAddress, timeframe, freshCandles).catch(err => {
+        console.error('[API] Error saving to cache (non-blocking):', err);
+      });
+    }
 
     return mergedData;
   } catch (error) {
     console.error(`Error fetching Jupiter data:`, error);
 
-    // If API fails, return cached data as fallback
+    // If API fails, try GeckoTerminal before falling back to cache
+    if (poolAddress) {
+      try {
+        console.log(`[API] Jupiter failed, trying GeckoTerminal for ${poolAddress} ${timeframe}`);
+        const geckoData = await fetchPoolData(poolAddress, timeframe);
+        if (geckoData.length > 0) {
+          console.log(`[API] GeckoTerminal fallback successful: ${geckoData.length} candles`);
+          return geckoData;
+        }
+      } catch (geckoError) {
+        console.error('[API] GeckoTerminal fallback failed:', geckoError);
+      }
+    }
+
+    // If GeckoTerminal also fails, return cached data as final fallback
     try {
       const cachedData = await getCachedOHLCData(projectId, tokenAddress, timeframe);
       if (cachedData.length > 0) {
@@ -130,16 +181,23 @@ export async function fetchAllPoolsData(
     return [];
   }
 
-  // Get unique token addresses from pools
+  // Get unique token addresses from pools and find a pool address for each (use the last pool for each token)
   const uniqueTokens = Array.from(
     new Set(projectConfig.pools.map(p => p.tokenAddress))
   );
+
+  // Create a map of token addresses to pool addresses (use the most recent pool for each token)
+  const tokenToPoolMap = new Map<string, string>();
+  for (const pool of projectConfig.pools) {
+    tokenToPoolMap.set(pool.tokenAddress, pool.poolAddress);
+  }
 
   // Fetch data for all unique tokens in parallel
   const tokenDataMap = new Map<string, OHLCData[]>();
   await Promise.all(
     uniqueTokens.map(async (tokenAddress) => {
-      const data = await fetchJupiterData(projectConfig.id, tokenAddress, timeframe);
+      const poolAddress = tokenToPoolMap.get(tokenAddress);
+      const data = await fetchJupiterData(projectConfig.id, tokenAddress, timeframe, poolAddress);
       tokenDataMap.set(tokenAddress, data);
     })
   );
