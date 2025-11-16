@@ -81,7 +81,7 @@ export async function fetchJupiterData(
   timeframe: Timeframe = '1H',
   poolAddress?: string // Optional pool address for GeckoTerminal fallback
 ): Promise<OHLCData[]> {
-  const now = Math.floor(Date.now() / 1000); // Convert to seconds for Jupiter API
+  const now = Date.now(); // Jupiter API expects milliseconds
   const interval = TIMEFRAME_TO_JUPITER_INTERVAL[timeframe];
 
   try {
