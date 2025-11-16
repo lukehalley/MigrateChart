@@ -71,7 +71,6 @@ export async function fetchPoolData(
 
     return candles;
   } catch (error) {
-    console.error(`Error fetching data for pool ${poolAddress}:`, error);
     return [];
   }
 }
@@ -87,11 +86,9 @@ export async function fetchJupiterData(
 
   try {
     // Step 1: Try to get cached data first
-    console.log(`[API] Checking cache for ${tokenAddress} ${timeframe}`);
     const cachedData = await getCachedOHLCData(projectId, tokenAddress, timeframe);
 
     // Step 2: Fetch fresh data from Jupiter API
-    console.log(`[API] Fetching fresh data from Jupiter for ${tokenAddress} ${timeframe}`);
     const url = `${JUPITER_API}/${tokenAddress}?interval=${interval}&to=${now}&candles=3000&type=price&quote=usd`;
 
     const data = await rateLimiter.execute('jupiter', async () => {
@@ -110,50 +107,43 @@ export async function fetchJupiterData(
 
     // Step 2.5: If Jupiter returns empty candles and we have a poolAddress, fall back to GeckoTerminal
     if (freshCandles.length === 0 && poolAddress) {
-      console.log(`[API] Jupiter returned empty candles, falling back to GeckoTerminal for ${poolAddress} ${timeframe}`);
       try {
         const geckoData = await fetchPoolData(poolAddress, timeframe);
         if (geckoData.length > 0) {
-          console.log(`[API] GeckoTerminal fallback successful: ${geckoData.length} candles`);
           // Merge with cached data
           const mergedGeckoData = mergeOHLCData(cachedData, geckoData);
           // Save to cache
-          saveCachedOHLCData(projectId, tokenAddress, timeframe, geckoData).catch(err => {
-            console.error('[API] Error saving GeckoTerminal data to cache (non-blocking):', err);
+          saveCachedOHLCData(projectId, tokenAddress, timeframe, geckoData).catch(() => {
+            // Silently fail cache save
           });
           return mergedGeckoData;
         }
       } catch (geckoError) {
-        console.error('[API] GeckoTerminal fallback failed:', geckoError);
+        // Silently fail GeckoTerminal fallback, will use cache below
       }
     }
 
     // Step 3: Merge cached data with fresh data
     const mergedData = mergeOHLCData(cachedData, freshCandles);
-    console.log(`[API] Merged ${cachedData.length} cached + ${freshCandles.length} fresh = ${mergedData.length} total candles`);
 
     // Step 4: Save new complete candles to cache (async, don't wait)
     if (freshCandles.length > 0) {
-      saveCachedOHLCData(projectId, tokenAddress, timeframe, freshCandles).catch(err => {
-        console.error('[API] Error saving to cache (non-blocking):', err);
+      saveCachedOHLCData(projectId, tokenAddress, timeframe, freshCandles).catch(() => {
+        // Silently fail cache save
       });
     }
 
     return mergedData;
   } catch (error) {
-    console.error(`Error fetching Jupiter data:`, error);
-
     // If API fails, try GeckoTerminal before falling back to cache
     if (poolAddress) {
       try {
-        console.log(`[API] Jupiter failed, trying GeckoTerminal for ${poolAddress} ${timeframe}`);
         const geckoData = await fetchPoolData(poolAddress, timeframe);
         if (geckoData.length > 0) {
-          console.log(`[API] GeckoTerminal fallback successful: ${geckoData.length} candles`);
           return geckoData;
         }
       } catch (geckoError) {
-        console.error('[API] GeckoTerminal fallback failed:', geckoError);
+        // Silently fail GeckoTerminal fallback
       }
     }
 
@@ -161,11 +151,10 @@ export async function fetchJupiterData(
     try {
       const cachedData = await getCachedOHLCData(projectId, tokenAddress, timeframe);
       if (cachedData.length > 0) {
-        console.log(`[API] Using cached data as fallback (${cachedData.length} candles)`);
         return cachedData;
       }
     } catch (cacheError) {
-      console.error('[API] Cache fallback also failed:', cacheError);
+      // Silently fail cache fallback
     }
 
     return [];
@@ -177,7 +166,6 @@ export async function fetchAllPoolsData(
   timeframe: Timeframe = '1H'
 ): Promise<PoolData[]> {
   if (!projectConfig || !projectConfig.pools || projectConfig.pools.length === 0) {
-    console.error('[API] Invalid project config or no pools defined');
     return [];
   }
 
@@ -369,7 +357,6 @@ export async function fetchHolderCount(
     }
 
     // Step 2: Fetch fresh data from API
-    console.log(`[API] Fetching fresh holder count for ${tokenAddress}`);
     const data = await rateLimiter.execute('jupiter', async () => {
       const response = await fetch(`${JUPITER_HOLDERS_API}/${tokenAddress}`, {
         next: { revalidate: 300 }, // Cache for 5 minutes
@@ -390,13 +377,11 @@ export async function fetchHolderCount(
     // Step 3: Save to cache (async, don't wait)
     if (count !== undefined) {
       saveCachedHolderCount(projectId, tokenAddress, count).catch(err => {
-        console.error('[API] Error saving holder count to cache (non-blocking):', err);
       });
     }
 
     return count;
   } catch (error) {
-    console.error(`Error fetching holder count for token ${tokenAddress}:`, error);
     return undefined;
   }
 }
@@ -419,14 +404,12 @@ export async function fetchTokenStats(
     // If we have all cached stats, use them
     const allCached = cachedStatsArray.every(stat => stat !== null);
     if (allCached) {
-      console.log('[API] Using cached all-time stats');
       allTimeVolume = cachedStatsArray.reduce((sum, stat) => sum + (stat?.all_time_volume || 0), 0);
       allTimeFees = cachedStatsArray.reduce((sum, stat) => sum + (stat?.all_time_fees || 0), 0);
       allTimeHighPrice = Math.max(...cachedStatsArray.map(stat => stat?.all_time_high_price || 0));
       allTimeHighMarketCap = Math.max(...cachedStatsArray.map(stat => stat?.all_time_high_market_cap || 0));
     } else {
       // Fetch all-time data for all tokens to calculate totals
-      console.log('[API] Computing all-time stats from historical data');
       const tokenDataPromises = uniqueTokens.map(token => fetchJupiterData(projectConfig.id, token, 'MAX'));
       const tokenDataArray = await Promise.all(tokenDataPromises);
 
@@ -483,7 +466,6 @@ export async function fetchTokenStats(
           all_time_fees: stat.fees,
           all_time_high_price: stat.highPrice,
           all_time_high_market_cap: stat.highMarketCap,
-        }).catch(err => console.error(`[API] Error saving ${stat.token_address} stats (non-blocking):`, err));
       });
     }
 
@@ -529,7 +511,6 @@ export async function fetchTokenStats(
       twitter_url: pair.info?.socials?.find((s: any) => s.type === 'twitter')?.url,
       telegram_url: pair.info?.socials?.find((s: any) => s.type === 'telegram')?.url,
       website_url: pair.info?.websites?.[0]?.url,
-    }).catch(err => console.error('[API] Error saving metadata (non-blocking):', err));
 
     return {
       price: parseFloat(pair.priceUsd || '0'),
@@ -550,7 +531,6 @@ export async function fetchTokenStats(
       website: pair.info?.websites?.[0]?.url,
     };
   } catch (error) {
-    console.error(`Error fetching token stats for pool ${poolAddress}:`, error);
     return null;
   }
 }
@@ -563,20 +543,17 @@ export async function fetchWalletBalance(walletAddress: string): Promise<number>
     });
 
     if (!response.ok) {
-      console.error(`API error: ${response.status}`);
       return 0;
     }
 
     const data = await response.json();
 
     if (data.error) {
-      console.error('Error fetching wallet balance:', data.error);
       return 0;
     }
 
     return data.balance || 0;
   } catch (error) {
-    console.error('Error fetching wallet balance:', error);
     return 0;
   }
 }
@@ -589,20 +566,17 @@ export async function fetchTokenBalance(walletAddress: string, tokenMint: string
     });
 
     if (!response.ok) {
-      console.error(`API error: ${response.status}`);
       return 0;
     }
 
     const data = await response.json();
 
     if (data.error) {
-      console.error('Error fetching token balance:', data.error);
       return 0;
     }
 
     return data.balance || 0;
   } catch (error) {
-    console.error('Error fetching token balance:', error);
     return 0;
   }
 }

@@ -19,7 +19,6 @@ export interface CachedStats {
 
 export async function getCachedStats(projectId: string, tokenAddress: string): Promise<CachedStats | null> {
   if (!isSupabaseConfigured()) {
-    console.log('[Stats Cache] Supabase not configured, skipping cache');
     return null;
   }
 
@@ -35,24 +34,19 @@ export async function getCachedStats(projectId: string, tokenAddress: string): P
     if (error) {
       if (error.code === 'PGRST116') {
         // No rows found
-        console.log(`[Stats Cache] No cached stats found for ${tokenAddress}`);
         return null;
       }
-      console.error('[Stats Cache] Error fetching from cache:', error);
       return null;
     }
 
-    console.log(`[Stats Cache] Retrieved cached stats for ${tokenAddress}`);
     return data as CachedStats;
   } catch (error) {
-    console.error('[Stats Cache] Error accessing cache:', error);
     return null;
   }
 }
 
 export async function saveCachedStats(stats: Omit<CachedStats, 'updated_at'>): Promise<void> {
   if (!isSupabaseConfigured()) {
-    console.log('[Stats Cache] Supabase not configured, skipping cache save');
     return;
   }
 
@@ -67,13 +61,10 @@ export async function saveCachedStats(stats: Omit<CachedStats, 'updated_at'>): P
       });
 
     if (error) {
-      console.error('[Stats Cache] Error saving to cache:', error);
       return;
     }
 
-    console.log(`[Stats Cache] Saved stats for ${stats.token_address}`);
   } catch (error) {
-    console.error('[Stats Cache] Error saving to cache:', error);
   }
 }
 
@@ -88,7 +79,6 @@ export interface CachedHolderCount {
 
 export async function getCachedHolderCount(projectId: string, tokenAddress: string): Promise<number | null> {
   if (!isSupabaseConfigured()) {
-    console.log('[Holder Cache] Supabase not configured, skipping cache');
     return null;
   }
 
@@ -103,24 +93,19 @@ export async function getCachedHolderCount(projectId: string, tokenAddress: stri
 
     if (error) {
       if (error.code === 'PGRST116') {
-        console.log(`[Holder Cache] No cached holder count found for ${tokenAddress}`);
         return null;
       }
-      console.error('[Holder Cache] Error fetching from cache:', error);
       return null;
     }
 
-    console.log(`[Holder Cache] Retrieved cached holder count for ${tokenAddress}: ${data.holder_count}`);
     return data.holder_count;
   } catch (error) {
-    console.error('[Holder Cache] Error accessing cache:', error);
     return null;
   }
 }
 
 export async function saveCachedHolderCount(projectId: string, tokenAddress: string, holderCount: number): Promise<void> {
   if (!isSupabaseConfigured()) {
-    console.log('[Holder Cache] Supabase not configured, skipping cache save');
     return;
   }
 
@@ -137,13 +122,10 @@ export async function saveCachedHolderCount(projectId: string, tokenAddress: str
       });
 
     if (error) {
-      console.error('[Holder Cache] Error saving to cache:', error);
       return;
     }
 
-    console.log(`[Holder Cache] Saved holder count for ${tokenAddress}: ${holderCount}`);
   } catch (error) {
-    console.error('[Holder Cache] Error saving to cache:', error);
   }
 }
 
@@ -162,7 +144,6 @@ export interface CachedMetadata {
 
 export async function getCachedMetadata(projectId: string, tokenAddress: string): Promise<CachedMetadata | null> {
   if (!isSupabaseConfigured()) {
-    console.log('[Metadata Cache] Supabase not configured, skipping cache');
     return null;
   }
 
@@ -177,24 +158,19 @@ export async function getCachedMetadata(projectId: string, tokenAddress: string)
 
     if (error) {
       if (error.code === 'PGRST116') {
-        console.log(`[Metadata Cache] No cached metadata found for ${tokenAddress}`);
         return null;
       }
-      console.error('[Metadata Cache] Error fetching from cache:', error);
       return null;
     }
 
-    console.log(`[Metadata Cache] Retrieved cached metadata for ${tokenAddress}`);
     return data as CachedMetadata;
   } catch (error) {
-    console.error('[Metadata Cache] Error accessing cache:', error);
     return null;
   }
 }
 
 export async function saveCachedMetadata(metadata: Omit<CachedMetadata, 'updated_at'>): Promise<void> {
   if (!isSupabaseConfigured()) {
-    console.log('[Metadata Cache] Supabase not configured, skipping cache save');
     return;
   }
 
@@ -209,12 +185,9 @@ export async function saveCachedMetadata(metadata: Omit<CachedMetadata, 'updated
       });
 
     if (error) {
-      console.error('[Metadata Cache] Error saving to cache:', error);
       return;
     }
 
-    console.log(`[Metadata Cache] Saved metadata for ${metadata.token_address}`);
   } catch (error) {
-    console.error('[Metadata Cache] Error saving to cache:', error);
   }
 }

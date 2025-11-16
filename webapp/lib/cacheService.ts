@@ -54,7 +54,6 @@ export async function getCachedOHLCData(
   timeframe: Timeframe
 ): Promise<OHLCData[]> {
   if (!isSupabaseConfigured()) {
-    console.log('[Cache] Supabase not configured, skipping cache');
     return [];
   }
 
@@ -68,16 +67,12 @@ export async function getCachedOHLCData(
       .order('timestamp', { ascending: true });
 
     if (error) {
-      console.error('[Cache] Error fetching from cache:', error);
       return [];
     }
 
     if (!data || data.length === 0) {
-      console.log(`[Cache] No cached data found for ${tokenAddress} ${timeframe}`);
       return [];
     }
-
-    console.log(`[Cache] Retrieved ${data.length} candles from cache for ${tokenAddress} ${timeframe}`);
 
     // Transform to OHLCData format
     return data.map((row: CachedOHLCData) => ({
@@ -89,7 +84,6 @@ export async function getCachedOHLCData(
       volume: row.volume,
     }));
   } catch (error) {
-    console.error('[Cache] Error accessing cache:', error);
     return [];
   }
 }
@@ -105,7 +99,6 @@ export async function saveCachedOHLCData(
   data: OHLCData[]
 ): Promise<void> {
   if (!isSupabaseConfigured()) {
-    console.log('[Cache] Supabase not configured, skipping cache save');
     return;
   }
 
@@ -120,7 +113,6 @@ export async function saveCachedOHLCData(
     );
 
     if (completeCandles.length === 0) {
-      console.log(`[Cache] No complete candles to cache for ${tokenAddress} ${timeframe}`);
       return;
     }
 
@@ -138,21 +130,14 @@ export async function saveCachedOHLCData(
     }));
 
     // Upsert data (insert or update if exists)
-    const { error } = await supabase
+    await supabase
       .from('ohlc_cache')
       .upsert(cacheData, {
         onConflict: 'project_id,token_address,timeframe,timestamp',
         ignoreDuplicates: false,
       });
-
-    if (error) {
-      console.error('[Cache] Error saving to cache:', error);
-      return;
-    }
-
-    console.log(`[Cache] Saved ${cacheData.length} candles to cache for ${tokenAddress} ${timeframe}`);
   } catch (error) {
-    console.error('[Cache] Error saving to cache:', error);
+    // Silently fail
   }
 }
 
