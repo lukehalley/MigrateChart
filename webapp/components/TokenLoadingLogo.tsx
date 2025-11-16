@@ -31,7 +31,7 @@ export function TokenLoadingLogo({ svg, color }: TokenLoadingLogoProps) {
             filter: `drop-shadow(0 0 12px ${color}66)`,
             color,
           }}
-          initial={{ opacity: 0.3, scale: 0.9 }}
+          // Removed initial prop to prevent animation reset on remount
           animate={{
             opacity: [0.3, 0.7, 1, 0.7],
             scale: [0.9, 1, 1, 1],

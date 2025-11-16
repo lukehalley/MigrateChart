@@ -1,6 +1,6 @@
 'use client';
 
-import React, { Suspense, useState, useEffect } from 'react';
+import React, { Suspense, useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -263,33 +263,73 @@ function HomeContent() {
   // Stable loading state to prevent flash during transitions
   const [showLoader, setShowLoader] = useState(true); // Start with true to prevent flash
   const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false);
+  const loaderStartTimeRef = useRef<number | null>(null);
+  const MINIMUM_LOADER_DURATION = 800; // Minimum time to show loader (ms)
 
   useEffect(() => {
     // On initial load, keep loader visible until we have ALL data: project, pools, and stats
     if (!hasInitiallyLoaded) {
       if (currentProject && poolsData && tokenStats && !isLoading && !projectLoading && !isStatsLoading) {
-        // All data is ready, mark as initially loaded and hide loader
-        setHasInitiallyLoaded(true);
-        setShowLoader(false);
-      } else {
-        // Still loading initial data, keep loader visible
+        // Record when we're ready to hide the loader
+        const hideLoader = () => {
+          setHasInitiallyLoaded(true);
+          setShowLoader(false);
+          loaderStartTimeRef.current = null;
+        };
+
+        // If we haven't tracked start time yet, or if minimum duration has passed, hide immediately
+        if (!loaderStartTimeRef.current) {
+          loaderStartTimeRef.current = Date.now();
+          hideLoader();
+        } else {
+          const elapsed = Date.now() - loaderStartTimeRef.current;
+          const remaining = MINIMUM_LOADER_DURATION - elapsed;
+
+          if (remaining > 0) {
+            // Wait for remaining time to ensure smooth animation
+            const timer = setTimeout(hideLoader, remaining);
+            return () => clearTimeout(timer);
+          } else {
+            hideLoader();
+          }
+        }
+      } else if (!loaderStartTimeRef.current) {
+        // Start tracking loader display time
+        loaderStartTimeRef.current = Date.now();
         setShowLoader(true);
       }
     } else {
       // After initial load, use normal loading flags for subsequent updates
       const shouldShowLoader = isLoading || projectLoading;
 
-      if (shouldShowLoader) {
+      if (shouldShowLoader && !showLoader) {
+        // Starting to show loader - record start time
+        loaderStartTimeRef.current = Date.now();
         setShowLoader(true);
-      } else {
-        // Delay hiding loader slightly to ensure smooth transition
-        const timer = setTimeout(() => {
+      } else if (!shouldShowLoader && showLoader) {
+        // Data is ready, but ensure minimum display time
+        const hideLoader = () => {
           setShowLoader(false);
-        }, 100);
-        return () => clearTimeout(timer);
+          loaderStartTimeRef.current = null;
+        };
+
+        if (loaderStartTimeRef.current) {
+          const elapsed = Date.now() - loaderStartTimeRef.current;
+          const remaining = MINIMUM_LOADER_DURATION - elapsed;
+
+          if (remaining > 0) {
+            // Wait for remaining time to ensure smooth animation cycle completion
+            const timer = setTimeout(hideLoader, remaining);
+            return () => clearTimeout(timer);
+          } else {
+            hideLoader();
+          }
+        } else {
+          hideLoader();
+        }
       }
     }
-  }, [isLoading, projectLoading, isStatsLoading, hasInitiallyLoaded, currentProject, poolsData, tokenStats]);
+  }, [isLoading, projectLoading, isStatsLoading, hasInitiallyLoaded, currentProject, poolsData, tokenStats, showLoader]);
 
   // Auto-scale goals when met
   useEffect(() => {
