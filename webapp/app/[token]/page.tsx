@@ -261,29 +261,35 @@ function HomeContent() {
   );
 
   // Stable loading state to prevent flash during transitions
-  const [showLoader, setShowLoader] = useState(false);
+  const [showLoader, setShowLoader] = useState(true); // Start with true to prevent flash
   const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false);
 
   useEffect(() => {
-    const shouldShowLoader = isLoading || projectLoading;
-
-    if (shouldShowLoader) {
-      // Immediately show loader
-      setShowLoader(true);
-    } else {
-      // Mark that we've loaded at least once
-      if (!hasInitiallyLoaded) {
+    // On initial load, keep loader visible until we have ALL data: project, pools, and stats
+    if (!hasInitiallyLoaded) {
+      if (currentProject && poolsData && tokenStats && !isLoading && !projectLoading && !isStatsLoading) {
+        // All data is ready, mark as initially loaded and hide loader
         setHasInitiallyLoaded(true);
         setShowLoader(false);
       } else {
-        // Delay hiding loader slightly to ensure smooth transition on subsequent loads
+        // Still loading initial data, keep loader visible
+        setShowLoader(true);
+      }
+    } else {
+      // After initial load, use normal loading flags for subsequent updates
+      const shouldShowLoader = isLoading || projectLoading;
+
+      if (shouldShowLoader) {
+        setShowLoader(true);
+      } else {
+        // Delay hiding loader slightly to ensure smooth transition
         const timer = setTimeout(() => {
           setShowLoader(false);
         }, 100);
         return () => clearTimeout(timer);
       }
     }
-  }, [isLoading, projectLoading, hasInitiallyLoaded]);
+  }, [isLoading, projectLoading, isStatsLoading, hasInitiallyLoaded, currentProject, poolsData, tokenStats]);
 
   // Auto-scale goals when met
   useEffect(() => {
@@ -1008,7 +1014,7 @@ function HomeContent() {
               </motion.div>
             )}
 
-            {!showLoader && !error && poolsData && (
+            {!showLoader && !error && poolsData && tokenStats && (
               <motion.div
                 key="chart"
                 initial={{ opacity: 0 }}
@@ -1065,7 +1071,7 @@ function HomeContent() {
               </motion.div>
             )}
 
-            {!showLoader && !error && poolsData && (
+            {!showLoader && !error && poolsData && tokenStats && (
               <motion.div
                 key="chart"
                 initial={{ opacity: 0 }}

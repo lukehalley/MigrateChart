@@ -466,6 +466,7 @@ export async function fetchTokenStats(
           all_time_fees: stat.fees,
           all_time_high_price: stat.highPrice,
           all_time_high_market_cap: stat.highMarketCap,
+        });
       });
     }
 
@@ -511,6 +512,7 @@ export async function fetchTokenStats(
       twitter_url: pair.info?.socials?.find((s: any) => s.type === 'twitter')?.url,
       telegram_url: pair.info?.socials?.find((s: any) => s.type === 'telegram')?.url,
       website_url: pair.info?.websites?.[0]?.url,
+    });
 
     return {
       price: parseFloat(pair.priceUsd || '0'),
