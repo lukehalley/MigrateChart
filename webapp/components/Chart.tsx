@@ -9,6 +9,7 @@ import { DrawingToolsPrimitive, DrawingStateManager, DrawingType } from '@/lib/d
 import { motion, AnimatePresence } from 'motion/react';
 import { SafeStorage } from '@/lib/localStorage';
 import { formatMarketCap } from '@/lib/utils';
+import { polyfillCanvasRoundRect } from '@/lib/canvasPolyfills';
 import {
   calculateSMA,
   calculateEMA,
@@ -208,6 +209,9 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
   useEffect(() => {
     if (!chartContainerRef.current || poolsData.length === 0) return;
+
+    // Apply canvas polyfills for older browsers
+    polyfillCanvasRoundRect();
 
     setIsLoading(false);
 
