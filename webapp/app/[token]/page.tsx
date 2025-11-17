@@ -36,7 +36,7 @@ function HomeContent() {
 
   const initialTimeframe = urlChartTimeframe && validTimeframes.includes(urlChartTimeframe) ? urlChartTimeframe : '1D';
   const initialViewMode = urlView && ['chart', 'fees'].includes(urlView) ? urlView : 'chart';
-  const initialFeesTimeframe = urlFeesTimeframe && validFeesTimeframes.includes(urlFeesTimeframe) ? urlFeesTimeframe : '30D';
+  const initialFeesTimeframe = urlFeesTimeframe && validFeesTimeframes.includes(urlFeesTimeframe) ? urlFeesTimeframe : 'ALL';
 
   const [timeframe, setTimeframeState] = useState<Timeframe>(initialTimeframe);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
