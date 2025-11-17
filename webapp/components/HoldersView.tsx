@@ -57,11 +57,16 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
   const chartData = useMemo(() => {
     if (!holdersData?.snapshots || holdersData.snapshots.length === 0) return [];
 
-    return holdersData.snapshots.map((snapshot) => ({
-      date: new Date(snapshot.timestamp * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      timestamp: snapshot.timestamp,
-      holders: snapshot.holder_count,
-    }));
+    return holdersData.snapshots.map((snapshot) => {
+      const date = new Date(snapshot.timestamp * 1000);
+      return {
+        date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        time: date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
+        dateTime: `${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} ${date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}`,
+        timestamp: snapshot.timestamp,
+        holders: snapshot.holder_count,
+      };
+    });
   }, [holdersData]);
 
   // Calculate change data for the second chart
@@ -154,7 +159,7 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-white/10" />
                   <XAxis
-                    dataKey="date"
+                    dataKey="dateTime"
                     tickLine={false}
                     axisLine={false}
                     tickMargin={8}
@@ -169,7 +174,7 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
                     content={
                       <ChartTooltipContent
                         className="bg-neutral-900 border-neutral-800"
-                        labelFormatter={(value) => `Date: ${value}`}
+                        labelFormatter={(value) => value}
                         formatter={(value) => formatNumber(Number(value))}
                       />
                     }
@@ -202,7 +207,7 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
                 <LineChart data={changeData}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-white/10" />
                   <XAxis
-                    dataKey="date"
+                    dataKey="dateTime"
                     tickLine={false}
                     axisLine={false}
                     tickMargin={8}
@@ -221,7 +226,7 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
                     content={
                       <ChartTooltipContent
                         className="bg-neutral-900 border-neutral-800"
-                        labelFormatter={(value) => `Date: ${value}`}
+                        labelFormatter={(value) => value}
                         formatter={(value) => {
                           const num = Number(value);
                           return num >= 0 ? `+${formatNumber(num)}` : formatNumber(num);
