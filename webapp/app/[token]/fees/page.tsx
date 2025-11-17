@@ -80,15 +80,18 @@ function FeesPageContent() {
     return `$${num.toFixed(2)}`;
   };
 
-  if (projectLoading) {
+  if (projectLoading || !currentProject) {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-black">
-        <TokenLoadingLogo project={currentProject || undefined} />
+        <TokenLoadingLogo
+          svg={currentProject?.loaderSvg || ''}
+          color={currentProject?.primaryColor || '#52C97D'}
+        />
       </div>
     );
   }
 
-  if (projectError || !currentProject) {
+  if (projectError) {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-black text-white">
         <p>Error loading project</p>
