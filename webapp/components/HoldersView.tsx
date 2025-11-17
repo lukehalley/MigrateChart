@@ -97,7 +97,7 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
   const currentHolders = holdersData.currentHolderCount || 0;
 
   return (
-    <div className="w-full h-full relative flex items-center justify-center bg-gradient-to-b from-black via-[#0A1F12] to-black p-8">
+    <div className="w-full h-full relative flex flex-col overflow-hidden">
       {/* Mobile: Settings Button */}
       {onOpenMobileMenu && (
         <div className="md:hidden absolute top-3 left-3 z-30">
@@ -115,49 +115,53 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
         </div>
       )}
 
-      <div className="max-w-2xl w-full">
-        {/* Main Holder Count */}
-        <div className="text-center mb-12">
-          <div className="flex items-center justify-center gap-4 mb-4">
-            <Users className="h-12 w-12 md:h-16 md:w-16" style={{ color: primaryColor }} />
-            <div>
-              <p className="text-white/60 text-sm md:text-base mb-2">Current Holders</p>
-              <p className="text-white text-5xl md:text-7xl font-bold" style={{ color: primaryColor }}>
-                {formatNumber(currentHolders)}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Daily Change */}
-        {dailyChange && (
-          <div className="bg-black/40 backdrop-blur-sm border-2 rounded-2xl p-8 mb-8"
+      {/* Charts Grid - Scrollable on mobile */}
+      <div className="flex-1 overflow-y-auto md:overflow-hidden p-4 md:p-6 md:min-h-0">
+        <div className="grid gap-4 grid-cols-1 lg:grid-cols-2 pt-16 md:pt-0 h-auto md:h-full">
+          {/* Current Holder Count Card */}
+          <div className="bg-black/40 backdrop-blur-sm border-2 rounded-2xl p-8 md:p-12 flex flex-col items-center justify-center min-h-[300px] md:min-h-0"
                style={{ borderColor: `${primaryColor}40` }}>
-            <div className="text-center">
-              <p className="text-white/60 text-sm md:text-base mb-3">24 Hour Change</p>
-              <div className="flex items-center justify-center gap-3">
-                {dailyChange.change >= 0 ? (
-                  <TrendingUp className="h-8 w-8 text-green-500" />
-                ) : (
-                  <TrendingDown className="h-8 w-8 text-red-500" />
-                )}
-                <div>
-                  <p className={`text-3xl md:text-4xl font-bold ${dailyChange.change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                    {dailyChange.change >= 0 ? '+' : ''}{formatNumber(Math.abs(dailyChange.change))}
-                  </p>
-                  <p className={`text-lg md:text-xl font-semibold ${dailyChange.percentChange >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                    {dailyChange.percentChange >= 0 ? '+' : ''}{dailyChange.percentChange.toFixed(2)}%
-                  </p>
-                </div>
-              </div>
-            </div>
+            <Users className="h-16 w-16 md:h-20 md:w-20 mb-6" style={{ color: primaryColor }} />
+            <p className="text-white/60 text-base md:text-lg mb-4">Current Holders</p>
+            <p className="text-white text-6xl md:text-8xl font-bold mb-2" style={{ color: primaryColor }}>
+              {formatNumber(currentHolders)}
+            </p>
+            <p className="text-white/40 text-xs md:text-sm mt-4 flex items-center gap-2">
+              <Clock className="h-3 w-3" />
+              Updates every hour
+            </p>
           </div>
-        )}
 
-        {/* Update Info */}
-        <div className="flex items-center justify-center gap-2 text-white/40 text-xs md:text-sm">
-          <Clock className="h-4 w-4" />
-          <p>Data updates every hour</p>
+          {/* Daily Change Card */}
+          <div className="bg-black/40 backdrop-blur-sm border-2 rounded-2xl p-8 md:p-12 flex flex-col items-center justify-center min-h-[300px] md:min-h-0"
+               style={{ borderColor: `${primaryColor}40` }}>
+            {dailyChange ? (
+              <>
+                {dailyChange.change >= 0 ? (
+                  <TrendingUp className="h-16 w-16 md:h-20 md:w-20 mb-6 text-green-500" />
+                ) : (
+                  <TrendingDown className="h-16 w-16 md:h-20 md:w-20 mb-6 text-red-500" />
+                )}
+                <p className="text-white/60 text-base md:text-lg mb-4">24 Hour Change</p>
+                <p className={`text-5xl md:text-7xl font-bold mb-2 ${dailyChange.change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                  {dailyChange.change >= 0 ? '+' : ''}{formatNumber(Math.abs(dailyChange.change))}
+                </p>
+                <p className={`text-3xl md:text-4xl font-semibold ${dailyChange.percentChange >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                  {dailyChange.percentChange >= 0 ? '+' : ''}{dailyChange.percentChange.toFixed(2)}%
+                </p>
+              </>
+            ) : (
+              <>
+                <Clock className="h-16 w-16 md:h-20 md:w-20 mb-6 opacity-30" style={{ color: primaryColor }} />
+                <p className="text-white/60 text-base md:text-lg mb-4">24 Hour Change</p>
+                <p className="text-white/40 text-xl md:text-2xl text-center">
+                  Collecting data...
+                  <br />
+                  <span className="text-sm">Check back in 24 hours</span>
+                </p>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>
