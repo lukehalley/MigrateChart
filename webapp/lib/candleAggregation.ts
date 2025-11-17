@@ -14,17 +14,18 @@ const AGGREGATION_CONFIGS: Record<string, AggregationConfig> = {
   '4H': { intervalSeconds: 14400, candleCount: 4 },
   '8H': { intervalSeconds: 28800, candleCount: 8 },
   '1D': { intervalSeconds: 86400, candleCount: 24 },
+  'MAX': { intervalSeconds: 86400, candleCount: 24 }, // MAX uses same aggregation as 1D
 };
 
 /**
  * Aggregate 1H candles into a higher timeframe
  * @param hourlyCandles - Array of 1H OHLC candles (must be sorted by time ascending)
- * @param targetTimeframe - Target timeframe to aggregate to (4H, 8H, 1D)
+ * @param targetTimeframe - Target timeframe to aggregate to (4H, 8H, 1D, MAX)
  * @returns Aggregated candles for the target timeframe
  */
 export function aggregateCandles(
   hourlyCandles: OHLCData[],
-  targetTimeframe: '4H' | '8H' | '1D'
+  targetTimeframe: '4H' | '8H' | '1D' | 'MAX'
 ): OHLCData[] {
   if (hourlyCandles.length === 0) {
     return [];
@@ -82,7 +83,7 @@ export function aggregateCandles(
  * Check if a timeframe can be aggregated from 1H data
  */
 export function canAggregateFromHourly(timeframe: Timeframe): boolean {
-  return timeframe === '4H' || timeframe === '8H' || timeframe === '1D';
+  return timeframe === '4H' || timeframe === '8H' || timeframe === '1D' || timeframe === 'MAX';
 }
 
 /**

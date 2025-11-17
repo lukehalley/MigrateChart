@@ -94,7 +94,7 @@ export async function fetchJupiterData(
 
       if (hourlyData.length > 0) {
         // Aggregate 1H candles into the target timeframe
-        const aggregated = aggregateCandles(hourlyData, timeframe as '4H' | '8H' | '1D');
+        const aggregated = aggregateCandles(hourlyData, timeframe as '4H' | '8H' | '1D' | 'MAX');
 
         // Save aggregated data to cache (async, don't wait)
         if (aggregated.length > 0) {
