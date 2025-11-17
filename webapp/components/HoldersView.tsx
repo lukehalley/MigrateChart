@@ -7,6 +7,7 @@ import { Area, AreaChart, Line, LineChart, CartesianGrid, XAxis, YAxis } from 'r
 import { HoldersResponse } from '@/app/api/holders/[slug]/route';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from '@/components/ui/chart';
+import { HoldersChartSkeleton } from '@/components/HoldersChartSkeleton';
 
 type HolderTimeframe = '7D' | '30D' | '90D' | 'ALL';
 
@@ -89,30 +90,7 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
   );
 
   if (holdersLoading || !holdersData) {
-    return (
-      <div className="w-full h-full relative flex items-center justify-center bg-gradient-to-b from-black via-[#0A1F12] to-black">
-        {onOpenMobileMenu && (
-          <div className="md:hidden absolute top-3 left-3 z-30">
-            <button
-              onClick={onOpenMobileMenu}
-              className="w-11 h-11 rounded-full flex items-center justify-center bg-[#0A1F12]/90 hover:bg-[#0A1F12] border-2 shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)] hover:shadow-[0_0_16px_rgba(var(--primary-rgb),0.5)] transition-all backdrop-blur-sm"
-              style={{ borderColor: primaryColor }}
-              aria-label="Open settings"
-            >
-              <svg className="w-5 h-5" style={{ color: primaryColor }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </button>
-          </div>
-        )}
-
-        <div className="animate-pulse text-center">
-          <Users className="h-16 w-16 mx-auto mb-4 opacity-50" style={{ color: primaryColor }} />
-          <p className="text-white/60">Loading holder data...</p>
-        </div>
-      </div>
-    );
+    return <HoldersChartSkeleton />;
   }
 
   return (

@@ -2,16 +2,17 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export function FeesChartSkeleton() {
   return (
-    <div className="w-full h-full p-4 md:p-6 relative flex flex-col">
-      {/* Charts Grid */}
-      <div className="flex-1 grid gap-4 grid-cols-1 lg:grid-cols-2 min-h-0">
+    <div className="w-full h-full relative flex flex-col overflow-hidden">
+      {/* Charts Grid - Scrollable on mobile to match actual content */}
+      <div className="flex-1 overflow-y-auto md:overflow-hidden p-4 md:p-6 md:min-h-0">
+        <div className="grid gap-4 grid-cols-1 lg:grid-cols-2 pt-16 md:pt-0 h-auto md:h-full md:grid-rows-2">
         {/* Bar Chart Skeleton */}
-        <div className="bg-neutral-900 border border-neutral-800 rounded-lg p-6 flex flex-col">
+        <div className="bg-neutral-900 border border-neutral-800 rounded-lg p-6 flex flex-col md:min-h-0">
           <div className="mb-4">
             <Skeleton className="h-6 w-48 bg-neutral-700 mb-2" />
             <Skeleton className="h-4 w-64 bg-neutral-700" />
           </div>
-          <div className="flex-1 flex items-end gap-2 px-4 min-h-0">
+          <div className="flex-1 flex items-end gap-2 px-4 pb-0 md:min-h-0 h-[250px] md:h-full">
             {Array.from({ length: 20 }).map((_, i) => (
               <Skeleton
                 key={i}
@@ -26,12 +27,12 @@ export function FeesChartSkeleton() {
         </div>
 
         {/* Area Chart Skeleton */}
-        <div className="bg-neutral-900 border border-neutral-800 rounded-lg p-6 flex flex-col">
+        <div className="bg-neutral-900 border border-neutral-800 rounded-lg p-6 flex flex-col md:min-h-0">
           <div className="mb-4">
             <Skeleton className="h-6 w-48 bg-neutral-700 mb-2" />
             <Skeleton className="h-4 w-64 bg-neutral-700" />
           </div>
-          <div className="flex-1 min-h-0">
+          <div className="flex-1 pb-0 md:min-h-0 h-[250px] md:h-full">
             <div className="relative w-full h-full">
               <svg className="w-full h-full" viewBox="0 0 400 300" preserveAspectRatio="none">
                 <defs>
@@ -51,12 +52,12 @@ export function FeesChartSkeleton() {
         </div>
 
         {/* Line Chart Skeleton 1 */}
-        <div className="bg-neutral-900 border border-neutral-800 rounded-lg p-6 flex flex-col">
+        <div className="bg-neutral-900 border border-neutral-800 rounded-lg p-6 flex flex-col md:min-h-0">
           <div className="mb-4">
             <Skeleton className="h-6 w-48 bg-neutral-700 mb-2" />
             <Skeleton className="h-4 w-64 bg-neutral-700" />
           </div>
-          <div className="flex-1 min-h-0">
+          <div className="flex-1 pb-0 md:min-h-0 h-[250px] md:h-full">
             <div className="relative w-full h-full">
               <svg className="w-full h-full" viewBox="0 0 400 250" preserveAspectRatio="none">
                 <path
@@ -72,12 +73,12 @@ export function FeesChartSkeleton() {
         </div>
 
         {/* Line Chart Skeleton 2 */}
-        <div className="bg-neutral-900 border border-neutral-800 rounded-lg p-6 flex flex-col">
+        <div className="bg-neutral-900 border border-neutral-800 rounded-lg p-6 flex flex-col md:min-h-0">
           <div className="mb-4">
             <Skeleton className="h-6 w-48 bg-neutral-700 mb-2" />
             <Skeleton className="h-4 w-64 bg-neutral-700" />
           </div>
-          <div className="flex-1 min-h-0">
+          <div className="flex-1 pb-0 md:min-h-0 h-[250px] md:h-full">
             <div className="relative w-full h-full">
               <svg className="w-full h-full" viewBox="0 0 400 250" preserveAspectRatio="none">
                 <path
@@ -91,6 +92,7 @@ export function FeesChartSkeleton() {
               </svg>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </div>
