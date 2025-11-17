@@ -24,18 +24,31 @@ export async function GET(request: NextRequest) {
 
     // Fetch all projects from the projects API
     const baseUrl = request.url.split('/api')[0];
-    const projectsResponse = await fetch(`${baseUrl}/api/projects`, {
+    const projectsListResponse = await fetch(`${baseUrl}/api/projects`, {
       next: { revalidate: 0 }, // Don't cache for cron job
     });
 
-    if (!projectsResponse.ok) {
+    if (!projectsListResponse.ok) {
       return NextResponse.json(
-        { error: 'Failed to fetch projects' },
+        { error: 'Failed to fetch projects list' },
         { status: 500 }
       );
     }
 
-    const projects: ProjectConfig[] = await projectsResponse.json();
+    const projectsList: Array<{ slug: string }> = await projectsListResponse.json();
+
+    // Fetch full details for each project
+    const projects: ProjectConfig[] = [];
+    for (const { slug } of projectsList) {
+      const projectResponse = await fetch(`${baseUrl}/api/projects/${slug}`, {
+        next: { revalidate: 0 },
+      });
+
+      if (projectResponse.ok) {
+        const project = await projectResponse.json();
+        projects.push(project);
+      }
+    }
     const results: Array<{
       projectId: string;
       tokenAddress: string;
