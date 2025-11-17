@@ -131,7 +131,7 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
 
       {/* Charts Grid - Scrollable on mobile */}
       <div className="flex-1 overflow-y-auto md:overflow-hidden p-4 md:p-6 md:min-h-0">
-        <div className="grid gap-4 grid-cols-1 lg:grid-cols-2 pt-16 md:pt-0 h-auto md:h-full">
+        <div className="grid gap-4 grid-cols-1 pt-16 md:pt-0 h-auto md:h-full md:grid-rows-2">
           {/* Holder Count Growth Area Chart */}
           <Card className="bg-neutral-900 border border-neutral-800 flex flex-col md:min-h-0">
             <CardHeader>
