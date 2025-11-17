@@ -87,7 +87,6 @@ export default function FeesChart({ dailyFees, primaryColor }: FeesChartProps) {
       },
       timeScale: {
         borderColor: 'rgba(255, 255, 255, 0.1)',
-        textColor: 'rgba(255, 255, 255, 0.7)',
         timeVisible: true,
         secondsVisible: false,
         borderVisible: true,
