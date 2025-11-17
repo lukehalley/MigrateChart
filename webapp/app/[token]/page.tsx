@@ -8,6 +8,7 @@ import { Heart, Copy, Check } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import Chart from '@/components/Chart';
 import { FeesView } from '@/components/FeesView';
+import { HoldersView } from '@/components/HoldersView';
 import TimeframeToggle from '@/components/TimeframeToggle';
 import FeesTimeframeToggle from '@/components/FeesTimeframeToggle';
 import ChartControls from '@/components/ChartControls';
@@ -28,23 +29,27 @@ function HomeContent() {
 
   // Get parameters from URL or use defaults
   const urlChartTimeframe = searchParams.get('chartTimeframe') as Timeframe | null;
-  const urlView = searchParams.get('view') as 'chart' | 'fees' | null;
+  const urlView = searchParams.get('view') as 'chart' | 'fees' | 'holders' | null;
   const urlFeesTimeframe = searchParams.get('feesTimeframe') as '7D' | '30D' | '90D' | 'ALL' | null;
+  const urlHoldersTimeframe = searchParams.get('holdersTimeframe') as '7D' | '30D' | '90D' | 'ALL' | null;
 
   const validTimeframes: Timeframe[] = ['1H', '4H', '8H', '1D', 'MAX'];
   const validFeesTimeframes = ['7D', '30D', '90D', 'ALL'];
+  const validHoldersTimeframes = ['7D', '30D', '90D', 'ALL'];
 
   const initialTimeframe = urlChartTimeframe && validTimeframes.includes(urlChartTimeframe) ? urlChartTimeframe : '1D';
-  const initialViewMode = urlView && ['chart', 'fees'].includes(urlView) ? urlView : 'chart';
+  const initialViewMode = urlView && ['chart', 'fees', 'holders'].includes(urlView) ? urlView : 'chart';
   const initialFeesTimeframe = urlFeesTimeframe && validFeesTimeframes.includes(urlFeesTimeframe) ? urlFeesTimeframe : 'ALL';
+  const initialHoldersTimeframe = urlHoldersTimeframe && validHoldersTimeframes.includes(urlHoldersTimeframe) ? urlHoldersTimeframe : '30D';
 
   const [timeframe, setTimeframeState] = useState<Timeframe>(initialTimeframe);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [isMenuClosing, setIsMenuClosing] = useState(false);
   const [showCopied, setShowCopied] = useState(false);
   const [mobileMenuTab, setMobileMenuTab] = useState<'settings' | 'about'>('settings');
-  const [viewMode, setViewModeState] = useState<'chart' | 'fees'>(initialViewMode);
+  const [viewMode, setViewModeState] = useState<'chart' | 'fees' | 'holders'>(initialViewMode);
   const [feesTimeframe, setFeesTimeframeState] = useState<'7D' | '30D' | '90D' | 'ALL'>(initialFeesTimeframe);
+  const [holdersTimeframe, setHoldersTimeframeState] = useState<'7D' | '30D' | '90D' | 'ALL'>(initialHoldersTimeframe);
 
   // Reset chart position function
   const handleResetChartPosition = () => {
@@ -97,17 +102,21 @@ function HomeContent() {
   // Sync state with URL params when they change
   useEffect(() => {
     const urlChartTimeframe = searchParams.get('chartTimeframe') as Timeframe | null;
-    const urlView = searchParams.get('view') as 'chart' | 'fees' | null;
+    const urlView = searchParams.get('view') as 'chart' | 'fees' | 'holders' | null;
     const urlFeesTimeframe = searchParams.get('feesTimeframe') as '7D' | '30D' | '90D' | 'ALL' | null;
+    const urlHoldersTimeframe = searchParams.get('holdersTimeframe') as '7D' | '30D' | '90D' | 'ALL' | null;
 
     if (urlChartTimeframe && validTimeframes.includes(urlChartTimeframe)) {
       setTimeframeState(urlChartTimeframe);
     }
-    if (urlView && ['chart', 'fees'].includes(urlView)) {
+    if (urlView && ['chart', 'fees', 'holders'].includes(urlView)) {
       setViewModeState(urlView);
     }
     if (urlFeesTimeframe && validFeesTimeframes.includes(urlFeesTimeframe)) {
       setFeesTimeframeState(urlFeesTimeframe);
+    }
+    if (urlHoldersTimeframe && validHoldersTimeframes.includes(urlHoldersTimeframe)) {
+      setHoldersTimeframeState(urlHoldersTimeframe);
     }
   }, [searchParams]);
 
@@ -189,18 +198,24 @@ function HomeContent() {
   };
 
   // Update URL when view mode changes
-  const setViewMode = (newViewMode: 'chart' | 'fees') => {
+  const setViewMode = (newViewMode: 'chart' | 'fees' | 'holders') => {
     setViewModeState(newViewMode);
     const params = new URLSearchParams(searchParams.toString());
     params.set('view', newViewMode);
 
-    // Remove chartTimeframe when in fees view, add it back when in chart view
+    // Remove chartTimeframe when not in chart view
     if (newViewMode === 'fees') {
       params.delete('chartTimeframe');
+      params.delete('holdersTimeframe');
       params.set('feesTimeframe', feesTimeframe);
+    } else if (newViewMode === 'holders') {
+      params.delete('chartTimeframe');
+      params.delete('feesTimeframe');
+      params.set('holdersTimeframe', holdersTimeframe);
     } else if (newViewMode === 'chart') {
       params.set('chartTimeframe', timeframe);
       params.delete('feesTimeframe');
+      params.delete('holdersTimeframe');
     }
 
     const tokenSlug = currentProject?.slug || 'zera';
@@ -212,6 +227,15 @@ function HomeContent() {
     setFeesTimeframeState(newFeesTimeframe);
     const params = new URLSearchParams(searchParams.toString());
     params.set('feesTimeframe', newFeesTimeframe);
+    const tokenSlug = currentProject?.slug || 'zera';
+    router.push(`/${tokenSlug}?${params.toString()}`, { scroll: false });
+  };
+
+  // Update URL when holders timeframe changes
+  const setHoldersTimeframe = (newHoldersTimeframe: '7D' | '30D' | '90D' | 'ALL') => {
+    setHoldersTimeframeState(newHoldersTimeframe);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('holdersTimeframe', newHoldersTimeframe);
     const tokenSlug = currentProject?.slug || 'zera';
     router.push(`/${tokenSlug}?${params.toString()}`, { scroll: false });
   };
@@ -950,7 +974,7 @@ function HomeContent() {
                         setViewMode('chart');
                         closeMobileMenu();
                       }}
-                      className={`relative flex-1 py-2 px-3 rounded-md text-xs font-bold flex items-center justify-center gap-1.5 z-10 transition-colors duration-200 ${
+                      className={`relative flex-1 py-2 px-2 rounded-md text-xs font-bold flex items-center justify-center gap-1 z-10 transition-colors duration-200 ${
                         viewMode === 'chart'
                           ? 'text-black'
                           : 'text-white/70 hover:text-white'
@@ -963,7 +987,7 @@ function HomeContent() {
                           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                         />
                       )}
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10">
                         <path d="M3 3v18h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                         <path d="M18 9l-5 5-4-4-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
@@ -974,7 +998,7 @@ function HomeContent() {
                         setViewMode('fees');
                         closeMobileMenu();
                       }}
-                      className={`relative flex-1 py-2 px-3 rounded-md text-xs font-bold flex items-center justify-center gap-1.5 z-10 transition-colors duration-200 ${
+                      className={`relative flex-1 py-2 px-2 rounded-md text-xs font-bold flex items-center justify-center gap-1 z-10 transition-colors duration-200 ${
                         viewMode === 'fees'
                           ? 'text-black'
                           : 'text-white/70 hover:text-white'
@@ -987,10 +1011,35 @@ function HomeContent() {
                           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                         />
                       )}
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10">
                         <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
                       <span className="relative z-10">Fees</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setViewMode('holders');
+                        closeMobileMenu();
+                      }}
+                      className={`relative flex-1 py-2 px-2 rounded-md text-xs font-bold flex items-center justify-center gap-1 z-10 transition-colors duration-200 ${
+                        viewMode === 'holders'
+                          ? 'text-black'
+                          : 'text-white/70 hover:text-white'
+                      }`}
+                    >
+                      {viewMode === 'holders' && (
+                        <motion.div
+                          layoutId="viewModeIndicator"
+                          className="absolute inset-0 bg-[var(--primary-color)] rounded-md"
+                          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                        />
+                      )}
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      <span className="relative z-10">Holders</span>
                     </button>
                   </div>
                 </div>
@@ -1013,11 +1062,19 @@ function HomeContent() {
                         closeMobileMenu();
                       }}
                     />
-                  ) : (
+                  ) : viewMode === 'fees' ? (
                     <FeesTimeframeToggle
                       currentTimeframe={feesTimeframe}
                       onTimeframeChange={(newTimeframe) => {
                         setFeesTimeframe(newTimeframe);
+                        closeMobileMenu();
+                      }}
+                    />
+                  ) : (
+                    <FeesTimeframeToggle
+                      currentTimeframe={holdersTimeframe}
+                      onTimeframeChange={(newTimeframe) => {
+                        setHoldersTimeframe(newTimeframe);
                         closeMobileMenu();
                       }}
                     />
@@ -1243,7 +1300,7 @@ function HomeContent() {
                       onOpenMobileMenu={() => setShowMobileMenu(true)}
                     />
                   </motion.div>
-                ) : (
+                ) : viewMode === 'fees' ? (
                   <motion.div
                     key="fees"
                     initial={{ opacity: 0 }}
@@ -1257,6 +1314,23 @@ function HomeContent() {
                       primaryColor={currentProject.primaryColor}
                       timeframe={feesTimeframe}
                       onTimeframeChange={setFeesTimeframe}
+                      onOpenMobileMenu={() => setShowMobileMenu(true)}
+                    />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="holders"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                    className="w-full h-full"
+                  >
+                    <HoldersView
+                      projectSlug={currentProject.slug}
+                      primaryColor={currentProject.primaryColor}
+                      timeframe={holdersTimeframe}
+                      onTimeframeChange={setHoldersTimeframe}
                       onOpenMobileMenu={() => setShowMobileMenu(true)}
                     />
                   </motion.div>
@@ -1322,7 +1396,7 @@ function HomeContent() {
                       onOpenMobileMenu={() => setShowMobileMenu(true)}
                     />
                   </motion.div>
-                ) : (
+                ) : viewMode === 'fees' ? (
                   <motion.div
                     key="fees"
                     initial={{ opacity: 0 }}
@@ -1336,6 +1410,23 @@ function HomeContent() {
                       primaryColor={currentProject.primaryColor}
                       timeframe={feesTimeframe}
                       onTimeframeChange={setFeesTimeframe}
+                      onOpenMobileMenu={() => setShowMobileMenu(true)}
+                    />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="holders"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                    className="w-full h-full"
+                  >
+                    <HoldersView
+                      projectSlug={currentProject.slug}
+                      primaryColor={currentProject.primaryColor}
+                      timeframe={holdersTimeframe}
+                      onTimeframeChange={setHoldersTimeframe}
                       onOpenMobileMenu={() => setShowMobileMenu(true)}
                     />
                   </motion.div>
@@ -1405,7 +1496,7 @@ function HomeContent() {
               <div className="relative bg-black/50 border border-white/20 rounded-lg p-1 flex gap-1">
                 <button
                   onClick={() => setViewMode('chart')}
-                  className={`relative flex-1 py-2 px-3 rounded-md text-xs font-bold flex items-center justify-center gap-1.5 z-10 transition-colors duration-200 ${
+                  className={`relative flex-1 py-2 px-2 rounded-md text-xs font-bold flex items-center justify-center gap-1 z-10 transition-colors duration-200 ${
                     viewMode === 'chart'
                       ? 'text-black'
                       : 'text-white/70 hover:text-white'
@@ -1418,7 +1509,7 @@ function HomeContent() {
                       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                     />
                   )}
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10">
                     <path d="M3 3v18h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                     <path d="M18 9l-5 5-4-4-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
@@ -1426,7 +1517,7 @@ function HomeContent() {
                 </button>
                 <button
                   onClick={() => setViewMode('fees')}
-                  className={`relative flex-1 py-2 px-3 rounded-md text-xs font-bold flex items-center justify-center gap-1.5 z-10 transition-colors duration-200 ${
+                  className={`relative flex-1 py-2 px-2 rounded-md text-xs font-bold flex items-center justify-center gap-1 z-10 transition-colors duration-200 ${
                     viewMode === 'fees'
                       ? 'text-black'
                       : 'text-white/70 hover:text-white'
@@ -1439,10 +1530,32 @@ function HomeContent() {
                       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                     />
                   )}
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10">
                     <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                   <span className="relative z-10">Fees</span>
+                </button>
+                <button
+                  onClick={() => setViewMode('holders')}
+                  className={`relative flex-1 py-2 px-2 rounded-md text-xs font-bold flex items-center justify-center gap-1 z-10 transition-colors duration-200 ${
+                    viewMode === 'holders'
+                      ? 'text-black'
+                      : 'text-white/70 hover:text-white'
+                  }`}
+                >
+                  {viewMode === 'holders' && (
+                    <motion.div
+                      layoutId="viewModeIndicatorDesktop"
+                      className="absolute inset-0 bg-[var(--primary-color)] rounded-md"
+                      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                    />
+                  )}
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <span className="relative z-10">Holders</span>
                 </button>
               </div>
             </div>
@@ -1458,10 +1571,15 @@ function HomeContent() {
                   currentTimeframe={timeframe}
                   onTimeframeChange={setTimeframe}
                 />
-              ) : (
+              ) : viewMode === 'fees' ? (
                 <FeesTimeframeToggle
                   currentTimeframe={feesTimeframe}
                   onTimeframeChange={setFeesTimeframe}
+                />
+              ) : (
+                <FeesTimeframeToggle
+                  currentTimeframe={holdersTimeframe}
+                  onTimeframeChange={setHoldersTimeframe}
                 />
               )}
             </div>
