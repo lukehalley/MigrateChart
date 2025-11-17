@@ -13,6 +13,11 @@ import {
   getCachedMetadata,
   saveCachedMetadata,
 } from './statsCacheService';
+import {
+  aggregateCandles,
+  canAggregateFromHourly,
+  getSourceTimeframe,
+} from './candleAggregation';
 
 const BASE_URL = 'https://api.geckoterminal.com/api/v2';
 const NETWORK = 'solana';
@@ -81,6 +86,31 @@ export async function fetchJupiterData(
   timeframe: Timeframe = '1H',
   poolAddress?: string // Optional pool address for GeckoTerminal fallback
 ): Promise<OHLCData[]> {
+  // Check if we can aggregate from 1H data instead of making an API call
+  if (canAggregateFromHourly(timeframe)) {
+    try {
+      // Fetch 1H data (which will use cache or API)
+      const hourlyData = await fetchJupiterData(projectId, tokenAddress, '1H', poolAddress);
+
+      if (hourlyData.length > 0) {
+        // Aggregate 1H candles into the target timeframe
+        const aggregated = aggregateCandles(hourlyData, timeframe as '4H' | '8H' | '1D');
+
+        // Save aggregated data to cache (async, don't wait)
+        if (aggregated.length > 0) {
+          saveCachedOHLCData(projectId, tokenAddress, timeframe, aggregated).catch(() => {
+            // Silently fail cache save
+          });
+        }
+
+        return aggregated;
+      }
+    } catch (error) {
+      // If aggregation fails, fall through to direct API fetch
+      console.error(`Aggregation failed for ${timeframe}, falling back to API`, error);
+    }
+  }
+
   const now = Date.now(); // Jupiter API expects milliseconds
   const interval = TIMEFRAME_TO_JUPITER_INTERVAL[timeframe];
 
@@ -208,8 +238,8 @@ export async function fetchAllPoolsData(
     }
 
     if (startMigration) {
-      // This pool starts at this migration - show data FROM (but not including) migration
-      tokenData = tokenData.filter(d => d.time > startMigration.migrationTimestamp);
+      // This pool starts at this migration - show data FROM (including) migration
+      tokenData = tokenData.filter(d => d.time >= startMigration.migrationTimestamp);
     }
 
     result.push({
@@ -229,25 +259,31 @@ export async function fetchAllPoolsData(
     // Check if this pool starts at a migration
     const startMigration = projectConfig.migrations.find(m => m.toPoolId === pool.id);
     if (startMigration) {
-      // Get the full unfiltered data from the CURRENT pool's token
-      const currentUnfilteredData = tokenDataMap.get(pool.tokenAddress) || [];
+      // Check if a candle already exists at the migration timestamp
+      const candleExistsAtMigration = poolData.data.some(d => d.time === startMigration.migrationTimestamp);
 
-      // Find the first candle at or after the migration timestamp
-      const candlesAfterMigration = currentUnfilteredData.filter(d => d.time >= startMigration.migrationTimestamp);
-      const closestCandle = candlesAfterMigration.length > 0
-        ? candlesAfterMigration[0]
-        : null;
+      // Only add placeholder if no candle exists at the migration timestamp
+      if (!candleExistsAtMigration) {
+        // Get the full unfiltered data from the CURRENT pool's token
+        const currentUnfilteredData = tokenDataMap.get(pool.tokenAddress) || [];
 
-      if (closestCandle) {
-        // Add exactly one placeholder at the migration timestamp
-        poolData.data.unshift({
-          time: startMigration.migrationTimestamp,
-          open: closestCandle.open,
-          high: closestCandle.high,
-          low: closestCandle.low,
-          close: closestCandle.close,
-          volume: 0,
-        });
+        // Find the first candle at or after the migration timestamp
+        const candlesAfterMigration = currentUnfilteredData.filter(d => d.time >= startMigration.migrationTimestamp);
+        const closestCandle = candlesAfterMigration.length > 0
+          ? candlesAfterMigration[0]
+          : null;
+
+        if (closestCandle) {
+          // Add exactly one placeholder at the migration timestamp
+          poolData.data.unshift({
+            time: startMigration.migrationTimestamp,
+            open: closestCandle.open,
+            high: closestCandle.high,
+            low: closestCandle.low,
+            close: closestCandle.close,
+            volume: 0,
+          });
+        }
       }
     }
   }
