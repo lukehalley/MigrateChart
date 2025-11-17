@@ -2,10 +2,24 @@
 
 import React, { useMemo } from 'react';
 import useSWR from 'swr';
-import { Users, TrendingUp, TrendingDown, Clock } from 'lucide-react';
+import { Users, TrendingUp, Clock } from 'lucide-react';
+import { Area, AreaChart, Line, LineChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 import { HoldersResponse } from '@/app/api/holders/[slug]/route';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from '@/components/ui/chart';
 
 type HolderTimeframe = '7D' | '30D' | '90D' | 'ALL';
+
+const getChartConfig = (primaryColor: string): ChartConfig => ({
+  holders: {
+    label: 'Holders',
+    color: primaryColor,
+  },
+  change: {
+    label: 'Change',
+    color: primaryColor,
+  },
+});
 
 interface HoldersViewProps {
   projectSlug: string;
@@ -39,33 +53,35 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
     return num.toLocaleString();
   };
 
-  // Calculate daily change (last 24 hours)
-  const dailyChange = useMemo(() => {
-    if (!holdersData?.snapshots || holdersData.snapshots.length < 2) return null;
+  // Prepare chart data
+  const chartData = useMemo(() => {
+    if (!holdersData?.snapshots || holdersData.snapshots.length === 0) return [];
 
-    const now = Math.floor(Date.now() / 1000);
-    const oneDayAgo = now - (24 * 60 * 60);
-
-    // Find the snapshot closest to 24 hours ago
-    const sorted = [...holdersData.snapshots].sort((a, b) => a.timestamp - b.timestamp);
-    const currentCount = sorted[sorted.length - 1].holder_count;
-
-    // Find snapshot closest to 24h ago
-    let oldestInRange = sorted[0];
-    for (const snapshot of sorted) {
-      if (snapshot.timestamp >= oneDayAgo) {
-        break;
-      }
-      oldestInRange = snapshot;
-    }
-
-    const change = currentCount - oldestInRange.holder_count;
-    const percentChange = oldestInRange.holder_count > 0
-      ? ((change / oldestInRange.holder_count) * 100)
-      : 0;
-
-    return { change, percentChange };
+    return holdersData.snapshots.map((snapshot) => ({
+      date: new Date(snapshot.timestamp * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      timestamp: snapshot.timestamp,
+      holders: snapshot.holder_count,
+    }));
   }, [holdersData]);
+
+  // Calculate change data for the second chart
+  const changeData = useMemo(() => {
+    if (!chartData || chartData.length < 2) return [];
+
+    return chartData.map((point, idx) => {
+      if (idx === 0) {
+        return { ...point, change: 0 };
+      }
+      const change = point.holders - chartData[idx - 1].holders;
+      return { ...point, change };
+    });
+  }, [chartData]);
+
+  // Get chart config with project color
+  const chartConfig = useMemo(() =>
+    getChartConfig(primaryColor),
+    [primaryColor]
+  );
 
   if (holdersLoading || !holdersData) {
     return (
@@ -94,8 +110,6 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
     );
   }
 
-  const currentHolders = holdersData.currentHolderCount || 0;
-
   return (
     <div className="w-full h-full relative flex flex-col overflow-hidden">
       {/* Mobile: Settings Button */}
@@ -118,50 +132,114 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
       {/* Charts Grid - Scrollable on mobile */}
       <div className="flex-1 overflow-y-auto md:overflow-hidden p-4 md:p-6 md:min-h-0">
         <div className="grid gap-4 grid-cols-1 lg:grid-cols-2 pt-16 md:pt-0 h-auto md:h-full">
-          {/* Current Holder Count Card */}
-          <div className="bg-black/40 backdrop-blur-sm border-2 rounded-2xl p-8 md:p-12 flex flex-col items-center justify-center min-h-[300px] md:min-h-0"
-               style={{ borderColor: `${primaryColor}40` }}>
-            <Users className="h-16 w-16 md:h-20 md:w-20 mb-6" style={{ color: primaryColor }} />
-            <p className="text-white/60 text-base md:text-lg mb-4">Current Holders</p>
-            <p className="text-white text-6xl md:text-8xl font-bold mb-2" style={{ color: primaryColor }}>
-              {formatNumber(currentHolders)}
-            </p>
-            <p className="text-white/40 text-xs md:text-sm mt-4 flex items-center gap-2">
-              <Clock className="h-3 w-3" />
-              Updates every hour
-            </p>
-          </div>
+          {/* Holder Count Growth Area Chart */}
+          <Card className="bg-neutral-900 border border-neutral-800 flex flex-col md:min-h-0">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-white">
+                <Users className="h-5 w-5" style={{ color: primaryColor }} />
+                Holder Count Over Time
+              </CardTitle>
+              <CardDescription className="text-white/60">
+                Total Token Holders - Updates Every Hour
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex-1 pb-0 md:min-h-0">
+              <ChartContainer config={chartConfig} className="w-full h-[250px] md:h-full">
+                <AreaChart data={chartData}>
+                  <defs>
+                    <linearGradient id="fillHolders" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="var(--color-holders)" stopOpacity={0.8} />
+                      <stop offset="95%" stopColor="var(--color-holders)" stopOpacity={0.1} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-white/10" />
+                  <XAxis
+                    dataKey="date"
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={8}
+                    minTickGap={32}
+                  />
+                  <YAxis
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(value) => formatNumber(value)}
+                  />
+                  <ChartTooltip
+                    content={
+                      <ChartTooltipContent
+                        className="bg-neutral-900 border-neutral-800"
+                        labelFormatter={(value) => `Date: ${value}`}
+                        formatter={(value) => formatNumber(Number(value))}
+                      />
+                    }
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="holders"
+                    stroke="var(--color-holders)"
+                    fill="url(#fillHolders)"
+                    strokeWidth={2}
+                  />
+                </AreaChart>
+              </ChartContainer>
+            </CardContent>
+          </Card>
 
-          {/* Daily Change Card */}
-          <div className="bg-black/40 backdrop-blur-sm border-2 rounded-2xl p-8 md:p-12 flex flex-col items-center justify-center min-h-[300px] md:min-h-0"
-               style={{ borderColor: `${primaryColor}40` }}>
-            {dailyChange ? (
-              <>
-                {dailyChange.change >= 0 ? (
-                  <TrendingUp className="h-16 w-16 md:h-20 md:w-20 mb-6 text-green-500" />
-                ) : (
-                  <TrendingDown className="h-16 w-16 md:h-20 md:w-20 mb-6 text-red-500" />
-                )}
-                <p className="text-white/60 text-base md:text-lg mb-4">24 Hour Change</p>
-                <p className={`text-5xl md:text-7xl font-bold mb-2 ${dailyChange.change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                  {dailyChange.change >= 0 ? '+' : ''}{formatNumber(Math.abs(dailyChange.change))}
-                </p>
-                <p className={`text-3xl md:text-4xl font-semibold ${dailyChange.percentChange >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                  {dailyChange.percentChange >= 0 ? '+' : ''}{dailyChange.percentChange.toFixed(2)}%
-                </p>
-              </>
-            ) : (
-              <>
-                <Clock className="h-16 w-16 md:h-20 md:w-20 mb-6 opacity-30" style={{ color: primaryColor }} />
-                <p className="text-white/60 text-base md:text-lg mb-4">24 Hour Change</p>
-                <p className="text-white/40 text-xl md:text-2xl text-center">
-                  Collecting data...
-                  <br />
-                  <span className="text-sm">Check back in 24 hours</span>
-                </p>
-              </>
-            )}
-          </div>
+          {/* Daily Holder Change Line Chart */}
+          <Card className="bg-neutral-900 border border-neutral-800 flex flex-col md:min-h-0">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-white">
+                <TrendingUp className="h-5 w-5" style={{ color: primaryColor }} />
+                Daily Holder Change
+              </CardTitle>
+              <CardDescription className="text-white/60">
+                Day-to-Day Holder Growth Pattern
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex-1 pb-0 md:min-h-0">
+              <ChartContainer config={chartConfig} className="w-full h-[250px] md:h-full">
+                <LineChart data={changeData}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-white/10" />
+                  <XAxis
+                    dataKey="date"
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={8}
+                    minTickGap={32}
+                  />
+                  <YAxis
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(value) => {
+                      const absValue = Math.abs(value);
+                      if (absValue >= 1000) return `${value >= 0 ? '+' : '-'}${(absValue / 1000).toFixed(1)}K`;
+                      return value >= 0 ? `+${value}` : `${value}`;
+                    }}
+                  />
+                  <ChartTooltip
+                    content={
+                      <ChartTooltipContent
+                        className="bg-neutral-900 border-neutral-800"
+                        labelFormatter={(value) => `Date: ${value}`}
+                        formatter={(value) => {
+                          const num = Number(value);
+                          return num >= 0 ? `+${formatNumber(num)}` : formatNumber(num);
+                        }}
+                      />
+                    }
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="change"
+                    stroke="var(--color-change)"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                </LineChart>
+              </ChartContainer>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
