@@ -77,6 +77,16 @@ function HomeContent() {
     return num.toString();
   };
 
+  // Helper function to format fee numbers
+  const formatFeesNumber = (num: number): string => {
+    if (num >= 1_000_000) {
+      return `$${(num / 1_000_000).toFixed(2)}M`;
+    } else if (num >= 1_000) {
+      return `$${(num / 1_000).toFixed(2)}K`;
+    }
+    return `$${num.toFixed(2)}`;
+  };
+
   // Update document title when project changes
   useEffect(() => {
     if (currentProject) {
@@ -313,6 +323,20 @@ function HomeContent() {
       dedupingInterval: 30000,
       errorRetryInterval: 15000,
       errorRetryCount: 3,
+    }
+  );
+
+  // Fetch fees data for sidebar display (only when in fees view)
+  const { data: feesData } = useSWR(
+    viewMode === 'fees' && currentProject ? `/api/fees/${currentProject.slug}?timeframe=${feesTimeframe}` : null,
+    async (url: string) => {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Failed to fetch fees data');
+      return response.json();
+    },
+    {
+      refreshInterval: 300000,
+      revalidateOnFocus: false,
     }
   );
 
@@ -767,10 +791,10 @@ function HomeContent() {
             {/* Address and Copy Button */}
             <div className="flex items-center justify-center gap-1.5 w-full px-2">
               <motion.div
-                className="flex items-center gap-2 bg-black/60 px-2.5 py-1.5 rounded-lg border border-[var(--primary-color)]/40 overflow-hidden flex-1 min-w-0"
+                className="flex items-center justify-center gap-2 bg-black/60 px-2.5 py-1.5 rounded-lg border border-[var(--primary-color)]/40 overflow-hidden flex-1 min-w-0"
                 whileHover={{ borderColor: 'rgba(82, 201, 125, 0.7)' }}
               >
-                <code className="text-[var(--primary-color)] text-[10px] font-mono select-all truncate">
+                <code className="text-[var(--primary-color)] text-[10px] font-mono select-all truncate text-center">
                   {solanaAddress}
                 </code>
               </motion.div>
@@ -922,7 +946,10 @@ function HomeContent() {
                   <p className="text-white text-[10px] mb-1 text-center">View Mode</p>
                   <div className="relative bg-black/50 border border-white/20 rounded-lg p-1 flex gap-1">
                     <button
-                      onClick={() => setViewMode('chart')}
+                      onClick={() => {
+                        setViewMode('chart');
+                        closeMobileMenu();
+                      }}
                       className={`relative flex-1 py-2 px-3 rounded-md text-xs font-bold flex items-center justify-center gap-1.5 z-10 transition-colors duration-200 ${
                         viewMode === 'chart'
                           ? 'text-black'
@@ -943,7 +970,10 @@ function HomeContent() {
                       <span className="relative z-10">Chart</span>
                     </button>
                     <button
-                      onClick={() => setViewMode('fees')}
+                      onClick={() => {
+                        setViewMode('fees');
+                        closeMobileMenu();
+                      }}
                       className={`relative flex-1 py-2 px-3 rounded-md text-xs font-bold flex items-center justify-center gap-1.5 z-10 transition-colors duration-200 ${
                         viewMode === 'fees'
                           ? 'text-black'
@@ -1000,9 +1030,15 @@ function HomeContent() {
                 <div className="dashed-divider w-24"></div>
               </div>
 
-              {/* Token Stats */}
+              {/* Stats Section */}
               <div>
-                <TokenStats stats={timeframeStats || null} isLoading={isStatsLoading} timeframe={timeframe} displayMode={displayMode} />
+                <TokenStats
+                  stats={timeframeStats || null}
+                  isLoading={isStatsLoading}
+                  timeframe={timeframe}
+                  displayMode={displayMode}
+                  avgDailyFees={viewMode === 'fees' && feesData ? feesData.avgDailyFees : undefined}
+                />
               </div>
 
               {viewMode === 'chart' && (
@@ -1221,6 +1257,7 @@ function HomeContent() {
                       primaryColor={currentProject.primaryColor}
                       timeframe={feesTimeframe}
                       onTimeframeChange={setFeesTimeframe}
+                      onOpenMobileMenu={() => setShowMobileMenu(true)}
                     />
                   </motion.div>
                 )}
@@ -1299,6 +1336,7 @@ function HomeContent() {
                       primaryColor={currentProject.primaryColor}
                       timeframe={feesTimeframe}
                       onTimeframeChange={setFeesTimeframe}
+                      onOpenMobileMenu={() => setShowMobileMenu(true)}
                     />
                   </motion.div>
                 )}
@@ -1431,8 +1469,14 @@ function HomeContent() {
             {/* Decorative Divider */}
             <div className="dashed-divider"></div>
 
-            {/* Token Stats */}
-            <TokenStats stats={timeframeStats || null} isLoading={isStatsLoading} timeframe={timeframe} displayMode={displayMode} />
+            {/* Stats Section */}
+            <TokenStats
+              stats={timeframeStats || null}
+              isLoading={isStatsLoading}
+              timeframe={timeframe}
+              displayMode={displayMode}
+              avgDailyFees={viewMode === 'fees' && feesData ? feesData.avgDailyFees : undefined}
+            />
 
             {viewMode === 'chart' && (
               <>

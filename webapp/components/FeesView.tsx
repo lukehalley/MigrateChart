@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import useSWR from 'swr';
 import { Area, AreaChart, Bar, BarChart, Line, LineChart, CartesianGrid, XAxis, YAxis } from 'recharts';
-import { TrendingUp, DollarSign, Activity, Calendar, BarChart3, LineChart as LineChartIcon } from 'lucide-react';
+import { TrendingUp, Activity, BarChart3, LineChart as LineChartIcon } from 'lucide-react';
 import { FeesResponse } from '@/app/api/fees/[slug]/route';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from '@/components/ui/chart';
@@ -27,9 +27,10 @@ interface FeesViewProps {
   primaryColor: string;
   timeframe: FeesTimeframe;
   onTimeframeChange: (timeframe: FeesTimeframe) => void;
+  onOpenMobileMenu?: () => void;
 }
 
-export function FeesView({ projectSlug, primaryColor, timeframe, onTimeframeChange }: FeesViewProps) {
+export function FeesView({ projectSlug, primaryColor, timeframe, onTimeframeChange, onOpenMobileMenu }: FeesViewProps) {
 
   const { data: feesData, error: feesError, isLoading: feesLoading } = useSWR<FeesResponse>(
     `/api/fees/${projectSlug}?timeframe=${timeframe}`,
@@ -80,68 +81,29 @@ export function FeesView({ projectSlug, primaryColor, timeframe, onTimeframeChan
   }
 
   return (
-    <div className="w-full h-full p-4 md:p-6 relative flex flex-col">
-      {/* Stats Grid - Top Row */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
-        <Card className="bg-neutral-900 border border-neutral-800">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-white">Total Fees</CardTitle>
-            <DollarSign className="h-4 w-4" style={{ color: primaryColor }} />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-white">{formatNumber(feesData.totalFees)}</div>
-            <p className="text-xs text-white/60">
-              {timeframe} Timeframe
-            </p>
-          </CardContent>
-        </Card>
+    <div className="w-full h-full relative flex flex-col overflow-hidden">
+      {/* Mobile: Settings Button */}
+      {onOpenMobileMenu && (
+        <div className="md:hidden absolute top-3 left-3 z-30">
+          <button
+            onClick={onOpenMobileMenu}
+            className="w-11 h-11 rounded-full flex items-center justify-center bg-[#0A1F12]/90 hover:bg-[#0A1F12] border-2 shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)] hover:shadow-[0_0_16px_rgba(var(--primary-rgb),0.5)] transition-all backdrop-blur-sm"
+            style={{ borderColor: primaryColor }}
+            aria-label="Open settings"
+          >
+            <svg className="w-5 h-5" style={{ color: primaryColor }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </button>
+        </div>
+      )}
 
-        <Card className="bg-neutral-900 border border-neutral-800">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-white">Avg Daily Fees</CardTitle>
-            <Activity className="h-4 w-4" style={{ color: primaryColor }} />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-white">{formatNumber(feesData.avgDailyFees)}</div>
-            <p className="text-xs text-white/60">
-              Per Day Average
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-neutral-900 border border-neutral-800">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-white">Total Days</CardTitle>
-            <Calendar className="h-4 w-4" style={{ color: primaryColor }} />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-white">{feesData.dailyFees.length}</div>
-            <p className="text-xs text-white/60">
-              Days With Fee Data
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-neutral-900 border border-neutral-800">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-white">Peak Day</CardTitle>
-            <TrendingUp className="h-4 w-4" style={{ color: primaryColor }} />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-white">
-              {formatNumber(Math.max(...feesData.dailyFees.map(d => d.fees)))}
-            </div>
-            <p className="text-xs text-white/60">
-              Highest Single Day
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Charts Grid */}
-      <div className="flex-1 grid gap-4 grid-cols-1 lg:grid-cols-2">
+      {/* Charts Grid - Scrollable on mobile */}
+      <div className="flex-1 overflow-y-auto md:overflow-hidden p-4 md:p-6">
+        <div className="grid gap-4 grid-cols-1 lg:grid-cols-2 pt-16 md:pt-0 md:h-full md:grid-rows-2">
             {/* Daily Fees Bar Chart */}
-            <Card className="bg-neutral-900 border border-neutral-800 flex flex-col h-full">
+            <Card className="bg-neutral-900 border border-neutral-800 flex flex-col md:min-h-0">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-white">
               <BarChart3 className="h-5 w-5" style={{ color: primaryColor }} />
@@ -149,8 +111,8 @@ export function FeesView({ projectSlug, primaryColor, timeframe, onTimeframeChan
             </CardTitle>
             <CardDescription className="text-white/60">Bar Chart Showing Fees Collected Per Day</CardDescription>
           </CardHeader>
-          <CardContent className="flex-1 min-h-0">
-            <ChartContainer config={chartConfig} className="w-full h-full aspect-auto">
+          <CardContent className="flex-1 pb-0 md:min-h-0">
+            <ChartContainer config={chartConfig} className="w-full h-[250px] md:h-full">
               <BarChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-white/10" />
                 <XAxis
@@ -185,7 +147,7 @@ export function FeesView({ projectSlug, primaryColor, timeframe, onTimeframeChan
         </Card>
 
             {/* Cumulative Fees Area Chart */}
-            <Card className="bg-neutral-900 border border-neutral-800 flex flex-col h-full">
+            <Card className="bg-neutral-900 border border-neutral-800 flex flex-col md:min-h-0">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-white">
               <LineChartIcon className="h-5 w-5" style={{ color: primaryColor }} />
@@ -193,8 +155,8 @@ export function FeesView({ projectSlug, primaryColor, timeframe, onTimeframeChan
             </CardTitle>
             <CardDescription className="text-white/60">Total Accumulated Fees Over Time</CardDescription>
           </CardHeader>
-          <CardContent className="flex-1 min-h-0">
-            <ChartContainer config={chartConfig} className="w-full h-full aspect-auto">
+          <CardContent className="flex-1 pb-0 md:min-h-0">
+            <ChartContainer config={chartConfig} className="w-full h-[250px] md:h-full">
               <AreaChart data={chartData}>
                 <defs>
                   <linearGradient id="fillCumulative" x1="0" y1="0" x2="0" y2="1">
@@ -241,7 +203,7 @@ export function FeesView({ projectSlug, primaryColor, timeframe, onTimeframeChan
         </Card>
 
             {/* Daily Fees Trend Line Chart */}
-            <Card className="bg-neutral-900 border border-neutral-800 flex flex-col h-full">
+            <Card className="bg-neutral-900 border border-neutral-800 flex flex-col md:min-h-0">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-white">
               <Activity className="h-5 w-5" style={{ color: primaryColor }} />
@@ -249,8 +211,8 @@ export function FeesView({ projectSlug, primaryColor, timeframe, onTimeframeChan
             </CardTitle>
             <CardDescription className="text-white/60">Day-by-Day Fee Collection Pattern</CardDescription>
           </CardHeader>
-          <CardContent className="flex-1 min-h-0">
-            <ChartContainer config={chartConfig} className="w-full h-full aspect-auto">
+          <CardContent className="flex-1 pb-0 md:min-h-0">
+            <ChartContainer config={chartConfig} className="w-full h-[250px] md:h-full">
               <LineChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-white/10" />
                 <XAxis
@@ -291,7 +253,7 @@ export function FeesView({ projectSlug, primaryColor, timeframe, onTimeframeChan
         </Card>
 
             {/* Cumulative Fees Trend Line Chart */}
-            <Card className="bg-neutral-900 border border-neutral-800 flex flex-col h-full">
+            <Card className="bg-neutral-900 border border-neutral-800 flex flex-col md:min-h-0">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-white">
               <TrendingUp className="h-5 w-5" style={{ color: primaryColor }} />
@@ -299,8 +261,8 @@ export function FeesView({ projectSlug, primaryColor, timeframe, onTimeframeChan
             </CardTitle>
             <CardDescription className="text-white/60">Total Accumulated Fees Over Time</CardDescription>
           </CardHeader>
-          <CardContent className="flex-1 min-h-0">
-            <ChartContainer config={chartConfig} className="w-full h-full aspect-auto">
+          <CardContent className="flex-1 pb-0 md:min-h-0">
+            <ChartContainer config={chartConfig} className="w-full h-[250px] md:h-full">
               <LineChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-white/10" />
                 <XAxis
@@ -339,6 +301,7 @@ export function FeesView({ projectSlug, primaryColor, timeframe, onTimeframeChan
             </ChartContainer>
           </CardContent>
         </Card>
+        </div>
       </div>
     </div>
   );

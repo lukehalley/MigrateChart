@@ -8,9 +8,10 @@ interface TokenStatsProps {
   isLoading: boolean;
   timeframe?: Timeframe;
   displayMode?: 'price' | 'marketCap';
+  avgDailyFees?: number;
 }
 
-export default function TokenStats({ stats, isLoading, timeframe = '1D', displayMode = 'price' }: TokenStatsProps) {
+export default function TokenStats({ stats, isLoading, timeframe = '1D', displayMode = 'price', avgDailyFees }: TokenStatsProps) {
   const prevStats = useRef<TokenStatsType | null>(null);
   const [flashingFields, setFlashingFields] = useState<Set<string>>(new Set());
 
@@ -122,14 +123,22 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D', display
 
         {/* Fees Card Skeleton */}
         <div className="stat-card">
-          <div className="h-3 bg-gray-700/50 mb-2 w-20"></div>
-          <div className="flex items-center gap-2">
-            <div className="h-5 bg-gray-700/50 w-16"></div>
-            <div className="flex-1 space-y-1">
-              <div className="h-2 bg-gray-700/50 w-full"></div>
-              <div className="h-2 bg-gray-700/50 w-full"></div>
+          <div className="flex items-start gap-2">
+            <div className="flex-1">
+              <div className="h-3 bg-gray-700/50 mb-2 w-16"></div>
+              <div className="h-5 bg-gray-700/50 w-20"></div>
+            </div>
+            <div className="flex-1">
+              <div className="h-3 bg-gray-700/50 mb-2 w-24"></div>
+              <div className="h-5 bg-gray-700/50 w-20"></div>
             </div>
           </div>
+        </div>
+
+        {/* Avg Daily Fees Skeleton */}
+        <div className="stat-card">
+          <div className="h-3 bg-gray-700/50 mb-2 w-24"></div>
+          <div className="h-5 bg-gray-700/50 w-20"></div>
         </div>
 
         {/* Divider */}
@@ -257,30 +266,34 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D', display
         <>
         <div className="stat-card">
           <div className="flex items-start gap-2">
-            {/* Timeframe fees - team portion only */}
+            {/* Timeframe fees */}
             <div className="flex-1">
               <p className="text-white text-[10px] font-medium mb-1">FEES</p>
-              <p className={`text-white text-base font-bold select-text mb-0.5 ${flashingFields.has('fees') ? 'flash-update' : ''}`}>
+              <p className={`text-white text-base font-bold select-text ${flashingFields.has('fees') ? 'flash-update' : ''}`}>
                 {formatNumber(stats.fees24h)}
               </p>
-              <div className="text-[8px] text-gray-400">
-                <span>(Team)</span>
-              </div>
             </div>
             {/* All-time fees - only show if not already showing all time */}
             {stats.allTimeFees !== undefined && timeframeLabel !== 'ALL TIME' && (
               <div className="flex-1">
                 <p className="text-white text-[10px] font-medium mb-1">FEES (ALL TIME)</p>
-                <p className="text-white text-base font-bold select-text mb-0.5">
+                <p className="text-white text-base font-bold select-text">
                   {formatNumber(stats.allTimeFees)}
                 </p>
-                <div className="text-[8px] text-gray-400">
-                  <span>(Team)</span>
-                </div>
               </div>
             )}
           </div>
         </div>
+
+        {/* Avg Daily Fees - only show if provided */}
+        {avgDailyFees !== undefined && (
+          <div className="stat-card">
+            <p className="text-white text-[10px] font-medium mb-1">AVG DAILY FEES</p>
+            <p className="text-white text-base font-bold select-text">
+              {formatNumber(avgDailyFees)}
+            </p>
+          </div>
+        )}
 
         {/* Divider */}
         <div className="dashed-divider"></div>
