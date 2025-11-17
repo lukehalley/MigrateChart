@@ -1,5 +1,6 @@
 'use client';
 
+import { motion } from 'framer-motion';
 import { Timeframe } from '@/lib/types';
 
 interface TimeframeToggleProps {
@@ -17,14 +18,21 @@ export default function TimeframeToggle({ currentTimeframe, onTimeframeChange }:
           key={timeframe}
           onClick={() => onTimeframeChange(timeframe)}
           className={`
-            flex-1 min-w-[50px] px-2 py-1 text-[10px] font-bold transition-all duration-200 rounded
+            relative flex-1 min-w-[50px] px-2 py-1 text-[10px] font-bold rounded transition-colors duration-200
             ${currentTimeframe === timeframe
-              ? 'bg-[#52C97D] text-black'
+              ? 'text-black'
               : 'text-white hover:text-white hover:bg-gray-800/50 border border-gray-700/40'
             }
           `}
         >
-          {timeframe}
+          {currentTimeframe === timeframe && (
+            <motion.div
+              layoutId="timeframeIndicator"
+              className="absolute inset-0 bg-[#52C97D] rounded"
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            />
+          )}
+          <span className="relative z-10">{timeframe}</span>
         </button>
       ))}
     </div>

@@ -228,8 +228,14 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         textColor: '#FFFFFF',
       },
       grid: {
-        vertLines: { color: '#1F633840' },  // Subtle dark green (25% opacity)
-        horzLines: { color: '#1F633840' },  // Subtle dark green (25% opacity)
+        vertLines: {
+          color: '#1F633840',  // Subtle dark green (25% opacity)
+          visible: true,
+        },
+        horzLines: {
+          color: '#1F633840',  // Subtle dark green (25% opacity)
+          visible: true,
+        },
       },
       width: chartContainerRef.current.clientWidth,
       height: chartContainerRef.current.clientHeight, // Use container height instead of window height
@@ -249,15 +255,16 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       rightPriceScale: {
         borderColor: '#1F6338',  // Deep green border
         scaleMargins: {
-          top: isMobile ? 0.25 : 0.15,    // Mobile: smaller top margin for more chart space
-          bottom: isMobile ? 0.15 : 0.15, // Mobile: larger bottom margin to reduce price axis
+          top: isMobile ? 0.15 : 0.1,    // Reduced top margin for more price range visibility
+          bottom: isMobile ? 0.15 : 0.1, // Reduced bottom margin for more price range visibility
         },
-        autoScale: isAutoScale,
+        autoScale: true,  // Always enable autoscale for proper scaling
         mode: isLogScale ? 1 : 0,  // 1 = logarithmic, 0 = normal
         invertScale: false,
         alignLabels: true,
         minimumWidth: 0,
         entireTextOnly: false,
+        ticksVisible: true,  // Ensure ticks are visible on price scale
       },
       crosshair: {
         mode: 0, // Free moving
@@ -323,6 +330,12 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       // Using approximate circulating supply of 1 billion tokens
       const CIRCULATING_SUPPLY = 1_000_000_000;
 
+      // Custom price formatter that prevents negative values from being displayed
+      const priceFormatter = (price: number) => {
+        const value = Math.max(0, price); // Clamp to minimum of 0
+        return value.toFixed(5);
+      };
+
       // Create candlestick series
       const candlestickSeries = chart.addCandlestickSeries({
         upColor: primaryColor,
@@ -335,12 +348,11 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         priceFormat: displayMode === 'marketCap'
           ? {
               type: 'custom',
-              formatter: formatMarketCap,
+              formatter: (price: number) => formatMarketCap(Math.max(0, price)),
             }
           : {
-              type: 'price',
-              precision: 5,
-              minMove: 0.00001,
+              type: 'custom',
+              formatter: priceFormatter,
             },
       });
 
@@ -386,18 +398,18 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
           if (displayMode === 'marketCap') {
             return {
               time: d.time as Time,
-              open: d.open * CIRCULATING_SUPPLY,
-              high: d.high * CIRCULATING_SUPPLY,
-              low: d.low * CIRCULATING_SUPPLY,
-              close: d.close * CIRCULATING_SUPPLY,
+              open: Math.max(0, d.open * CIRCULATING_SUPPLY),
+              high: Math.max(0, d.high * CIRCULATING_SUPPLY),
+              low: Math.max(0, d.low * CIRCULATING_SUPPLY),
+              close: Math.max(0, d.close * CIRCULATING_SUPPLY),
             };
           }
           return {
             time: d.time as Time,
-            open: d.open,
-            high: d.high,
-            low: d.low,
-            close: d.close,
+            open: Math.max(0, d.open),
+            high: Math.max(0, d.high),
+            low: Math.max(0, d.low),
+            close: Math.max(0, d.close),
           };
         })
         .sort((a, b) => (a.time as number) - (b.time as number)); // Sort by time ascending
@@ -1138,7 +1150,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
   }, []);
 
   return (
-    <div className="w-full h-full p-4 md:p-6 relative">
+    <div className="w-full h-full relative">
       <style jsx>{`
         :global(.tv-lightweight-charts) :global(canvas:nth-child(2)) {
           filter: drop-shadow(0 0 6px rgba(82, 201, 125, 0.5)) drop-shadow(0 0 3px rgba(82, 201, 125, 0.3));

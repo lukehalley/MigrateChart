@@ -7,7 +7,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Copy, Check } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import Chart from '@/components/Chart';
+import { FeesView } from '@/components/FeesView';
 import TimeframeToggle from '@/components/TimeframeToggle';
+import FeesTimeframeToggle from '@/components/FeesTimeframeToggle';
 import ChartControls from '@/components/ChartControls';
 import TokenStats from '@/components/TokenStats';
 import { TokenLoadingLogo } from '@/components/TokenLoadingLogo';
@@ -24,16 +26,25 @@ function HomeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Get timeframe from URL or default to '1D'
-  const urlTimeframe = searchParams.get('timeframe') as Timeframe | null;
+  // Get parameters from URL or use defaults
+  const urlChartTimeframe = searchParams.get('chartTimeframe') as Timeframe | null;
+  const urlView = searchParams.get('view') as 'chart' | 'fees' | null;
+  const urlFeesTimeframe = searchParams.get('feesTimeframe') as '7D' | '30D' | '90D' | 'ALL' | null;
+
   const validTimeframes: Timeframe[] = ['1H', '4H', '8H', '1D', 'MAX'];
-  const initialTimeframe = urlTimeframe && validTimeframes.includes(urlTimeframe) ? urlTimeframe : '1D';
+  const validFeesTimeframes = ['7D', '30D', '90D', 'ALL'];
+
+  const initialTimeframe = urlChartTimeframe && validTimeframes.includes(urlChartTimeframe) ? urlChartTimeframe : '1D';
+  const initialViewMode = urlView && ['chart', 'fees'].includes(urlView) ? urlView : 'chart';
+  const initialFeesTimeframe = urlFeesTimeframe && validFeesTimeframes.includes(urlFeesTimeframe) ? urlFeesTimeframe : '30D';
 
   const [timeframe, setTimeframeState] = useState<Timeframe>(initialTimeframe);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [isMenuClosing, setIsMenuClosing] = useState(false);
   const [showCopied, setShowCopied] = useState(false);
   const [mobileMenuTab, setMobileMenuTab] = useState<'settings' | 'about'>('settings');
+  const [viewMode, setViewModeState] = useState<'chart' | 'fees'>(initialViewMode);
+  const [feesTimeframe, setFeesTimeframeState] = useState<'7D' | '30D' | '90D' | 'ALL'>(initialFeesTimeframe);
 
   // Reset chart position function
   const handleResetChartPosition = () => {
@@ -72,6 +83,23 @@ function HomeContent() {
       document.title = `${currentProject.name} Migration Chart`;
     }
   }, [currentProject]);
+
+  // Sync state with URL params when they change
+  useEffect(() => {
+    const urlChartTimeframe = searchParams.get('chartTimeframe') as Timeframe | null;
+    const urlView = searchParams.get('view') as 'chart' | 'fees' | null;
+    const urlFeesTimeframe = searchParams.get('feesTimeframe') as '7D' | '30D' | '90D' | 'ALL' | null;
+
+    if (urlChartTimeframe && validTimeframes.includes(urlChartTimeframe)) {
+      setTimeframeState(urlChartTimeframe);
+    }
+    if (urlView && ['chart', 'fees'].includes(urlView)) {
+      setViewModeState(urlView);
+    }
+    if (urlFeesTimeframe && validFeesTimeframes.includes(urlFeesTimeframe)) {
+      setFeesTimeframeState(urlFeesTimeframe);
+    }
+  }, [searchParams]);
 
   // Sync with localStorage after component mounts (client-side only)
   useEffect(() => {
@@ -145,7 +173,35 @@ function HomeContent() {
   const setTimeframe = (newTimeframe: Timeframe) => {
     setTimeframeState(newTimeframe);
     const params = new URLSearchParams(searchParams.toString());
-    params.set('timeframe', newTimeframe);
+    params.set('chartTimeframe', newTimeframe);
+    const tokenSlug = currentProject?.slug || 'zera';
+    router.push(`/${tokenSlug}?${params.toString()}`, { scroll: false });
+  };
+
+  // Update URL when view mode changes
+  const setViewMode = (newViewMode: 'chart' | 'fees') => {
+    setViewModeState(newViewMode);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('view', newViewMode);
+
+    // Remove chartTimeframe when in fees view, add it back when in chart view
+    if (newViewMode === 'fees') {
+      params.delete('chartTimeframe');
+      params.set('feesTimeframe', feesTimeframe);
+    } else if (newViewMode === 'chart') {
+      params.set('chartTimeframe', timeframe);
+      params.delete('feesTimeframe');
+    }
+
+    const tokenSlug = currentProject?.slug || 'zera';
+    router.push(`/${tokenSlug}?${params.toString()}`, { scroll: false });
+  };
+
+  // Update URL when fees timeframe changes
+  const setFeesTimeframe = (newFeesTimeframe: '7D' | '30D' | '90D' | 'ALL') => {
+    setFeesTimeframeState(newFeesTimeframe);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('feesTimeframe', newFeesTimeframe);
     const tokenSlug = currentProject?.slug || 'zera';
     router.push(`/${tokenSlug}?${params.toString()}`, { scroll: false });
   };
@@ -860,17 +916,82 @@ function HomeContent() {
                 <div className="dashed-divider w-24"></div>
               </div>
 
+              {/* View Mode Switch */}
+              <div className="info-card-small">
+                <div className="py-1.5 px-1.5">
+                  <p className="text-white text-[10px] mb-1 text-center">View Mode</p>
+                  <div className="relative bg-black/50 border border-white/20 rounded-lg p-1 flex gap-1">
+                    <button
+                      onClick={() => setViewMode('chart')}
+                      className={`relative flex-1 py-2 px-3 rounded-md text-xs font-bold flex items-center justify-center gap-1.5 z-10 transition-colors duration-200 ${
+                        viewMode === 'chart'
+                          ? 'text-black'
+                          : 'text-white/70 hover:text-white'
+                      }`}
+                    >
+                      {viewMode === 'chart' && (
+                        <motion.div
+                          layoutId="viewModeIndicator"
+                          className="absolute inset-0 bg-[var(--primary-color)] rounded-md"
+                          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                        />
+                      )}
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10">
+                        <path d="M3 3v18h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M18 9l-5 5-4-4-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      <span className="relative z-10">Chart</span>
+                    </button>
+                    <button
+                      onClick={() => setViewMode('fees')}
+                      className={`relative flex-1 py-2 px-3 rounded-md text-xs font-bold flex items-center justify-center gap-1.5 z-10 transition-colors duration-200 ${
+                        viewMode === 'fees'
+                          ? 'text-black'
+                          : 'text-white/70 hover:text-white'
+                      }`}
+                    >
+                      {viewMode === 'fees' && (
+                        <motion.div
+                          layoutId="viewModeIndicator"
+                          className="absolute inset-0 bg-[var(--primary-color)] rounded-md"
+                          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                        />
+                      )}
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10">
+                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      <span className="relative z-10">Fees</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Decorative Divider */}
+              <div className="flex items-center justify-center py-2">
+                <div className="dashed-divider w-24"></div>
+              </div>
+
               {/* Timeframe Toggle Card */}
               <div className="info-card-small">
                 <div className="py-1.5 px-1.5">
                   <p className="text-white text-[10px] mb-1 text-center">Timeframe</p>
-                  <TimeframeToggle
-                    currentTimeframe={timeframe}
-                    onTimeframeChange={(newTimeframe) => {
-                      setTimeframe(newTimeframe);
-                      closeMobileMenu();
-                    }}
-                  />
+                  {viewMode === 'chart' ? (
+                    <TimeframeToggle
+                      currentTimeframe={timeframe}
+                      onTimeframeChange={(newTimeframe) => {
+                        setTimeframe(newTimeframe);
+                        closeMobileMenu();
+                      }}
+                    />
+                  ) : (
+                    <FeesTimeframeToggle
+                      currentTimeframe={feesTimeframe}
+                      onTimeframeChange={(newTimeframe) => {
+                        setFeesTimeframe(newTimeframe);
+                        closeMobileMenu();
+                      }}
+                    />
+                  )}
                 </div>
               </div>
 
@@ -884,29 +1005,33 @@ function HomeContent() {
                 <TokenStats stats={timeframeStats || null} isLoading={isStatsLoading} timeframe={timeframe} displayMode={displayMode} />
               </div>
 
-              {/* Decorative Divider */}
-              <div className="flex items-center justify-center py-2">
-                <div className="dashed-divider w-24"></div>
-              </div>
+              {viewMode === 'chart' && (
+                <>
+                  {/* Decorative Divider */}
+                  <div className="flex items-center justify-center py-2">
+                    <div className="dashed-divider w-24"></div>
+                  </div>
 
-              {/* Chart Controls Card */}
-              <div className="info-card-small">
-                <div className="py-2 px-1.5">
-                  <ChartControls
-                    displayMode={displayMode}
-                    onDisplayModeChange={handleDisplayModeChange}
-                    showVolume={showVolume}
-                    onVolumeToggle={handleVolumeToggle}
-                    showMigrationLines={showMigrationLines}
-                    onMigrationLinesToggle={handleMigrationLinesToggle}
-                    isLogScale={isLogScale}
-                    onLogScaleToggle={handleLogScaleToggle}
-                    isAutoScale={isAutoScale}
-                    onAutoScaleToggle={handleAutoScaleToggle}
-                    onResetPosition={handleResetChartPosition}
-                  />
-                </div>
-              </div>
+                  {/* Chart Controls Card */}
+                  <div className="info-card-small">
+                    <div className="py-2 px-1.5">
+                      <ChartControls
+                        displayMode={displayMode}
+                        onDisplayModeChange={handleDisplayModeChange}
+                        showVolume={showVolume}
+                        onVolumeToggle={handleVolumeToggle}
+                        showMigrationLines={showMigrationLines}
+                        onMigrationLinesToggle={handleMigrationLinesToggle}
+                        isLogScale={isLogScale}
+                        onLogScaleToggle={handleLogScaleToggle}
+                        isAutoScale={isAutoScale}
+                        onAutoScaleToggle={handleAutoScaleToggle}
+                        onResetPosition={handleResetChartPosition}
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
 
               {/* Decorative Divider */}
               <div className="flex items-center justify-center py-2">
@@ -1055,30 +1180,51 @@ function HomeContent() {
             )}
 
             {!showLoader && !error && poolsData && tokenStats && (
-              <motion.div
-                key="chart"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.5, ease: 'easeOut' }}
-                className="w-full h-full"
-              >
-                <Chart
-                  poolsData={poolsData}
-                  timeframe={timeframe}
-                  displayMode={displayMode}
-                  showVolume={showVolume}
-                  showMigrationLines={showMigrationLines}
-                  migrations={currentProject.migrations}
-                  primaryColor={currentProject.primaryColor}
-                  isLogScale={isLogScale}
-                  onLogScaleToggle={handleLogScaleToggle}
-                  isAutoScale={isAutoScale}
-                  onAutoScaleToggle={handleAutoScaleToggle}
-                  onResetPosition={handleResetChartPosition}
-                  showMobileMenu={showMobileMenu}
-                  onOpenMobileMenu={() => setShowMobileMenu(true)}
-                />
-              </motion.div>
+              <AnimatePresence mode="wait">
+                {viewMode === 'chart' ? (
+                  <motion.div
+                    key="chart"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                    className="w-full h-full"
+                  >
+                    <Chart
+                      poolsData={poolsData}
+                      timeframe={timeframe}
+                      displayMode={displayMode}
+                      showVolume={showVolume}
+                      showMigrationLines={showMigrationLines}
+                      migrations={currentProject.migrations}
+                      primaryColor={currentProject.primaryColor}
+                      isLogScale={isLogScale}
+                      onLogScaleToggle={handleLogScaleToggle}
+                      isAutoScale={isAutoScale}
+                      onAutoScaleToggle={handleAutoScaleToggle}
+                      onResetPosition={handleResetChartPosition}
+                      showMobileMenu={showMobileMenu}
+                      onOpenMobileMenu={() => setShowMobileMenu(true)}
+                    />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="fees"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                    className="w-full h-full"
+                  >
+                    <FeesView
+                      projectSlug={currentProject.slug}
+                      primaryColor={currentProject.primaryColor}
+                      timeframe={feesTimeframe}
+                      onTimeframeChange={setFeesTimeframe}
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
             )}
           </AnimatePresence>
         </div>
@@ -1112,30 +1258,51 @@ function HomeContent() {
             )}
 
             {!showLoader && !error && poolsData && tokenStats && (
-              <motion.div
-                key="chart"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.5, ease: 'easeOut' }}
-                className="w-full h-full"
-              >
-                <Chart
-                  poolsData={poolsData}
-                  timeframe={timeframe}
-                  displayMode={displayMode}
-                  showVolume={showVolume}
-                  showMigrationLines={showMigrationLines}
-                  migrations={currentProject.migrations}
-                  primaryColor={currentProject.primaryColor}
-                  isLogScale={isLogScale}
-                  onLogScaleToggle={handleLogScaleToggle}
-                  isAutoScale={isAutoScale}
-                  onAutoScaleToggle={handleAutoScaleToggle}
-                  onResetPosition={handleResetChartPosition}
-                  showMobileMenu={showMobileMenu}
-                  onOpenMobileMenu={() => setShowMobileMenu(true)}
-                />
-              </motion.div>
+              <AnimatePresence mode="wait">
+                {viewMode === 'chart' ? (
+                  <motion.div
+                    key="chart"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                    className="w-full h-full"
+                  >
+                    <Chart
+                      poolsData={poolsData}
+                      timeframe={timeframe}
+                      displayMode={displayMode}
+                      showVolume={showVolume}
+                      showMigrationLines={showMigrationLines}
+                      migrations={currentProject.migrations}
+                      primaryColor={currentProject.primaryColor}
+                      isLogScale={isLogScale}
+                      onLogScaleToggle={handleLogScaleToggle}
+                      isAutoScale={isAutoScale}
+                      onAutoScaleToggle={handleAutoScaleToggle}
+                      onResetPosition={handleResetChartPosition}
+                      showMobileMenu={showMobileMenu}
+                      onOpenMobileMenu={() => setShowMobileMenu(true)}
+                    />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="fees"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                    className="w-full h-full"
+                  >
+                    <FeesView
+                      projectSlug={currentProject.slug}
+                      primaryColor={currentProject.primaryColor}
+                      timeframe={feesTimeframe}
+                      onTimeframeChange={setFeesTimeframe}
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
             )}
           </AnimatePresence>
         </div>
@@ -1194,13 +1361,71 @@ function HomeContent() {
             {/* Decorative Divider */}
             <div className="dashed-divider"></div>
 
+            {/* View Mode Switch */}
+            <div className="stat-card">
+              <p className="text-white text-[10px] font-medium mb-1 text-center">View Mode</p>
+              <div className="relative bg-black/50 border border-white/20 rounded-lg p-1 flex gap-1">
+                <button
+                  onClick={() => setViewMode('chart')}
+                  className={`relative flex-1 py-2 px-3 rounded-md text-xs font-bold flex items-center justify-center gap-1.5 z-10 transition-colors duration-200 ${
+                    viewMode === 'chart'
+                      ? 'text-black'
+                      : 'text-white/70 hover:text-white'
+                  }`}
+                >
+                  {viewMode === 'chart' && (
+                    <motion.div
+                      layoutId="viewModeIndicatorDesktop"
+                      className="absolute inset-0 bg-[var(--primary-color)] rounded-md"
+                      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                    />
+                  )}
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10">
+                    <path d="M3 3v18h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M18 9l-5 5-4-4-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <span className="relative z-10">Chart</span>
+                </button>
+                <button
+                  onClick={() => setViewMode('fees')}
+                  className={`relative flex-1 py-2 px-3 rounded-md text-xs font-bold flex items-center justify-center gap-1.5 z-10 transition-colors duration-200 ${
+                    viewMode === 'fees'
+                      ? 'text-black'
+                      : 'text-white/70 hover:text-white'
+                  }`}
+                >
+                  {viewMode === 'fees' && (
+                    <motion.div
+                      layoutId="viewModeIndicatorDesktop"
+                      className="absolute inset-0 bg-[var(--primary-color)] rounded-md"
+                      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                    />
+                  )}
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10">
+                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <span className="relative z-10">Fees</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Decorative Divider */}
+            <div className="dashed-divider"></div>
+
             {/* Timeframe Toggle */}
             <div className="stat-card">
               <p className="text-white text-[10px] font-medium mb-1 text-center">Timeframe</p>
-              <TimeframeToggle
-                currentTimeframe={timeframe}
-                onTimeframeChange={setTimeframe}
-              />
+              {viewMode === 'chart' ? (
+                <TimeframeToggle
+                  currentTimeframe={timeframe}
+                  onTimeframeChange={setTimeframe}
+                />
+              ) : (
+                <FeesTimeframeToggle
+                  currentTimeframe={feesTimeframe}
+                  onTimeframeChange={setFeesTimeframe}
+                />
+              )}
             </div>
 
             {/* Decorative Divider */}
@@ -1209,26 +1434,30 @@ function HomeContent() {
             {/* Token Stats */}
             <TokenStats stats={timeframeStats || null} isLoading={isStatsLoading} timeframe={timeframe} displayMode={displayMode} />
 
-            {/* Decorative Divider */}
-            <div className="dashed-divider"></div>
+            {viewMode === 'chart' && (
+              <>
+                {/* Decorative Divider */}
+                <div className="dashed-divider"></div>
 
-            {/* Chart Controls */}
-            <ChartControls
-              displayMode={displayMode}
-              onDisplayModeChange={handleDisplayModeChange}
-              showVolume={showVolume}
-              onVolumeToggle={handleVolumeToggle}
-              showMigrationLines={showMigrationLines}
-              onMigrationLinesToggle={handleMigrationLinesToggle}
-              isLogScale={isLogScale}
-              onLogScaleToggle={handleLogScaleToggle}
-              isAutoScale={isAutoScale}
-              onAutoScaleToggle={handleAutoScaleToggle}
-              onResetPosition={handleResetChartPosition}
-            />
+                {/* Chart Controls */}
+                <ChartControls
+                  displayMode={displayMode}
+                  onDisplayModeChange={handleDisplayModeChange}
+                  showVolume={showVolume}
+                  onVolumeToggle={handleVolumeToggle}
+                  showMigrationLines={showMigrationLines}
+                  onMigrationLinesToggle={handleMigrationLinesToggle}
+                  isLogScale={isLogScale}
+                  onLogScaleToggle={handleLogScaleToggle}
+                  isAutoScale={isAutoScale}
+                  onAutoScaleToggle={handleAutoScaleToggle}
+                  onResetPosition={handleResetChartPosition}
+                />
 
-            {/* Extra spacing before sticky button */}
-            <div className="h-1"></div>
+                {/* Extra spacing before sticky button */}
+                <div className="h-1"></div>
+              </>
+            )}
           </div>
 
           {/* Sticky Bottom Section */}

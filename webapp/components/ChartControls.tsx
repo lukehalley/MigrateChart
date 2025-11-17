@@ -1,5 +1,7 @@
 'use client';
 
+import { motion } from 'framer-motion';
+
 interface ChartControlsProps {
   displayMode: 'price' | 'marketCap';
   onDisplayModeChange: (mode: 'price' | 'marketCap') => void;
@@ -40,23 +42,37 @@ export default function ChartControls({
           <div className="grid grid-cols-2 gap-1.5 bg-black/60 p-1 rounded-lg border border-[#52C97D]/30">
             <button
               onClick={() => onDisplayModeChange('price')}
-              className={`py-1.5 text-[10px] font-bold tracking-wider transition-all rounded-md ${
+              className={`relative py-1.5 text-[10px] font-bold tracking-wider rounded-md transition-colors duration-200 ${
                 displayMode === 'price'
-                  ? 'bg-[#52C97D] text-black shadow-[0_0_8px_rgba(82,201,125,0.4)]'
+                  ? 'text-black'
                   : 'text-white/60 hover:text-white hover:bg-white/5'
               }`}
             >
-              PRICE
+              {displayMode === 'price' && (
+                <motion.div
+                  layoutId="displayModeIndicator"
+                  className="absolute inset-0 bg-[#52C97D] rounded-md shadow-[0_0_8px_rgba(82,201,125,0.4)]"
+                  transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                />
+              )}
+              <span className="relative z-10">PRICE</span>
             </button>
             <button
               onClick={() => onDisplayModeChange('marketCap')}
-              className={`py-1.5 text-[10px] font-bold tracking-wider transition-all rounded-md ${
+              className={`relative py-1.5 text-[10px] font-bold tracking-wider rounded-md transition-colors duration-200 ${
                 displayMode === 'marketCap'
-                  ? 'bg-[#52C97D] text-black shadow-[0_0_8px_rgba(82,201,125,0.4)]'
+                  ? 'text-black'
                   : 'text-white/60 hover:text-white hover:bg-white/5'
               }`}
             >
-              MKT CAP
+              {displayMode === 'marketCap' && (
+                <motion.div
+                  layoutId="displayModeIndicator"
+                  className="absolute inset-0 bg-[#52C97D] rounded-md shadow-[0_0_8px_rgba(82,201,125,0.4)]"
+                  transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                />
+              )}
+              <span className="relative z-10">MKT CAP</span>
             </button>
           </div>
         </div>
