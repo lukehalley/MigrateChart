@@ -11,6 +11,7 @@ import { FeesView } from '@/components/FeesView';
 import { HoldersView } from '@/components/HoldersView';
 import TimeframeToggle from '@/components/TimeframeToggle';
 import FeesTimeframeToggle from '@/components/FeesTimeframeToggle';
+import HoldersTimeframeToggle from '@/components/HoldersTimeframeToggle';
 import ChartControls from '@/components/ChartControls';
 import TokenStats from '@/components/TokenStats';
 import { TokenLoadingLogo } from '@/components/TokenLoadingLogo';
@@ -1071,7 +1072,7 @@ function HomeContent() {
                       }}
                     />
                   ) : (
-                    <FeesTimeframeToggle
+                    <HoldersTimeframeToggle
                       currentTimeframe={holdersTimeframe}
                       onTimeframeChange={(newTimeframe) => {
                         setHoldersTimeframe(newTimeframe);
@@ -1577,7 +1578,7 @@ function HomeContent() {
                   onTimeframeChange={setFeesTimeframe}
                 />
               ) : (
-                <FeesTimeframeToggle
+                <HoldersTimeframeToggle
                   currentTimeframe={holdersTimeframe}
                   onTimeframeChange={setHoldersTimeframe}
                 />

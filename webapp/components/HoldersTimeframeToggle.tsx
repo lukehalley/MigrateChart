@@ -1,23 +1,23 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-type FeesTimeframe = '7D' | '30D' | '90D' | 'ALL';
+type HoldersTimeframe = '1D' | '7D' | '30D' | '90D' | 'ALL';
 
-interface FeesTimeframeToggleProps {
-  currentTimeframe: FeesTimeframe;
-  onTimeframeChange: (timeframe: FeesTimeframe) => void;
+interface HoldersTimeframeToggleProps {
+  currentTimeframe: HoldersTimeframe;
+  onTimeframeChange: (timeframe: HoldersTimeframe) => void;
 }
 
-export default function FeesTimeframeToggle({
+export default function HoldersTimeframeToggle({
   currentTimeframe,
   onTimeframeChange,
-}: FeesTimeframeToggleProps) {
-  const topTimeframes: FeesTimeframe[] = ['7D', '30D', '90D'];
-  const bottomTimeframe: FeesTimeframe = 'ALL';
+}: HoldersTimeframeToggleProps) {
+  const topTimeframes: HoldersTimeframe[] = ['1D', '7D', '30D', '90D'];
+  const bottomTimeframe: HoldersTimeframe = 'ALL';
 
   return (
     <div className="flex flex-col gap-1">
-      {/* Top row - 3 buttons */}
+      {/* Top row - 4 buttons */}
       <div className="flex gap-1 justify-center">
         {topTimeframes.map((tf) => (
           <button
@@ -34,7 +34,7 @@ export default function FeesTimeframeToggle({
           >
             {currentTimeframe === tf && (
               <motion.div
-                layoutId="feesTimeframeIndicator"
+                layoutId="holdersTimeframeIndicator"
                 className="absolute inset-0 bg-[#52C97D] rounded"
                 transition={{ type: 'spring', stiffness: 300, damping: 30 }}
               />
@@ -58,7 +58,7 @@ export default function FeesTimeframeToggle({
       >
         {currentTimeframe === bottomTimeframe && (
           <motion.div
-            layoutId="feesTimeframeIndicator"
+            layoutId="holdersTimeframeIndicator"
             className="absolute inset-0 bg-[#52C97D] rounded"
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
           />
