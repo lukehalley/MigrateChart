@@ -86,18 +86,18 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
   const domainPadding = useMemo(() => {
     const dataPointCount = chartData.length;
 
-    // For timeframes with fewer data points, use more padding for visual breathing room
-    // For timeframes with many data points, use less padding to show more detail
+    // For timeframes with fewer data points, use slightly more padding for visual breathing room
+    // For timeframes with many data points, use minimal padding to show more detail
     if (dataPointCount <= 24) { // 1D with hourly data
-      return { holder: 1.15, change: 1.08, percent: 1.08 }; // More padding
+      return { holder: 1.03, change: 1.05, percent: 1.05 }; // Minimal padding
     } else if (dataPointCount <= 168) { // 7D
-      return { holder: 1.12, change: 1.06, percent: 1.06 };
+      return { holder: 1.025, change: 1.04, percent: 1.04 };
     } else if (dataPointCount <= 720) { // 30D
-      return { holder: 1.10, change: 1.05, percent: 1.05 };
+      return { holder: 1.02, change: 1.03, percent: 1.03 };
     } else if (dataPointCount <= 2160) { // 90D
-      return { holder: 1.08, change: 1.04, percent: 1.04 };
+      return { holder: 1.015, change: 1.025, percent: 1.025 };
     } else { // ALL
-      return { holder: 1.05, change: 1.03, percent: 1.03 }; // Less padding for overview
+      return { holder: 1.01, change: 1.02, percent: 1.02 }; // Very tight for overview
     }
   }, [chartData]);
 
