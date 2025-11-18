@@ -1716,11 +1716,11 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
           />
 
           {/* Modal Content */}
-          <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30 w-[95%] max-w-2xl ${isAboutClosing ? 'animate-fade-out' : 'animate-fade-in'}`}>
+          <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30 w-[95%] max-w-6xl ${isAboutClosing ? 'animate-fade-out' : 'animate-fade-in'}`}>
             <div className="bg-gradient-to-b from-[#0A1F12] to-black border-[3px] border-[var(--primary-color)]/60 shadow-[0_0_50px_rgba(var(--primary-rgb),0.5)] overflow-hidden">
               {/* Header */}
               <div
-                style={{ padding: '24px 36px' }}
+                style={{ padding: '20px 28px' }}
                 className="sticky top-0 z-10 bg-gradient-to-r from-[#0A1F12] via-[#1F6338]/20 to-[#0A1F12] border-b-[3px] border-[var(--primary-color)]/50"
               >
                 <div className="flex items-center justify-between">
@@ -1741,156 +1741,153 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
               <div
                 ref={modalContentRef}
                 style={{
-                  padding: '32px 40px',
+                  padding: '24px 28px',
                   WebkitOverflowScrolling: 'touch' // Enable smooth scrolling on Safari
                 }}
-                className="max-h-[75vh] overflow-y-auto"
+                className="max-h-[80vh] overflow-y-auto"
               >
                 {/* Overview */}
-                <div style={{ marginBottom: '24px' }}>
-                  <p style={{ lineHeight: '1.6', margin: 0 }} className="text-white/90 text-sm md:text-base">
+                <div style={{ marginBottom: '20px' }}>
+                  <p style={{ lineHeight: '1.6', margin: 0 }} className="text-white/90 text-sm">
                     Interactive candlestick chart displaying complete price history across all pool migrations (M0N3Y → ZERA Raydium → ZERA Meteora) with real-time data, technical indicators, and professional drawing tools.
                   </p>
                 </div>
 
                 {/* Divider */}
-                <div style={{ margin: '28px 0' }} className="border-t-2 border-[var(--primary-color)]/30"></div>
+                <div style={{ margin: '20px 0' }} className="border-t-2 border-[var(--primary-color)]/30"></div>
 
-                {/* Chart Interaction */}
-                <div style={{ marginBottom: '24px' }}>
-                  <h3 style={{ marginBottom: '16px' }} className="text-[var(--primary-color)] text-base md:text-lg font-bold tracking-wider uppercase">Navigation</h3>
-                  <div style={{ display: 'grid', gap: '10px' }}>
-                    <div style={{ padding: '16px 20px' }} className="flex items-start gap-4 bg-black/50 border-2 border-[var(--primary-color)]/30 rounded-lg hover:border-[var(--primary-color)]/50 transition-all">
-                      <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[var(--primary-color)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                      </svg>
-                      <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs md:text-sm"><strong>Zoom:</strong> Mouse wheel or pinch gesture</span>
+                {/* Two Column Layout on Desktop */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Left Column */}
+                  <div className="space-y-6">
+                    {/* Navigation */}
+                    <div>
+                      <h3 style={{ marginBottom: '12px' }} className="text-[var(--primary-color)] text-sm font-bold tracking-wider uppercase">Navigation</h3>
+                      <div style={{ display: 'grid', gap: '8px' }}>
+                        <div style={{ padding: '12px 16px' }} className="flex items-start gap-3 bg-black/50 border-2 border-[var(--primary-color)]/30 rounded-lg hover:border-[var(--primary-color)]/50 transition-all">
+                          <svg style={{ marginTop: '2px' }} className="w-4 h-4 text-[var(--primary-color)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                          </svg>
+                          <span style={{ lineHeight: '1.4', margin: 0 }} className="text-white text-xs"><strong>Zoom:</strong> Mouse wheel or pinch</span>
+                        </div>
+                        <div style={{ padding: '12px 16px' }} className="flex items-start gap-3 bg-black/50 border-2 border-[var(--primary-color)]/30 rounded-lg hover:border-[var(--primary-color)]/50 transition-all">
+                          <svg style={{ marginTop: '2px' }} className="w-4 h-4 text-[var(--primary-color)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11l5-5m0 0l5 5m-5-5v12" />
+                          </svg>
+                          <span style={{ lineHeight: '1.4', margin: 0 }} className="text-white text-xs"><strong>Pan:</strong> Drag or swipe</span>
+                        </div>
+                        <div style={{ padding: '12px 16px' }} className="flex items-start gap-3 bg-black/50 border-2 border-[var(--primary-color)]/30 rounded-lg hover:border-[var(--primary-color)]/50 transition-all">
+                          <svg style={{ marginTop: '2px' }} className="w-4 h-4 text-[var(--primary-color)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <span style={{ lineHeight: '1.4', margin: 0 }} className="text-white text-xs"><strong>Timeframes:</strong> 1H, 4H, 8H, 1D, MAX</span>
+                        </div>
+                      </div>
                     </div>
-                    <div style={{ padding: '16px 20px' }} className="flex items-start gap-4 bg-black/50 border-2 border-[var(--primary-color)]/30 rounded-lg hover:border-[var(--primary-color)]/50 transition-all">
-                      <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[var(--primary-color)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11l5-5m0 0l5 5m-5-5v12" />
-                      </svg>
-                      <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs md:text-sm"><strong>Pan:</strong> Click and drag or swipe</span>
+
+                    {/* Drawing Tools */}
+                    <div>
+                      <h3 style={{ marginBottom: '12px' }} className="text-[var(--primary-color)] text-sm font-bold tracking-wider uppercase">Drawing Tools</h3>
+                      <div style={{ display: 'grid', gap: '8px' }}>
+                        <div style={{ padding: '12px 16px' }} className="flex items-start gap-3 bg-black/50 border-2 border-[var(--primary-color)]/30 rounded-lg hover:border-[var(--primary-color)]/50 transition-all">
+                          <svg style={{ marginTop: '2px' }} className="w-4 h-4 text-[var(--primary-color)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12h18" strokeDasharray="4 2" />
+                          </svg>
+                          <span style={{ lineHeight: '1.4', margin: 0 }} className="text-white text-xs"><strong>Horizontal Line:</strong> Support/resistance</span>
+                        </div>
+                        <div style={{ padding: '12px 16px' }} className="flex items-start gap-3 bg-black/50 border-2 border-[var(--primary-color)]/30 rounded-lg hover:border-[var(--primary-color)]/50 transition-all">
+                          <svg style={{ marginTop: '2px' }} className="w-4 h-4 text-[var(--primary-color)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 19l14-14" />
+                          </svg>
+                          <span style={{ lineHeight: '1.4', margin: 0 }} className="text-white text-xs"><strong>Trend Line:</strong> Two points (ESC to cancel)</span>
+                        </div>
+                        <div style={{ padding: '12px 16px' }} className="flex items-start gap-3 bg-black/50 border-2 border-[var(--primary-color)]/30 rounded-lg hover:border-[var(--primary-color)]/50 transition-all">
+                          <svg style={{ marginTop: '2px' }} className="w-4 h-4 text-[var(--primary-color)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                          </svg>
+                          <span style={{ lineHeight: '1.4', margin: 0 }} className="text-white text-xs"><strong>Freehand:</strong> Custom annotations</span>
+                        </div>
+                        <div style={{ padding: '12px 16px' }} className="flex items-start gap-3 bg-black/50 border-2 border-[var(--primary-color)]/30 rounded-lg hover:border-[var(--primary-color)]/50 transition-all">
+                          <svg style={{ marginTop: '2px' }} className="w-4 h-4 text-[var(--primary-color)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                          </svg>
+                          <span style={{ lineHeight: '1.4', margin: 0 }} className="text-white text-xs"><strong>Ruler:</strong> Measure distances</span>
+                        </div>
+                      </div>
                     </div>
-                    <div style={{ padding: '16px 20px' }} className="flex items-start gap-4 bg-black/50 border-2 border-[var(--primary-color)]/30 rounded-lg hover:border-[var(--primary-color)]/50 transition-all">
-                      <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[var(--primary-color)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs md:text-sm"><strong>Timeframes:</strong> 1H, 4H, 8H, 1D, or MAX history</span>
+
+                    {/* Technical Indicators */}
+                    <div>
+                      <h3 style={{ marginBottom: '12px' }} className="text-[var(--primary-color)] text-sm font-bold tracking-wider uppercase">Technical Indicators</h3>
+                      <div style={{ display: 'grid', gap: '8px' }}>
+                        <div style={{ padding: '12px 16px' }} className="flex items-start gap-3 bg-black/50 border-2 border-[var(--primary-color)]/30 rounded-lg hover:border-[var(--primary-color)]/50 transition-all">
+                          <svg style={{ marginTop: '2px' }} className="w-4 h-4 text-[var(--primary-color)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+                          </svg>
+                          <span style={{ lineHeight: '1.4', margin: 0 }} className="text-white text-xs"><strong>Moving Averages:</strong> SMA/EMA (20, 50, 200)</span>
+                        </div>
+                        <div style={{ padding: '12px 16px' }} className="flex items-start gap-3 bg-black/50 border-2 border-[var(--primary-color)]/30 rounded-lg hover:border-[var(--primary-color)]/50 transition-all">
+                          <svg style={{ marginTop: '2px' }} className="w-4 h-4 text-[var(--primary-color)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                          </svg>
+                          <span style={{ lineHeight: '1.4', margin: 0 }} className="text-white text-xs"><strong>RSI:</strong> Relative Strength Index (14)</span>
+                        </div>
+                        <div style={{ padding: '12px 16px' }} className="flex items-start gap-3 bg-black/50 border-2 border-[var(--primary-color)]/30 rounded-lg hover:border-[var(--primary-color)]/50 transition-all">
+                          <svg style={{ marginTop: '2px' }} className="w-4 h-4 text-[var(--primary-color)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                          </svg>
+                          <span style={{ lineHeight: '1.4', margin: 0 }} className="text-white text-xs"><strong>Bollinger Bands:</strong> Volatility (20, 2σ)</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Divider */}
-                <div style={{ margin: '28px 0' }} className="border-t-2 border-[var(--primary-color)]/30"></div>
+                  {/* Right Column */}
+                  <div className="space-y-6">
+                    {/* Display Options */}
+                    <div>
+                      <h3 style={{ marginBottom: '12px' }} className="text-[var(--primary-color)] text-sm font-bold tracking-wider uppercase">Display Options</h3>
+                      <div style={{ display: 'grid', gap: '8px' }}>
+                        <div style={{ padding: '12px 16px' }} className="flex items-start gap-3 bg-black/50 border-2 border-[var(--primary-color)]/30 rounded-lg hover:border-[var(--primary-color)]/50 transition-all">
+                          <svg style={{ marginTop: '2px' }} className="w-4 h-4 text-[var(--primary-color)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <span style={{ lineHeight: '1.4', margin: 0 }} className="text-white text-xs"><strong>Y-Axis:</strong> Price (SOL) or Market Cap</span>
+                        </div>
+                        <div style={{ padding: '12px 16px' }} className="flex items-start gap-3 bg-black/50 border-2 border-[var(--primary-color)]/30 rounded-lg hover:border-[var(--primary-color)]/50 transition-all">
+                          <svg style={{ marginTop: '2px' }} className="w-4 h-4 text-[var(--primary-color)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                          </svg>
+                          <span style={{ lineHeight: '1.4', margin: 0 }} className="text-white text-xs"><strong>Log Scale:</strong> Logarithmic axis</span>
+                        </div>
+                        <div style={{ padding: '12px 16px' }} className="flex items-start gap-3 bg-black/50 border-2 border-[var(--primary-color)]/30 rounded-lg hover:border-[var(--primary-color)]/50 transition-all">
+                          <svg style={{ marginTop: '2px' }} className="w-4 h-4 text-[var(--primary-color)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                          </svg>
+                          <span style={{ lineHeight: '1.4', margin: 0 }} className="text-white text-xs"><strong>Auto Scale:</strong> Fit to visible range</span>
+                        </div>
+                        <div style={{ padding: '12px 16px' }} className="flex items-start gap-3 bg-black/50 border-2 border-[var(--primary-color)]/30 rounded-lg hover:border-[var(--primary-color)]/50 transition-all">
+                          <svg style={{ marginTop: '2px' }} className="w-4 h-4 text-[var(--primary-color)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                          </svg>
+                          <span style={{ lineHeight: '1.4', margin: 0 }} className="text-white text-xs"><strong>Migration Events:</strong> Pool migration markers</span>
+                        </div>
+                        <div style={{ padding: '12px 16px' }} className="flex items-start gap-3 bg-black/50 border-2 border-[var(--primary-color)]/30 rounded-lg hover:border-[var(--primary-color)]/50 transition-all">
+                          <svg style={{ marginTop: '2px' }} className="w-4 h-4 text-[var(--primary-color)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                          </svg>
+                          <span style={{ lineHeight: '1.4', margin: 0 }} className="text-white text-xs"><strong>Volume Bars:</strong> Trading volume histogram</span>
+                        </div>
+                      </div>
+                    </div>
 
-                {/* Drawing Tools */}
-                <div style={{ marginBottom: '24px' }}>
-                  <h3 style={{ marginBottom: '16px' }} className="text-[var(--primary-color)] text-base md:text-lg font-bold tracking-wider uppercase">Drawing Tools</h3>
-                  <div style={{ display: 'grid', gap: '10px' }}>
-                    <div style={{ padding: '16px 20px' }} className="flex items-start gap-4 bg-black/50 border-2 border-[var(--primary-color)]/30 rounded-lg hover:border-[var(--primary-color)]/50 transition-all">
-                      <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[var(--primary-color)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12h18" strokeDasharray="4 2" />
-                      </svg>
-                      <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs md:text-sm"><strong>Horizontal Line:</strong> Draw support/resistance levels</span>
-                    </div>
-                    <div style={{ padding: '16px 20px' }} className="flex items-start gap-4 bg-black/50 border-2 border-[var(--primary-color)]/30 rounded-lg hover:border-[var(--primary-color)]/50 transition-all">
-                      <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[var(--primary-color)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 19l14-14" />
-                      </svg>
-                      <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs md:text-sm"><strong>Trend Line:</strong> Connect two points (ESC to cancel)</span>
-                    </div>
-                    <div style={{ padding: '16px 20px' }} className="flex items-start gap-4 bg-black/50 border-2 border-[var(--primary-color)]/30 rounded-lg hover:border-[var(--primary-color)]/50 transition-all">
-                      <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[var(--primary-color)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                      </svg>
-                      <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs md:text-sm"><strong>Freehand:</strong> Draw custom annotations</span>
-                    </div>
-                    <div style={{ padding: '16px 20px' }} className="flex items-start gap-4 bg-black/50 border-2 border-[var(--primary-color)]/30 rounded-lg hover:border-[var(--primary-color)]/50 transition-all">
-                      <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[var(--primary-color)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                      </svg>
-                      <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs md:text-sm"><strong>Ruler:</strong> Measure price and time distances</span>
+                    {/* Data Sources */}
+                    <div style={{ padding: '14px 16px' }} className="text-center bg-black/60 border-2 border-[var(--primary-color)]/40 rounded-lg">
+                      <p style={{ margin: 0 }} className="text-white/60 text-xs">
+                        <span className="text-[var(--primary-color)] font-bold">Data Sources:</span> Jupiter API, DexScreener, GeckoTerminal
+                      </p>
                     </div>
                   </div>
-                </div>
-
-                {/* Divider */}
-                <div style={{ margin: '28px 0' }} className="border-t-2 border-[var(--primary-color)]/30"></div>
-
-                {/* Technical Analysis */}
-                <div style={{ marginBottom: '24px' }}>
-                  <h3 style={{ marginBottom: '16px' }} className="text-[var(--primary-color)] text-base md:text-lg font-bold tracking-wider uppercase">Technical Indicators</h3>
-                  <div style={{ display: 'grid', gap: '10px' }}>
-                    <div style={{ padding: '16px 20px' }} className="flex items-start gap-4 bg-black/50 border-2 border-[var(--primary-color)]/30 rounded-lg hover:border-[var(--primary-color)]/50 transition-all">
-                      <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[var(--primary-color)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
-                      </svg>
-                      <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs md:text-sm"><strong>Moving Averages:</strong> SMA/EMA (20, 50, 200 periods)</span>
-                    </div>
-                    <div style={{ padding: '16px 20px' }} className="flex items-start gap-4 bg-black/50 border-2 border-[var(--primary-color)]/30 rounded-lg hover:border-[var(--primary-color)]/50 transition-all">
-                      <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[var(--primary-color)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                      </svg>
-                      <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs md:text-sm"><strong>RSI:</strong> Relative Strength Index (14 period)</span>
-                    </div>
-                    <div style={{ padding: '16px 20px' }} className="flex items-start gap-4 bg-black/50 border-2 border-[var(--primary-color)]/30 rounded-lg hover:border-[var(--primary-color)]/50 transition-all">
-                      <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[var(--primary-color)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                      </svg>
-                      <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs md:text-sm"><strong>Bollinger Bands:</strong> Volatility bands (20, 2σ)</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Divider */}
-                <div style={{ margin: '28px 0' }} className="border-t-2 border-[var(--primary-color)]/30"></div>
-
-                {/* Display Options */}
-                <div style={{ marginBottom: '24px' }}>
-                  <h3 style={{ marginBottom: '16px' }} className="text-[var(--primary-color)] text-base md:text-lg font-bold tracking-wider uppercase">Display Options</h3>
-                  <div style={{ display: 'grid', gap: '10px' }}>
-                    <div style={{ padding: '16px 20px' }} className="flex items-start gap-4 bg-black/50 border-2 border-[var(--primary-color)]/30 rounded-lg hover:border-[var(--primary-color)]/50 transition-all">
-                      <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[var(--primary-color)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs md:text-sm"><strong>Y-Axis:</strong> Switch between Price (SOL) and Market Cap</span>
-                    </div>
-                    <div style={{ padding: '16px 20px' }} className="flex items-start gap-4 bg-black/50 border-2 border-[var(--primary-color)]/30 rounded-lg hover:border-[var(--primary-color)]/50 transition-all">
-                      <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[var(--primary-color)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                      </svg>
-                      <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs md:text-sm"><strong>Log Scale:</strong> Toggle logarithmic price axis</span>
-                    </div>
-                    <div style={{ padding: '16px 20px' }} className="flex items-start gap-4 bg-black/50 border-2 border-[var(--primary-color)]/30 rounded-lg hover:border-[var(--primary-color)]/50 transition-all">
-                      <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[var(--primary-color)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
-                      </svg>
-                      <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs md:text-sm"><strong>Auto Scale:</strong> Automatically fit chart to visible range</span>
-                    </div>
-                    <div style={{ padding: '16px 20px' }} className="flex items-start gap-4 bg-black/50 border-2 border-[var(--primary-color)]/30 rounded-lg hover:border-[var(--primary-color)]/50 transition-all">
-                      <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[var(--primary-color)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                      </svg>
-                      <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs md:text-sm"><strong>Migration Events:</strong> Toggle green vertical markers for pool migrations</span>
-                    </div>
-                    <div style={{ padding: '16px 20px' }} className="flex items-start gap-4 bg-black/50 border-2 border-[var(--primary-color)]/30 rounded-lg hover:border-[var(--primary-color)]/50 transition-all">
-                      <svg style={{ marginTop: '2px' }} className="w-5 h-5 text-[var(--primary-color)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                      </svg>
-                      <span style={{ lineHeight: '1.5', margin: 0 }} className="text-white text-xs md:text-sm"><strong>Volume Bars:</strong> Show/hide trading volume histogram</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Divider */}
-                <div style={{ margin: '28px 0' }} className="border-t-2 border-[var(--primary-color)]/30"></div>
-
-                {/* Data Sources */}
-                <div style={{ padding: '16px 20px' }} className="text-center bg-black/60 border-2 border-[var(--primary-color)]/40 rounded-lg">
-                  <p style={{ margin: 0 }} className="text-white/60 text-xs md:text-sm">
-                    <span className="text-[var(--primary-color)] font-bold">Data Sources:</span> Jupiter API, DexScreener, GeckoTerminal
-                  </p>
                 </div>
               </div>
             </div>
