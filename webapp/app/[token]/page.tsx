@@ -1377,6 +1377,7 @@ function HomeContent() {
         {/* Left Section - Chart */}
         <motion.div
           className="absolute top-0 left-0 bottom-0 h-full overflow-hidden"
+          initial={false}
           animate={{
             right: isSidebarCollapsed ? '80px' : '250px'
           }}
@@ -1480,6 +1481,7 @@ function HomeContent() {
           style={{
             right: isSidebarCollapsed ? '92px' : '262px'
           }}
+          initial={false}
           animate={{
             right: isSidebarCollapsed ? '92px' : '262px'
           }}
@@ -1534,6 +1536,7 @@ function HomeContent() {
             width: '250px',
             background: 'linear-gradient(to bottom, #000000 0%, #000000 50%, #000000 100%)'
           }}
+          initial={false}
           animate={{
             x: isSidebarCollapsed ? '100%' : '0%'
           }}
