@@ -2,7 +2,7 @@
 
 import React, { useMemo } from 'react';
 import useSWR from 'swr';
-import { Users, TrendingUp, Clock } from 'lucide-react';
+import { Users, TrendingUp, Percent } from 'lucide-react';
 import { Area, AreaChart, Bar, BarChart, Line, LineChart, CartesianGrid, XAxis, YAxis, ReferenceLine } from 'recharts';
 import { HoldersResponse } from '@/app/api/holders/[slug]/route';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -66,16 +66,19 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
     });
   }, [holdersData]);
 
-  // Calculate change data for the second chart
+  // Calculate change data for the second and third charts
   const changeData = useMemo(() => {
     if (!chartData || chartData.length < 2) return [];
 
     return chartData.map((point, idx) => {
       if (idx === 0) {
-        return { ...point, change: 0 };
+        return { ...point, change: 0, percentChange: 0 };
       }
       const change = point.holders - chartData[idx - 1].holders;
-      return { ...point, change };
+      const percentChange = chartData[idx - 1].holders > 0
+        ? (change / chartData[idx - 1].holders) * 100
+        : 0;
+      return { ...point, change, percentChange };
     });
   }, [chartData]);
 
@@ -110,7 +113,7 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
 
       {/* Charts Grid - Scrollable on mobile */}
       <div className="flex-1 overflow-y-auto md:overflow-hidden p-4 md:p-6 md:min-h-0">
-        <div className="grid gap-4 grid-cols-1 pt-16 md:pt-0 h-auto md:h-full md:grid-rows-2">
+        <div className="grid gap-4 grid-cols-1 pt-16 md:pt-0 h-auto md:h-full md:grid-rows-3">
           {/* Holder Count Growth Area Chart */}
           <Card className="bg-neutral-900 border border-neutral-800 flex flex-col md:min-h-0">
             <CardHeader>
@@ -211,6 +214,59 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
                   />
                   <Bar
                     dataKey="change"
+                    fill="var(--color-change)"
+                    radius={[4, 4, 0, 0]}
+                  />
+                </BarChart>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+
+          {/* Percentage Holder Change Bar Chart */}
+          <Card className="bg-neutral-900 border border-neutral-800 flex flex-col md:min-h-0">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-white">
+                <Percent className="h-5 w-5" style={{ color: primaryColor }} />
+                Percentage Holder Change
+              </CardTitle>
+              <CardDescription className="text-white/60">
+                Day-to-Day Holder Growth Rate (%)
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex-1 pb-0 md:min-h-0">
+              <ChartContainer config={chartConfig} className="w-full h-[250px] md:h-full">
+                <BarChart data={changeData}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-white/10" />
+                  <XAxis
+                    dataKey="dateTime"
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={8}
+                    minTickGap={32}
+                  />
+                  <YAxis
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(value) => {
+                      const num = Number(value);
+                      return num >= 0 ? `+${num.toFixed(2)}%` : `${num.toFixed(2)}%`;
+                    }}
+                  />
+                  <ReferenceLine y={0} stroke="var(--color-change)" strokeOpacity={0.3} />
+                  <ChartTooltip
+                    content={
+                      <ChartTooltipContent
+                        className="bg-neutral-900 border-neutral-800"
+                        labelFormatter={(value, payload) => payload?.[0]?.payload?.dateTimeWithTime || value}
+                        formatter={(value) => {
+                          const num = Number(value);
+                          return num >= 0 ? `+${num.toFixed(2)}%` : `${num.toFixed(2)}%`;
+                        }}
+                      />
+                    }
+                  />
+                  <Bar
+                    dataKey="percentChange"
                     fill="var(--color-change)"
                     radius={[4, 4, 0, 0]}
                   />
