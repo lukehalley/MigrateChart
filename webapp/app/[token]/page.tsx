@@ -1613,8 +1613,8 @@ function HomeContent() {
                                 onClick={() => setTimeframe(tf)}
                                 className={`px-3 py-2 text-xs font-bold rounded transition-all flex items-center justify-center ${
                                   timeframe === tf
-                                    ? 'bg-[var(--primary-color)] text-black'
-                                    : 'text-[var(--primary-color)] hover:bg-[var(--primary-color)]/20'
+                                    ? 'bg-[var(--primary-color)] !text-black'
+                                    : 'text-[var(--primary-color)] bg-transparent hover:bg-[var(--primary-color)]/20'
                                 }`}
                               >
                                 {tf}
@@ -1629,8 +1629,8 @@ function HomeContent() {
                                 onClick={() => setFeesTimeframe(tf)}
                                 className={`px-3 py-2 text-xs font-bold rounded transition-all flex items-center justify-center ${
                                   feesTimeframe === tf
-                                    ? 'bg-[var(--primary-color)] text-black'
-                                    : 'text-[var(--primary-color)] hover:bg-[var(--primary-color)]/20'
+                                    ? 'bg-[var(--primary-color)] !text-black'
+                                    : 'text-[var(--primary-color)] bg-transparent hover:bg-[var(--primary-color)]/20'
                                 }`}
                               >
                                 {tf}
@@ -1645,8 +1645,8 @@ function HomeContent() {
                                 onClick={() => setHoldersTimeframe(tf)}
                                 className={`px-3 py-2 text-xs font-bold rounded transition-all flex items-center justify-center ${
                                   holdersTimeframe === tf
-                                    ? 'bg-[var(--primary-color)] text-black'
-                                    : 'text-[var(--primary-color)] hover:bg-[var(--primary-color)]/20'
+                                    ? 'bg-[var(--primary-color)] !text-black'
+                                    : 'text-[var(--primary-color)] bg-transparent hover:bg-[var(--primary-color)]/20'
                                 }`}
                               >
                                 {tf}
@@ -1680,8 +1680,8 @@ function HomeContent() {
                               onClick={() => handleDisplayModeChange('price')}
                               className={`px-3 py-2 text-xs font-bold rounded transition-all flex items-center justify-center ${
                                 displayMode === 'price'
-                                  ? 'bg-[var(--primary-color)] text-black'
-                                  : 'text-[var(--primary-color)] hover:bg-[var(--primary-color)]/20'
+                                  ? 'bg-[var(--primary-color)] !text-black'
+                                  : 'text-[var(--primary-color)] bg-transparent hover:bg-[var(--primary-color)]/20'
                               }`}
                             >
                               Price
@@ -1690,8 +1690,8 @@ function HomeContent() {
                               onClick={() => handleDisplayModeChange('marketCap')}
                               className={`px-3 py-2 text-xs font-bold rounded transition-all flex items-center justify-center ${
                                 displayMode === 'marketCap'
-                                  ? 'bg-[var(--primary-color)] text-black'
-                                  : 'text-[var(--primary-color)] hover:bg-[var(--primary-color)]/20'
+                                  ? 'bg-[var(--primary-color)] !text-black'
+                                  : 'text-[var(--primary-color)] bg-transparent hover:bg-[var(--primary-color)]/20'
                               }`}
                             >
                               Market Cap
