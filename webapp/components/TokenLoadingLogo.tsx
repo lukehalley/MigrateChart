@@ -10,18 +10,11 @@ interface TokenLoadingLogoProps {
 export function TokenLoadingLogo({ svg, color }: TokenLoadingLogoProps) {
   return (
     <div className="flex items-center justify-center px-4">
-      <motion.div
+      <div
         className="relative"
         style={{
           width: '240px',
           height: '240px',
-        }}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{
-          duration: 0.4,
-          ease: 'easeInOut',
         }}
       >
         {/* Token logo SVG */}
@@ -31,16 +24,17 @@ export function TokenLoadingLogo({ svg, color }: TokenLoadingLogoProps) {
             filter: `drop-shadow(0 0 12px ${color}66)`,
             color,
           }}
-          // Removed initial prop to prevent animation reset on remount
+          // No initial prop - prevents animation reset on remount
+          // Start from mid-cycle values for smooth continuous animation
           animate={{
-            opacity: [0.3, 0.7, 1, 0.7],
-            scale: [0.9, 1, 1, 1],
+            opacity: [0.5, 0.7, 1, 0.7, 0.5],
+            scale: [0.95, 1, 1, 1, 0.95],
           }}
           transition={{
             duration: 2.5,
             repeat: Infinity,
             ease: 'easeInOut',
-            times: [0, 0.3, 0.5, 1],
+            repeatType: 'loop',
           }}
         >
           <div
@@ -57,21 +51,22 @@ export function TokenLoadingLogo({ svg, color }: TokenLoadingLogoProps) {
         {/* Animated glow effect */}
         <motion.div
           className="absolute inset-0 blur-2xl -z-10"
-          initial={{ opacity: 0 }}
+          // No initial prop - prevents animation reset on remount
+          // Start from mid-cycle values for smooth continuous animation
           animate={{
-            opacity: [0, 0.3, 0.5, 0.3],
+            opacity: [0.2, 0.3, 0.5, 0.3, 0.2],
           }}
           transition={{
             duration: 2.5,
             repeat: Infinity,
             ease: 'easeInOut',
-            times: [0, 0.3, 0.5, 1],
+            repeatType: 'loop',
           }}
           style={{
             background: `radial-gradient(circle at center, ${color} 0%, transparent 70%)`,
           }}
         />
-      </motion.div>
+      </div>
     </div>
   );
 }
