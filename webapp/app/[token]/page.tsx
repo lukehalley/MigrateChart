@@ -1602,20 +1602,40 @@ function HomeContent() {
                         </div>
                       </button>
                     </PopoverTrigger>
-                    <PopoverContent side="left" align="center" sideOffset={12} className="w-auto p-2 bg-gradient-to-b from-[#0A1F12] to-black border-2 border-[var(--primary-color)]/60 shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)]">
+                    <PopoverContent
+                      side="left"
+                      align="center"
+                      sideOffset={12}
+                      className="w-auto p-2 bg-gradient-to-b from-[#0A1F12] to-black border-2"
+                      style={{
+                        borderColor: `${primaryColor}99`,
+                        boxShadow: `0 0 20px ${primaryColor}4D`
+                      }}
+                    >
                       <div className="flex flex-col gap-1">
-                        <p className="text-[var(--primary-color)] text-[10px] font-bold mb-1 text-center">Timeframe</p>
+                        <p className="text-[10px] font-bold mb-1 text-center" style={{ color: primaryColor }}>Timeframe</p>
                         {viewMode === 'chart' ? (
                           <>
                             {(['1H', '4H', '8H', '1D', 'MAX'] as const).map((tf) => (
                               <button
                                 key={tf}
                                 onClick={() => setTimeframe(tf)}
-                                className={`px-3 py-2 text-xs font-bold rounded transition-all flex items-center justify-center ${
+                                className="px-3 py-2 text-xs font-bold rounded transition-all flex items-center justify-center"
+                                style={
                                   timeframe === tf
-                                    ? 'bg-[var(--primary-color)] !text-black'
-                                    : 'text-[var(--primary-color)] bg-transparent hover:bg-[var(--primary-color)]/20'
-                                }`}
+                                    ? { backgroundColor: primaryColor, color: '#000' }
+                                    : { color: primaryColor, backgroundColor: 'transparent' }
+                                }
+                                onMouseEnter={(e) => {
+                                  if (timeframe !== tf) {
+                                    e.currentTarget.style.backgroundColor = `${primaryColor}33`;
+                                  }
+                                }}
+                                onMouseLeave={(e) => {
+                                  if (timeframe !== tf) {
+                                    e.currentTarget.style.backgroundColor = 'transparent';
+                                  }
+                                }}
                               >
                                 {tf}
                               </button>
@@ -1627,11 +1647,22 @@ function HomeContent() {
                               <button
                                 key={tf}
                                 onClick={() => setFeesTimeframe(tf)}
-                                className={`px-3 py-2 text-xs font-bold rounded transition-all flex items-center justify-center ${
+                                className="px-3 py-2 text-xs font-bold rounded transition-all flex items-center justify-center"
+                                style={
                                   feesTimeframe === tf
-                                    ? 'bg-[var(--primary-color)] !text-black'
-                                    : 'text-[var(--primary-color)] bg-transparent hover:bg-[var(--primary-color)]/20'
-                                }`}
+                                    ? { backgroundColor: primaryColor, color: '#000' }
+                                    : { color: primaryColor, backgroundColor: 'transparent' }
+                                }
+                                onMouseEnter={(e) => {
+                                  if (feesTimeframe !== tf) {
+                                    e.currentTarget.style.backgroundColor = `${primaryColor}33`;
+                                  }
+                                }}
+                                onMouseLeave={(e) => {
+                                  if (feesTimeframe !== tf) {
+                                    e.currentTarget.style.backgroundColor = 'transparent';
+                                  }
+                                }}
                               >
                                 {tf}
                               </button>
@@ -1643,11 +1674,22 @@ function HomeContent() {
                               <button
                                 key={tf}
                                 onClick={() => setHoldersTimeframe(tf)}
-                                className={`px-3 py-2 text-xs font-bold rounded transition-all flex items-center justify-center ${
+                                className="px-3 py-2 text-xs font-bold rounded transition-all flex items-center justify-center"
+                                style={
                                   holdersTimeframe === tf
-                                    ? 'bg-[var(--primary-color)] !text-black'
-                                    : 'text-[var(--primary-color)] bg-transparent hover:bg-[var(--primary-color)]/20'
-                                }`}
+                                    ? { backgroundColor: primaryColor, color: '#000' }
+                                    : { color: primaryColor, backgroundColor: 'transparent' }
+                                }
+                                onMouseEnter={(e) => {
+                                  if (holdersTimeframe !== tf) {
+                                    e.currentTarget.style.backgroundColor = `${primaryColor}33`;
+                                  }
+                                }}
+                                onMouseLeave={(e) => {
+                                  if (holdersTimeframe !== tf) {
+                                    e.currentTarget.style.backgroundColor = 'transparent';
+                                  }
+                                }}
                               >
                                 {tf}
                               </button>
@@ -1667,32 +1709,76 @@ function HomeContent() {
                       {/* Display Mode Toggle */}
                       <Popover>
                         <PopoverTrigger asChild>
-                          <button className="w-12 h-12 rounded-lg bg-black/50 border border-[var(--primary-color)]/30 hover:bg-[var(--primary-color)]/20 flex items-center justify-center transition-all" title="Display Mode">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-[var(--primary-color)]">
+                          <button
+                            className="w-12 h-12 rounded-lg bg-black/50 flex items-center justify-center transition-all"
+                            style={{
+                              borderWidth: '1px',
+                              borderColor: `${primaryColor}4D`,
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = `${primaryColor}33`;
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+                            }}
+                            title="Display Mode"
+                          >
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ color: primaryColor }}>
                               <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                             </svg>
                           </button>
                         </PopoverTrigger>
-                        <PopoverContent side="left" align="center" sideOffset={12} className="w-auto p-2 bg-gradient-to-b from-[#0A1F12] to-black border-2 border-[var(--primary-color)]/60 shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)]">
+                        <PopoverContent
+                          side="left"
+                          align="center"
+                          sideOffset={12}
+                          className="w-auto p-2 bg-gradient-to-b from-[#0A1F12] to-black border-2"
+                          style={{
+                            borderColor: `${primaryColor}99`,
+                            boxShadow: `0 0 20px ${primaryColor}4D`
+                          }}
+                        >
                           <div className="flex flex-col gap-1">
-                            <p className="text-[var(--primary-color)] text-[10px] font-bold mb-1 text-center">Display</p>
+                            <p className="text-[10px] font-bold mb-1 text-center" style={{ color: primaryColor }}>Display</p>
                             <button
                               onClick={() => handleDisplayModeChange('price')}
-                              className={`px-3 py-2 text-xs font-bold rounded transition-all flex items-center justify-center ${
+                              className="px-3 py-2 text-xs font-bold rounded transition-all flex items-center justify-center"
+                              style={
                                 displayMode === 'price'
-                                  ? 'bg-[var(--primary-color)] !text-black'
-                                  : 'text-[var(--primary-color)] bg-transparent hover:bg-[var(--primary-color)]/20'
-                              }`}
+                                  ? { backgroundColor: primaryColor, color: '#000' }
+                                  : { color: primaryColor, backgroundColor: 'transparent' }
+                              }
+                              onMouseEnter={(e) => {
+                                if (displayMode !== 'price') {
+                                  e.currentTarget.style.backgroundColor = `${primaryColor}33`;
+                                }
+                              }}
+                              onMouseLeave={(e) => {
+                                if (displayMode !== 'price') {
+                                  e.currentTarget.style.backgroundColor = 'transparent';
+                                }
+                              }}
                             >
                               Price
                             </button>
                             <button
                               onClick={() => handleDisplayModeChange('marketCap')}
-                              className={`px-3 py-2 text-xs font-bold rounded transition-all flex items-center justify-center ${
+                              className="px-3 py-2 text-xs font-bold rounded transition-all flex items-center justify-center"
+                              style={
                                 displayMode === 'marketCap'
-                                  ? 'bg-[var(--primary-color)] !text-black'
-                                  : 'text-[var(--primary-color)] bg-transparent hover:bg-[var(--primary-color)]/20'
-                              }`}
+                                  ? { backgroundColor: primaryColor, color: '#000' }
+                                  : { color: primaryColor, backgroundColor: 'transparent' }
+                              }
+                              onMouseEnter={(e) => {
+                                if (displayMode !== 'marketCap') {
+                                  e.currentTarget.style.backgroundColor = `${primaryColor}33`;
+                                }
+                              }}
+                              onMouseLeave={(e) => {
+                                if (displayMode !== 'marketCap') {
+                                  e.currentTarget.style.backgroundColor = 'transparent';
+                                }
+                              }}
                             >
                               Market Cap
                             </button>
@@ -1703,23 +1789,54 @@ function HomeContent() {
                       {/* Toggles Popover */}
                       <Popover>
                         <PopoverTrigger asChild>
-                          <button className="w-12 h-12 rounded-lg bg-black/50 border border-[var(--primary-color)]/30 hover:bg-[var(--primary-color)]/20 flex items-center justify-center transition-all" title="Chart Options">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-[var(--primary-color)]">
+                          <button
+                            className="w-12 h-12 rounded-lg bg-black/50 flex items-center justify-center transition-all"
+                            style={{
+                              borderWidth: '1px',
+                              borderColor: `${primaryColor}4D`,
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = `${primaryColor}33`;
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+                            }}
+                            title="Chart Options"
+                          >
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ color: primaryColor }}>
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" stroke="currentColor"/>
                             </svg>
                           </button>
                         </PopoverTrigger>
-                        <PopoverContent side="left" align="center" sideOffset={12} className="w-48 p-2 bg-gradient-to-b from-[#0A1F12] to-black border-2 border-[var(--primary-color)]/60 shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)]">
+                        <PopoverContent
+                          side="left"
+                          align="center"
+                          sideOffset={12}
+                          className="w-48 p-2 bg-gradient-to-b from-[#0A1F12] to-black border-2"
+                          style={{
+                            borderColor: `${primaryColor}99`,
+                            boxShadow: `0 0 20px ${primaryColor}4D`
+                          }}
+                        >
                           <div className="flex flex-col gap-1.5">
-                            <p className="text-[var(--primary-color)] text-[10px] font-bold mb-0.5 text-center">Options</p>
+                            <p className="text-[10px] font-bold mb-0.5 text-center" style={{ color: primaryColor }}>Options</p>
 
                             {/* Volume Toggle */}
                             <button
                               onClick={handleVolumeToggle}
-                              className="flex items-center justify-between px-2 py-1.5 rounded hover:bg-[var(--primary-color)]/10 transition-colors"
+                              className="flex items-center justify-between px-2 py-1.5 rounded transition-colors"
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = `${primaryColor}1A`;
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = 'transparent';
+                              }}
                             >
-                              <span className="text-[var(--primary-color)] text-xs font-medium">Volume</span>
-                              <div className={`w-10 h-5 rounded-full transition-colors ${showVolume ? 'bg-[var(--primary-color)]' : 'bg-gray-600'}`}>
+                              <span className="text-xs font-medium" style={{ color: primaryColor }}>Volume</span>
+                              <div
+                                className="w-10 h-5 rounded-full transition-colors"
+                                style={{ backgroundColor: showVolume ? primaryColor : '#4b5563' }}
+                              >
                                 <div className={`w-4 h-4 bg-white rounded-full mt-0.5 transition-transform ${showVolume ? 'translate-x-5' : 'translate-x-0.5'}`}></div>
                               </div>
                             </button>
@@ -1727,10 +1844,19 @@ function HomeContent() {
                             {/* Migration Lines Toggle */}
                             <button
                               onClick={handleMigrationLinesToggle}
-                              className="flex items-center justify-between px-2 py-1.5 rounded hover:bg-[var(--primary-color)]/10 transition-colors"
+                              className="flex items-center justify-between px-2 py-1.5 rounded transition-colors"
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = `${primaryColor}1A`;
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = 'transparent';
+                              }}
                             >
-                              <span className="text-[var(--primary-color)] text-xs font-medium">Migration Lines</span>
-                              <div className={`w-10 h-5 rounded-full transition-colors ${showMigrationLines ? 'bg-[var(--primary-color)]' : 'bg-gray-600'}`}>
+                              <span className="text-xs font-medium" style={{ color: primaryColor }}>Migration Lines</span>
+                              <div
+                                className="w-10 h-5 rounded-full transition-colors"
+                                style={{ backgroundColor: showMigrationLines ? primaryColor : '#4b5563' }}
+                              >
                                 <div className={`w-4 h-4 bg-white rounded-full mt-0.5 transition-transform ${showMigrationLines ? 'translate-x-5' : 'translate-x-0.5'}`}></div>
                               </div>
                             </button>
@@ -1738,10 +1864,19 @@ function HomeContent() {
                             {/* Log Scale Toggle */}
                             <button
                               onClick={handleLogScaleToggle}
-                              className="flex items-center justify-between px-2 py-1.5 rounded hover:bg-[var(--primary-color)]/10 transition-colors"
+                              className="flex items-center justify-between px-2 py-1.5 rounded transition-colors"
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = `${primaryColor}1A`;
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = 'transparent';
+                              }}
                             >
-                              <span className="text-[var(--primary-color)] text-xs font-medium">Log Scale</span>
-                              <div className={`w-10 h-5 rounded-full transition-colors ${isLogScale ? 'bg-[var(--primary-color)]' : 'bg-gray-600'}`}>
+                              <span className="text-xs font-medium" style={{ color: primaryColor }}>Log Scale</span>
+                              <div
+                                className="w-10 h-5 rounded-full transition-colors"
+                                style={{ backgroundColor: isLogScale ? primaryColor : '#4b5563' }}
+                              >
                                 <div className={`w-4 h-4 bg-white rounded-full mt-0.5 transition-transform ${isLogScale ? 'translate-x-5' : 'translate-x-0.5'}`}></div>
                               </div>
                             </button>
@@ -1749,10 +1884,19 @@ function HomeContent() {
                             {/* Auto Scale Toggle */}
                             <button
                               onClick={handleAutoScaleToggle}
-                              className="flex items-center justify-between px-2 py-1.5 rounded hover:bg-[var(--primary-color)]/10 transition-colors"
+                              className="flex items-center justify-between px-2 py-1.5 rounded transition-colors"
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = `${primaryColor}1A`;
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = 'transparent';
+                              }}
                             >
-                              <span className="text-[var(--primary-color)] text-xs font-medium">Auto Scale</span>
-                              <div className={`w-10 h-5 rounded-full transition-colors ${isAutoScale ? 'bg-[var(--primary-color)]' : 'bg-gray-600'}`}>
+                              <span className="text-xs font-medium" style={{ color: primaryColor }}>Auto Scale</span>
+                              <div
+                                className="w-10 h-5 rounded-full transition-colors"
+                                style={{ backgroundColor: isAutoScale ? primaryColor : '#4b5563' }}
+                              >
                                 <div className={`w-4 h-4 bg-white rounded-full mt-0.5 transition-transform ${isAutoScale ? 'translate-x-5' : 'translate-x-0.5'}`}></div>
                               </div>
                             </button>
