@@ -1502,25 +1502,41 @@ function HomeContent() {
             )}
           </button>
 
-          {/* Conditional Content */}
-          {isSidebarCollapsed ? (
-            // Collapsed: Just show logo
-            <div className="px-4">
-              <div className="stat-card-highlight">
-                <div className="flex items-center justify-center">
-                  {currentProject?.logoUrl && (
-                    <img
-                      src={currentProject.logoUrl}
-                      alt={currentProject.name}
-                      className="w-12 h-12 object-contain"
-                    />
-                  )}
-                </div>
-              </div>
-            </div>
-          ) : (
-            // Expanded: Show full content
-            <>
+          {/* Conditional Content with AnimatePresence - overflow hidden to prevent content reflow */}
+          <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+            <AnimatePresence mode="wait" initial={false}>
+              {isSidebarCollapsed ? (
+                // Collapsed: Just show logo
+                <motion.div
+                  key="collapsed"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="px-4"
+                >
+                  <div className="stat-card-highlight">
+                    <div className="flex items-center justify-center">
+                      {currentProject?.logoUrl && (
+                        <img
+                          src={currentProject.logoUrl}
+                          alt={currentProject.name}
+                          className="w-12 h-12 object-contain"
+                        />
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              ) : (
+                // Expanded: Show full content
+                <motion.div
+                  key="expanded"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex-1 flex flex-col min-h-0"
+                >
 
           {/* Scrollable Content */}
           <div className="flex-1 overflow-y-auto overflow-x-hidden px-2.5 py-2 space-y-0 min-h-0">
@@ -1725,8 +1741,10 @@ function HomeContent() {
               <p className="text-[var(--primary-color)] text-base font-bold tracking-wider">@Trenchooooor</p>
             </a>
           </div>
-            </>
-          )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </motion.div>
       </div>
     </main>
