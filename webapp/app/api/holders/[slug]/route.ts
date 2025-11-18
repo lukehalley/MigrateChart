@@ -7,7 +7,7 @@ import type { ProjectConfig } from '@/lib/types';
  * GET /api/holders/[slug]?timeframe=7D|30D|90D|ALL
  */
 
-type HolderTimeframe = '7D' | '30D' | '90D' | 'ALL';
+type HolderTimeframe = '1D' | '7D' | '30D' | '90D' | 'ALL';
 
 export interface HolderSnapshot {
   timestamp: number;
@@ -28,6 +28,8 @@ function getTimeframeStart(timeframe: HolderTimeframe): number | undefined {
   const now = Math.floor(Date.now() / 1000);
 
   switch (timeframe) {
+    case '1D':
+      return now - (1 * 86400);
     case '7D':
       return now - (7 * 86400);
     case '30D':

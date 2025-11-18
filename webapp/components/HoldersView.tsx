@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from '@/components/ui/chart';
 import { HoldersChartSkeleton } from '@/components/HoldersChartSkeleton';
 
-type HolderTimeframe = '7D' | '30D' | '90D' | 'ALL';
+type HolderTimeframe = '1D' | '7D' | '30D' | '90D' | 'ALL';
 
 const getChartConfig = (primaryColor: string): ChartConfig => ({
   holders: {

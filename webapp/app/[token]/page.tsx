@@ -31,11 +31,11 @@ function HomeContent() {
   const urlChartTimeframe = searchParams.get('chartTimeframe') as Timeframe | null;
   const urlView = searchParams.get('view') as 'chart' | 'fees' | 'holders' | null;
   const urlFeesTimeframe = searchParams.get('feesTimeframe') as '7D' | '30D' | '90D' | 'ALL' | null;
-  const urlHoldersTimeframe = searchParams.get('holdersTimeframe') as '7D' | '30D' | '90D' | 'ALL' | null;
+  const urlHoldersTimeframe = searchParams.get('holdersTimeframe') as '1D' | '7D' | '30D' | '90D' | 'ALL' | null;
 
   const validTimeframes: Timeframe[] = ['1H', '4H', '8H', '1D', 'MAX'];
   const validFeesTimeframes = ['7D', '30D', '90D', 'ALL'];
-  const validHoldersTimeframes = ['7D', '30D', '90D', 'ALL'];
+  const validHoldersTimeframes = ['1D', '7D', '30D', '90D', 'ALL'];
 
   const initialTimeframe = urlChartTimeframe && validTimeframes.includes(urlChartTimeframe) ? urlChartTimeframe : '1D';
   const initialViewMode = urlView && ['chart', 'fees', 'holders'].includes(urlView) ? urlView : 'chart';
@@ -49,7 +49,7 @@ function HomeContent() {
   const [mobileMenuTab, setMobileMenuTab] = useState<'settings' | 'about'>('settings');
   const [viewMode, setViewModeState] = useState<'chart' | 'fees' | 'holders'>(initialViewMode);
   const [feesTimeframe, setFeesTimeframeState] = useState<'7D' | '30D' | '90D' | 'ALL'>(initialFeesTimeframe);
-  const [holdersTimeframe, setHoldersTimeframeState] = useState<'7D' | '30D' | '90D' | 'ALL'>(initialHoldersTimeframe);
+  const [holdersTimeframe, setHoldersTimeframeState] = useState<'1D' | '7D' | '30D' | '90D' | 'ALL'>(initialHoldersTimeframe);
 
   // Reset chart position function
   const handleResetChartPosition = () => {
@@ -104,7 +104,7 @@ function HomeContent() {
     const urlChartTimeframe = searchParams.get('chartTimeframe') as Timeframe | null;
     const urlView = searchParams.get('view') as 'chart' | 'fees' | 'holders' | null;
     const urlFeesTimeframe = searchParams.get('feesTimeframe') as '7D' | '30D' | '90D' | 'ALL' | null;
-    const urlHoldersTimeframe = searchParams.get('holdersTimeframe') as '7D' | '30D' | '90D' | 'ALL' | null;
+    const urlHoldersTimeframe = searchParams.get('holdersTimeframe') as '1D' | '7D' | '30D' | '90D' | 'ALL' | null;
 
     if (urlChartTimeframe && validTimeframes.includes(urlChartTimeframe)) {
       setTimeframeState(urlChartTimeframe);
@@ -232,7 +232,7 @@ function HomeContent() {
   };
 
   // Update URL when holders timeframe changes
-  const setHoldersTimeframe = (newHoldersTimeframe: '7D' | '30D' | '90D' | 'ALL') => {
+  const setHoldersTimeframe = (newHoldersTimeframe: '1D' | '7D' | '30D' | '90D' | 'ALL') => {
     setHoldersTimeframeState(newHoldersTimeframe);
     const params = new URLSearchParams(searchParams.toString());
     params.set('holdersTimeframe', newHoldersTimeframe);

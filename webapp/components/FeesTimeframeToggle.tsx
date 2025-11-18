@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-type FeesTimeframe = '7D' | '30D' | '90D' | 'ALL';
+type FeesTimeframe = '1D' | '7D' | '30D' | '90D' | 'ALL';
 
 interface FeesTimeframeToggleProps {
   currentTimeframe: FeesTimeframe;
@@ -12,12 +12,12 @@ export default function FeesTimeframeToggle({
   currentTimeframe,
   onTimeframeChange,
 }: FeesTimeframeToggleProps) {
-  const topTimeframes: FeesTimeframe[] = ['7D', '30D', '90D'];
+  const topTimeframes: FeesTimeframe[] = ['1D', '7D', '30D', '90D'];
   const bottomTimeframe: FeesTimeframe = 'ALL';
 
   return (
     <div className="flex flex-col gap-1">
-      {/* Top row - 3 buttons */}
+      {/* Top row - 4 buttons */}
       <div className="flex gap-1 justify-center">
         {topTimeframes.map((tf) => (
           <button
