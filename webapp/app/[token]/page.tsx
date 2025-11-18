@@ -1506,24 +1506,96 @@ function HomeContent() {
           <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
             <AnimatePresence mode="wait" initial={false}>
               {isSidebarCollapsed ? (
-                // Collapsed: Just show logo
+                // Collapsed: Show compact controls
                 <motion.div
                   key="collapsed"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.2 }}
-                  className="px-4"
+                  className="flex flex-col items-center gap-3 py-3"
                 >
-                  <div className="stat-card-highlight">
-                    <div className="flex items-center justify-center">
-                      {currentProject?.logoUrl && (
-                        <img
-                          src={currentProject.logoUrl}
-                          alt={currentProject.name}
-                          className="w-12 h-12 object-contain"
-                        />
-                      )}
+                  {/* Logo */}
+                  <div className="w-12 h-12 flex items-center justify-center">
+                    {currentProject?.logoUrl && (
+                      <img
+                        src={currentProject.logoUrl}
+                        alt={currentProject.name}
+                        className="w-full h-full object-contain"
+                      />
+                    )}
+                  </div>
+
+                  {/* Live Indicator */}
+                  <div className="flex flex-col items-center gap-0.5">
+                    <div className="w-1.5 h-1.5 bg-[var(--primary-color)] rounded-full animate-pulse"></div>
+                    <span className="text-[var(--primary-color)] text-[7px] font-bold">LIVE</span>
+                  </div>
+
+                  {/* Divider */}
+                  <div className="w-8 h-px bg-[var(--primary-color)]/30"></div>
+
+                  {/* View Mode Icons - Vertical Stack */}
+                  <div className="flex flex-col gap-2">
+                    {/* Chart View */}
+                    <button
+                      onClick={() => setViewMode('chart')}
+                      className={`w-12 h-12 rounded-lg flex items-center justify-center transition-all ${
+                        viewMode === 'chart'
+                          ? 'bg-[var(--primary-color)] shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)]'
+                          : 'bg-black/50 border border-[var(--primary-color)]/30 hover:bg-[var(--primary-color)]/20'
+                      }`}
+                      title="Chart View"
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={viewMode === 'chart' ? 'text-black' : 'text-[var(--primary-color)]'}>
+                        <path d="M3 3v18h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M18 9l-5 5-4-4-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </button>
+
+                    {/* Fees View */}
+                    <button
+                      onClick={() => setViewMode('fees')}
+                      className={`w-12 h-12 rounded-lg flex items-center justify-center transition-all ${
+                        viewMode === 'fees'
+                          ? 'bg-[var(--primary-color)] shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)]'
+                          : 'bg-black/50 border border-[var(--primary-color)]/30 hover:bg-[var(--primary-color)]/20'
+                      }`}
+                      title="Fees View"
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={viewMode === 'fees' ? 'text-black' : 'text-[var(--primary-color)]'}>
+                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </button>
+
+                    {/* Holders View */}
+                    <button
+                      onClick={() => setViewMode('holders')}
+                      className={`w-12 h-12 rounded-lg flex items-center justify-center transition-all ${
+                        viewMode === 'holders'
+                          ? 'bg-[var(--primary-color)] shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)]'
+                          : 'bg-black/50 border border-[var(--primary-color)]/30 hover:bg-[var(--primary-color)]/20'
+                      }`}
+                      title="Holders View"
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={viewMode === 'holders' ? 'text-black' : 'text-[var(--primary-color)]'}>
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </button>
+                  </div>
+
+                  {/* Divider */}
+                  <div className="w-8 h-px bg-[var(--primary-color)]/30"></div>
+
+                  {/* Current Timeframe Badge */}
+                  <div className="flex flex-col items-center gap-1">
+                    <span className="text-white/50 text-[7px] font-medium">TIME</span>
+                    <div className="px-2 py-1 bg-[var(--primary-color)]/20 border border-[var(--primary-color)]/50 rounded">
+                      <span className="text-[var(--primary-color)] text-xs font-bold">
+                        {viewMode === 'chart' ? timeframe : viewMode === 'fees' ? feesTimeframe : holdersTimeframe}
+                      </span>
                     </div>
                   </div>
                 </motion.div>
