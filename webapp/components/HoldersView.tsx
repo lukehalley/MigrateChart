@@ -3,7 +3,7 @@
 import React, { useMemo } from 'react';
 import useSWR from 'swr';
 import { Users, TrendingUp, Clock } from 'lucide-react';
-import { Area, AreaChart, Line, LineChart, CartesianGrid, XAxis, YAxis } from 'recharts';
+import { Area, AreaChart, Bar, BarChart, Line, LineChart, CartesianGrid, XAxis, YAxis, ReferenceLine } from 'recharts';
 import { HoldersResponse } from '@/app/api/holders/[slug]/route';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from '@/components/ui/chart';
@@ -59,6 +59,7 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
         date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
         time: date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
         dateTime: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        dateTimeWithTime: `${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} ${date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}`,
         timestamp: snapshot.timestamp,
         holders: snapshot.holder_count,
       };
@@ -148,7 +149,7 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
                     content={
                       <ChartTooltipContent
                         className="bg-neutral-900 border-neutral-800"
-                        labelFormatter={(value) => value}
+                        labelFormatter={(value, payload) => payload?.[0]?.payload?.dateTimeWithTime || value}
                         formatter={(value) => formatNumber(Number(value))}
                       />
                     }
@@ -178,7 +179,7 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
             </CardHeader>
             <CardContent className="flex-1 pb-0 md:min-h-0">
               <ChartContainer config={chartConfig} className="w-full h-[250px] md:h-full">
-                <LineChart data={changeData}>
+                <BarChart data={changeData}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-white/10" />
                   <XAxis
                     dataKey="dateTime"
@@ -195,11 +196,12 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
                       return num >= 0 ? `+${num.toLocaleString()}` : num.toLocaleString();
                     }}
                   />
+                  <ReferenceLine y={0} stroke="var(--color-change)" strokeOpacity={0.3} />
                   <ChartTooltip
                     content={
                       <ChartTooltipContent
                         className="bg-neutral-900 border-neutral-800"
-                        labelFormatter={(value) => value}
+                        labelFormatter={(value, payload) => payload?.[0]?.payload?.dateTimeWithTime || value}
                         formatter={(value) => {
                           const num = Number(value);
                           return num >= 0 ? `+${formatNumber(num)}` : formatNumber(num);
@@ -207,14 +209,12 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
                       />
                     }
                   />
-                  <Line
-                    type="monotone"
+                  <Bar
                     dataKey="change"
-                    stroke="var(--color-change)"
-                    strokeWidth={2}
-                    dot={false}
+                    fill="var(--color-change)"
+                    radius={[4, 4, 0, 0]}
                   />
-                </LineChart>
+                </BarChart>
               </ChartContainer>
             </CardContent>
           </Card>
