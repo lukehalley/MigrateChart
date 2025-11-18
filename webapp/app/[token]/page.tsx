@@ -76,6 +76,11 @@ function HomeContent() {
   // Sidebar collapse state - initialize with default
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
 
+  // Popover state management
+  const [isTimeframePopoverOpen, setIsTimeframePopoverOpen] = useState(false);
+  const [isDisplayModePopoverOpen, setIsDisplayModePopoverOpen] = useState(false);
+  const [isChartOptionsPopoverOpen, setIsChartOptionsPopoverOpen] = useState(false);
+
   // Helper function to format goal numbers
   const formatGoalNumber = (num: number): string => {
     if (num >= 1_000_000_000) {
@@ -1592,7 +1597,7 @@ function HomeContent() {
                   <div className="w-8 h-px bg-[var(--primary-color)]/30"></div>
 
                   {/* Timeframe Selector Popover */}
-                  <Popover>
+                  <Popover open={isTimeframePopoverOpen} onOpenChange={setIsTimeframePopoverOpen}>
                     <PopoverTrigger asChild>
                       <button className="flex flex-col items-center gap-1 hover:opacity-80 transition-opacity cursor-pointer">
                         <span className="text-white/50 text-[7px] font-medium">TIME</span>
@@ -1620,7 +1625,10 @@ function HomeContent() {
                             {(['1H', '4H', '8H', '1D', 'MAX'] as const).map((tf) => (
                               <button
                                 key={tf}
-                                onClick={() => setTimeframe(tf)}
+                                onClick={() => {
+                                  setTimeframe(tf);
+                                  setIsTimeframePopoverOpen(false);
+                                }}
                                 className="px-3 py-2 text-xs font-bold rounded transition-all flex items-center justify-center"
                                 style={
                                   timeframe === tf
@@ -1647,7 +1655,10 @@ function HomeContent() {
                             {(['7D', '30D', '90D', 'ALL'] as const).map((tf) => (
                               <button
                                 key={tf}
-                                onClick={() => setFeesTimeframe(tf)}
+                                onClick={() => {
+                                  setFeesTimeframe(tf);
+                                  setIsTimeframePopoverOpen(false);
+                                }}
                                 className="px-3 py-2 text-xs font-bold rounded transition-all flex items-center justify-center"
                                 style={
                                   feesTimeframe === tf
@@ -1674,7 +1685,10 @@ function HomeContent() {
                             {(['1D', '7D', '30D', '90D', 'ALL'] as const).map((tf) => (
                               <button
                                 key={tf}
-                                onClick={() => setHoldersTimeframe(tf)}
+                                onClick={() => {
+                                  setHoldersTimeframe(tf);
+                                  setIsTimeframePopoverOpen(false);
+                                }}
                                 className="px-3 py-2 text-xs font-bold rounded transition-all flex items-center justify-center"
                                 style={
                                   holdersTimeframe === tf
@@ -1708,7 +1722,7 @@ function HomeContent() {
                       <div className="w-8 h-px bg-[var(--primary-color)]/30"></div>
 
                       {/* Display Mode Toggle */}
-                      <Popover>
+                      <Popover open={isDisplayModePopoverOpen} onOpenChange={setIsDisplayModePopoverOpen}>
                         <PopoverTrigger asChild>
                           <button
                             className="w-12 h-12 rounded-lg bg-black/50 flex items-center justify-center transition-all"
@@ -1742,7 +1756,10 @@ function HomeContent() {
                           <div className="flex flex-col gap-1">
                             <p className="text-[10px] font-bold mb-1 text-center" style={{ color: primaryColor }}>Display</p>
                             <button
-                              onClick={() => handleDisplayModeChange('price')}
+                              onClick={() => {
+                                handleDisplayModeChange('price');
+                                setIsDisplayModePopoverOpen(false);
+                              }}
                               className="px-3 py-2 text-xs font-bold rounded transition-all flex items-center justify-center"
                               style={
                                 displayMode === 'price'
@@ -1763,7 +1780,10 @@ function HomeContent() {
                               Price
                             </button>
                             <button
-                              onClick={() => handleDisplayModeChange('marketCap')}
+                              onClick={() => {
+                                handleDisplayModeChange('marketCap');
+                                setIsDisplayModePopoverOpen(false);
+                              }}
                               className="px-3 py-2 text-xs font-bold rounded transition-all flex items-center justify-center"
                               style={
                                 displayMode === 'marketCap'
@@ -1788,7 +1808,7 @@ function HomeContent() {
                       </Popover>
 
                       {/* Toggles Popover */}
-                      <Popover>
+                      <Popover open={isChartOptionsPopoverOpen} onOpenChange={setIsChartOptionsPopoverOpen}>
                         <PopoverTrigger asChild>
                           <button
                             className="w-12 h-12 rounded-lg bg-black/50 flex items-center justify-center transition-all"
