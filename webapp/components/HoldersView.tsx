@@ -113,7 +113,7 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
 
       {/* Charts Grid - Scrollable on mobile */}
       <div className="flex-1 overflow-y-auto md:overflow-hidden p-4 md:p-6 md:min-h-0">
-        <div className="grid gap-4 grid-cols-1 pt-16 md:pt-0 h-auto md:h-full md:grid-rows-3">
+        <div className="grid gap-4 grid-cols-1 pt-16 md:pt-0 h-auto md:h-full md:grid-rows-[1fr_1fr]">
           {/* Holder Count Growth Area Chart */}
           <Card className="bg-neutral-900 border border-neutral-800 flex flex-col md:min-h-0">
             <CardHeader>
@@ -169,111 +169,116 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
             </CardContent>
           </Card>
 
-          {/* Daily Holder Change Line Chart */}
-          <Card className="bg-neutral-900 border border-neutral-800 flex flex-col md:min-h-0">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-white">
-                <TrendingUp className="h-5 w-5" style={{ color: primaryColor }} />
-                Daily Holder Change
-              </CardTitle>
-              <CardDescription className="text-white/60">
-                Day-to-Day Holder Growth Pattern
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex-1 pb-0 md:min-h-0">
-              <ChartContainer config={chartConfig} className="w-full h-[250px] md:h-full">
-                <BarChart data={changeData}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-white/10" />
-                  <XAxis
-                    dataKey="dateTime"
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={8}
-                    minTickGap={32}
-                  />
-                  <YAxis
-                    tickLine={false}
-                    axisLine={false}
-                    tickFormatter={(value) => {
-                      const num = Number(value);
-                      return num >= 0 ? `+${num.toLocaleString()}` : num.toLocaleString();
-                    }}
-                  />
-                  <ReferenceLine y={0} stroke="var(--color-change)" strokeOpacity={0.3} />
-                  <ChartTooltip
-                    content={
-                      <ChartTooltipContent
-                        className="bg-neutral-900 border-neutral-800"
-                        labelFormatter={(value, payload) => payload?.[0]?.payload?.dateTimeWithTime || value}
-                        formatter={(value) => {
-                          const num = Number(value);
-                          return num >= 0 ? `+${formatNumber(num)}` : formatNumber(num);
-                        }}
-                      />
-                    }
-                  />
-                  <Bar
-                    dataKey="change"
-                    fill="var(--color-change)"
-                    radius={[4, 4, 0, 0]}
-                  />
-                </BarChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
+          {/* Bottom Row - Daily Change and Percentage Change Side by Side */}
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+            {/* Daily Holder Change Bar Chart */}
+            <Card className="bg-neutral-900 border border-neutral-800 flex flex-col md:min-h-0">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-white">
+                  <TrendingUp className="h-5 w-5" style={{ color: primaryColor }} />
+                  Daily Holder Change
+                </CardTitle>
+                <CardDescription className="text-white/60">
+                  Day-to-Day Holder Growth Pattern
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="flex-1 pb-0 md:min-h-0">
+                <ChartContainer config={chartConfig} className="w-full h-[250px] md:h-full">
+                  <BarChart data={changeData}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-white/10" />
+                    <XAxis
+                      dataKey="dateTime"
+                      tickLine={false}
+                      axisLine={false}
+                      tickMargin={8}
+                      minTickGap={32}
+                    />
+                    <YAxis
+                      tickLine={false}
+                      axisLine={false}
+                      tickFormatter={(value) => {
+                        const num = Number(value);
+                        return num >= 0 ? `+${num.toLocaleString()}` : num.toLocaleString();
+                      }}
+                    />
+                    <ReferenceLine y={0} stroke="var(--color-change)" strokeOpacity={0.3} />
+                    <ChartTooltip
+                      content={
+                        <ChartTooltipContent
+                          className="bg-neutral-900 border-neutral-800"
+                          labelFormatter={(value, payload) => payload?.[0]?.payload?.dateTimeWithTime || value}
+                          formatter={(value) => {
+                            const num = Number(value);
+                            return num >= 0 ? `+${formatNumber(num)}` : formatNumber(num);
+                          }}
+                        />
+                      }
+                    />
+                    <Bar
+                      dataKey="change"
+                      fill="var(--color-change)"
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </BarChart>
+                </ChartContainer>
+              </CardContent>
+            </Card>
 
-          {/* Percentage Holder Change Bar Chart */}
-          <Card className="bg-neutral-900 border border-neutral-800 flex flex-col md:min-h-0">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-white">
-                <Percent className="h-5 w-5" style={{ color: primaryColor }} />
-                Percentage Holder Change
-              </CardTitle>
-              <CardDescription className="text-white/60">
-                Day-to-Day Holder Growth Rate (%)
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex-1 pb-0 md:min-h-0">
-              <ChartContainer config={chartConfig} className="w-full h-[250px] md:h-full">
-                <BarChart data={changeData}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-white/10" />
-                  <XAxis
-                    dataKey="dateTime"
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={8}
-                    minTickGap={32}
-                  />
-                  <YAxis
-                    tickLine={false}
-                    axisLine={false}
-                    tickFormatter={(value) => {
-                      const num = Number(value);
-                      return num >= 0 ? `+${num.toFixed(2)}%` : `${num.toFixed(2)}%`;
-                    }}
-                  />
-                  <ReferenceLine y={0} stroke="var(--color-change)" strokeOpacity={0.3} />
-                  <ChartTooltip
-                    content={
-                      <ChartTooltipContent
-                        className="bg-neutral-900 border-neutral-800"
-                        labelFormatter={(value, payload) => payload?.[0]?.payload?.dateTimeWithTime || value}
-                        formatter={(value) => {
-                          const num = Number(value);
-                          return num >= 0 ? `+${num.toFixed(2)}%` : `${num.toFixed(2)}%`;
-                        }}
-                      />
-                    }
-                  />
-                  <Bar
-                    dataKey="percentChange"
-                    fill="var(--color-change)"
-                    radius={[4, 4, 0, 0]}
-                  />
-                </BarChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
+            {/* Percentage Holder Change Line Chart */}
+            <Card className="bg-neutral-900 border border-neutral-800 flex flex-col md:min-h-0">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-white">
+                  <Percent className="h-5 w-5" style={{ color: primaryColor }} />
+                  Percentage Holder Change
+                </CardTitle>
+                <CardDescription className="text-white/60">
+                  Day-to-Day Holder Growth Rate (%)
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="flex-1 pb-0 md:min-h-0">
+                <ChartContainer config={chartConfig} className="w-full h-[250px] md:h-full">
+                  <LineChart data={changeData}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-white/10" />
+                    <XAxis
+                      dataKey="dateTime"
+                      tickLine={false}
+                      axisLine={false}
+                      tickMargin={8}
+                      minTickGap={32}
+                    />
+                    <YAxis
+                      tickLine={false}
+                      axisLine={false}
+                      tickFormatter={(value) => {
+                        const num = Number(value);
+                        return num >= 0 ? `+${num.toFixed(2)}%` : `${num.toFixed(2)}%`;
+                      }}
+                    />
+                    <ReferenceLine y={0} stroke="var(--color-change)" strokeOpacity={0.3} />
+                    <ChartTooltip
+                      content={
+                        <ChartTooltipContent
+                          className="bg-neutral-900 border-neutral-800"
+                          labelFormatter={(value, payload) => payload?.[0]?.payload?.dateTimeWithTime || value}
+                          formatter={(value) => {
+                            const num = Number(value);
+                            return num >= 0 ? `+${num.toFixed(2)}%` : `${num.toFixed(2)}%`;
+                          }}
+                        />
+                      }
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="percentChange"
+                      stroke="var(--color-change)"
+                      strokeWidth={2}
+                      dot={false}
+                    />
+                  </LineChart>
+                </ChartContainer>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </div>
