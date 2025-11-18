@@ -1490,14 +1490,16 @@ function HomeContent() {
           }}
           transition={{ duration: 0.3, ease: [0.4, 0.0, 0.2, 1] }}
         >
-          {/* Toggle Tab - Attached to collapsed sidebar */}
-          <button
-            onClick={handleSidebarToggle}
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-full w-8 h-24 rounded-l-lg flex items-center justify-center bg-[var(--primary-color)] hover:bg-[var(--primary-color)]/80 transition-all shadow-lg hover:shadow-[0_0_20px_rgba(82,201,125,0.6)] z-50"
-            title="Expand sidebar"
-          >
-            <ChevronLeft className="w-5 h-5 text-black" />
-          </button>
+          {/* Toggle Tab - Only render when collapsed */}
+          {isSidebarCollapsed && (
+            <button
+              onClick={handleSidebarToggle}
+              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-full w-8 h-24 rounded-l-lg flex items-center justify-center bg-[var(--primary-color)] hover:bg-[var(--primary-color)]/80 transition-all shadow-lg hover:shadow-[0_0_20px_rgba(82,201,125,0.6)] z-50"
+              title="Expand sidebar"
+            >
+              <ChevronLeft className="w-5 h-5 text-black" />
+            </button>
+          )}
 
           {/* Logo in collapsed sidebar - only render when collapsed */}
           {isSidebarCollapsed && (
@@ -1532,14 +1534,16 @@ function HomeContent() {
           }}
           transition={{ duration: 0.3, ease: [0.4, 0.0, 0.2, 1] }}
         >
-          {/* Toggle Tab - Attached to expanded sidebar */}
-          <button
-            onClick={handleSidebarToggle}
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-full w-8 h-24 rounded-l-lg flex items-center justify-center bg-[var(--primary-color)] hover:bg-[var(--primary-color)]/80 transition-all shadow-lg hover:shadow-[0_0_20px_rgba(82,201,125,0.6)] z-50"
-            title="Collapse sidebar"
-          >
-            <ChevronRight className="w-5 h-5 text-black" />
-          </button>
+          {/* Toggle Tab - Only render when expanded */}
+          {!isSidebarCollapsed && (
+            <button
+              onClick={handleSidebarToggle}
+              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-full w-8 h-24 rounded-l-lg flex items-center justify-center bg-[var(--primary-color)] hover:bg-[var(--primary-color)]/80 transition-all shadow-lg hover:shadow-[0_0_20px_rgba(82,201,125,0.6)] z-50"
+              title="Collapse sidebar"
+            >
+              <ChevronRight className="w-5 h-5 text-black" />
+            </button>
+          )}
 
           {/* Scrollable Content */}
           <div className="flex-1 overflow-y-auto overflow-x-hidden px-2.5 py-2 space-y-0 min-h-0">
