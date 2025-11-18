@@ -1177,7 +1177,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         {/* About Info Button */}
         <button
           onClick={() => setShowAbout(!showAbout)}
-          className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center bg-black/90 backdrop-blur-sm border-2 rounded-full transition-all"
+          className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-all hover:bg-white/90"
           style={buttonBaseStyle}
           aria-label="About this chart"
         >
@@ -1200,7 +1200,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                 drawingStateRef.current.setActiveToolType(null);
               }
             }}
-            className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-all bg-black/90"
+            className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-all hover:bg-white/90"
             style={showIndicatorMenu || enabledIndicators.size > 0 ? buttonActiveStyle : buttonBaseStyle}
             aria-label="Technical indicators"
             title="Technical Indicators"
@@ -1291,7 +1291,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
           {/* Toggle Drawing Mode Button */}
           <button
             onClick={toggleDrawingMode}
-            className="relative w-9 h-9 md:w-10 md:h-10 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-all bg-black/90"
+            className="relative w-9 h-9 md:w-10 md:h-10 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-all hover:bg-white/90"
             style={isDrawingMode ? buttonActiveStyle : buttonBaseStyle}
             aria-label="Toggle drawing mode"
             title="Toggle Drawing Mode"
@@ -1315,7 +1315,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   className={`w-9 h-9 md:w-10 md:h-10 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
                     activeDrawingTool === 'horizontal-line'
                       ? 'bg-[var(--primary-color)]/30 border-[var(--primary-color)] shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)]'
-                      : 'bg-black/90 border-[var(--primary-color)]/50 hover:bg-[var(--primary-color)]/20 hover:border-[var(--primary-color)]'
+                      : 'border-[var(--primary-color)]/50 hover:bg-white/90 hover:border-[var(--primary-color)]'
                   }`}
                   initial={{ x: 20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
@@ -1335,7 +1335,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   className={`w-9 h-9 md:w-10 md:h-10 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
                     activeDrawingTool === 'trend-line'
                       ? 'bg-[var(--primary-color)]/30 border-[var(--primary-color)] shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)]'
-                      : 'bg-black/90 border-[var(--primary-color)]/50 hover:bg-[var(--primary-color)]/20 hover:border-[var(--primary-color)]'
+                      : 'border-[var(--primary-color)]/50 hover:bg-white/90 hover:border-[var(--primary-color)]'
                   }`}
                   initial={{ x: 20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
@@ -1355,7 +1355,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   className={`w-9 h-9 md:w-10 md:h-10 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
                     activeDrawingTool === 'freehand'
                       ? 'bg-[var(--primary-color)]/30 border-[var(--primary-color)] shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)]'
-                      : 'bg-black/90 border-[var(--primary-color)]/50 hover:bg-[var(--primary-color)]/20 hover:border-[var(--primary-color)]'
+                      : 'border-[var(--primary-color)]/50 hover:bg-white/90 hover:border-[var(--primary-color)]'
                   }`}
                   initial={{ x: 20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
@@ -1375,7 +1375,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   className={`w-9 h-9 md:w-10 md:h-10 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
                     activeDrawingTool === 'ruler'
                       ? 'bg-[var(--primary-color)]/30 border-[var(--primary-color)] shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)]'
-                      : 'bg-black/90 border-[var(--primary-color)]/50 hover:bg-[var(--primary-color)]/20 hover:border-[var(--primary-color)]'
+                      : 'border-[var(--primary-color)]/50 hover:bg-white/90 hover:border-[var(--primary-color)]'
                   }`}
                   initial={{ x: 20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
@@ -1392,10 +1392,10 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   key="undo-button"
                   onClick={drawingCount > 0 ? undoLastDrawing : undefined}
                   disabled={drawingCount === 0}
-                  className={`w-9 h-9 md:w-10 md:h-10 flex items-center justify-center bg-black/90 backdrop-blur-sm border-2 rounded-full transition-all ${
+                  className={`w-9 h-9 md:w-10 md:h-10 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-all ${
                     drawingCount === 0
                       ? 'border-yellow-500/20 opacity-30 cursor-not-allowed'
-                      : 'border-yellow-500/50 hover:bg-yellow-500/20 hover:border-yellow-500 cursor-pointer'
+                      : 'border-yellow-500/50 hover:bg-white/90 hover:border-yellow-500 cursor-pointer'
                   }`}
                   initial={false}
                   animate={{ opacity: 1 }}
@@ -1415,10 +1415,10 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   key="clear-button"
                   onClick={drawingCount > 0 ? clearAllDrawings : undefined}
                   disabled={drawingCount === 0}
-                  className={`w-9 h-9 md:w-10 md:h-10 flex items-center justify-center bg-black/90 backdrop-blur-sm border-2 rounded-full transition-all ${
+                  className={`w-9 h-9 md:w-10 md:h-10 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-all ${
                     drawingCount === 0
                       ? 'border-red-500/20 opacity-30 cursor-not-allowed'
-                      : 'border-red-500/50 hover:bg-red-500/20 hover:border-red-500 cursor-pointer'
+                      : 'border-red-500/50 hover:bg-white/90 hover:border-red-500 cursor-pointer'
                   }`}
                   initial={false}
                   animate={{ opacity: 1 }}
@@ -1445,7 +1445,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
           {onOpenMobileMenu && (
             <button
               onClick={onOpenMobileMenu}
-              className="w-11 h-11 rounded-full flex items-center justify-center bg-[#0A1F12]/90 hover:bg-[#0A1F12] border-2 border-[var(--primary-color)] shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)] hover:shadow-[0_0_16px_rgba(var(--primary-rgb),0.5)] transition-all backdrop-blur-sm"
+              className="w-11 h-11 rounded-full flex items-center justify-center hover:bg-white/90 border-2 border-[var(--primary-color)] shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)] hover:shadow-[0_0_16px_rgba(var(--primary-rgb),0.5)] transition-all backdrop-blur-sm"
               aria-label="Open settings"
             >
               <svg className="w-5 h-5 text-[var(--primary-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1472,7 +1472,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
               className={`w-11 h-11 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-all ${
                 showIndicatorMenu || enabledIndicators.size > 0
                   ? 'bg-[var(--primary-color)]/30 border-[var(--primary-color)] shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)]'
-                  : 'bg-[#0A1F12]/90 border-[var(--primary-color)] hover:bg-[#0A1F12] shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)] hover:shadow-[0_0_16px_rgba(var(--primary-rgb),0.5)]'
+                  : 'border-[var(--primary-color)] hover:bg-white/90 shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)] hover:shadow-[0_0_16px_rgba(var(--primary-rgb),0.5)]'
               }`}
               aria-label="Technical indicators"
               title="Technical Indicators"
@@ -1559,7 +1559,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
             className={`w-11 h-11 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-all ${
               isDrawingMode
                 ? 'bg-[var(--primary-color)]/30 border-[var(--primary-color)] shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)]'
-                : 'bg-[#0A1F12]/90 border-[var(--primary-color)] hover:bg-[#0A1F12] shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)] hover:shadow-[0_0_16px_rgba(var(--primary-rgb),0.5)]'
+                : 'border-[var(--primary-color)] hover:bg-white/90 shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)] hover:shadow-[0_0_16px_rgba(var(--primary-rgb),0.5)]'
             }`}
             aria-label="Toggle drawing mode"
             title="Toggle Drawing Mode"
@@ -1583,7 +1583,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   className={`w-11 h-11 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
                     activeDrawingTool === 'horizontal-line'
                       ? 'bg-[var(--primary-color)]/30 border-[var(--primary-color)] shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)]'
-                      : 'bg-[#0A1F12]/90 border-[var(--primary-color)] hover:bg-[#0A1F12] shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)]'
+                      : 'border-[var(--primary-color)] hover:bg-white/90 shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)]'
                   }`}
                   initial={{ y: -20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
@@ -1603,7 +1603,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   className={`w-11 h-11 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
                     activeDrawingTool === 'trend-line'
                       ? 'bg-[var(--primary-color)]/30 border-[var(--primary-color)] shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)]'
-                      : 'bg-[#0A1F12]/90 border-[var(--primary-color)] hover:bg-[#0A1F12] shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)]'
+                      : 'border-[var(--primary-color)] hover:bg-white/90 shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)]'
                   }`}
                   initial={{ y: -20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
@@ -1623,7 +1623,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   className={`w-11 h-11 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
                     activeDrawingTool === 'freehand'
                       ? 'bg-[var(--primary-color)]/30 border-[var(--primary-color)] shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)]'
-                      : 'bg-[#0A1F12]/90 border-[var(--primary-color)] hover:bg-[#0A1F12] shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)]'
+                      : 'border-[var(--primary-color)] hover:bg-white/90 shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)]'
                   }`}
                   initial={{ y: -20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
@@ -1643,7 +1643,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   className={`w-11 h-11 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
                     activeDrawingTool === 'ruler'
                       ? 'bg-[var(--primary-color)]/30 border-[var(--primary-color)] shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)]'
-                      : 'bg-[#0A1F12]/90 border-[var(--primary-color)] hover:bg-[#0A1F12] shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)]'
+                      : 'border-[var(--primary-color)] hover:bg-white/90 shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)]'
                   }`}
                   initial={{ y: -20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
@@ -1660,10 +1660,10 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   key="undo-button-mobile"
                   onClick={drawingCount > 0 ? undoLastDrawing : undefined}
                   disabled={drawingCount === 0}
-                  className={`w-11 h-11 flex items-center justify-center bg-[#0A1F12]/90 backdrop-blur-sm border-2 rounded-full transition-all ${
+                  className={`w-11 h-11 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-all ${
                     drawingCount === 0
                       ? 'border-yellow-500/20 opacity-30 cursor-not-allowed shadow-none'
-                      : 'border-yellow-500 hover:bg-yellow-500/20 cursor-pointer shadow-[0_0_12px_rgba(234,179,8,0.3)]'
+                      : 'border-yellow-500 hover:bg-white/90 cursor-pointer shadow-[0_0_12px_rgba(234,179,8,0.3)]'
                   }`}
                   initial={false}
                   animate={{ opacity: 1 }}
@@ -1683,10 +1683,10 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   key="clear-button-mobile"
                   onClick={drawingCount > 0 ? clearAllDrawings : undefined}
                   disabled={drawingCount === 0}
-                  className={`w-11 h-11 flex items-center justify-center bg-[#0A1F12]/90 backdrop-blur-sm border-2 rounded-full transition-all ${
+                  className={`w-11 h-11 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-all ${
                     drawingCount === 0
                       ? 'border-red-500/20 opacity-30 cursor-not-allowed shadow-none'
-                      : 'border-red-500 hover:bg-red-500/20 cursor-pointer shadow-[0_0_12px_rgba(239,68,68,0.3)]'
+                      : 'border-red-500 hover:bg-white/90 cursor-pointer shadow-[0_0_12px_rgba(239,68,68,0.3)]'
                   }`}
                   initial={false}
                   animate={{ opacity: 1 }}

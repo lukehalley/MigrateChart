@@ -1496,10 +1496,22 @@ function HomeContent() {
           transition={{ duration: 0.3, ease: [0.4, 0.0, 0.2, 1] }}
         >
           {/* Toggle Tab - Always present */}
-          <button
+          <motion.button
             onClick={handleSidebarToggle}
-            className="absolute top-1/2 -translate-y-1/2 w-8 h-24 rounded-l-lg flex items-center justify-center bg-[var(--primary-color)] hover:bg-[var(--primary-color)]/80 transition-all shadow-lg hover:shadow-[0_0_20px_rgba(82,201,125,0.6)] z-50"
-            style={{ left: '-32px' }}
+            className="absolute top-1/2 -translate-y-1/2 h-24 rounded-l-lg flex items-center justify-center shadow-lg z-50"
+            style={{
+              backgroundColor: `${primaryColor}80`,
+            }}
+            initial={{ width: 8, left: -8 }}
+            animate={{ width: 8, left: -8 }}
+            whileHover={{
+              width: 32,
+              left: -32,
+              backgroundColor: primaryColor,
+              boxShadow: `0 0 20px ${primaryColor}99`,
+              transition: { duration: 0.2, ease: 'easeOut' }
+            }}
+            transition={{ duration: 0.2, ease: 'easeOut', delay: 2 }}
             title={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             {isSidebarCollapsed ? (
@@ -1507,7 +1519,7 @@ function HomeContent() {
             ) : (
               <ChevronRight className="w-5 h-5 text-black" />
             )}
-          </button>
+          </motion.button>
 
           {/* Conditional Content with AnimatePresence - overflow hidden to prevent content reflow */}
           <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
