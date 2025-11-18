@@ -1474,24 +1474,24 @@ function HomeContent() {
           </AnimatePresence>
         </motion.div>
 
-        {/* Toggle Button - Always Visible */}
+        {/* Toggle Tab - Always Visible */}
         <motion.button
           onClick={handleSidebarToggle}
-          className="absolute top-3 z-50 w-10 h-10 rounded-full flex items-center justify-center bg-[var(--primary-color)] hover:bg-[var(--primary-color)]/80 transition-all shadow-lg hover:shadow-[0_0_20px_rgba(82,201,125,0.6)]"
+          className="absolute top-1/2 -translate-y-1/2 z-50 w-8 h-24 rounded-l-lg flex items-center justify-center bg-[var(--primary-color)] hover:bg-[var(--primary-color)]/80 transition-all shadow-lg hover:shadow-[0_0_20px_rgba(82,201,125,0.6)]"
           style={{
-            right: isSidebarCollapsed ? '92px' : '262px'
+            right: isSidebarCollapsed ? '80px' : '250px'
           }}
           initial={false}
           animate={{
-            right: isSidebarCollapsed ? '92px' : '262px'
+            right: isSidebarCollapsed ? '80px' : '250px'
           }}
           transition={{ duration: 0.3, ease: [0.4, 0.0, 0.2, 1] }}
           title={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           {isSidebarCollapsed ? (
-            <ChevronLeft className="w-6 h-6 text-black" />
+            <ChevronLeft className="w-5 h-5 text-black" />
           ) : (
-            <ChevronRight className="w-6 h-6 text-black" />
+            <ChevronRight className="w-5 h-5 text-black" />
           )}
         </motion.button>
 
