@@ -26,6 +26,7 @@ import { SafeStorage } from '@/lib/localStorage';
 function HomeContent() {
   const { currentProject, isLoading: projectLoading, error: projectError } = useTokenContext();
   const themeStyles = useTheme(currentProject?.primaryColor || 'var(--primary-color)');
+  const primaryColor = currentProject?.primaryColor || '#52C97D';
   const router = useRouter();
   const searchParams = useSearchParams();
 
