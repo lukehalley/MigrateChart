@@ -82,6 +82,25 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
     });
   }, [chartData]);
 
+  // Calculate dynamic domain padding based on timeframe
+  const domainPadding = useMemo(() => {
+    const dataPointCount = chartData.length;
+
+    // For timeframes with fewer data points, use more padding for visual breathing room
+    // For timeframes with many data points, use less padding to show more detail
+    if (dataPointCount <= 24) { // 1D with hourly data
+      return { holder: 1.15, change: 1.08, percent: 1.08 }; // More padding
+    } else if (dataPointCount <= 168) { // 7D
+      return { holder: 1.12, change: 1.06, percent: 1.06 };
+    } else if (dataPointCount <= 720) { // 30D
+      return { holder: 1.10, change: 1.05, percent: 1.05 };
+    } else if (dataPointCount <= 2160) { // 90D
+      return { holder: 1.08, change: 1.04, percent: 1.04 };
+    } else { // ALL
+      return { holder: 1.05, change: 1.03, percent: 1.03 }; // Less padding for overview
+    }
+  }, [chartData]);
+
   // Get chart config with project color
   const chartConfig = useMemo(() =>
     getChartConfig(primaryColor),
@@ -143,7 +162,7 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
                     minTickGap={32}
                   />
                   <YAxis
-                    domain={['dataMin', (dataMax: number) => dataMax * 1.1]}
+                    domain={['dataMin', (dataMax: number) => dataMax * domainPadding.holder]}
                     tickLine={false}
                     axisLine={false}
                     tickFormatter={(value) => formatNumber(value)}
@@ -194,7 +213,7 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
                       minTickGap={32}
                     />
                     <YAxis
-                      domain={[(dataMin: number) => dataMin * 1.05, (dataMax: number) => dataMax * 1.05]}
+                      domain={[(dataMin: number) => dataMin * domainPadding.change, (dataMax: number) => dataMax * domainPadding.change]}
                       tickLine={false}
                       axisLine={false}
                       tickFormatter={(value) => {
@@ -248,7 +267,7 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
                       minTickGap={32}
                     />
                     <YAxis
-                      domain={[(dataMin: number) => dataMin * 1.05, (dataMax: number) => dataMax * 1.05]}
+                      domain={[(dataMin: number) => dataMin * domainPadding.percent, (dataMax: number) => dataMax * domainPadding.percent]}
                       tickLine={false}
                       axisLine={false}
                       tickFormatter={(value) => {
