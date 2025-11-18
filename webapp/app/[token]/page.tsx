@@ -6,6 +6,7 @@ import useSWR from 'swr';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Copy, Check, ChevronLeft, ChevronRight } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import Chart from '@/components/Chart';
 import { FeesView } from '@/components/FeesView';
 import { HoldersView } from '@/components/HoldersView';
@@ -1589,15 +1590,177 @@ function HomeContent() {
                   {/* Divider */}
                   <div className="w-8 h-px bg-[var(--primary-color)]/30"></div>
 
-                  {/* Current Timeframe Badge */}
-                  <div className="flex flex-col items-center gap-1">
-                    <span className="text-white/50 text-[7px] font-medium">TIME</span>
-                    <div className="px-2 py-1 bg-[var(--primary-color)]/20 border border-[var(--primary-color)]/50 rounded">
-                      <span className="text-[var(--primary-color)] text-xs font-bold">
-                        {viewMode === 'chart' ? timeframe : viewMode === 'fees' ? feesTimeframe : holdersTimeframe}
-                      </span>
-                    </div>
-                  </div>
+                  {/* Timeframe Selector Popover */}
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button className="flex flex-col items-center gap-1 hover:opacity-80 transition-opacity cursor-pointer">
+                        <span className="text-white/50 text-[7px] font-medium">TIME</span>
+                        <div className="px-2 py-1 bg-[var(--primary-color)]/20 border border-[var(--primary-color)]/50 rounded hover:bg-[var(--primary-color)]/30 transition-colors">
+                          <span className="text-[var(--primary-color)] text-xs font-bold">
+                            {viewMode === 'chart' ? timeframe : viewMode === 'fees' ? feesTimeframe : holdersTimeframe}
+                          </span>
+                        </div>
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent side="left" align="center" sideOffset={12} className="w-auto p-2 bg-gradient-to-b from-[#0A1F12] to-black border-2 border-[var(--primary-color)]/60 shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)]">
+                      <div className="flex flex-col gap-1">
+                        <p className="text-[var(--primary-color)] text-[10px] font-bold mb-1">Timeframe</p>
+                        {viewMode === 'chart' ? (
+                          <>
+                            {(['1H', '4H', '8H', '1D', 'MAX'] as const).map((tf) => (
+                              <button
+                                key={tf}
+                                onClick={() => setTimeframe(tf)}
+                                className={`px-3 py-1.5 text-xs font-bold rounded transition-all ${
+                                  timeframe === tf
+                                    ? 'bg-[var(--primary-color)] text-black'
+                                    : 'text-[var(--primary-color)] hover:bg-[var(--primary-color)]/20'
+                                }`}
+                              >
+                                {tf}
+                              </button>
+                            ))}
+                          </>
+                        ) : viewMode === 'fees' ? (
+                          <>
+                            {(['7D', '30D', '90D', 'ALL'] as const).map((tf) => (
+                              <button
+                                key={tf}
+                                onClick={() => setFeesTimeframe(tf)}
+                                className={`px-3 py-1.5 text-xs font-bold rounded transition-all ${
+                                  feesTimeframe === tf
+                                    ? 'bg-[var(--primary-color)] text-black'
+                                    : 'text-[var(--primary-color)] hover:bg-[var(--primary-color)]/20'
+                                }`}
+                              >
+                                {tf}
+                              </button>
+                            ))}
+                          </>
+                        ) : (
+                          <>
+                            {(['1D', '7D', '30D', '90D', 'ALL'] as const).map((tf) => (
+                              <button
+                                key={tf}
+                                onClick={() => setHoldersTimeframe(tf)}
+                                className={`px-3 py-1.5 text-xs font-bold rounded transition-all ${
+                                  holdersTimeframe === tf
+                                    ? 'bg-[var(--primary-color)] text-black'
+                                    : 'text-[var(--primary-color)] hover:bg-[var(--primary-color)]/20'
+                                }`}
+                              >
+                                {tf}
+                              </button>
+                            ))}
+                          </>
+                        )}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+
+                  {/* Chart-specific controls */}
+                  {viewMode === 'chart' && (
+                    <>
+                      {/* Divider */}
+                      <div className="w-8 h-px bg-[var(--primary-color)]/30"></div>
+
+                      {/* Display Mode Toggle */}
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <button className="w-12 h-12 rounded-lg bg-black/50 border border-[var(--primary-color)]/30 hover:bg-[var(--primary-color)]/20 flex items-center justify-center transition-all" title="Display Mode">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-[var(--primary-color)]">
+                              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent side="left" align="center" sideOffset={12} className="w-auto p-2 bg-gradient-to-b from-[#0A1F12] to-black border-2 border-[var(--primary-color)]/60 shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)]">
+                          <div className="flex flex-col gap-1">
+                            <p className="text-[var(--primary-color)] text-[10px] font-bold mb-1">Display</p>
+                            <button
+                              onClick={() => handleDisplayModeChange('price')}
+                              className={`px-3 py-1.5 text-xs font-bold rounded transition-all ${
+                                displayMode === 'price'
+                                  ? 'bg-[var(--primary-color)] text-black'
+                                  : 'text-[var(--primary-color)] hover:bg-[var(--primary-color)]/20'
+                              }`}
+                            >
+                              Price
+                            </button>
+                            <button
+                              onClick={() => handleDisplayModeChange('marketCap')}
+                              className={`px-3 py-1.5 text-xs font-bold rounded transition-all ${
+                                displayMode === 'marketCap'
+                                  ? 'bg-[var(--primary-color)] text-black'
+                                  : 'text-[var(--primary-color)] hover:bg-[var(--primary-color)]/20'
+                              }`}
+                            >
+                              Market Cap
+                            </button>
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+
+                      {/* Toggles Popover */}
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <button className="w-12 h-12 rounded-lg bg-black/50 border border-[var(--primary-color)]/30 hover:bg-[var(--primary-color)]/20 flex items-center justify-center transition-all" title="Chart Options">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-[var(--primary-color)]">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" stroke="currentColor"/>
+                            </svg>
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent side="left" align="center" sideOffset={12} className="w-48 p-2 bg-gradient-to-b from-[#0A1F12] to-black border-2 border-[var(--primary-color)]/60 shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)]">
+                          <div className="flex flex-col gap-1.5">
+                            <p className="text-[var(--primary-color)] text-[10px] font-bold mb-0.5">Options</p>
+
+                            {/* Volume Toggle */}
+                            <button
+                              onClick={handleVolumeToggle}
+                              className="flex items-center justify-between px-2 py-1.5 rounded hover:bg-[var(--primary-color)]/10 transition-colors"
+                            >
+                              <span className="text-[var(--primary-color)] text-xs font-medium">Volume</span>
+                              <div className={`w-10 h-5 rounded-full transition-colors ${showVolume ? 'bg-[var(--primary-color)]' : 'bg-gray-600'}`}>
+                                <div className={`w-4 h-4 bg-white rounded-full mt-0.5 transition-transform ${showVolume ? 'translate-x-5' : 'translate-x-0.5'}`}></div>
+                              </div>
+                            </button>
+
+                            {/* Migration Lines Toggle */}
+                            <button
+                              onClick={handleMigrationLinesToggle}
+                              className="flex items-center justify-between px-2 py-1.5 rounded hover:bg-[var(--primary-color)]/10 transition-colors"
+                            >
+                              <span className="text-[var(--primary-color)] text-xs font-medium">Migration Lines</span>
+                              <div className={`w-10 h-5 rounded-full transition-colors ${showMigrationLines ? 'bg-[var(--primary-color)]' : 'bg-gray-600'}`}>
+                                <div className={`w-4 h-4 bg-white rounded-full mt-0.5 transition-transform ${showMigrationLines ? 'translate-x-5' : 'translate-x-0.5'}`}></div>
+                              </div>
+                            </button>
+
+                            {/* Log Scale Toggle */}
+                            <button
+                              onClick={handleLogScaleToggle}
+                              className="flex items-center justify-between px-2 py-1.5 rounded hover:bg-[var(--primary-color)]/10 transition-colors"
+                            >
+                              <span className="text-[var(--primary-color)] text-xs font-medium">Log Scale</span>
+                              <div className={`w-10 h-5 rounded-full transition-colors ${isLogScale ? 'bg-[var(--primary-color)]' : 'bg-gray-600'}`}>
+                                <div className={`w-4 h-4 bg-white rounded-full mt-0.5 transition-transform ${isLogScale ? 'translate-x-5' : 'translate-x-0.5'}`}></div>
+                              </div>
+                            </button>
+
+                            {/* Auto Scale Toggle */}
+                            <button
+                              onClick={handleAutoScaleToggle}
+                              className="flex items-center justify-between px-2 py-1.5 rounded hover:bg-[var(--primary-color)]/10 transition-colors"
+                            >
+                              <span className="text-[var(--primary-color)] text-xs font-medium">Auto Scale</span>
+                              <div className={`w-10 h-5 rounded-full transition-colors ${isAutoScale ? 'bg-[var(--primary-color)]' : 'bg-gray-600'}`}>
+                                <div className={`w-4 h-4 bg-white rounded-full mt-0.5 transition-transform ${isAutoScale ? 'translate-x-5' : 'translate-x-0.5'}`}></div>
+                              </div>
+                            </button>
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                    </>
+                  )}
                 </motion.div>
               ) : (
                 // Expanded: Show full content
