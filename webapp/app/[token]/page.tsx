@@ -4,7 +4,7 @@ import React, { Suspense, useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, Copy, Check } from 'lucide-react';
+import { Heart, Copy, Check, ChevronLeft, ChevronRight } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import Chart from '@/components/Chart';
 import { FeesView } from '@/components/FeesView';
@@ -71,6 +71,9 @@ function HomeContent() {
   const [tokenGoal, setTokenGoal] = useState<number>(5000);
   const [solGoal, setSolGoal] = useState<number>(10);
 
+  // Sidebar collapse state - initialize with default
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
+
   // Helper function to format goal numbers
   const formatGoalNumber = (num: number): string => {
     if (num >= 1_000_000_000) {
@@ -93,12 +96,6 @@ function HomeContent() {
     return `$${num.toFixed(2)}`;
   };
 
-  // Update document title when project changes
-  useEffect(() => {
-    if (currentProject) {
-      document.title = `${currentProject.name} Migration Chart`;
-    }
-  }, [currentProject]);
 
   // Sync state with URL params when they change
   useEffect(() => {
@@ -148,6 +145,12 @@ function HomeContent() {
       setIsAutoScale(savedAutoScale !== 'false');
     }
 
+    // Load sidebar collapse state
+    const savedSidebarCollapsed = SafeStorage.getItem('sidebarCollapsed');
+    if (savedSidebarCollapsed !== null) {
+      setIsSidebarCollapsed(savedSidebarCollapsed === 'true');
+    }
+
     // Load saved goals
     const savedTokenGoal = SafeStorage.getItem('tokenGoal');
     if (savedTokenGoal !== null) {
@@ -187,6 +190,12 @@ function HomeContent() {
     const newAutoScale = !isAutoScale;
     setIsAutoScale(newAutoScale);
     SafeStorage.setItem('chartAutoScale', String(newAutoScale));
+  };
+
+  const handleSidebarToggle = () => {
+    const newCollapsed = !isSidebarCollapsed;
+    setIsSidebarCollapsed(newCollapsed);
+    SafeStorage.setItem('sidebarCollapsed', String(newCollapsed));
   };
 
   // Update URL when timeframe changes
@@ -364,6 +373,27 @@ function HomeContent() {
       revalidateOnFocus: false,
     }
   );
+
+  // Helper function to format price for title
+  const formatPriceForTitle = (price: number): string => {
+    if (price < 0.01) {
+      return `$${price.toFixed(6)}`;
+    } else if (price < 1) {
+      return `$${price.toFixed(4)}`;
+    } else {
+      return `$${price.toFixed(2)}`;
+    }
+  };
+
+  // Update document title when project changes or price updates
+  useEffect(() => {
+    if (currentProject && tokenStats) {
+      const priceStr = formatPriceForTitle(tokenStats.price);
+      document.title = `${currentProject.name} Migration | ${priceStr}`;
+    } else if (currentProject) {
+      document.title = `${currentProject.name} Migration Chart`;
+    }
+  }, [currentProject, tokenStats]);
 
   // Stable loading state to prevent flash during transitions
   const [showLoader, setShowLoader] = useState(true); // Start with true to prevent flash
@@ -1342,10 +1372,16 @@ function HomeContent() {
         </div>
       </div>
 
-      {/* Desktop View - Grid Layout */}
-      <div className="hidden md:grid md:grid-cols-[9fr_1fr] w-full h-full overflow-hidden min-h-0">
+      {/* Desktop View - Absolute Layout */}
+      <div className="hidden md:block w-full h-full overflow-hidden min-h-0 relative">
         {/* Left Section - Chart */}
-        <div className="h-full relative overflow-hidden min-h-0">
+        <motion.div
+          className="absolute top-0 left-0 bottom-0 h-full overflow-hidden"
+          animate={{
+            right: isSidebarCollapsed ? '80px' : '250px'
+          }}
+          transition={{ duration: 0.3, ease: [0.4, 0.0, 0.2, 1] }}
+        >
           {error && (
             <div className="flex items-center justify-center h-full">
               <div className="text-red">Error loading chart data</div>
@@ -1435,10 +1471,74 @@ function HomeContent() {
               </AnimatePresence>
             )}
           </AnimatePresence>
-        </div>
+        </motion.div>
 
-        {/* Right Section - Token Stats Sidebar */}
-        <div className="h-full bg-gradient-to-b from-black via-black to-black flex flex-col min-h-0" style={{ boxShadow: '-8px 0 8px rgba(82, 201, 125, 0.2)' }}>
+        {/* Toggle Button - Always Visible */}
+        <motion.button
+          onClick={handleSidebarToggle}
+          className="absolute top-3 z-50 w-10 h-10 rounded-full flex items-center justify-center bg-[var(--primary-color)] hover:bg-[var(--primary-color)]/80 transition-all shadow-lg hover:shadow-[0_0_20px_rgba(82,201,125,0.6)]"
+          style={{
+            right: isSidebarCollapsed ? '92px' : '262px'
+          }}
+          animate={{
+            right: isSidebarCollapsed ? '92px' : '262px'
+          }}
+          transition={{ duration: 0.3, ease: [0.4, 0.0, 0.2, 1] }}
+          title={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          {isSidebarCollapsed ? (
+            <ChevronLeft className="w-6 h-6 text-black" />
+          ) : (
+            <ChevronRight className="w-6 h-6 text-black" />
+          )}
+        </motion.button>
+
+        {/* Collapsed Sidebar - Thin strip with logo */}
+        <motion.div
+          className="absolute top-0 right-0 h-full flex flex-col bg-black border-l border-[var(--primary-color)]/20"
+          style={{
+            boxShadow: '-4px 0 8px rgba(82, 201, 125, 0.15)',
+            width: '80px',
+            pointerEvents: isSidebarCollapsed ? 'auto' : 'none'
+          }}
+          initial={false}
+          animate={{
+            x: isSidebarCollapsed ? '0%' : '100%',
+            opacity: isSidebarCollapsed ? 1 : 0
+          }}
+          transition={{ duration: 0.3, ease: [0.4, 0.0, 0.2, 1] }}
+        >
+          {/* Logo in collapsed sidebar - only render when collapsed */}
+          {isSidebarCollapsed && (
+            <div className="px-4">
+              <div className="stat-card-highlight">
+                <div className="flex items-center justify-center">
+                  {currentProject?.logoUrl && (
+                    <img
+                      src={currentProject.logoUrl}
+                      alt={currentProject.name}
+                      className="w-12 h-12 object-contain"
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </motion.div>
+
+        {/* Expanded Sidebar - Full width with content */}
+        <motion.div
+          className="absolute top-0 right-0 h-full flex flex-col min-h-0 bg-black"
+          style={{
+            boxShadow: '-8px 0 8px rgba(82, 201, 125, 0.2)',
+            width: '250px',
+            background: 'linear-gradient(to bottom, #000000 0%, #000000 50%, #000000 100%)'
+          }}
+          animate={{
+            x: isSidebarCollapsed ? '100%' : '0%'
+          }}
+          transition={{ duration: 0.3, ease: [0.4, 0.0, 0.2, 1] }}
+        >
           {/* Scrollable Content */}
           <div className="flex-1 overflow-y-auto overflow-x-hidden px-2.5 py-2 space-y-0 min-h-0">
             {/* Main Info Block */}
@@ -1642,7 +1742,7 @@ function HomeContent() {
               <p className="text-[var(--primary-color)] text-base font-bold tracking-wider">@Trenchooooor</p>
             </a>
           </div>
-        </div>
+        </motion.div>
       </div>
     </main>
   );

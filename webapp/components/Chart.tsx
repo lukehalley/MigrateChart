@@ -913,6 +913,15 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
     window.addEventListener('resize', handleResize);
 
+    // Add ResizeObserver to detect container size changes (e.g., sidebar toggle)
+    const resizeObserver = new ResizeObserver(() => {
+      handleResize();
+    });
+
+    if (chartContainerRef.current) {
+      resizeObserver.observe(chartContainerRef.current);
+    }
+
     // Save chart position to localStorage
     const saveAndLogVisibleRange = () => {
       const visibleLogicalRange = chart.timeScale().getVisibleLogicalRange();
@@ -988,6 +997,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
     return () => {
       window.removeEventListener('resize', handleResize);
+      resizeObserver.disconnect();
 
       // Unsubscribe from chart events
       chart.unsubscribeClick(handleChartClick);
