@@ -20,6 +20,10 @@ const getChartConfig = (primaryColor: string): ChartConfig => ({
     label: 'Cumulative',
     color: primaryColor,
   },
+  movingAverage: {
+    label: '7-Day Average',
+    color: primaryColor,
+  },
 });
 
 interface FeesViewProps {
@@ -45,18 +49,25 @@ export function FeesView({ projectSlug, primaryColor, timeframe, onTimeframeChan
     }
   );
 
-  // Prepare chart data with cumulative
+  // Prepare chart data with cumulative and moving average
   const chartData = useMemo(() => {
     if (!feesData?.dailyFees) return [];
 
     let cumulative = 0;
-    return feesData.dailyFees.map((day) => {
+    return feesData.dailyFees.map((day, index, array) => {
       cumulative += day.fees;
+
+      // Calculate 7-day moving average
+      const start = Math.max(0, index - 6);
+      const window = array.slice(start, index + 1);
+      const movingAverage = window.reduce((sum, d) => sum + d.fees, 0) / window.length;
+
       return {
         date: new Date(day.timestamp * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
         timestamp: day.timestamp,
         fees: day.fees,
         cumulative,
+        movingAverage,
       };
     });
   }, [feesData]);
@@ -252,18 +263,24 @@ export function FeesView({ projectSlug, primaryColor, timeframe, onTimeframeChan
           </CardContent>
         </Card>
 
-            {/* Cumulative Fees Trend Line Chart */}
+            {/* 7-Day Moving Average Chart */}
             <Card className="bg-neutral-900 border border-neutral-800 flex flex-col md:min-h-0">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-white">
               <TrendingUp className="h-5 w-5" style={{ color: primaryColor }} />
-              Cumulative Fees Trend
+              7-Day Moving Average
             </CardTitle>
-            <CardDescription className="text-white/60">Total Accumulated Fees Over Time</CardDescription>
+            <CardDescription className="text-white/60">Smoothed Fee Collection Trend</CardDescription>
           </CardHeader>
           <CardContent className="flex-1 pb-0 md:min-h-0">
             <ChartContainer config={chartConfig} className="w-full h-[250px] md:h-full">
-              <LineChart data={chartData}>
+              <AreaChart data={chartData}>
+                <defs>
+                  <linearGradient id="fillMovingAverage" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="var(--color-movingAverage)" stopOpacity={0.6} />
+                    <stop offset="95%" stopColor="var(--color-movingAverage)" stopOpacity={0.05} />
+                  </linearGradient>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-white/10" />
                 <XAxis
                   dataKey="date"
@@ -290,14 +307,14 @@ export function FeesView({ projectSlug, primaryColor, timeframe, onTimeframeChan
                     />
                   }
                 />
-                <Line
+                <Area
                   type="monotone"
-                  dataKey="cumulative"
-                  stroke="var(--color-cumulative)"
+                  dataKey="movingAverage"
+                  stroke="var(--color-movingAverage)"
+                  fill="url(#fillMovingAverage)"
                   strokeWidth={2}
-                  dot={false}
                 />
-              </LineChart>
+              </AreaChart>
             </ChartContainer>
           </CardContent>
         </Card>
