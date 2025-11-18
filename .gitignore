@@ -30,5 +30,9 @@ next-env.d.ts
 .env
 .env*.local
 
+# Telegram session files
+*.session
+*.session-journal
+
 # Vercel
 .vercel
