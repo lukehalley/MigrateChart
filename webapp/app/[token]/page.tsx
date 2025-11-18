@@ -1604,14 +1604,14 @@ function HomeContent() {
                     </PopoverTrigger>
                     <PopoverContent side="left" align="center" sideOffset={12} className="w-auto p-2 bg-gradient-to-b from-[#0A1F12] to-black border-2 border-[var(--primary-color)]/60 shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)]">
                       <div className="flex flex-col gap-1">
-                        <p className="text-[var(--primary-color)] text-[10px] font-bold mb-1">Timeframe</p>
+                        <p className="text-[var(--primary-color)] text-[10px] font-bold mb-1 text-center">Timeframe</p>
                         {viewMode === 'chart' ? (
                           <>
                             {(['1H', '4H', '8H', '1D', 'MAX'] as const).map((tf) => (
                               <button
                                 key={tf}
                                 onClick={() => setTimeframe(tf)}
-                                className={`px-3 py-1.5 text-xs font-bold rounded transition-all ${
+                                className={`px-3 py-2 text-xs font-bold rounded transition-all flex items-center justify-center ${
                                   timeframe === tf
                                     ? 'bg-[var(--primary-color)] text-black'
                                     : 'text-[var(--primary-color)] hover:bg-[var(--primary-color)]/20'
@@ -1627,7 +1627,7 @@ function HomeContent() {
                               <button
                                 key={tf}
                                 onClick={() => setFeesTimeframe(tf)}
-                                className={`px-3 py-1.5 text-xs font-bold rounded transition-all ${
+                                className={`px-3 py-2 text-xs font-bold rounded transition-all flex items-center justify-center ${
                                   feesTimeframe === tf
                                     ? 'bg-[var(--primary-color)] text-black'
                                     : 'text-[var(--primary-color)] hover:bg-[var(--primary-color)]/20'
@@ -1643,7 +1643,7 @@ function HomeContent() {
                               <button
                                 key={tf}
                                 onClick={() => setHoldersTimeframe(tf)}
-                                className={`px-3 py-1.5 text-xs font-bold rounded transition-all ${
+                                className={`px-3 py-2 text-xs font-bold rounded transition-all flex items-center justify-center ${
                                   holdersTimeframe === tf
                                     ? 'bg-[var(--primary-color)] text-black'
                                     : 'text-[var(--primary-color)] hover:bg-[var(--primary-color)]/20'
@@ -1675,10 +1675,10 @@ function HomeContent() {
                         </PopoverTrigger>
                         <PopoverContent side="left" align="center" sideOffset={12} className="w-auto p-2 bg-gradient-to-b from-[#0A1F12] to-black border-2 border-[var(--primary-color)]/60 shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)]">
                           <div className="flex flex-col gap-1">
-                            <p className="text-[var(--primary-color)] text-[10px] font-bold mb-1">Display</p>
+                            <p className="text-[var(--primary-color)] text-[10px] font-bold mb-1 text-center">Display</p>
                             <button
                               onClick={() => handleDisplayModeChange('price')}
-                              className={`px-3 py-1.5 text-xs font-bold rounded transition-all ${
+                              className={`px-3 py-2 text-xs font-bold rounded transition-all flex items-center justify-center ${
                                 displayMode === 'price'
                                   ? 'bg-[var(--primary-color)] text-black'
                                   : 'text-[var(--primary-color)] hover:bg-[var(--primary-color)]/20'
@@ -1688,7 +1688,7 @@ function HomeContent() {
                             </button>
                             <button
                               onClick={() => handleDisplayModeChange('marketCap')}
-                              className={`px-3 py-1.5 text-xs font-bold rounded transition-all ${
+                              className={`px-3 py-2 text-xs font-bold rounded transition-all flex items-center justify-center ${
                                 displayMode === 'marketCap'
                                   ? 'bg-[var(--primary-color)] text-black'
                                   : 'text-[var(--primary-color)] hover:bg-[var(--primary-color)]/20'
@@ -1711,7 +1711,7 @@ function HomeContent() {
                         </PopoverTrigger>
                         <PopoverContent side="left" align="center" sideOffset={12} className="w-48 p-2 bg-gradient-to-b from-[#0A1F12] to-black border-2 border-[var(--primary-color)]/60 shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)]">
                           <div className="flex flex-col gap-1.5">
-                            <p className="text-[var(--primary-color)] text-[10px] font-bold mb-0.5">Options</p>
+                            <p className="text-[var(--primary-color)] text-[10px] font-bold mb-0.5 text-center">Options</p>
 
                             {/* Volume Toggle */}
                             <button
