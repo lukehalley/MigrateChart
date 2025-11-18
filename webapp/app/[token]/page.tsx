@@ -1474,36 +1474,37 @@ function HomeContent() {
           </AnimatePresence>
         </motion.div>
 
-        {/* Collapsed Sidebar - Thin strip with logo */}
+        {/* Unified Sidebar - Animates width */}
         <motion.div
           className="absolute top-0 right-0 h-full flex flex-col bg-black border-l border-[var(--primary-color)]/20 z-40"
           style={{
-            boxShadow: '-4px 0 8px rgba(82, 201, 125, 0.15)',
-            width: '80px',
-            pointerEvents: isSidebarCollapsed ? 'auto' : 'none',
+            boxShadow: isSidebarCollapsed ? '-4px 0 8px rgba(82, 201, 125, 0.15)' : '-8px 0 8px rgba(82, 201, 125, 0.2)',
+            background: isSidebarCollapsed ? '#000000' : 'linear-gradient(to bottom, #000000 0%, #000000 50%, #000000 100%)',
             overflow: 'visible'
           }}
           initial={false}
           animate={{
-            x: isSidebarCollapsed ? '0%' : '100%',
-            opacity: isSidebarCollapsed ? 1 : 0
+            width: isSidebarCollapsed ? '80px' : '250px'
           }}
           transition={{ duration: 0.3, ease: [0.4, 0.0, 0.2, 1] }}
         >
-          {/* Toggle Tab - Only render when collapsed */}
-          {isSidebarCollapsed && (
-            <button
-              onClick={handleSidebarToggle}
-              className="absolute top-1/2 -translate-y-1/2 w-8 h-24 rounded-l-lg flex items-center justify-center bg-[var(--primary-color)] hover:bg-[var(--primary-color)]/80 transition-all shadow-lg hover:shadow-[0_0_20px_rgba(82,201,125,0.6)] z-50"
-              style={{ left: '-32px' }}
-              title="Expand sidebar"
-            >
+          {/* Toggle Tab - Always present */}
+          <button
+            onClick={handleSidebarToggle}
+            className="absolute top-1/2 -translate-y-1/2 w-8 h-24 rounded-l-lg flex items-center justify-center bg-[var(--primary-color)] hover:bg-[var(--primary-color)]/80 transition-all shadow-lg hover:shadow-[0_0_20px_rgba(82,201,125,0.6)] z-50"
+            style={{ left: '-32px' }}
+            title={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {isSidebarCollapsed ? (
               <ChevronLeft className="w-5 h-5 text-black" />
-            </button>
-          )}
+            ) : (
+              <ChevronRight className="w-5 h-5 text-black" />
+            )}
+          </button>
 
-          {/* Logo in collapsed sidebar - only render when collapsed */}
-          {isSidebarCollapsed && (
+          {/* Conditional Content */}
+          {isSidebarCollapsed ? (
+            // Collapsed: Just show logo
             <div className="px-4">
               <div className="stat-card-highlight">
                 <div className="flex items-center justify-center">
@@ -1517,35 +1518,9 @@ function HomeContent() {
                 </div>
               </div>
             </div>
-          )}
-        </motion.div>
-
-        {/* Expanded Sidebar - Full width with content */}
-        <motion.div
-          className="absolute top-0 right-0 h-full flex flex-col min-h-0 bg-black z-40"
-          style={{
-            boxShadow: '-8px 0 8px rgba(82, 201, 125, 0.2)',
-            width: '250px',
-            background: 'linear-gradient(to bottom, #000000 0%, #000000 50%, #000000 100%)',
-            overflow: 'visible'
-          }}
-          initial={false}
-          animate={{
-            x: isSidebarCollapsed ? '100%' : '0%'
-          }}
-          transition={{ duration: 0.3, ease: [0.4, 0.0, 0.2, 1] }}
-        >
-          {/* Toggle Tab - Only render when expanded */}
-          {!isSidebarCollapsed && (
-            <button
-              onClick={handleSidebarToggle}
-              className="absolute top-1/2 -translate-y-1/2 w-8 h-24 rounded-l-lg flex items-center justify-center bg-[var(--primary-color)] hover:bg-[var(--primary-color)]/80 transition-all shadow-lg hover:shadow-[0_0_20px_rgba(82,201,125,0.6)] z-50"
-              style={{ left: '-32px' }}
-              title="Collapse sidebar"
-            >
-              <ChevronRight className="w-5 h-5 text-black" />
-            </button>
-          )}
+          ) : (
+            // Expanded: Show full content
+            <>
 
           {/* Scrollable Content */}
           <div className="flex-1 overflow-y-auto overflow-x-hidden px-2.5 py-2 space-y-0 min-h-0">
@@ -1750,6 +1725,8 @@ function HomeContent() {
               <p className="text-[var(--primary-color)] text-base font-bold tracking-wider">@Trenchooooor</p>
             </a>
           </div>
+            </>
+          )}
         </motion.div>
       </div>
     </main>
