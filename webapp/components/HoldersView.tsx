@@ -46,11 +46,6 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
   );
 
   const formatNumber = (num: number) => {
-    if (num >= 1_000_000) {
-      return `${(num / 1_000_000).toFixed(2)}M`;
-    } else if (num >= 1_000) {
-      return `${(num / 1_000).toFixed(1)}K`;
-    }
     return num.toLocaleString();
   };
 
@@ -63,7 +58,7 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
       return {
         date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
         time: date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
-        dateTime: `${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} ${date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}`,
+        dateTime: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
         timestamp: snapshot.timestamp,
         holders: snapshot.holder_count,
       };
@@ -144,6 +139,7 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
                     minTickGap={32}
                   />
                   <YAxis
+                    domain={['dataMin', 'dataMax']}
                     tickLine={false}
                     axisLine={false}
                     tickFormatter={(value) => formatNumber(value)}
