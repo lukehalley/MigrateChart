@@ -93,13 +93,13 @@ export default function FeesChart({ dailyFees, primaryColor }: FeesChartProps) {
       },
       crosshair: {
         vertLine: {
-          color: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.7)`,
+          color: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.8)`,
           width: 1,
           style: 2,
           labelBackgroundColor: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.9)`,
         },
         horzLine: {
-          color: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.7)`,
+          color: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.8)`,
           width: 1,
           style: 2,
           labelBackgroundColor: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.9)`,

@@ -1494,7 +1494,8 @@ function HomeContent() {
           {isSidebarCollapsed && (
             <button
               onClick={handleSidebarToggle}
-              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-full w-8 h-24 rounded-l-lg flex items-center justify-center bg-[var(--primary-color)] hover:bg-[var(--primary-color)]/80 transition-all shadow-lg hover:shadow-[0_0_20px_rgba(82,201,125,0.6)] z-50"
+              className="absolute top-1/2 -translate-y-1/2 w-8 h-24 rounded-l-lg flex items-center justify-center bg-[var(--primary-color)] hover:bg-[var(--primary-color)]/80 transition-all shadow-lg hover:shadow-[0_0_20px_rgba(82,201,125,0.6)] z-50"
+              style={{ left: '-32px' }}
               title="Expand sidebar"
             >
               <ChevronLeft className="w-5 h-5 text-black" />
@@ -1538,7 +1539,8 @@ function HomeContent() {
           {!isSidebarCollapsed && (
             <button
               onClick={handleSidebarToggle}
-              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-full w-8 h-24 rounded-l-lg flex items-center justify-center bg-[var(--primary-color)] hover:bg-[var(--primary-color)]/80 transition-all shadow-lg hover:shadow-[0_0_20px_rgba(82,201,125,0.6)] z-50"
+              className="absolute top-1/2 -translate-y-1/2 w-8 h-24 rounded-l-lg flex items-center justify-center bg-[var(--primary-color)] hover:bg-[var(--primary-color)]/80 transition-all shadow-lg hover:shadow-[0_0_20px_rgba(82,201,125,0.6)] z-50"
+              style={{ left: '-32px' }}
               title="Collapse sidebar"
             >
               <ChevronRight className="w-5 h-5 text-black" />

@@ -269,13 +269,13 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       crosshair: {
         mode: 0, // Free moving
         vertLine: {
-          color: primaryColor,
+          color: `rgba(${rgbString}, 0.8)`,
           width: 1,
           style: 0,  // Solid line
           labelBackgroundColor: primaryColor,
         },
         horzLine: {
-          color: primaryColor,
+          color: `rgba(${rgbString}, 0.8)`,
           width: 1,
           style: 0,  // Solid line
           labelBackgroundColor: primaryColor,
