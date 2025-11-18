@@ -191,9 +191,8 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
                     tickLine={false}
                     axisLine={false}
                     tickFormatter={(value) => {
-                      const absValue = Math.abs(value);
-                      if (absValue >= 1000) return `${value >= 0 ? '+' : '-'}${(absValue / 1000).toFixed(1)}K`;
-                      return value >= 0 ? `+${value}` : `${value}`;
+                      const num = Number(value);
+                      return num >= 0 ? `+${num.toLocaleString()}` : num.toLocaleString();
                     }}
                   />
                   <ChartTooltip
