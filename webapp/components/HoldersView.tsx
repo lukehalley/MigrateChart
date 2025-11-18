@@ -143,7 +143,7 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
                     minTickGap={32}
                   />
                   <YAxis
-                    domain={['dataMin', 'dataMax']}
+                    domain={['dataMin', (dataMax: number) => dataMax * 1.1]}
                     tickLine={false}
                     axisLine={false}
                     tickFormatter={(value) => formatNumber(value)}
@@ -194,6 +194,7 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
                       minTickGap={32}
                     />
                     <YAxis
+                      domain={[(dataMin: number) => dataMin * 1.05, (dataMax: number) => dataMax * 1.05]}
                       tickLine={false}
                       axisLine={false}
                       tickFormatter={(value) => {
@@ -247,6 +248,7 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
                       minTickGap={32}
                     />
                     <YAxis
+                      domain={[(dataMin: number) => dataMin * 1.05, (dataMax: number) => dataMax * 1.05]}
                       tickLine={false}
                       axisLine={false}
                       tickFormatter={(value) => {
