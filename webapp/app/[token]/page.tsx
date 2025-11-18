@@ -1474,27 +1474,6 @@ function HomeContent() {
           </AnimatePresence>
         </motion.div>
 
-        {/* Toggle Tab - Always Visible */}
-        <motion.button
-          onClick={handleSidebarToggle}
-          className="absolute top-1/2 -translate-y-1/2 z-50 w-8 h-24 rounded-l-lg flex items-center justify-center bg-[var(--primary-color)] hover:bg-[var(--primary-color)]/80 transition-all shadow-lg hover:shadow-[0_0_20px_rgba(82,201,125,0.6)]"
-          style={{
-            right: isSidebarCollapsed ? '80px' : '250px'
-          }}
-          initial={false}
-          animate={{
-            right: isSidebarCollapsed ? '80px' : '250px'
-          }}
-          transition={{ duration: 0.3, ease: [0.4, 0.0, 0.2, 1] }}
-          title={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        >
-          {isSidebarCollapsed ? (
-            <ChevronLeft className="w-5 h-5 text-black" />
-          ) : (
-            <ChevronRight className="w-5 h-5 text-black" />
-          )}
-        </motion.button>
-
         {/* Collapsed Sidebar - Thin strip with logo */}
         <motion.div
           className="absolute top-0 right-0 h-full flex flex-col bg-black border-l border-[var(--primary-color)]/20"
@@ -1510,6 +1489,15 @@ function HomeContent() {
           }}
           transition={{ duration: 0.3, ease: [0.4, 0.0, 0.2, 1] }}
         >
+          {/* Toggle Tab - Attached to collapsed sidebar */}
+          <button
+            onClick={handleSidebarToggle}
+            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-full w-8 h-24 rounded-l-lg flex items-center justify-center bg-[var(--primary-color)] hover:bg-[var(--primary-color)]/80 transition-all shadow-lg hover:shadow-[0_0_20px_rgba(82,201,125,0.6)]"
+            title="Expand sidebar"
+          >
+            <ChevronLeft className="w-5 h-5 text-black" />
+          </button>
+
           {/* Logo in collapsed sidebar - only render when collapsed */}
           {isSidebarCollapsed && (
             <div className="px-4">
@@ -1542,6 +1530,15 @@ function HomeContent() {
           }}
           transition={{ duration: 0.3, ease: [0.4, 0.0, 0.2, 1] }}
         >
+          {/* Toggle Tab - Attached to expanded sidebar */}
+          <button
+            onClick={handleSidebarToggle}
+            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-full w-8 h-24 rounded-l-lg flex items-center justify-center bg-[var(--primary-color)] hover:bg-[var(--primary-color)]/80 transition-all shadow-lg hover:shadow-[0_0_20px_rgba(82,201,125,0.6)]"
+            title="Collapse sidebar"
+          >
+            <ChevronRight className="w-5 h-5 text-black" />
+          </button>
+
           {/* Scrollable Content */}
           <div className="flex-1 overflow-y-auto overflow-x-hidden px-2.5 py-2 space-y-0 min-h-0">
             {/* Main Info Block */}
