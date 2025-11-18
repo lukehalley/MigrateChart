@@ -437,8 +437,10 @@ export async function fetchTokenStats(
     let allTimeHighPrice: number;
     let allTimeHighMarketCap: number;
 
-    // If we have all cached stats, use them
-    const allCached = cachedStatsArray.every(stat => stat !== null);
+    // If we have all cached stats with valid values (not 0), use them
+    const allCached = cachedStatsArray.every(stat =>
+      stat !== null && stat.all_time_high_price > 0
+    );
     if (allCached) {
       allTimeVolume = cachedStatsArray.reduce((sum, stat) => sum + (stat?.all_time_volume || 0), 0);
       allTimeFees = cachedStatsArray.reduce((sum, stat) => sum + (stat?.all_time_fees || 0), 0);
