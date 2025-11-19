@@ -22,9 +22,13 @@ import { useTheme } from '@/lib/useTheme';
 import { fetchAllPoolsData, fetchTokenStats, fetchWalletBalance, fetchTokenBalance } from '@/lib/api';
 import { PoolData, Timeframe } from '@/lib/types';
 import { SafeStorage } from '@/lib/localStorage';
+import { useSVGPreloader } from '@/lib/useSVGPreloader';
 
 function HomeContent() {
   const { currentProject, isLoading: projectLoading, error: projectError } = useTokenContext();
+
+  // Preload the SVG as soon as we have the project data
+  const { svgContent, isLoading: svgLoading } = useSVGPreloader(currentProject?.loaderUrl);
   const themeStyles = useTheme(currentProject?.primaryColor || 'var(--primary-color)');
   const primaryColor = currentProject?.primaryColor || '#52C97D';
   const secondaryColor = currentProject?.secondaryColor || '#000000';
@@ -427,8 +431,8 @@ function HomeContent() {
 
     // On initial load, keep loader visible until we have ALL data
     if (!hasInitiallyLoaded) {
-      // Hide loader when we have all data (project, pools, and stats)
-      if (currentProject && poolsData && tokenStats && !isLoading && !projectLoading && !isStatsLoading) {
+      // Hide loader when we have all data (project, pools, stats, AND svg)
+      if (currentProject && poolsData && tokenStats && svgContent && !isLoading && !projectLoading && !isStatsLoading && !svgLoading) {
         const hideLoader = () => {
           setHasInitiallyLoaded(true);
           setShowLoader(false);
@@ -477,7 +481,7 @@ function HomeContent() {
         }
       }
     }
-  }, [isLoading, projectLoading, isStatsLoading, hasInitiallyLoaded, currentProject, poolsData, tokenStats, showLoader]);
+  }, [isLoading, projectLoading, isStatsLoading, svgLoading, hasInitiallyLoaded, currentProject, poolsData, tokenStats, svgContent, showLoader]);
 
   // Auto-scale goals when met
   useEffect(() => {
@@ -1332,7 +1336,8 @@ function HomeContent() {
                 className="flex items-center justify-center h-full backdrop-blur-xl"
               >
                 <TokenLoadingLogo
-                  svgUrl={currentProject?.loaderUrl}
+                  svgContent={svgContent}
+                  isLoading={svgLoading}
                   color={currentProject?.primaryColor || '#52C97D'}
                 />
               </motion.div>
@@ -1436,7 +1441,8 @@ function HomeContent() {
                 className="flex items-center justify-center h-full backdrop-blur-xl"
               >
                 <TokenLoadingLogo
-                  svgUrl={currentProject?.loaderUrl}
+                  svgContent={svgContent}
+                  isLoading={svgLoading}
                   color={currentProject?.primaryColor || '#52C97D'}
                 />
               </motion.div>

@@ -4,18 +4,30 @@ import { motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 
 interface TokenLoadingLogoProps {
-  svgUrl?: string; // URL to SVG file in storage
+  svgUrl?: string; // URL to SVG file in storage (for backwards compatibility)
+  svgContent?: string | null; // Pre-loaded SVG content (preferred method)
   color: string;
+  isLoading?: boolean; // External loading state
 }
 
-export function TokenLoadingLogo({ svgUrl, color }: TokenLoadingLogoProps) {
-  const [svgContent, setSvgContent] = useState<string>('');
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+export function TokenLoadingLogo({ svgUrl, svgContent: externalSvgContent, color, isLoading: externalIsLoading = false }: TokenLoadingLogoProps) {
+  const [internalSvgContent, setInternalSvgContent] = useState<string>('');
+  const [internalIsLoading, setInternalIsLoading] = useState<boolean>(true);
 
-  // Fetch SVG from URL
+  // Use external SVG content if provided, otherwise fetch from URL
+  const svgContent = externalSvgContent || internalSvgContent;
+  const isLoading = externalIsLoading || internalIsLoading;
+
+  // Fetch SVG from URL only if not provided externally
   useEffect(() => {
+    // If SVG content is already provided, no need to fetch
+    if (externalSvgContent !== undefined) {
+      setInternalIsLoading(false);
+      return;
+    }
+
     if (!svgUrl) {
-      setIsLoading(false);
+      setInternalIsLoading(false);
       return;
     }
 
@@ -27,16 +39,16 @@ export function TokenLoadingLogo({ svgUrl, color }: TokenLoadingLogoProps) {
           throw new Error(`Failed to fetch SVG: ${response.status} ${response.statusText}`);
         }
         const text = await response.text();
-        setSvgContent(text);
+        setInternalSvgContent(text);
       } catch (error) {
         console.error('Error fetching SVG:', error);
       } finally {
-        setIsLoading(false);
+        setInternalIsLoading(false);
       }
     };
 
     fetchSvg();
-  }, [svgUrl]);
+  }, [svgUrl, externalSvgContent]);
 
   // Show fallback spinner while loading or if SVG fetch failed
   if (isLoading || !svgContent) {
