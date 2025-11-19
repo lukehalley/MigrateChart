@@ -38,9 +38,50 @@ export function TokenLoadingLogo({ svgUrl, color }: TokenLoadingLogoProps) {
     fetchSvg();
   }, [svgUrl]);
 
-  // Show nothing while loading
+  // Show fallback spinner while loading or if SVG fetch failed
   if (isLoading || !svgContent) {
-    return null;
+    return (
+      <motion.div
+        className="flex items-center justify-center"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.2 }}
+        style={{
+          width: '240px',
+          height: '240px',
+        }}
+      >
+        <svg
+          viewBox="0 0 50 50"
+          xmlns="http://www.w3.org/2000/svg"
+          style={{
+            width: '80px',
+            height: '80px',
+            filter: `drop-shadow(0 0 12px ${color}66)`,
+          }}
+        >
+          <circle
+            cx="25"
+            cy="25"
+            r="20"
+            fill="none"
+            stroke={color}
+            strokeWidth="4"
+            strokeDasharray="31.4 31.4"
+            strokeLinecap="round"
+          >
+            <animateTransform
+              attributeName="transform"
+              type="rotate"
+              from="0 25 25"
+              to="360 25 25"
+              dur="1s"
+              repeatCount="indefinite"
+            />
+          </circle>
+        </svg>
+      </motion.div>
+    );
   }
 
   return (
