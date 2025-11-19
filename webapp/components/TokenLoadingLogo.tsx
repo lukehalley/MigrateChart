@@ -4,64 +4,20 @@ import { motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 
 interface TokenLoadingLogoProps {
-  svgUrl?: string; // URL to SVG file in storage (for backwards compatibility)
-  svgContent?: string | null; // Pre-loaded SVG content (preferred method)
+  svgUrl?: string; // URL to SVG file in storage
   color: string;
   isLoading?: boolean; // External loading state
 }
 
-export function TokenLoadingLogo({ svgUrl, svgContent: externalSvgContent, color, isLoading: externalIsLoading = false }: TokenLoadingLogoProps) {
-  const [internalSvgContent, setInternalSvgContent] = useState<string>('');
-  const [internalIsLoading, setInternalIsLoading] = useState<boolean>(true);
-
-  // Use external SVG content if provided, otherwise fetch from URL
-  const svgContent = externalSvgContent || internalSvgContent;
-  const isLoading = externalIsLoading || internalIsLoading;
-
+export function TokenLoadingLogo({ svgUrl, color, isLoading = false }: TokenLoadingLogoProps) {
   // Debug: Log component state
   console.log('[TokenLoadingLogo] Render state:', {
-    hasExternalContent: !!externalSvgContent,
-    hasInternalContent: !!internalSvgContent,
-    externalIsLoading,
-    internalIsLoading,
-    finalIsLoading: isLoading,
-    hasSvgContent: !!svgContent
+    hasSvgUrl: !!svgUrl,
+    isLoading,
   });
 
-  // Fetch SVG from URL only if not provided externally
-  useEffect(() => {
-    // If SVG content is already provided, no need to fetch
-    if (externalSvgContent !== undefined) {
-      setInternalIsLoading(false);
-      return;
-    }
-
-    if (!svgUrl) {
-      setInternalIsLoading(false);
-      return;
-    }
-
-    // Fetch SVG content from URL
-    const fetchSvg = async () => {
-      try {
-        const response = await fetch(svgUrl);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch SVG: ${response.status} ${response.statusText}`);
-        }
-        const text = await response.text();
-        setInternalSvgContent(text);
-      } catch (error) {
-        console.error('Error fetching SVG:', error);
-      } finally {
-        setInternalIsLoading(false);
-      }
-    };
-
-    fetchSvg();
-  }, [svgUrl, externalSvgContent]);
-
-  // Show fallback spinner while loading or if SVG fetch failed
-  if (isLoading || !svgContent) {
+  // Show fallback spinner while loading or if no SVG URL
+  if (isLoading || !svgUrl) {
     console.log('[TokenLoadingLogo] Showing fallback spinner');
     return (
       <motion.div
@@ -107,11 +63,9 @@ export function TokenLoadingLogo({ svgUrl, svgContent: externalSvgContent, color
     );
   }
 
-  // Strip XML declaration if present (causes rendering issues in HTML)
-  const cleanedSvgContent = svgContent.replace(/<\?xml[^?]*\?>\s*/g, '');
-
   console.log('[TokenLoadingLogo] Showing custom logo animation');
-  console.log('[TokenLoadingLogo] SVG content preview:', cleanedSvgContent.substring(0, 200) + '...');
+  console.log('[TokenLoadingLogo] SVG URL:', svgUrl);
+
   return (
     <div className="flex items-center justify-center px-4">
       <div
@@ -140,14 +94,13 @@ export function TokenLoadingLogo({ svgUrl, svgContent: externalSvgContent, color
             repeatType: 'loop',
           }}
         >
-          <div
-            className="w-full h-full [&>svg]:w-full [&>svg]:h-full [&>svg]:object-contain"
+          <img
+            src={svgUrl}
+            alt="Token Logo"
+            className="w-full h-full object-contain"
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+              display: 'block',
             }}
-            dangerouslySetInnerHTML={{ __html: svgContent }}
           />
         </motion.div>
 

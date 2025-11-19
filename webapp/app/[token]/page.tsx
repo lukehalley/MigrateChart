@@ -22,19 +22,13 @@ import { useTheme } from '@/lib/useTheme';
 import { fetchAllPoolsData, fetchTokenStats, fetchWalletBalance, fetchTokenBalance } from '@/lib/api';
 import { PoolData, Timeframe } from '@/lib/types';
 import { SafeStorage } from '@/lib/localStorage';
-import { useSVGPreloader } from '@/lib/useSVGPreloader';
 
 function HomeContent() {
   const { currentProject, isLoading: projectLoading, error: projectError } = useTokenContext();
 
-  // Preload the SVG as soon as we have the project data
-  const { svgContent, isLoading: svgLoading } = useSVGPreloader(currentProject?.loaderUrl);
-
   // Debug: Log loading states
   console.log('[PAGE] Loading states:', {
     projectLoading,
-    svgLoading,
-    hasSvgContent: !!svgContent,
     loaderUrl: currentProject?.loaderUrl,
     projectName: currentProject?.name
   });
@@ -446,15 +440,13 @@ function HomeContent() {
         hasProject: !!currentProject,
         hasPoolsData: !!poolsData,
         hasTokenStats: !!tokenStats,
-        hasSvgContent: !!svgContent,
         isLoading,
         projectLoading,
-        isStatsLoading,
-        svgLoading
+        isStatsLoading
       });
 
-      // Hide loader when we have all data (project, pools, stats, AND svg)
-      if (currentProject && poolsData && tokenStats && svgContent && !isLoading && !projectLoading && !isStatsLoading && !svgLoading) {
+      // Hide loader when we have all data (project, pools, stats)
+      if (currentProject && poolsData && tokenStats && !isLoading && !projectLoading && !isStatsLoading) {
         console.log('[PAGE] All data ready! Hiding loader...');
         const hideLoader = () => {
           console.log('[PAGE] Loader hidden, initial load complete');
@@ -505,7 +497,7 @@ function HomeContent() {
         }
       }
     }
-  }, [isLoading, projectLoading, isStatsLoading, svgLoading, hasInitiallyLoaded, currentProject, poolsData, tokenStats, svgContent, showLoader]);
+  }, [isLoading, projectLoading, isStatsLoading, hasInitiallyLoaded, currentProject, poolsData, tokenStats, showLoader]);
 
   // Auto-scale goals when met
   useEffect(() => {
@@ -1360,8 +1352,8 @@ function HomeContent() {
                 className="flex items-center justify-center h-full backdrop-blur-xl"
               >
                 <TokenLoadingLogo
-                  svgContent={svgContent}
-                  isLoading={svgLoading}
+                  svgUrl={currentProject?.loaderUrl}
+                  isLoading={projectLoading}
                   color={currentProject?.primaryColor || '#52C97D'}
                 />
               </motion.div>
@@ -1465,8 +1457,8 @@ function HomeContent() {
                 className="flex items-center justify-center h-full backdrop-blur-xl"
               >
                 <TokenLoadingLogo
-                  svgContent={svgContent}
-                  isLoading={svgLoading}
+                  svgUrl={currentProject?.loaderUrl}
+                  isLoading={projectLoading}
                   color={currentProject?.primaryColor || '#52C97D'}
                 />
               </motion.div>
