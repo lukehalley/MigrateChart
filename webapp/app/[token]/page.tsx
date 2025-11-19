@@ -1322,7 +1322,7 @@ function HomeContent() {
           )}
 
           <AnimatePresence mode="wait">
-            {showLoader && currentProject && (
+            {showLoader && (
               <motion.div
                 key="loading"
                 initial={{ opacity: 0 }}
@@ -1332,8 +1332,8 @@ function HomeContent() {
                 className="flex items-center justify-center h-full backdrop-blur-xl"
               >
                 <TokenLoadingLogo
-                  svgUrl={currentProject.loaderUrl}
-                  color={currentProject.primaryColor}
+                  svgUrl={currentProject?.loaderUrl}
+                  color={currentProject?.primaryColor || '#52C97D'}
                 />
               </motion.div>
             )}
@@ -1426,7 +1426,7 @@ function HomeContent() {
           )}
 
           <AnimatePresence mode="wait">
-            {showLoader && currentProject && (
+            {showLoader && (
               <motion.div
                 key="loading"
                 initial={{ opacity: 0 }}
@@ -1436,8 +1436,8 @@ function HomeContent() {
                 className="flex items-center justify-center h-full backdrop-blur-xl"
               >
                 <TokenLoadingLogo
-                  svgUrl={currentProject.loaderUrl}
-                  color={currentProject.primaryColor}
+                  svgUrl={currentProject?.loaderUrl}
+                  color={currentProject?.primaryColor || '#52C97D'}
                 />
               </motion.div>
             )}
