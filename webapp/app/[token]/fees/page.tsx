@@ -84,7 +84,7 @@ function FeesPageContent() {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-black">
         <TokenLoadingLogo
-          svg={currentProject?.loaderSvg || ''}
+          svgUrl={currentProject?.loaderUrl}
           color={currentProject?.primaryColor || '#52C97D'}
         />
       </div>

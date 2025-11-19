@@ -20,7 +20,7 @@ import { TokenSwitcher } from '@/components/TokenSwitcher';
 import { TokenContextProvider, useTokenContext } from '@/lib/TokenContext';
 import { useTheme } from '@/lib/useTheme';
 import { fetchAllPoolsData, fetchTokenStats, fetchWalletBalance, fetchTokenBalance } from '@/lib/api';
-import { PoolData, Timeframe } from '@/lib/types';
+import { PoolData, Timeframe, ProjectConfig } from '@/lib/types';
 import { SafeStorage } from '@/lib/localStorage';
 
 function HomeContent() {
