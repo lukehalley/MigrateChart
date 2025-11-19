@@ -19,6 +19,7 @@ import { TokenLoadingLogo } from '@/components/TokenLoadingLogo';
 import { TokenSwitcher } from '@/components/TokenSwitcher';
 import { TokenContextProvider, useTokenContext } from '@/lib/TokenContext';
 import { useTheme } from '@/lib/useTheme';
+import { useFavicon } from '@/lib/useFavicon';
 import { fetchAllPoolsData, fetchTokenStats, fetchWalletBalance, fetchTokenBalance } from '@/lib/api';
 import { PoolData, Timeframe, ProjectConfig } from '@/lib/types';
 import { SafeStorage } from '@/lib/localStorage';
@@ -37,6 +38,9 @@ function HomeContent() {
   const themeStyles = useTheme(currentProject?.primaryColor || 'var(--primary-color)');
   const primaryColor = currentProject?.primaryColor || '#52C97D';
   const secondaryColor = currentProject?.secondaryColor || '#000000';
+
+  // Update favicon when project changes
+  useFavicon(currentProject?.logoUrl);
 
   // Helper function to convert hex to rgba
   const hexToRgba = (hex: string, alpha: number) => {
