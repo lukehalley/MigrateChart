@@ -414,42 +414,34 @@ function HomeContent() {
   }, [currentProject, tokenStats]);
 
   // Stable loading state to prevent flash during transitions
-  const [showLoader, setShowLoader] = useState(false); // Start with false, turn on when project loads
+  const [showLoader, setShowLoader] = useState(true); // Start with true to show loader immediately
   const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false);
   const loaderStartTimeRef = useRef<number | null>(null);
   const MINIMUM_LOADER_DURATION = 800; // Minimum time to show loader (ms)
 
   useEffect(() => {
-    // On initial load, show loader once we have project, keep visible until we have ALL data
-    if (!hasInitiallyLoaded) {
-      // Turn on loader when we have project but are waiting for pools/stats
-      if (currentProject && (!poolsData || !tokenStats || isLoading || isStatsLoading)) {
-        if (!showLoader && !loaderStartTimeRef.current) {
-          loaderStartTimeRef.current = Date.now();
-          setShowLoader(true);
-        }
-      }
+    // Record start time on first render
+    if (!loaderStartTimeRef.current) {
+      loaderStartTimeRef.current = Date.now();
+    }
 
-      // Turn off loader when we have all data
+    // On initial load, keep loader visible until we have ALL data
+    if (!hasInitiallyLoaded) {
+      // Hide loader when we have all data (project, pools, and stats)
       if (currentProject && poolsData && tokenStats && !isLoading && !projectLoading && !isStatsLoading) {
-        // Record when we're ready to hide the loader
         const hideLoader = () => {
           setHasInitiallyLoaded(true);
           setShowLoader(false);
           loaderStartTimeRef.current = null;
         };
 
-        if (loaderStartTimeRef.current) {
-          const elapsed = Date.now() - loaderStartTimeRef.current;
-          const remaining = MINIMUM_LOADER_DURATION - elapsed;
+        const elapsed = Date.now() - (loaderStartTimeRef.current || 0);
+        const remaining = MINIMUM_LOADER_DURATION - elapsed;
 
-          if (remaining > 0) {
-            // Wait for remaining time to ensure smooth animation
-            const timer = setTimeout(hideLoader, remaining);
-            return () => clearTimeout(timer);
-          } else {
-            hideLoader();
-          }
+        if (remaining > 0) {
+          // Wait for remaining time to ensure smooth animation
+          const timer = setTimeout(hideLoader, remaining);
+          return () => clearTimeout(timer);
         } else {
           hideLoader();
         }
