@@ -24,11 +24,12 @@ import { PoolData, Timeframe } from '@/lib/types';
 import { SafeStorage } from '@/lib/localStorage';
 
 function HomeContent() {
-  const { currentProject, isLoading: projectLoading, error: projectError } = useTokenContext();
+  const { currentProject, isLoading: projectLoading, isSwitching, error: projectError } = useTokenContext();
 
   // Debug: Log loading states
   console.log('[PAGE] Loading states:', {
     projectLoading,
+    isSwitching,
     loaderUrl: currentProject?.loaderUrl,
     projectName: currentProject?.name
   });
@@ -425,16 +426,54 @@ function HomeContent() {
   const [showLoader, setShowLoader] = useState(true); // Start with true to show loader immediately
   const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false);
   const loaderStartTimeRef = useRef<number | null>(null);
+  const switchStartTimeRef = useRef<number | null>(null); // Track when switch started
+  const switchingFromProjectRef = useRef<ProjectConfig | null>(null); // Store the project we're switching FROM
   const MINIMUM_LOADER_DURATION = 800; // Minimum time to show loader (ms)
 
+  // Dedicated effect for handling token switching loader
   useEffect(() => {
-    // Record start time on first render
-    if (!loaderStartTimeRef.current) {
+    if (isSwitching) {
+      // Token switch started - capture current project and record time
+      switchingFromProjectRef.current = currentProject;
+      switchStartTimeRef.current = Date.now();
       loaderStartTimeRef.current = Date.now();
-    }
+      setShowLoader(true);
+      console.log('[PAGE] Token switch detected - capturing project and forcing loader to show');
+    } else if (switchStartTimeRef.current !== null) {
+      // Token switch completed - ensure minimum display time before hiding
+      const elapsed = Date.now() - switchStartTimeRef.current;
+      const remaining = MINIMUM_LOADER_DURATION - elapsed;
 
+      console.log(`[PAGE] Token switch complete. Elapsed: ${elapsed}ms, Remaining: ${remaining}ms`);
+
+      if (remaining > 0) {
+        // Still need to wait - schedule hide after remaining time
+        const timer = setTimeout(() => {
+          console.log('[PAGE] Minimum duration elapsed - clearing switch refs');
+          switchStartTimeRef.current = null;
+          switchingFromProjectRef.current = null;
+          loaderStartTimeRef.current = null;
+          // Let the main loading effect handle hiding the loader
+        }, remaining);
+        return () => clearTimeout(timer);
+      } else {
+        // Minimum duration already passed
+        console.log('[PAGE] Minimum duration already elapsed - clearing switch refs');
+        switchStartTimeRef.current = null;
+        switchingFromProjectRef.current = null;
+        loaderStartTimeRef.current = null;
+      }
+    }
+  }, [isSwitching, currentProject]);
+
+  useEffect(() => {
     // On initial load, keep loader visible until we have ALL data
     if (!hasInitiallyLoaded) {
+      // Record start time on first render
+      if (!loaderStartTimeRef.current) {
+        loaderStartTimeRef.current = Date.now();
+      }
+
       // Debug: Log readiness status
       console.log('[PAGE] Initial load readiness:', {
         hasProject: !!currentProject,
@@ -442,11 +481,12 @@ function HomeContent() {
         hasTokenStats: !!tokenStats,
         isLoading,
         projectLoading,
-        isStatsLoading
+        isStatsLoading,
+        isSwitching
       });
 
-      // Hide loader when we have all data (project, pools, stats)
-      if (currentProject && poolsData && tokenStats && !isLoading && !projectLoading && !isStatsLoading) {
+      // Hide loader when we have all data (project, pools, stats) AND not switching
+      if (currentProject && poolsData && tokenStats && !isLoading && !projectLoading && !isStatsLoading && !isSwitching) {
         console.log('[PAGE] All data ready! Hiding loader...');
         const hideLoader = () => {
           console.log('[PAGE] Loader hidden, initial load complete');
@@ -467,37 +507,47 @@ function HomeContent() {
         }
       }
     } else {
-      // After initial load, use normal loading flags for subsequent updates
-      const shouldShowLoader = isLoading || projectLoading;
+      // After initial load, show loader during switching or when loading data
+      const shouldShowLoader = isLoading || projectLoading || isSwitching;
 
       if (shouldShowLoader && !showLoader) {
-        // Starting to show loader - record start time
-        loaderStartTimeRef.current = Date.now();
+        // Starting to show loader - record start time (if not already set by switch effect)
+        if (!loaderStartTimeRef.current) {
+          loaderStartTimeRef.current = Date.now();
+        }
         setShowLoader(true);
+        console.log('[PAGE] Showing loader for data update');
       } else if (!shouldShowLoader && showLoader) {
-        // Data is ready, but ensure minimum display time
-        const hideLoader = () => {
-          setShowLoader(false);
-          loaderStartTimeRef.current = null;
-        };
+        // Data is ready and not switching
+        // IMPORTANT: Don't hide if we're still in the minimum switch duration window
+        if (switchStartTimeRef.current !== null) {
+          console.log('[PAGE] Data ready but still in switch minimum duration - keeping loader visible');
+          return; // Keep showing loader until switch duration completes
+        }
 
+        // Hide loader with minimum duration check (for non-switch loading)
         if (loaderStartTimeRef.current) {
           const elapsed = Date.now() - loaderStartTimeRef.current;
           const remaining = MINIMUM_LOADER_DURATION - elapsed;
 
           if (remaining > 0) {
-            // Wait for remaining time to ensure smooth animation cycle completion
-            const timer = setTimeout(hideLoader, remaining);
+            console.log(`[PAGE] Waiting ${remaining}ms more before hiding loader (minimum duration)`);
+            const timer = setTimeout(() => {
+              setShowLoader(false);
+              loaderStartTimeRef.current = null;
+              console.log('[PAGE] Loader hidden after data update');
+            }, remaining);
             return () => clearTimeout(timer);
-          } else {
-            hideLoader();
           }
-        } else {
-          hideLoader();
         }
+
+        // Hide immediately if no timing constraints
+        setShowLoader(false);
+        loaderStartTimeRef.current = null;
+        console.log('[PAGE] Loader hidden after data update');
       }
     }
-  }, [isLoading, projectLoading, isStatsLoading, hasInitiallyLoaded, currentProject, poolsData, tokenStats, showLoader]);
+  }, [isLoading, projectLoading, isStatsLoading, isSwitching, hasInitiallyLoaded, currentProject, poolsData, tokenStats, showLoader]);
 
   // Auto-scale goals when met
   useEffect(() => {
@@ -632,9 +682,9 @@ function HomeContent() {
       <motion.div
         className="relative bg-gradient-to-r from-[#0A1F12] via-[var(--primary-darker)]/30 to-[#0A1F12] border-b-2 border-[var(--primary-color)]/50 backdrop-blur-sm"
         style={{ boxShadow: `0 4px 20px rgba(var(--primary-rgb), 0.25)` }}
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: 'easeOut' }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5, ease: [0.4, 0.0, 0.2, 1] }}
         onTouchStart={(e) => e.preventDefault()}
         onTouchMove={(e) => e.preventDefault()}
       >
@@ -651,7 +701,15 @@ function HomeContent() {
           }}
         />
 
-        <div className="w-full relative px-3 sm:px-6">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentProject.slug}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25, ease: [0.4, 0.0, 0.2, 1] }}
+            className="w-full relative px-3 sm:px-6"
+          >
           {/* Desktop: 3-column layout */}
           <div className="hidden sm:flex items-center justify-center gap-4 py-4">
             {/* Column 1: Address Bar + Copy Button */}
@@ -922,7 +980,8 @@ function HomeContent() {
               </motion.button>
             </div>
           </div>
-        </div>
+          </motion.div>
+        </AnimatePresence>
       </motion.div>
 
       {/* Mobile View */}
@@ -1341,20 +1400,21 @@ function HomeContent() {
             </div>
           )}
 
-          <AnimatePresence mode="wait">
+          <AnimatePresence>
             {showLoader && (
               <motion.div
                 key="loading"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.4, ease: 'easeInOut' }}
+                transition={{ duration: 0.4, ease: [0.4, 0.0, 0.2, 1] }}
                 className="flex items-center justify-center h-full backdrop-blur-xl"
               >
                 <TokenLoadingLogo
-                  svgUrl={currentProject?.loaderUrl}
-                  isLoading={projectLoading}
-                  color={currentProject?.primaryColor || '#52C97D'}
+                  key={isSwitching ? switchingFromProjectRef.current?.slug : currentProject?.slug}
+                  svgUrl={isSwitching && switchingFromProjectRef.current ? switchingFromProjectRef.current.loaderUrl : currentProject?.loaderUrl}
+                  isLoading={projectLoading || isSwitching}
+                  color={isSwitching && switchingFromProjectRef.current ? switchingFromProjectRef.current.primaryColor : (currentProject?.primaryColor || '#52C97D')}
                 />
               </motion.div>
             )}
@@ -1367,7 +1427,7 @@ function HomeContent() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                    transition={{ duration: 0.4, ease: [0.4, 0.0, 0.2, 1] }}
                     className="w-full h-full"
                   >
                     <Chart
@@ -1394,7 +1454,7 @@ function HomeContent() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                    transition={{ duration: 0.4, ease: [0.4, 0.0, 0.2, 1] }}
                     className="w-full h-full"
                   >
                     <FeesView
@@ -1411,7 +1471,7 @@ function HomeContent() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                    transition={{ duration: 0.4, ease: [0.4, 0.0, 0.2, 1] }}
                     className="w-full h-full"
                   >
                     <HoldersView
@@ -1446,20 +1506,21 @@ function HomeContent() {
             </div>
           )}
 
-          <AnimatePresence mode="wait">
+          <AnimatePresence>
             {showLoader && (
               <motion.div
                 key="loading"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.4, ease: 'easeInOut' }}
+                transition={{ duration: 0.4, ease: [0.4, 0.0, 0.2, 1] }}
                 className="flex items-center justify-center h-full backdrop-blur-xl"
               >
                 <TokenLoadingLogo
-                  svgUrl={currentProject?.loaderUrl}
-                  isLoading={projectLoading}
-                  color={currentProject?.primaryColor || '#52C97D'}
+                  key={isSwitching ? switchingFromProjectRef.current?.slug : currentProject?.slug}
+                  svgUrl={isSwitching && switchingFromProjectRef.current ? switchingFromProjectRef.current.loaderUrl : currentProject?.loaderUrl}
+                  isLoading={projectLoading || isSwitching}
+                  color={isSwitching && switchingFromProjectRef.current ? switchingFromProjectRef.current.primaryColor : (currentProject?.primaryColor || '#52C97D')}
                 />
               </motion.div>
             )}
@@ -1472,7 +1533,7 @@ function HomeContent() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                    transition={{ duration: 0.4, ease: [0.4, 0.0, 0.2, 1] }}
                     className="w-full h-full"
                   >
                     <Chart
@@ -1499,7 +1560,7 @@ function HomeContent() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                    transition={{ duration: 0.4, ease: [0.4, 0.0, 0.2, 1] }}
                     className="w-full h-full"
                   >
                     <FeesView
@@ -1516,7 +1577,7 @@ function HomeContent() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                    transition={{ duration: 0.4, ease: [0.4, 0.0, 0.2, 1] }}
                     className="w-full h-full"
                   >
                     <HoldersView
@@ -1586,6 +1647,15 @@ function HomeContent() {
                   transition={{ duration: 0.2 }}
                   className="flex flex-col items-center gap-3 py-3"
                 >
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={currentProject.slug}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.3, ease: [0.4, 0.0, 0.2, 1] }}
+                      className="flex flex-col items-center gap-3 w-full"
+                    >
                   {/* Logo */}
                   <div className="w-12 h-12 flex items-center justify-center">
                     {currentProject?.logoUrl ? (
@@ -1993,6 +2063,8 @@ function HomeContent() {
                       </Popover>
                     </>
                   )}
+                    </motion.div>
+                  </AnimatePresence>
                 </motion.div>
               ) : (
                 // Expanded: Show full content
@@ -2007,6 +2079,14 @@ function HomeContent() {
 
           {/* Scrollable Content */}
           <div className="flex-1 overflow-y-auto overflow-x-hidden px-2.5 py-2 space-y-0 min-h-0">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentProject.slug}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.25, ease: [0.4, 0.0, 0.2, 1] }}
+              >
             {/* Main Info Block */}
             <div className="stat-card-highlight">
               <div className="flex items-center gap-2.5 mb-2">
@@ -2198,6 +2278,8 @@ function HomeContent() {
                 <div className="h-1"></div>
               </>
             )}
+              </motion.div>
+            </AnimatePresence>
           </div>
 
           {/* Sticky Bottom Section */}

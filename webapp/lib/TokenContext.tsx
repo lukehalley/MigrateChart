@@ -8,6 +8,7 @@ interface TokenContextValue {
   currentProject: ProjectConfig | null;
   allProjects: ProjectListItem[];
   isLoading: boolean;
+  isSwitching: boolean;
   error: string | null;
   switchProject: (slug: string) => void;
 }
@@ -22,6 +23,7 @@ export function TokenContextProvider({ children }: { children: ReactNode }) {
   const [currentProject, setCurrentProject] = useState<ProjectConfig | null>(null);
   const [allProjects, setAllProjects] = useState<ProjectListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSwitching, setIsSwitching] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Get token slug from URL path (e.g., /zera -> 'zera')
@@ -87,6 +89,8 @@ export function TokenContextProvider({ children }: { children: ReactNode }) {
         setError(`Failed to load project: ${tokenSlug}`);
       } finally {
         setIsLoading(false);
+        // Clear switching state when project load completes
+        setIsSwitching(false);
       }
     }
 
@@ -99,6 +103,8 @@ export function TokenContextProvider({ children }: { children: ReactNode }) {
 
   // Switch to different project
   const switchProject = (slug: string) => {
+    // Set switching state to trigger loader
+    setIsSwitching(true);
     const params = new URLSearchParams(searchParams.toString());
     const queryString = params.toString();
     router.push(`/${slug}${queryString ? `?${queryString}` : ''}`, { scroll: false });
@@ -110,6 +116,7 @@ export function TokenContextProvider({ children }: { children: ReactNode }) {
         currentProject,
         allProjects,
         isLoading,
+        isSwitching,
         error,
         switchProject,
       }}

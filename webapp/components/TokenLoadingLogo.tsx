@@ -16,9 +16,10 @@ export function TokenLoadingLogo({ svgUrl, color, isLoading = false }: TokenLoad
     isLoading,
   });
 
-  // Show fallback spinner while loading or if no SVG URL
-  if (isLoading || !svgUrl) {
-    console.log('[TokenLoadingLogo] Showing fallback spinner');
+  // Show fallback spinner only if no SVG URL
+  // Don't check isLoading here - if we have an svgUrl, show the branded logo
+  if (!svgUrl) {
+    console.log('[TokenLoadingLogo] Showing fallback spinner - no svgUrl');
     return (
       <motion.div
         className="flex items-center justify-center w-72 h-72 md:w-[32rem] md:h-[32rem]"
