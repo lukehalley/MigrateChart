@@ -2140,10 +2140,10 @@ function HomeContent() {
             {/* View Mode Switch */}
             <div className="stat-card">
               <p className="text-white text-[10px] font-medium mb-1 text-center">View Mode</p>
-              <div className="relative bg-black/50 border border-white/20 rounded-lg p-1 flex gap-1">
+              <div className="relative bg-black/50 border border-white/20 rounded-lg p-0.5 flex gap-0.5">
                 <button
                   onClick={() => setViewMode('chart')}
-                  className={`relative flex-1 py-2 px-2 rounded-md text-xs font-bold flex items-center justify-center gap-1 z-10 transition-colors duration-200 ${
+                  className={`relative flex-1 py-1.5 px-1 rounded-md text-[10px] font-bold flex items-center justify-center gap-0.5 z-10 transition-colors duration-200 ${
                     viewMode === 'chart'
                       ? ''
                       : 'text-white/70 hover:text-white'
@@ -2157,7 +2157,7 @@ function HomeContent() {
                       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                     />
                   )}
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10 flex-shrink-0">
                     <path d="M3 3v18h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                     <path d="M18 9l-5 5-4-4-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
@@ -2165,7 +2165,7 @@ function HomeContent() {
                 </button>
                 <button
                   onClick={() => setViewMode('fees')}
-                  className={`relative flex-1 py-2 px-2 rounded-md text-xs font-bold flex items-center justify-center gap-1 z-10 transition-colors duration-200 ${
+                  className={`relative flex-1 py-1.5 px-1 rounded-md text-[10px] font-bold flex items-center justify-center gap-0.5 z-10 transition-colors duration-200 ${
                     viewMode === 'fees'
                       ? ''
                       : 'text-white/70 hover:text-white'
@@ -2179,14 +2179,14 @@ function HomeContent() {
                       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                     />
                   )}
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10 flex-shrink-0">
                     <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                   <span className="relative z-10">Fees</span>
                 </button>
                 <button
                   onClick={() => setViewMode('holders')}
-                  className={`relative flex-1 py-2 px-2 rounded-md text-xs font-bold flex items-center justify-center gap-1 z-10 transition-colors duration-200 ${
+                  className={`relative flex-1 py-1.5 px-1 rounded-md text-[10px] font-bold flex items-center justify-center gap-0.5 z-10 transition-colors duration-200 ${
                     viewMode === 'holders'
                       ? ''
                       : 'text-white/70 hover:text-white'
@@ -2200,7 +2200,7 @@ function HomeContent() {
                       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                     />
                   )}
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10 flex-shrink-0">
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                     <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                     <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
