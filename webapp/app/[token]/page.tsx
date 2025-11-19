@@ -27,6 +27,17 @@ function HomeContent() {
   const { currentProject, isLoading: projectLoading, error: projectError } = useTokenContext();
   const themeStyles = useTheme(currentProject?.primaryColor || 'var(--primary-color)');
   const primaryColor = currentProject?.primaryColor || '#52C97D';
+  const secondaryColor = currentProject?.secondaryColor || '#000000';
+
+  // Helper function to convert hex to rgba
+  const hexToRgba = (hex: string, alpha: number) => {
+    const h = hex.replace('#', '');
+    const r = parseInt(h.substring(0, 2), 16);
+    const g = parseInt(h.substring(2, 4), 16);
+    const b = parseInt(h.substring(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  };
+
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -403,14 +414,23 @@ function HomeContent() {
   }, [currentProject, tokenStats]);
 
   // Stable loading state to prevent flash during transitions
-  const [showLoader, setShowLoader] = useState(true); // Start with true to prevent flash
+  const [showLoader, setShowLoader] = useState(false); // Start with false, turn on when project loads
   const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false);
   const loaderStartTimeRef = useRef<number | null>(null);
   const MINIMUM_LOADER_DURATION = 800; // Minimum time to show loader (ms)
 
   useEffect(() => {
-    // On initial load, keep loader visible until we have ALL data: project, pools, and stats
+    // On initial load, show loader once we have project, keep visible until we have ALL data
     if (!hasInitiallyLoaded) {
+      // Turn on loader when we have project but are waiting for pools/stats
+      if (currentProject && (!poolsData || !tokenStats || isLoading || isStatsLoading)) {
+        if (!showLoader && !loaderStartTimeRef.current) {
+          loaderStartTimeRef.current = Date.now();
+          setShowLoader(true);
+        }
+      }
+
+      // Turn off loader when we have all data
       if (currentProject && poolsData && tokenStats && !isLoading && !projectLoading && !isStatsLoading) {
         // Record when we're ready to hide the loader
         const hideLoader = () => {
@@ -419,11 +439,7 @@ function HomeContent() {
           loaderStartTimeRef.current = null;
         };
 
-        // If we haven't tracked start time yet, or if minimum duration has passed, hide immediately
-        if (!loaderStartTimeRef.current) {
-          loaderStartTimeRef.current = Date.now();
-          hideLoader();
-        } else {
+        if (loaderStartTimeRef.current) {
           const elapsed = Date.now() - loaderStartTimeRef.current;
           const remaining = MINIMUM_LOADER_DURATION - elapsed;
 
@@ -434,11 +450,9 @@ function HomeContent() {
           } else {
             hideLoader();
           }
+        } else {
+          hideLoader();
         }
-      } else if (!loaderStartTimeRef.current) {
-        // Start tracking loader display time
-        loaderStartTimeRef.current = Date.now();
-        setShowLoader(true);
       }
     } else {
       // After initial load, use normal loading flags for subsequent updates
@@ -632,7 +646,7 @@ function HomeContent() {
             <div className="flex items-center justify-center gap-2">
               <motion.div
                 className="flex items-center gap-2 bg-black/60 px-4 py-[11px] rounded-lg border border-[var(--primary-color)]/40 overflow-hidden flex-shrink min-w-0 h-[48px]"
-                whileHover={{ borderColor: 'rgba(82, 201, 125, 0.7)' }}
+                whileHover={{ borderColor: hexToRgba(primaryColor, 0.7) }}
               >
                 <code className="text-[var(--primary-color)] text-sm font-mono select-all truncate">
                   {solanaAddress}
@@ -641,10 +655,11 @@ function HomeContent() {
 
               <motion.button
                 onClick={handleCopy}
-                className="flex items-center justify-center gap-1.5 px-4 py-[11px] bg-[var(--primary-color)] text-black font-bold text-sm rounded-lg shadow-lg w-[100px] flex-shrink-0 h-[48px]"
+                className="flex items-center justify-center gap-1.5 px-4 py-[11px] bg-[var(--primary-color)] font-bold text-sm rounded-lg shadow-lg w-[100px] flex-shrink-0 h-[48px]"
+                style={{ color: secondaryColor }}
                 whileHover={{
                   scale: 1.05,
-                  boxShadow: '0 0 20px rgba(82, 201, 125, 0.5)'
+                  boxShadow: `0 0 20px ${hexToRgba(primaryColor, 0.5)}`
                 }}
                 title="Copy address to clipboard"
               >
@@ -854,7 +869,7 @@ function HomeContent() {
             <div className="flex items-center justify-center gap-1.5 w-full px-2">
               <motion.div
                 className="flex items-center justify-center gap-2 bg-black/60 px-2.5 py-1.5 rounded-lg border border-[var(--primary-color)]/40 overflow-hidden flex-1 min-w-0"
-                whileHover={{ borderColor: 'rgba(82, 201, 125, 0.7)' }}
+                whileHover={{ borderColor: hexToRgba(primaryColor, 0.7) }}
               >
                 <code className="text-[var(--primary-color)] text-[10px] font-mono select-all truncate text-center">
                   {solanaAddress}
@@ -863,10 +878,11 @@ function HomeContent() {
 
               <motion.button
                 onClick={handleCopy}
-                className="flex items-center justify-center gap-1.5 p-2 bg-[var(--primary-color)] text-black font-bold text-xs rounded-lg shadow-lg"
+                className="flex items-center justify-center gap-1.5 p-2 bg-[var(--primary-color)] font-bold text-xs rounded-lg shadow-lg"
+                style={{ color: secondaryColor }}
                 whileHover={{
                   scale: 1.05,
-                  boxShadow: '0 0 20px rgba(82, 201, 125, 0.5)'
+                  boxShadow: `0 0 20px ${hexToRgba(primaryColor, 0.5)}`
                 }}
                 title="Copy address to clipboard"
               >
@@ -914,7 +930,16 @@ function HomeContent() {
               {/* Close X Button - Top Right */}
               <button
                 onClick={closeMobileMenu}
-                className="absolute -top-3 -right-3 z-[60] w-10 h-10 rounded-full flex items-center justify-center bg-[#0A1F12] border-2 border-[var(--primary-color)] shadow-[0_0_12px_rgba(82,201,125,0.3)] hover:shadow-[0_0_16px_rgba(82,201,125,0.5)] transition-all backdrop-blur-sm"
+                className="absolute -top-3 -right-3 z-[60] w-10 h-10 rounded-full flex items-center justify-center bg-[#0A1F12] border-2 border-[var(--primary-color)] transition-all backdrop-blur-sm"
+                style={{
+                  boxShadow: `0 0 12px ${hexToRgba(primaryColor, 0.3)}`,
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.boxShadow = `0 0 16px ${hexToRgba(primaryColor, 0.5)}`;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.boxShadow = `0 0 12px ${hexToRgba(primaryColor, 0.3)}`;
+                }}
                 aria-label="Close menu"
               >
                 <svg className="w-5 h-5 text-[var(--primary-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -922,7 +947,7 @@ function HomeContent() {
                 </svg>
               </button>
               {/* Tab Navigation */}
-              <div className="w-full bg-gradient-to-r from-[#0A1F12] via-[#1F6338]/20 to-[#0A1F12] border-[3px] border-[var(--primary-color)]/60 border-b-0 flex flex-shrink-0">
+              <div className="w-full bg-gradient-to-r from-[#0A1F12] via-[var(--primary-darker)]/20 to-[#0A1F12] border-[3px] border-[var(--primary-color)]/60 border-b-0 flex flex-shrink-0">
                 <button
                   onClick={() => setMobileMenuTab('settings')}
                   className={`flex-1 py-3 text-sm font-bold transition-all ${
@@ -1014,9 +1039,10 @@ function HomeContent() {
                       }}
                       className={`relative flex-1 py-2 px-2 rounded-md text-xs font-bold flex items-center justify-center gap-1 z-10 transition-colors duration-200 ${
                         viewMode === 'chart'
-                          ? 'text-black'
+                          ? ''
                           : 'text-white/70 hover:text-white'
                       }`}
+                      style={viewMode === 'chart' ? { color: secondaryColor } : undefined}
                     >
                       {viewMode === 'chart' && (
                         <motion.div
@@ -1038,9 +1064,10 @@ function HomeContent() {
                       }}
                       className={`relative flex-1 py-2 px-2 rounded-md text-xs font-bold flex items-center justify-center gap-1 z-10 transition-colors duration-200 ${
                         viewMode === 'fees'
-                          ? 'text-black'
+                          ? ''
                           : 'text-white/70 hover:text-white'
                       }`}
+                      style={viewMode === 'fees' ? { color: secondaryColor } : undefined}
                     >
                       {viewMode === 'fees' && (
                         <motion.div
@@ -1061,9 +1088,10 @@ function HomeContent() {
                       }}
                       className={`relative flex-1 py-2 px-2 rounded-md text-xs font-bold flex items-center justify-center gap-1 z-10 transition-colors duration-200 ${
                         viewMode === 'holders'
-                          ? 'text-black'
+                          ? ''
                           : 'text-white/70 hover:text-white'
                       }`}
+                      style={viewMode === 'holders' ? { color: secondaryColor } : undefined}
                     >
                       {viewMode === 'holders' && (
                         <motion.div
@@ -1099,6 +1127,8 @@ function HomeContent() {
                         setTimeframe(newTimeframe);
                         closeMobileMenu();
                       }}
+                      primaryColor={primaryColor}
+                      secondaryColor={secondaryColor}
                     />
                   ) : viewMode === 'fees' ? (
                     <FeesTimeframeToggle
@@ -1107,6 +1137,8 @@ function HomeContent() {
                         setFeesTimeframe(newTimeframe);
                         closeMobileMenu();
                       }}
+                      primaryColor={primaryColor}
+                      secondaryColor={secondaryColor}
                     />
                   ) : (
                     <HoldersTimeframeToggle
@@ -1115,6 +1147,8 @@ function HomeContent() {
                         setHoldersTimeframe(newTimeframe);
                         closeMobileMenu();
                       }}
+                      primaryColor={primaryColor}
+                      secondaryColor={secondaryColor}
                     />
                   )}
                 </div>
@@ -1158,6 +1192,8 @@ function HomeContent() {
                         isAutoScale={isAutoScale}
                         onAutoScaleToggle={handleAutoScaleToggle}
                         onResetPosition={handleResetChartPosition}
+                        primaryColor={primaryColor}
+                        secondaryColor={secondaryColor}
                       />
                     </div>
                   </div>
@@ -1176,7 +1212,7 @@ function HomeContent() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 py-4 bg-black/85 hover:bg-[var(--primary-color)]/15 transition-all cursor-pointer backdrop-blur-xl"
-                  style={{ boxShadow: '0 0 12px rgba(31, 99, 56, 0.3), 0 0 24px rgba(31, 99, 56, 0.15)' }}
+                  style={{ boxShadow: `0 0 12px ${hexToRgba(primaryColor, 0.3)}, 0 0 24px ${hexToRgba(primaryColor, 0.15)}` }}
                 >
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" fill="var(--primary-color)"/>
@@ -1294,7 +1330,7 @@ function HomeContent() {
           )}
 
           <AnimatePresence mode="wait">
-            {showLoader && (
+            {showLoader && currentProject && (
               <motion.div
                 key="loading"
                 initial={{ opacity: 0 }}
@@ -1304,7 +1340,7 @@ function HomeContent() {
                 className="flex items-center justify-center h-full backdrop-blur-xl"
               >
                 <TokenLoadingLogo
-                  svg={currentProject.loaderSvg}
+                  svgUrl={currentProject.loaderUrl}
                   color={currentProject.primaryColor}
                 />
               </motion.div>
@@ -1329,6 +1365,7 @@ function HomeContent() {
                       showMigrationLines={showMigrationLines}
                       migrations={currentProject.migrations}
                       primaryColor={currentProject.primaryColor}
+                      secondaryColor={currentProject.secondaryColor}
                       isLogScale={isLogScale}
                       onLogScaleToggle={handleLogScaleToggle}
                       isAutoScale={isAutoScale}
@@ -1397,7 +1434,7 @@ function HomeContent() {
           )}
 
           <AnimatePresence mode="wait">
-            {showLoader && (
+            {showLoader && currentProject && (
               <motion.div
                 key="loading"
                 initial={{ opacity: 0 }}
@@ -1407,7 +1444,7 @@ function HomeContent() {
                 className="flex items-center justify-center h-full backdrop-blur-xl"
               >
                 <TokenLoadingLogo
-                  svg={currentProject.loaderSvg}
+                  svgUrl={currentProject.loaderUrl}
                   color={currentProject.primaryColor}
                 />
               </motion.div>
@@ -1432,6 +1469,7 @@ function HomeContent() {
                       showMigrationLines={showMigrationLines}
                       migrations={currentProject.migrations}
                       primaryColor={currentProject.primaryColor}
+                      secondaryColor={currentProject.secondaryColor}
                       isLogScale={isLogScale}
                       onLogScaleToggle={handleLogScaleToggle}
                       isAutoScale={isAutoScale}
@@ -1485,7 +1523,7 @@ function HomeContent() {
         <motion.div
           className="absolute top-0 right-0 h-full flex flex-col bg-black border-l border-[var(--primary-color)]/20 z-40"
           style={{
-            boxShadow: isSidebarCollapsed ? '-4px 0 8px rgba(82, 201, 125, 0.15)' : '-8px 0 8px rgba(82, 201, 125, 0.2)',
+            boxShadow: isSidebarCollapsed ? `-4px 0 8px ${hexToRgba(primaryColor, 0.15)}` : `-8px 0 8px ${hexToRgba(primaryColor, 0.2)}`,
             background: isSidebarCollapsed ? '#000000' : 'linear-gradient(to bottom, #000000 0%, #000000 50%, #000000 100%)',
             overflow: 'visible'
           }}
@@ -1515,9 +1553,9 @@ function HomeContent() {
             title={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             {isSidebarCollapsed ? (
-              <ChevronLeft className="w-5 h-5 text-black" />
+              <ChevronLeft className="w-5 h-5" style={{ color: secondaryColor }} />
             ) : (
-              <ChevronRight className="w-5 h-5 text-black" />
+              <ChevronRight className="w-5 h-5" style={{ color: secondaryColor }} />
             )}
           </motion.button>
 
@@ -1536,13 +1574,13 @@ function HomeContent() {
                 >
                   {/* Logo */}
                   <div className="w-12 h-12 flex items-center justify-center">
-                    {currentProject?.logoUrl && (
+                    {currentProject?.logoUrl ? (
                       <img
                         src={currentProject.logoUrl}
                         alt={currentProject.name}
                         className="w-full h-full object-contain"
                       />
-                    )}
+                    ) : null}
                   </div>
 
                   {/* Live Indicator */}
@@ -1565,8 +1603,9 @@ function HomeContent() {
                           : 'bg-black/50 border border-[var(--primary-color)]/30 hover:bg-[var(--primary-color)]/20'
                       }`}
                       title="Chart View"
+                      style={viewMode === 'chart' ? { color: secondaryColor } : undefined}
                     >
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={viewMode === 'chart' ? 'text-black' : 'text-[var(--primary-color)]'}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={viewMode === 'chart' ? '' : 'text-[var(--primary-color)]'} style={viewMode === 'chart' ? { color: secondaryColor } : undefined}>
                         <path d="M3 3v18h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                         <path d="M18 9l-5 5-4-4-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
@@ -1581,8 +1620,9 @@ function HomeContent() {
                           : 'bg-black/50 border border-[var(--primary-color)]/30 hover:bg-[var(--primary-color)]/20'
                       }`}
                       title="Fees View"
+                      style={viewMode === 'fees' ? { color: secondaryColor } : undefined}
                     >
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={viewMode === 'fees' ? 'text-black' : 'text-[var(--primary-color)]'}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={viewMode === 'fees' ? '' : 'text-[var(--primary-color)]'} style={viewMode === 'fees' ? { color: secondaryColor } : undefined}>
                         <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
                     </button>
@@ -1596,8 +1636,9 @@ function HomeContent() {
                           : 'bg-black/50 border border-[var(--primary-color)]/30 hover:bg-[var(--primary-color)]/20'
                       }`}
                       title="Holders View"
+                      style={viewMode === 'holders' ? { color: secondaryColor } : undefined}
                     >
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={viewMode === 'holders' ? 'text-black' : 'text-[var(--primary-color)]'}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={viewMode === 'holders' ? '' : 'text-[var(--primary-color)]'} style={viewMode === 'holders' ? { color: secondaryColor } : undefined}>
                         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                         <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                         <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -2010,9 +2051,10 @@ function HomeContent() {
                   onClick={() => setViewMode('chart')}
                   className={`relative flex-1 py-2 px-2 rounded-md text-xs font-bold flex items-center justify-center gap-1 z-10 transition-colors duration-200 ${
                     viewMode === 'chart'
-                      ? 'text-black'
+                      ? ''
                       : 'text-white/70 hover:text-white'
                   }`}
+                  style={viewMode === 'chart' ? { color: secondaryColor } : undefined}
                 >
                   {viewMode === 'chart' && (
                     <motion.div
@@ -2031,9 +2073,10 @@ function HomeContent() {
                   onClick={() => setViewMode('fees')}
                   className={`relative flex-1 py-2 px-2 rounded-md text-xs font-bold flex items-center justify-center gap-1 z-10 transition-colors duration-200 ${
                     viewMode === 'fees'
-                      ? 'text-black'
+                      ? ''
                       : 'text-white/70 hover:text-white'
                   }`}
+                  style={viewMode === 'fees' ? { color: secondaryColor } : undefined}
                 >
                   {viewMode === 'fees' && (
                     <motion.div
@@ -2051,9 +2094,10 @@ function HomeContent() {
                   onClick={() => setViewMode('holders')}
                   className={`relative flex-1 py-2 px-2 rounded-md text-xs font-bold flex items-center justify-center gap-1 z-10 transition-colors duration-200 ${
                     viewMode === 'holders'
-                      ? 'text-black'
+                      ? ''
                       : 'text-white/70 hover:text-white'
                   }`}
+                  style={viewMode === 'holders' ? { color: secondaryColor } : undefined}
                 >
                   {viewMode === 'holders' && (
                     <motion.div
@@ -2082,16 +2126,22 @@ function HomeContent() {
                 <TimeframeToggle
                   currentTimeframe={timeframe}
                   onTimeframeChange={setTimeframe}
+                  primaryColor={primaryColor}
+                  secondaryColor={secondaryColor}
                 />
               ) : viewMode === 'fees' ? (
                 <FeesTimeframeToggle
                   currentTimeframe={feesTimeframe}
                   onTimeframeChange={setFeesTimeframe}
+                  primaryColor={primaryColor}
+                  secondaryColor={secondaryColor}
                 />
               ) : (
                 <HoldersTimeframeToggle
                   currentTimeframe={holdersTimeframe}
                   onTimeframeChange={setHoldersTimeframe}
+                  primaryColor={primaryColor}
+                  secondaryColor={secondaryColor}
                 />
               )}
             </div>
@@ -2126,6 +2176,8 @@ function HomeContent() {
                   isAutoScale={isAutoScale}
                   onAutoScaleToggle={handleAutoScaleToggle}
                   onResetPosition={handleResetChartPosition}
+                  primaryColor={primaryColor}
+                  secondaryColor={secondaryColor}
                 />
 
                 {/* Extra spacing before sticky button */}
@@ -2145,7 +2197,7 @@ function HomeContent() {
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 py-3 bg-black/85 hover:bg-[var(--primary-color)]/15 transition-all cursor-pointer backdrop-blur-xl w-full"
-              style={{ boxShadow: '0 0 12px rgba(31, 99, 56, 0.3), 0 0 24px rgba(31, 99, 56, 0.15)' }}
+              style={{ boxShadow: `0 0 12px ${hexToRgba(primaryColor, 0.3)}, 0 0 24px ${hexToRgba(primaryColor, 0.15)}` }}
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" fill="var(--primary-color)"/>

@@ -1,13 +1,48 @@
 'use client';
 
 import { motion } from 'motion/react';
+import { useEffect, useState } from 'react';
 
 interface TokenLoadingLogoProps {
-  svg: string;
+  svgUrl?: string; // URL to SVG file in storage
   color: string;
 }
 
-export function TokenLoadingLogo({ svg, color }: TokenLoadingLogoProps) {
+export function TokenLoadingLogo({ svgUrl, color }: TokenLoadingLogoProps) {
+  const [svgContent, setSvgContent] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  // Fetch SVG from URL
+  useEffect(() => {
+    if (!svgUrl) {
+      setIsLoading(false);
+      return;
+    }
+
+    // Fetch SVG content from URL
+    const fetchSvg = async () => {
+      try {
+        const response = await fetch(svgUrl);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch SVG: ${response.status} ${response.statusText}`);
+        }
+        const text = await response.text();
+        setSvgContent(text);
+      } catch (error) {
+        console.error('Error fetching SVG:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchSvg();
+  }, [svgUrl]);
+
+  // Show nothing while loading
+  if (isLoading || !svgContent) {
+    return null;
+  }
+
   return (
     <div className="flex items-center justify-center px-4">
       <div
@@ -44,7 +79,7 @@ export function TokenLoadingLogo({ svg, color }: TokenLoadingLogoProps) {
               alignItems: 'center',
               justifyContent: 'center',
             }}
-            dangerouslySetInnerHTML={{ __html: svg }}
+            dangerouslySetInnerHTML={{ __html: svgContent }}
           />
         </motion.div>
 

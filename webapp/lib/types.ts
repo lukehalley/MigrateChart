@@ -81,8 +81,9 @@ export interface ProjectConfig {
   slug: string;
   name: string;
   primaryColor: string;
+  secondaryColor: string;
   logoUrl: string;
-  loaderSvg: string;
+  loaderUrl: string; // URL to loader SVG in storage
   donationAddress: string;
   isDefault: boolean;
   isActive: boolean;
