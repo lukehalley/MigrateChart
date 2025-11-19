@@ -1411,10 +1411,10 @@ function HomeContent() {
                 className="flex items-center justify-center h-full backdrop-blur-xl"
               >
                 <TokenLoadingLogo
-                  key={isSwitching ? switchingFromProjectRef.current?.slug : currentProject?.slug}
-                  svgUrl={isSwitching && switchingFromProjectRef.current ? switchingFromProjectRef.current.loaderUrl : currentProject?.loaderUrl}
+                  key={switchingFromProjectRef.current?.slug || currentProject?.slug}
+                  svgUrl={switchingFromProjectRef.current?.loaderUrl || currentProject?.loaderUrl}
                   isLoading={projectLoading || isSwitching}
-                  color={isSwitching && switchingFromProjectRef.current ? switchingFromProjectRef.current.primaryColor : (currentProject?.primaryColor || '#52C97D')}
+                  color={switchingFromProjectRef.current?.primaryColor || currentProject?.primaryColor || '#52C97D'}
                 />
               </motion.div>
             )}
@@ -1517,10 +1517,10 @@ function HomeContent() {
                 className="flex items-center justify-center h-full backdrop-blur-xl"
               >
                 <TokenLoadingLogo
-                  key={isSwitching ? switchingFromProjectRef.current?.slug : currentProject?.slug}
-                  svgUrl={isSwitching && switchingFromProjectRef.current ? switchingFromProjectRef.current.loaderUrl : currentProject?.loaderUrl}
+                  key={switchingFromProjectRef.current?.slug || currentProject?.slug}
+                  svgUrl={switchingFromProjectRef.current?.loaderUrl || currentProject?.loaderUrl}
                   isLoading={projectLoading || isSwitching}
-                  color={isSwitching && switchingFromProjectRef.current ? switchingFromProjectRef.current.primaryColor : (currentProject?.primaryColor || '#52C97D')}
+                  color={switchingFromProjectRef.current?.primaryColor || currentProject?.primaryColor || '#52C97D'}
                 />
               </motion.div>
             )}
