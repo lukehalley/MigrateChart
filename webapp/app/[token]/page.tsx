@@ -10,9 +10,11 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import Chart from '@/components/Chart';
 import { FeesView } from '@/components/FeesView';
 import { HoldersView } from '@/components/HoldersView';
+import { BurnsView } from '@/components/BurnsView';
 import TimeframeToggle from '@/components/TimeframeToggle';
 import FeesTimeframeToggle from '@/components/FeesTimeframeToggle';
 import HoldersTimeframeToggle from '@/components/HoldersTimeframeToggle';
+import BurnsTimeframeToggle from '@/components/BurnsTimeframeToggle';
 import ChartControls from '@/components/ChartControls';
 import TokenStats from '@/components/TokenStats';
 import { TokenLoadingLogo } from '@/components/TokenLoadingLogo';
@@ -32,27 +34,31 @@ function HomeContent() {
 
   // Get parameters from URL or use defaults
   const urlChartTimeframe = searchParams.get('chartTimeframe') as Timeframe | null;
-  const urlView = searchParams.get('view') as 'chart' | 'fees' | 'holders' | null;
+  const urlView = searchParams.get('view') as 'chart' | 'fees' | 'holders' | 'burns' | null;
   const urlFeesTimeframe = searchParams.get('feesTimeframe') as '7D' | '30D' | '90D' | 'ALL' | null;
   const urlHoldersTimeframe = searchParams.get('holdersTimeframe') as '1D' | '7D' | '30D' | '90D' | 'ALL' | null;
+  const urlBurnsTimeframe = searchParams.get('burnsTimeframe') as '7D' | '30D' | '90D' | 'ALL' | null;
 
   const validTimeframes: Timeframe[] = ['1H', '4H', '8H', '1D', 'MAX'];
   const validFeesTimeframes = ['7D', '30D', '90D', 'ALL'];
   const validHoldersTimeframes = ['1D', '7D', '30D', '90D', 'ALL'];
+  const validBurnsTimeframes = ['7D', '30D', '90D', 'ALL'];
 
   const initialTimeframe = urlChartTimeframe && validTimeframes.includes(urlChartTimeframe) ? urlChartTimeframe : '1D';
-  const initialViewMode = urlView && ['chart', 'fees', 'holders'].includes(urlView) ? urlView : 'chart';
+  const initialViewMode = urlView && ['chart', 'fees', 'holders', 'burns'].includes(urlView) ? urlView : 'chart';
   const initialFeesTimeframe = urlFeesTimeframe && validFeesTimeframes.includes(urlFeesTimeframe) ? urlFeesTimeframe : 'ALL';
   const initialHoldersTimeframe = urlHoldersTimeframe && validHoldersTimeframes.includes(urlHoldersTimeframe) ? urlHoldersTimeframe : '30D';
+  const initialBurnsTimeframe = urlBurnsTimeframe && validBurnsTimeframes.includes(urlBurnsTimeframe) ? urlBurnsTimeframe : '30D';
 
   const [timeframe, setTimeframeState] = useState<Timeframe>(initialTimeframe);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [isMenuClosing, setIsMenuClosing] = useState(false);
   const [showCopied, setShowCopied] = useState(false);
   const [mobileMenuTab, setMobileMenuTab] = useState<'settings' | 'about'>('settings');
-  const [viewMode, setViewModeState] = useState<'chart' | 'fees' | 'holders'>(initialViewMode);
+  const [viewMode, setViewModeState] = useState<'chart' | 'fees' | 'holders' | 'burns'>(initialViewMode);
   const [feesTimeframe, setFeesTimeframeState] = useState<'7D' | '30D' | '90D' | 'ALL'>(initialFeesTimeframe);
   const [holdersTimeframe, setHoldersTimeframeState] = useState<'1D' | '7D' | '30D' | '90D' | 'ALL'>(initialHoldersTimeframe);
+  const [burnsTimeframe, setBurnsTimeframeState] = useState<'7D' | '30D' | '90D' | 'ALL'>(initialBurnsTimeframe);
 
   // Reset chart position function
   const handleResetChartPosition = () => {
@@ -107,14 +113,15 @@ function HomeContent() {
   // Sync state with URL params when they change
   useEffect(() => {
     const urlChartTimeframe = searchParams.get('chartTimeframe') as Timeframe | null;
-    const urlView = searchParams.get('view') as 'chart' | 'fees' | 'holders' | null;
+    const urlView = searchParams.get('view') as 'chart' | 'fees' | 'holders' | 'burns' | null;
     const urlFeesTimeframe = searchParams.get('feesTimeframe') as '7D' | '30D' | '90D' | 'ALL' | null;
     const urlHoldersTimeframe = searchParams.get('holdersTimeframe') as '1D' | '7D' | '30D' | '90D' | 'ALL' | null;
+  const urlBurnsTimeframe = searchParams.get('burnsTimeframe') as '7D' | '30D' | '90D' | 'ALL' | null;
 
     if (urlChartTimeframe && validTimeframes.includes(urlChartTimeframe)) {
       setTimeframeState(urlChartTimeframe);
     }
-    if (urlView && ['chart', 'fees', 'holders'].includes(urlView)) {
+    if (urlView && ['chart', 'fees', 'holders', 'burns'].includes(urlView)) {
       setViewModeState(urlView);
     }
     if (urlFeesTimeframe && validFeesTimeframes.includes(urlFeesTimeframe)) {
@@ -122,6 +129,9 @@ function HomeContent() {
     }
     if (urlHoldersTimeframe && validHoldersTimeframes.includes(urlHoldersTimeframe)) {
       setHoldersTimeframeState(urlHoldersTimeframe);
+    }
+    if (urlBurnsTimeframe && validBurnsTimeframes.includes(urlBurnsTimeframe)) {
+      setBurnsTimeframeState(urlBurnsTimeframe);
     }
   }, [searchParams]);
 
@@ -215,7 +225,7 @@ function HomeContent() {
   };
 
   // Update URL when view mode changes
-  const setViewMode = (newViewMode: 'chart' | 'fees' | 'holders') => {
+  const setViewMode = (newViewMode: 'chart' | 'fees' | 'holders' | 'burns') => {
     setViewModeState(newViewMode);
     const params = new URLSearchParams(searchParams.toString());
     params.set('view', newViewMode);
@@ -228,11 +238,18 @@ function HomeContent() {
     } else if (newViewMode === 'holders') {
       params.delete('chartTimeframe');
       params.delete('feesTimeframe');
+      params.delete('burnsTimeframe');
       params.set('holdersTimeframe', holdersTimeframe);
+    } else if (newViewMode === 'burns') {
+      params.delete('chartTimeframe');
+      params.delete('feesTimeframe');
+      params.delete('holdersTimeframe');
+      params.set('burnsTimeframe', burnsTimeframe);
     } else if (newViewMode === 'chart') {
       params.set('chartTimeframe', timeframe);
       params.delete('feesTimeframe');
       params.delete('holdersTimeframe');
+      params.delete('burnsTimeframe');
     }
 
     const tokenSlug = currentProject?.slug || 'zera';
@@ -1006,13 +1023,13 @@ function HomeContent() {
               <div className="info-card-small">
                 <div className="py-1.5 px-1.5">
                   <p className="text-white text-[10px] mb-1 text-center">View Mode</p>
-                  <div className="relative bg-black/50 border border-white/20 rounded-lg p-1 flex gap-1">
+                  <div className="relative bg-black/50 border border-white/20 rounded-lg p-1 grid grid-cols-2 gap-1">
                     <button
                       onClick={() => {
                         setViewMode('chart');
                         closeMobileMenu();
                       }}
-                      className={`relative flex-1 py-2 px-2 rounded-md text-xs font-bold flex items-center justify-center gap-1 z-10 transition-colors duration-200 ${
+                      className={`relative py-2 px-2 rounded-md text-xs font-bold flex items-center justify-center gap-1 z-10 transition-colors duration-200 ${
                         viewMode === 'chart'
                           ? 'text-black'
                           : 'text-white/70 hover:text-white'
@@ -1036,7 +1053,7 @@ function HomeContent() {
                         setViewMode('fees');
                         closeMobileMenu();
                       }}
-                      className={`relative flex-1 py-2 px-2 rounded-md text-xs font-bold flex items-center justify-center gap-1 z-10 transition-colors duration-200 ${
+                      className={`relative py-2 px-2 rounded-md text-xs font-bold flex items-center justify-center gap-1 z-10 transition-colors duration-200 ${
                         viewMode === 'fees'
                           ? 'text-black'
                           : 'text-white/70 hover:text-white'
@@ -1059,7 +1076,7 @@ function HomeContent() {
                         setViewMode('holders');
                         closeMobileMenu();
                       }}
-                      className={`relative flex-1 py-2 px-2 rounded-md text-xs font-bold flex items-center justify-center gap-1 z-10 transition-colors duration-200 ${
+                      className={`relative py-2 px-2 rounded-md text-xs font-bold flex items-center justify-center gap-1 z-10 transition-colors duration-200 ${
                         viewMode === 'holders'
                           ? 'text-black'
                           : 'text-white/70 hover:text-white'
@@ -1078,6 +1095,29 @@ function HomeContent() {
                         <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
                       <span className="relative z-10">Holders</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setViewMode('burns');
+                        closeMobileMenu();
+                      }}
+                      className={`relative py-2 px-2 rounded-md text-xs font-bold flex items-center justify-center gap-1 z-10 transition-colors duration-200 ${
+                        viewMode === 'burns'
+                          ? 'text-black'
+                          : 'text-white/70 hover:text-white'
+                      }`}
+                    >
+                      {viewMode === 'burns' && (
+                        <motion.div
+                          layoutId="viewModeIndicator"
+                          className="absolute inset-0 bg-[var(--primary-color)] rounded-md"
+                          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                        />
+                      )}
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10">
+                        <path d="M12.65 1.8a.5.5 0 0 0-.9 0l-2.5 5c-.1.2-.3.4-.5.4l-5.5.8c-.4.1-.6.6-.3.9l4 3.9c.2.2.3.4.2.7l-.9 5.5c-.1.4.4.7.7.5l4.9-2.6c.2-.1.5-.1.7 0l4.9 2.6c.3.2.8-.1.7-.5l-.9-5.5c-.1-.3 0-.5.2-.7l4-3.9c.3-.3.2-.8-.3-.9l-5.5-.8c-.3 0-.5-.2-.5-.4l-2.5-5z" stroke="currentColor" strokeWidth="2" fill="none"/>
+                      </svg>
+                      <span className="relative z-10">Burns</span>
                     </button>
                   </div>
                 </div>
@@ -1108,11 +1148,19 @@ function HomeContent() {
                         closeMobileMenu();
                       }}
                     />
-                  ) : (
+                  ) : viewMode === 'holders' ? (
                     <HoldersTimeframeToggle
                       currentTimeframe={holdersTimeframe}
                       onTimeframeChange={(newTimeframe) => {
                         setHoldersTimeframe(newTimeframe);
+                        closeMobileMenu();
+                      }}
+                    />
+                  ) : (
+                    <BurnsTimeframeToggle
+                      currentTimeframe={burnsTimeframe}
+                      onTimeframeChange={(newTimeframe) => {
+                        setBurnsTimeframeState(newTimeframe);
                         closeMobileMenu();
                       }}
                     />
@@ -1355,7 +1403,7 @@ function HomeContent() {
                       onOpenMobileMenu={() => setShowMobileMenu(true)}
                     />
                   </motion.div>
-                ) : (
+                ) : viewMode === 'holders' ? (
                   <motion.div
                     key="holders"
                     initial={{ opacity: 0 }}
@@ -1369,6 +1417,23 @@ function HomeContent() {
                       primaryColor={currentProject.primaryColor}
                       timeframe={holdersTimeframe}
                       onTimeframeChange={setHoldersTimeframe}
+                      onOpenMobileMenu={() => setShowMobileMenu(true)}
+                    />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="burns"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                    className="w-full h-full"
+                  >
+                    <BurnsView
+                      projectSlug={currentProject.slug}
+                      primaryColor={currentProject.primaryColor}
+                      timeframe={burnsTimeframe}
+                      onTimeframeChange={setBurnsTimeframeState}
                       onOpenMobileMenu={() => setShowMobileMenu(true)}
                     />
                   </motion.div>
@@ -1458,7 +1523,7 @@ function HomeContent() {
                       onOpenMobileMenu={() => setShowMobileMenu(true)}
                     />
                   </motion.div>
-                ) : (
+                ) : viewMode === 'holders' ? (
                   <motion.div
                     key="holders"
                     initial={{ opacity: 0 }}
@@ -1472,6 +1537,23 @@ function HomeContent() {
                       primaryColor={currentProject.primaryColor}
                       timeframe={holdersTimeframe}
                       onTimeframeChange={setHoldersTimeframe}
+                      onOpenMobileMenu={() => setShowMobileMenu(true)}
+                    />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="burns"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                    className="w-full h-full"
+                  >
+                    <BurnsView
+                      projectSlug={currentProject.slug}
+                      primaryColor={currentProject.primaryColor}
+                      timeframe={burnsTimeframe}
+                      onTimeframeChange={setBurnsTimeframeState}
                       onOpenMobileMenu={() => setShowMobileMenu(true)}
                     />
                   </motion.div>
@@ -1603,6 +1685,21 @@ function HomeContent() {
                         <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
                     </button>
+
+                    {/* Burns View */}
+                    <button
+                      onClick={() => setViewMode('burns')}
+                      className={`w-12 h-12 rounded-lg flex items-center justify-center transition-all ${
+                        viewMode === 'burns'
+                          ? 'bg-[var(--primary-color)] shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)]'
+                          : 'bg-black/50 border border-[var(--primary-color)]/30 hover:bg-[var(--primary-color)]/20'
+                      }`}
+                      title="Burns View"
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={viewMode === 'burns' ? 'text-black' : 'text-[var(--primary-color)]'}>
+                        <path d="M12.65 1.8a.5.5 0 0 0-.9 0l-2.5 5c-.1.2-.3.4-.5.4l-5.5.8c-.4.1-.6.6-.3.9l4 3.9c.2.2.3.4.2.7l-.9 5.5c-.1.4.4.7.7.5l4.9-2.6c.2-.1.5-.1.7 0l4.9 2.6c.3.2.8-.1.7-.5l-.9-5.5c-.1-.3 0-.5.2-.7l4-3.9c.3-.3.2-.8-.3-.9l-5.5-.8c-.3 0-.5-.2-.5-.4l-2.5-5z" stroke="currentColor" strokeWidth="2" fill="none"/>
+                      </svg>
+                    </button>
                   </div>
 
                   {/* Divider */}
@@ -1692,7 +1789,7 @@ function HomeContent() {
                               </button>
                             ))}
                           </>
-                        ) : (
+                        ) : viewMode === 'holders' ? (
                           <>
                             {(['1D', '7D', '30D', '90D', 'ALL'] as const).map((tf) => (
                               <button
@@ -1714,6 +1811,36 @@ function HomeContent() {
                                 }}
                                 onMouseLeave={(e) => {
                                   if (holdersTimeframe !== tf) {
+                                    e.currentTarget.style.backgroundColor = 'transparent';
+                                  }
+                                }}
+                              >
+                                {tf}
+                              </button>
+                            ))}
+                          </>
+                        ) : (
+                          <>
+                            {(['7D', '30D', '90D', 'ALL'] as const).map((tf) => (
+                              <button
+                                key={tf}
+                                onClick={() => {
+                                  setBurnsTimeframeState(tf);
+                                  setIsTimeframePopoverOpen(false);
+                                }}
+                                className="px-3 py-2 text-xs font-bold rounded transition-all flex items-center justify-center"
+                                style={
+                                  burnsTimeframe === tf
+                                    ? { backgroundColor: primaryColor, color: '#000' }
+                                    : { color: primaryColor, backgroundColor: 'transparent' }
+                                }
+                                onMouseEnter={(e) => {
+                                  if (burnsTimeframe !== tf) {
+                                    e.currentTarget.style.backgroundColor = `${primaryColor}33`;
+                                  }
+                                }}
+                                onMouseLeave={(e) => {
+                                  if (burnsTimeframe !== tf) {
                                     e.currentTarget.style.backgroundColor = 'transparent';
                                   }
                                 }}
@@ -2005,10 +2132,10 @@ function HomeContent() {
             {/* View Mode Switch */}
             <div className="stat-card">
               <p className="text-white text-[10px] font-medium mb-1 text-center">View Mode</p>
-              <div className="relative bg-black/50 border border-white/20 rounded-lg p-1 flex gap-1">
+              <div className="relative bg-black/50 border border-white/20 rounded-lg p-1 grid grid-cols-2 gap-1">
                 <button
                   onClick={() => setViewMode('chart')}
-                  className={`relative flex-1 py-2 px-2 rounded-md text-xs font-bold flex items-center justify-center gap-1 z-10 transition-colors duration-200 ${
+                  className={`relative py-2 px-2 rounded-md text-xs font-bold flex items-center justify-center gap-1 z-10 transition-colors duration-200 ${
                     viewMode === 'chart'
                       ? 'text-black'
                       : 'text-white/70 hover:text-white'
@@ -2029,7 +2156,7 @@ function HomeContent() {
                 </button>
                 <button
                   onClick={() => setViewMode('fees')}
-                  className={`relative flex-1 py-2 px-2 rounded-md text-xs font-bold flex items-center justify-center gap-1 z-10 transition-colors duration-200 ${
+                  className={`relative py-2 px-2 rounded-md text-xs font-bold flex items-center justify-center gap-1 z-10 transition-colors duration-200 ${
                     viewMode === 'fees'
                       ? 'text-black'
                       : 'text-white/70 hover:text-white'
@@ -2049,7 +2176,7 @@ function HomeContent() {
                 </button>
                 <button
                   onClick={() => setViewMode('holders')}
-                  className={`relative flex-1 py-2 px-2 rounded-md text-xs font-bold flex items-center justify-center gap-1 z-10 transition-colors duration-200 ${
+                  className={`relative py-2 px-2 rounded-md text-xs font-bold flex items-center justify-center gap-1 z-10 transition-colors duration-200 ${
                     viewMode === 'holders'
                       ? 'text-black'
                       : 'text-white/70 hover:text-white'
@@ -2068,6 +2195,26 @@ function HomeContent() {
                     <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                   <span className="relative z-10">Holders</span>
+                </button>
+                <button
+                  onClick={() => setViewMode('burns')}
+                  className={`relative py-2 px-2 rounded-md text-xs font-bold flex items-center justify-center gap-1 z-10 transition-colors duration-200 ${
+                    viewMode === 'burns'
+                      ? 'text-black'
+                      : 'text-white/70 hover:text-white'
+                  }`}
+                >
+                  {viewMode === 'burns' && (
+                    <motion.div
+                      layoutId="viewModeIndicatorDesktop"
+                      className="absolute inset-0 bg-[var(--primary-color)] rounded-md"
+                      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                    />
+                  )}
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10">
+                    <path d="M12.65 1.8a.5.5 0 0 0-.9 0l-2.5 5c-.1.2-.3.4-.5.4l-5.5.8c-.4.1-.6.6-.3.9l4 3.9c.2.2.3.4.2.7l-.9 5.5c-.1.4.4.7.7.5l4.9-2.6c.2-.1.5-.1.7 0l4.9 2.6c.3.2.8-.1.7-.5l-.9-5.5c-.1-.3 0-.5.2-.7l4-3.9c.3-.3.2-.8-.3-.9l-5.5-.8c-.3 0-.5-.2-.5-.4l-2.5-5z" stroke="currentColor" strokeWidth="2" fill="none"/>
+                  </svg>
+                  <span className="relative z-10">Burns</span>
                 </button>
               </div>
             </div>
@@ -2088,10 +2235,15 @@ function HomeContent() {
                   currentTimeframe={feesTimeframe}
                   onTimeframeChange={setFeesTimeframe}
                 />
-              ) : (
+              ) : viewMode === 'holders' ? (
                 <HoldersTimeframeToggle
                   currentTimeframe={holdersTimeframe}
                   onTimeframeChange={setHoldersTimeframe}
+                />
+              ) : (
+                <BurnsTimeframeToggle
+                  currentTimeframe={burnsTimeframe}
+                  onTimeframeChange={setBurnsTimeframeState}
                 />
               )}
             </div>
