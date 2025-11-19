@@ -21,7 +21,7 @@ export function TokenLoadingLogo({ svgUrl, color, isLoading = false }: TokenLoad
     console.log('[TokenLoadingLogo] Showing fallback spinner');
     return (
       <motion.div
-        className="flex items-center justify-center w-60 h-60 md:w-96 md:h-96"
+        className="flex items-center justify-center w-72 h-72 md:w-[32rem] md:h-[32rem]"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.2 }}
@@ -63,7 +63,7 @@ export function TokenLoadingLogo({ svgUrl, color, isLoading = false }: TokenLoad
 
   return (
     <div className="flex items-center justify-center px-4">
-      <div className="relative w-60 h-60 md:w-96 md:h-96">
+      <div className="relative w-72 h-72 md:w-[32rem] md:h-[32rem]">
         {/* Token logo SVG */}
         <motion.div
           className="w-full h-full"
