@@ -29,6 +29,16 @@ function HomeContent() {
 
   // Preload the SVG as soon as we have the project data
   const { svgContent, isLoading: svgLoading } = useSVGPreloader(currentProject?.loaderUrl);
+
+  // Debug: Log loading states
+  console.log('[PAGE] Loading states:', {
+    projectLoading,
+    svgLoading,
+    hasSvgContent: !!svgContent,
+    loaderUrl: currentProject?.loaderUrl,
+    projectName: currentProject?.name
+  });
+
   const themeStyles = useTheme(currentProject?.primaryColor || 'var(--primary-color)');
   const primaryColor = currentProject?.primaryColor || '#52C97D';
   const secondaryColor = currentProject?.secondaryColor || '#000000';
@@ -431,9 +441,23 @@ function HomeContent() {
 
     // On initial load, keep loader visible until we have ALL data
     if (!hasInitiallyLoaded) {
+      // Debug: Log readiness status
+      console.log('[PAGE] Initial load readiness:', {
+        hasProject: !!currentProject,
+        hasPoolsData: !!poolsData,
+        hasTokenStats: !!tokenStats,
+        hasSvgContent: !!svgContent,
+        isLoading,
+        projectLoading,
+        isStatsLoading,
+        svgLoading
+      });
+
       // Hide loader when we have all data (project, pools, stats, AND svg)
       if (currentProject && poolsData && tokenStats && svgContent && !isLoading && !projectLoading && !isStatsLoading && !svgLoading) {
+        console.log('[PAGE] All data ready! Hiding loader...');
         const hideLoader = () => {
+          console.log('[PAGE] Loader hidden, initial load complete');
           setHasInitiallyLoaded(true);
           setShowLoader(false);
           loaderStartTimeRef.current = null;

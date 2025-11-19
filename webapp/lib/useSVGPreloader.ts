@@ -19,6 +19,7 @@ export function useSVGPreloader(svgUrl: string | undefined) {
 
     const preloadSVG = async () => {
       try {
+        console.log('[SVG PRELOADER] Starting fetch:', svgUrl);
         setIsLoading(true);
         setError(null);
 
@@ -28,6 +29,7 @@ export function useSVGPreloader(svgUrl: string | undefined) {
         }
 
         const text = await response.text();
+        console.log('[SVG PRELOADER] Fetch complete, content length:', text.length);
 
         if (!isCancelled) {
           setSvgContent(text);
@@ -39,6 +41,7 @@ export function useSVGPreloader(svgUrl: string | undefined) {
         }
       } finally {
         if (!isCancelled) {
+          console.log('[SVG PRELOADER] Loading complete, setting isLoading=false');
           setIsLoading(false);
         }
       }

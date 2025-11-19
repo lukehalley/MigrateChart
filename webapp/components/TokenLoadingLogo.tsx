@@ -18,6 +18,16 @@ export function TokenLoadingLogo({ svgUrl, svgContent: externalSvgContent, color
   const svgContent = externalSvgContent || internalSvgContent;
   const isLoading = externalIsLoading || internalIsLoading;
 
+  // Debug: Log component state
+  console.log('[TokenLoadingLogo] Render state:', {
+    hasExternalContent: !!externalSvgContent,
+    hasInternalContent: !!internalSvgContent,
+    externalIsLoading,
+    internalIsLoading,
+    finalIsLoading: isLoading,
+    hasSvgContent: !!svgContent
+  });
+
   // Fetch SVG from URL only if not provided externally
   useEffect(() => {
     // If SVG content is already provided, no need to fetch
@@ -52,6 +62,7 @@ export function TokenLoadingLogo({ svgUrl, svgContent: externalSvgContent, color
 
   // Show fallback spinner while loading or if SVG fetch failed
   if (isLoading || !svgContent) {
+    console.log('[TokenLoadingLogo] Showing fallback spinner');
     return (
       <motion.div
         className="flex items-center justify-center"
@@ -96,6 +107,7 @@ export function TokenLoadingLogo({ svgUrl, svgContent: externalSvgContent, color
     );
   }
 
+  console.log('[TokenLoadingLogo] Showing custom logo animation');
   return (
     <div className="flex items-center justify-center px-4">
       <div
