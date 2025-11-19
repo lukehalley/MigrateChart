@@ -108,6 +108,7 @@ export function TokenLoadingLogo({ svgUrl, svgContent: externalSvgContent, color
   }
 
   console.log('[TokenLoadingLogo] Showing custom logo animation');
+  console.log('[TokenLoadingLogo] SVG content preview:', svgContent.substring(0, 200) + '...');
   return (
     <div className="flex items-center justify-center px-4">
       <div
@@ -122,7 +123,6 @@ export function TokenLoadingLogo({ svgUrl, svgContent: externalSvgContent, color
           className="w-full h-full"
           style={{
             filter: `drop-shadow(0 0 12px ${color}66)`,
-            color,
           }}
           // No initial prop - prevents animation reset on remount
           // Start from mid-cycle values for smooth continuous animation
@@ -138,7 +138,7 @@ export function TokenLoadingLogo({ svgUrl, svgContent: externalSvgContent, color
           }}
         >
           <div
-            className="w-full h-full [&>svg]:w-full [&>svg]:h-full"
+            className="w-full h-full [&>svg]:w-full [&>svg]:h-full [&>svg]:object-contain"
             style={{
               display: 'flex',
               alignItems: 'center',
