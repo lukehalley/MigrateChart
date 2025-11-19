@@ -142,7 +142,7 @@ function FeesPageContent() {
                 onClick={() => setTimeframe(tf)}
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-colors border ${
                   timeframe === tf
-                    ? 'text-black'
+                    ? ''
                     : 'bg-neutral-900 text-white border-neutral-800 hover:bg-neutral-800'
                 }`}
                 style={
@@ -150,6 +150,7 @@ function FeesPageContent() {
                     ? {
                         backgroundColor: currentProject.primaryColor,
                         borderColor: currentProject.primaryColor,
+                        color: currentProject.secondaryColor || '#000000',
                       }
                     : undefined
                 }

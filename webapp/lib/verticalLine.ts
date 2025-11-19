@@ -13,9 +13,19 @@ export interface VerticalLineOptions {
 export function drawVerticalLines(
   chart: any,
   container: HTMLElement,
-  lines: VerticalLineOptions[]
+  lines: VerticalLineOptions[],
+  primaryColor: string = '#52C97D'
 ) {
   if (!container) return;
+
+  // Helper function to convert hex to rgba
+  const hexToRgba = (hex: string, alpha: number) => {
+    const h = hex.replace('#', '');
+    const r = parseInt(h.substring(0, 2), 16);
+    const g = parseInt(h.substring(2, 4), 16);
+    const b = parseInt(h.substring(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  };
 
   // Ensure container is positioned relative
   if (container.style.position !== 'absolute' && container.style.position !== 'fixed') {
@@ -97,9 +107,9 @@ export function drawVerticalLines(
       lineEl.style.top = '0';
       lineEl.style.bottom = '0';
       lineEl.style.width = '2px';
-      lineEl.style.borderLeft = '2px dashed #52C97D';
+      lineEl.style.borderLeft = `2px dashed ${primaryColor}`;
       lineEl.style.opacity = String(0.6 * opacity);
-      lineEl.style.boxShadow = '0 0 8px rgba(82, 201, 125, 0.2)';
+      lineEl.style.boxShadow = `0 0 8px ${hexToRgba(primaryColor, 0.2)}`;
       overlay.appendChild(lineEl);
 
       // Draw label - centered on the line
@@ -110,7 +120,7 @@ export function drawVerticalLines(
       labelEl.style.transform = 'translateX(-50%)';
       labelEl.style.padding = isMobile ? '5px 7px' : '7px 12px';
       labelEl.style.backgroundColor = line.labelBackgroundColor || '#000000';
-      labelEl.style.color = line.labelTextColor || '#52C97D';
+      labelEl.style.color = line.labelTextColor || primaryColor;
       labelEl.style.border = `2px solid ${line.color}`;
       labelEl.style.borderRadius = isMobile ? '3px' : '4px';
       labelEl.style.fontSize = isMobile ? '9px' : '12px';

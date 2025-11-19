@@ -28,6 +28,7 @@ interface ChartProps {
   showMigrationLines: boolean;
   migrations: MigrationConfig[];
   primaryColor: string;
+  secondaryColor?: string;
   isLogScale: boolean;
   onLogScaleToggle: () => void;
   isAutoScale: boolean;
@@ -37,7 +38,7 @@ interface ChartProps {
   onOpenMobileMenu?: () => void;
 }
 
-export default function Chart({ poolsData, timeframe, displayMode, showVolume, showMigrationLines, migrations, primaryColor, isLogScale, onLogScaleToggle, isAutoScale, onAutoScaleToggle, onResetPosition, showMobileMenu, onOpenMobileMenu }: ChartProps) {
+export default function Chart({ poolsData, timeframe, displayMode, showVolume, showMigrationLines, migrations, primaryColor, secondaryColor = '#000000', isLogScale, onLogScaleToggle, isAutoScale, onAutoScaleToggle, onResetPosition, showMobileMenu, onOpenMobileMenu }: ChartProps) {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const modalContentRef = useRef<HTMLDivElement>(null);
@@ -229,18 +230,18 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       },
       grid: {
         vertLines: {
-          color: '#1F633840',  // Subtle dark green (25% opacity)
+          color: `${primaryColor}40`,  // Primary color with 25% opacity
           visible: true,
         },
         horzLines: {
-          color: '#1F633840',  // Subtle dark green (25% opacity)
+          color: `${primaryColor}40`,  // Primary color with 25% opacity
           visible: true,
         },
       },
       width: chartContainerRef.current.clientWidth,
       height: chartContainerRef.current.clientHeight, // Use container height instead of window height
       timeScale: {
-        borderColor: '#1F6338',  // Deep green border
+        borderColor: primaryColor,
         timeVisible: true,
         secondsVisible: false,
         rightOffset: isMobile ? 10 : 50,  // More space on right side by default
@@ -253,7 +254,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         shiftVisibleRangeOnNewBar: false,  // Don't auto-scroll - preserve user's position
       },
       rightPriceScale: {
-        borderColor: '#1F6338',  // Deep green border
+        borderColor: primaryColor,
         scaleMargins: {
           top: isMobile ? 0.15 : 0.1,    // Reduced top margin for more price range visibility
           bottom: isMobile ? 0.15 : 0.1, // Reduced bottom margin for more price range visibility
@@ -336,12 +337,12 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         return value.toFixed(5);
       };
 
-      // Create candlestick series
+      // Create candlestick series - always use green for candles
       const candlestickSeries = chart.addCandlestickSeries({
-        upColor: primaryColor,
+        upColor: '#52C97D',
         downColor: '#ef5350',
         borderVisible: false,
-        wickUpColor: primaryColor,
+        wickUpColor: '#52C97D',
         wickDownColor: '#ef5350',
         priceLineVisible: false,
         lastValueVisible: false,
@@ -1077,7 +1078,8 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         const cleanup = drawVerticalLines(
           chartRef.current,
           chartContainerRef.current,
-          migrationLines
+          migrationLines,
+          primaryColor
         );
         migrationLinesCleanupRef.current = cleanup || null;
       }
@@ -1159,11 +1161,20 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
     };
   }, []);
 
+  // Helper function to convert hex to rgba
+  const hexToRgba = (hex: string, alpha: number) => {
+    const h = hex.replace('#', '');
+    const r = parseInt(h.substring(0, 2), 16);
+    const g = parseInt(h.substring(2, 4), 16);
+    const b = parseInt(h.substring(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  };
+
   return (
     <div className="w-full h-full relative">
       <style jsx>{`
         :global(.tv-lightweight-charts) :global(canvas:nth-child(2)) {
-          filter: drop-shadow(0 0 6px rgba(82, 201, 125, 0.5)) drop-shadow(0 0 3px rgba(82, 201, 125, 0.3));
+          filter: drop-shadow(0 0 6px ${hexToRgba(primaryColor, 0.5)}) drop-shadow(0 0 3px ${hexToRgba(primaryColor, 0.3)});
         }
       `}</style>
       {isLoading && (
@@ -1209,7 +1220,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
             </svg>
             {enabledIndicators.size > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 text-black text-xs font-bold rounded-full flex items-center justify-center" style={{ backgroundColor: primaryColor }}>
+              <span className="absolute -top-1 -right-1 w-5 h-5 text-xs font-bold rounded-full flex items-center justify-center" style={{ backgroundColor: primaryColor, color: secondaryColor }}>
                 {enabledIndicators.size}
               </span>
             )}
@@ -1481,7 +1492,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
               </svg>
               {enabledIndicators.size > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-[var(--primary-color)] text-black text-xs font-bold rounded-full flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-[var(--primary-color)] text-xs font-bold rounded-full flex items-center justify-center" style={{ color: secondaryColor }}>
                   {enabledIndicators.size}
                 </span>
               )}
@@ -1721,7 +1732,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
               {/* Header */}
               <div
                 style={{ padding: '20px 28px' }}
-                className="sticky top-0 z-10 bg-gradient-to-r from-[#0A1F12] via-[#1F6338]/20 to-[#0A1F12] border-b-[3px] border-[var(--primary-color)]/50"
+                className="sticky top-0 z-10 bg-gradient-to-r from-[#0A1F12] via-[var(--primary-darker)]/20 to-[#0A1F12] border-b-[3px] border-[var(--primary-color)]/50"
               >
                 <div className="flex items-center justify-between">
                   <h2 style={{ margin: 0 }} className="text-[var(--primary-color)] text-xl md:text-2xl font-bold tracking-wide">About This Chart</h2>

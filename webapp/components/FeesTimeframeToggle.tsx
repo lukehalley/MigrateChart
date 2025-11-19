@@ -6,11 +6,15 @@ type FeesTimeframe = '7D' | '30D' | '90D' | 'ALL';
 interface FeesTimeframeToggleProps {
   currentTimeframe: FeesTimeframe;
   onTimeframeChange: (timeframe: FeesTimeframe) => void;
+  primaryColor?: string;
+  secondaryColor?: string;
 }
 
 export default function FeesTimeframeToggle({
   currentTimeframe,
   onTimeframeChange,
+  primaryColor = '#52C97D',
+  secondaryColor = '#000000',
 }: FeesTimeframeToggleProps) {
   const topTimeframes: FeesTimeframe[] = ['7D', '30D', '90D'];
   const bottomTimeframe: FeesTimeframe = 'ALL';
@@ -27,15 +31,17 @@ export default function FeesTimeframeToggle({
               relative flex-1 min-w-[50px] px-2 py-1 text-[10px] font-bold rounded transition-colors duration-200
               ${
                 currentTimeframe === tf
-                  ? 'text-black'
+                  ? ''
                   : 'text-white hover:text-white hover:bg-gray-800/50 border border-gray-700/40'
               }
             `}
+            style={currentTimeframe === tf ? { color: secondaryColor } : undefined}
           >
             {currentTimeframe === tf && (
               <motion.div
                 layoutId="feesTimeframeIndicator"
-                className="absolute inset-0 bg-[#52C97D] rounded"
+                className="absolute inset-0 rounded"
+                style={{ backgroundColor: primaryColor }}
                 transition={{ type: 'spring', stiffness: 300, damping: 30 }}
               />
             )}
@@ -51,15 +57,17 @@ export default function FeesTimeframeToggle({
           relative w-full px-2 py-1 text-[10px] font-bold rounded transition-colors duration-200
           ${
             currentTimeframe === bottomTimeframe
-              ? 'text-black'
+              ? ''
               : 'text-white hover:text-white hover:bg-gray-800/50 border border-gray-700/40'
           }
         `}
+        style={currentTimeframe === bottomTimeframe ? { color: secondaryColor } : undefined}
       >
         {currentTimeframe === bottomTimeframe && (
           <motion.div
             layoutId="feesTimeframeIndicator"
-            className="absolute inset-0 bg-[#52C97D] rounded"
+            className="absolute inset-0 rounded"
+            style={{ backgroundColor: primaryColor }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
           />
         )}

@@ -36,6 +36,7 @@ export function useTheme(primaryColor: string) {
     return {
       '--primary-color': primaryColor,
       '--primary-rgb': `${r}, ${g}, ${b}`,
+      '--primary-glow': alpha(0.2),
       '--primary-light': lighten(30),
       '--primary-lighter': lighten(60),
       '--primary-lightest': lighten(90),
