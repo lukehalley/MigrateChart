@@ -107,8 +107,11 @@ export function TokenLoadingLogo({ svgUrl, svgContent: externalSvgContent, color
     );
   }
 
+  // Strip XML declaration if present (causes rendering issues in HTML)
+  const cleanedSvgContent = svgContent.replace(/<\?xml[^?]*\?>\s*/g, '');
+
   console.log('[TokenLoadingLogo] Showing custom logo animation');
-  console.log('[TokenLoadingLogo] SVG content preview:', svgContent.substring(0, 200) + '...');
+  console.log('[TokenLoadingLogo] SVG content preview:', cleanedSvgContent.substring(0, 200) + '...');
   return (
     <div className="flex items-center justify-center px-4">
       <div
