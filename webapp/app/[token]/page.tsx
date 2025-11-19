@@ -680,7 +680,7 @@ function HomeContent() {
     <main className="w-screen h-screen overflow-hidden grid grid-rows-[auto_1fr]" style={themeStyles}>
       {/* Donation Banner */}
       <motion.div
-        className="relative bg-gradient-to-r from-[#0A1F12] via-[var(--primary-darker)]/30 to-[#0A1F12] border-b-2 border-[var(--primary-color)]/50 backdrop-blur-sm"
+        className="relative bg-gradient-to-r from-black via-[var(--primary-darker)]/30 to-black border-b-2 border-[var(--primary-color)]/50 backdrop-blur-sm"
         style={{ boxShadow: `0 4px 20px rgba(var(--primary-rgb), 0.25)` }}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -1001,7 +1001,7 @@ function HomeContent() {
               {/* Close X Button - Top Right */}
               <button
                 onClick={closeMobileMenu}
-                className="absolute -top-3 -right-3 z-[60] w-10 h-10 rounded-full flex items-center justify-center bg-[#0A1F12] border-2 border-[var(--primary-color)] transition-all backdrop-blur-sm"
+                className="absolute -top-3 -right-3 z-[60] w-10 h-10 rounded-full flex items-center justify-center bg-black border-2 border-[var(--primary-color)] transition-all backdrop-blur-sm"
                 style={{
                   boxShadow: `0 0 12px ${hexToRgba(primaryColor, 0.3)}`,
                 }}
@@ -1018,7 +1018,7 @@ function HomeContent() {
                 </svg>
               </button>
               {/* Tab Navigation */}
-              <div className="w-full bg-gradient-to-r from-[#0A1F12] via-[var(--primary-darker)]/20 to-[#0A1F12] border-[3px] border-[var(--primary-color)]/60 border-b-0 flex flex-shrink-0">
+              <div className="w-full bg-gradient-to-r from-black via-[var(--primary-darker)]/20 to-black border-[3px] border-[var(--primary-color)]/60 border-b-0 flex flex-shrink-0">
                 <button
                   onClick={() => setMobileMenuTab('settings')}
                   className={`flex-1 py-3 text-sm font-bold transition-all ${
@@ -1042,7 +1042,7 @@ function HomeContent() {
               </div>
 
               {/* Tab Content */}
-              <div className="w-full flex-1 overflow-y-auto bg-gradient-to-b from-[#0A1F12] to-black border-[3px] border-[var(--primary-color)]/60 py-3 px-2.5" style={{ WebkitOverflowScrolling: 'touch' }}>
+              <div className="w-full flex-1 overflow-y-auto bg-gradient-to-b from-black to-black border-[3px] border-[var(--primary-color)]/60 py-3 px-2.5" style={{ WebkitOverflowScrolling: 'touch' }}>
                 {mobileMenuTab === 'settings' && (
                   <>
               {/* Main Info Card */}
@@ -1749,7 +1749,7 @@ function HomeContent() {
                       side="left"
                       align="center"
                       sideOffset={12}
-                      className="w-auto p-2 bg-gradient-to-b from-[#0A1F12] to-black border-2"
+                      className="w-auto p-2 bg-gradient-to-b from-black to-black border-2"
                       style={{
                         borderColor: `${primaryColor}99`,
                         boxShadow: `0 0 20px ${primaryColor}4D`
@@ -1884,7 +1884,7 @@ function HomeContent() {
                           side="left"
                           align="center"
                           sideOffset={12}
-                          className="w-auto p-2 bg-gradient-to-b from-[#0A1F12] to-black border-2"
+                          className="w-auto p-2 bg-gradient-to-b from-black to-black border-2"
                           style={{
                             borderColor: `${primaryColor}99`,
                             boxShadow: `0 0 20px ${primaryColor}4D`
@@ -1970,7 +1970,7 @@ function HomeContent() {
                           side="left"
                           align="center"
                           sideOffset={12}
-                          className="w-48 p-2 bg-gradient-to-b from-[#0A1F12] to-black border-2"
+                          className="w-48 p-2 bg-gradient-to-b from-black to-black border-2"
                           style={{
                             borderColor: `${primaryColor}99`,
                             boxShadow: `0 0 20px ${primaryColor}4D`

@@ -210,7 +210,8 @@ a {
 .dashed-divider {
   width: 100%;
   height: 1px;
-  border-top: 2px dashed var(--primary-color);
+  border-top: 2px dashed;
+  border-color: var(--primary-color);
   opacity: 0.6;
   box-shadow: 0 0 8px var(--primary-glow);
 }

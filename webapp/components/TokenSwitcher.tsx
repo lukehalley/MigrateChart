@@ -71,7 +71,7 @@ export function TokenSwitcher() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
-              className="absolute top-full left-0 mt-2 min-w-[200px] bg-gradient-to-b from-[#0A1F12] to-black border-2 border-[var(--primary-color)]/60 rounded-lg shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)] z-50 overflow-hidden"
+              className="absolute top-full left-0 mt-2 min-w-[200px] bg-gradient-to-b from-black to-black border-2 border-[var(--primary-color)]/60 rounded-lg shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)] z-50 overflow-hidden"
             >
               {allProjects.map((project) => {
                 const isActive = project.slug === currentProject.slug;

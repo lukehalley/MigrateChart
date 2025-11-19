@@ -605,7 +605,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       const activeToolType = drawingStateRef.current.getActiveToolType();
 
       if (activeToolType === 'horizontal-line') {
-        drawingPrimitive.addHorizontalLine(price);
+        drawingPrimitive.addHorizontalLine(price, primaryColor);
         const updatedDrawings = drawingPrimitive.getDrawings();
         SafeStorage.setJSON(`drawings_${timeframe}`, updatedDrawings);
         setDrawingCount(updatedDrawings.length);
@@ -615,7 +615,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         if (!tempPoint) {
           drawingStateRef.current.setTempPoint({ logical, price });
           drawingStateRef.current.setIsDrawing(true);
-          drawingPrimitive.addTrendLine({ logical, price }, { logical, price });
+          drawingPrimitive.addTrendLine({ logical, price }, { logical, price }, primaryColor);
         } else {
           drawingPrimitive.updateLastTrendLinePoint2({ logical, price });
           drawingStateRef.current.setTempPoint(null);
@@ -630,7 +630,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         if (!tempPoint) {
           drawingStateRef.current.setTempPoint({ logical, price });
           drawingStateRef.current.setIsDrawing(true);
-          drawingPrimitive.addRuler({ logical, price }, { logical, price });
+          drawingPrimitive.addRuler({ logical, price }, { logical, price }, primaryColor);
         } else {
           drawingPrimitive.updateLastRulerPoint2({ logical, price });
           drawingStateRef.current.setTempPoint(null);
@@ -659,7 +659,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       const logical = chart.timeScale().coordinateToLogical(param.point.x);
       if (logical === null) return;
 
-      drawingPrimitive.startFreehand({ logical, price });
+      drawingPrimitive.startFreehand({ logical, price }, primaryColor);
       drawingStateRef.current.setIsDrawing(true);
     };
 
@@ -1071,7 +1071,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
           color: darkerColor,
           label: migration.label,
           lineWidth: 2,
-          labelBackgroundColor: '#0A1F12',
+          labelBackgroundColor: '#000000',
           labelTextColor: primaryColor,
         }));
 
@@ -1728,11 +1728,11 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
           {/* Modal Content */}
           <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30 w-[95%] max-w-6xl ${isAboutClosing ? 'animate-fade-out' : 'animate-fade-in'}`}>
-            <div className="bg-gradient-to-b from-[#0A1F12] to-black border-[3px] border-[var(--primary-color)]/60 shadow-[0_0_50px_rgba(var(--primary-rgb),0.5)] overflow-hidden">
+            <div className="bg-gradient-to-b from-black to-black border-[3px] border-[var(--primary-color)]/60 shadow-[0_0_50px_rgba(var(--primary-rgb),0.5)] overflow-hidden">
               {/* Header */}
               <div
                 style={{ padding: '20px 28px' }}
-                className="sticky top-0 z-10 bg-gradient-to-r from-[#0A1F12] via-[var(--primary-darker)]/20 to-[#0A1F12] border-b-[3px] border-[var(--primary-color)]/50"
+                className="sticky top-0 z-10 bg-gradient-to-r from-black via-[var(--primary-darker)]/20 to-black border-b-[3px] border-[var(--primary-color)]/50"
               >
                 <div className="flex items-center justify-between">
                   <h2 style={{ margin: 0 }} className="text-[var(--primary-color)] text-xl md:text-2xl font-bold tracking-wide">About This Chart</h2>
