@@ -714,8 +714,8 @@ function HomeContent() {
             transition={{ duration: 0.25, ease: [0.4, 0.0, 0.2, 1] }}
             className="w-full relative px-3 sm:px-6"
           >
-          {/* Desktop: 3-column layout */}
-          <div className="hidden sm:flex items-center justify-center gap-4 py-4">
+          {/* Desktop: 3-column layout (≥ 1024px) */}
+          <div className="hidden lg:flex items-center justify-center gap-4 py-4">
             {/* Column 1: Address Bar + Copy Button */}
             <div className="flex items-center justify-center gap-2">
               <motion.div
@@ -854,8 +854,8 @@ function HomeContent() {
             </div>
           </div>
 
-          {/* Mobile: Stacked layout */}
-          <div className="flex sm:hidden flex-col items-center gap-2 py-2">
+          {/* Mobile and Tablet: Stacked layout (< 1024px) */}
+          <div className="flex lg:hidden flex-col items-center gap-2 py-2">
             {/* Call to Action */}
             <div className="flex items-center gap-1.5">
               <motion.div
@@ -988,20 +988,20 @@ function HomeContent() {
         </AnimatePresence>
       </motion.div>
 
-      {/* Mobile View */}
-      <div className="md:hidden w-full h-full relative overflow-hidden">
+      {/* Mobile and Tablet View (< 1024px) */}
+      <div className="lg:hidden w-full h-full relative overflow-hidden">
         {/* Mobile Popup Menu */}
         {showMobileMenu && (
         <>
           {/* Backdrop */}
           <div
-            className={`md:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40 ${isMenuClosing ? 'animate-fade-out' : 'animate-fade-in'}`}
+            className={`lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40 ${isMenuClosing ? 'animate-fade-out' : 'animate-fade-in'}`}
             onClick={closeMobileMenu}
           />
 
           {/* Popup Content */}
-          <div className={`md:hidden fixed inset-0 z-50 ${isMenuClosing ? 'animate-fade-out' : 'animate-fade-in'} flex items-center justify-center py-6 px-4 pointer-events-none`}>
-            <div className="flex flex-col pointer-events-auto w-full max-w-[340px] max-h-[calc(100vh-4rem)] relative">
+          <div className={`lg:hidden fixed inset-0 z-50 ${isMenuClosing ? 'animate-fade-out' : 'animate-fade-in'} flex items-center justify-center py-6 px-4 pointer-events-none`}>
+            <div className="flex flex-col pointer-events-auto w-full max-w-[340px] md:max-w-[640px] max-h-[calc(100vh-4rem)] relative">
               {/* Close X Button - Top Right */}
               <button
                 onClick={closeMobileMenu}
@@ -1493,8 +1493,8 @@ function HomeContent() {
         </div>
       </div>
 
-      {/* Desktop View - Absolute Layout */}
-      <div className="hidden md:block w-full h-full overflow-hidden min-h-0 relative">
+      {/* Desktop View - Absolute Layout (≥ 1024px) */}
+      <div className="hidden lg:block w-full h-full overflow-hidden min-h-0 relative">
         {/* Left Section - Chart */}
         <motion.div
           className="absolute top-0 left-0 bottom-0 h-full overflow-hidden"

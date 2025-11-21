@@ -93,9 +93,9 @@ export function FeesView({ projectSlug, primaryColor, timeframe, onTimeframeChan
 
   return (
     <div className="w-full h-full relative flex flex-col overflow-hidden">
-      {/* Mobile: Settings Button */}
+      {/* Mobile and Tablet: Settings Button */}
       {onOpenMobileMenu && (
-        <div className="md:hidden absolute top-3 left-3 z-30">
+        <div className="lg:hidden absolute top-3 left-3 z-30">
           <button
             onClick={onOpenMobileMenu}
             className="w-11 h-11 rounded-full flex items-center justify-center bg-black/90 hover:bg-black border-2 shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)] hover:shadow-[0_0_16px_rgba(var(--primary-rgb),0.5)] transition-all backdrop-blur-sm"

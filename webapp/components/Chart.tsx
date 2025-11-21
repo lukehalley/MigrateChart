@@ -104,8 +104,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
   }>({ mousedown: null, mouseup: null, mouseleave: null, touchstart: null, touchmove: null, touchend: null });
 
   const resetChartPosition = () => {
-    const positionKey = `chartPosition_${timeframe}`;
-    SafeStorage.removeItem(positionKey);
+    // Trigger chart recreation to reset zoom/pan to initial state
     setResetTrigger(prev => prev + 1);
   };
 
@@ -208,6 +207,14 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
     SafeStorage.setJSON('enabledIndicators', Array.from(enabledIndicators));
   }, [enabledIndicators]);
 
+  // One-time cleanup: Remove old cached chart positions
+  useEffect(() => {
+    const timeframes: Timeframe[] = ['1H', '4H', '8H', '1D', 'MAX'];
+    timeframes.forEach(tf => {
+      SafeStorage.removeItem(`chartPosition_${tf}`);
+    });
+  }, []); // Empty deps - runs once on mount
+
   useEffect(() => {
     if (!chartContainerRef.current || poolsData.length === 0) return;
 
@@ -216,8 +223,8 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
     setIsLoading(false);
 
-    // Detect mobile device
-    const isMobile = window.innerWidth < 768;
+    // Detect mobile device (includes tablets and fold phones)
+    const isMobile = window.innerWidth < 1024;
 
     // Note: Price scale persistence disabled - the margin-based approach is unreliable
     // and produces negative price values. Will need a different strategy in the future.
@@ -244,8 +251,8 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         borderColor: primaryColor,
         timeVisible: true,
         secondsVisible: false,
-        rightOffset: isMobile ? 10 : 50,  // More space on right side by default
-        barSpacing: isMobile ? 2 : 12,  // Keep consistent 12px spacing
+        rightOffset: isMobile ? 25 : 10,  // Empty space (in bars) to the right of the latest candle
+        barSpacing: isMobile ? 5 : 12,  // Initial bar width - higher = more zoomed in (fewer bars visible)
         minBarSpacing: 0.001,  // Very small minimum to allow zooming out on finer timeframes with many candles
         fixLeftEdge: false,  // Allow scrolling past edges
         fixRightEdge: false,
@@ -923,77 +930,50 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       resizeObserver.observe(chartContainerRef.current);
     }
 
-    // Save chart position to localStorage
-    const saveAndLogVisibleRange = () => {
-      const visibleLogicalRange = chart.timeScale().getVisibleLogicalRange();
-      const visibleTimeRange = chart.timeScale().getVisibleRange();
+    // Note: Chart position caching disabled to ensure rightOffset space is always visible
+    // Users can manually zoom/pan, and the chart will start fresh each time with proper spacing
 
-      if (visibleLogicalRange && visibleTimeRange) {
-        const storageKey = `chartPosition_${timeframe}`;
-        const positionData = {
-          from: visibleTimeRange.from,
-          to: visibleTimeRange.to,
-        };
-        SafeStorage.setJSON(storageKey, positionData);
-      }
-    };
+    // Debug listener: Log position whenever user manually adjusts the chart
+    let debugLogHandler: (() => void) | null = null;
+    if (isMobile) {
+      debugLogHandler = () => {
+        const position = chart.timeScale().scrollPosition();
+        const visibleRange = chart.timeScale().getVisibleLogicalRange();
+        const barsVisible = visibleRange ? (visibleRange.to - visibleRange.from).toFixed(1) : 'N/A';
 
-    // Subscribe to time scale changes for position tracking
-    chart.timeScale().subscribeVisibleLogicalRangeChange(saveAndLogVisibleRange);
+        console.log('📍 [USER ADJUSTED] Current position:', {
+          scrollPosition: position,
+          visibleRange,
+          barsVisible,
+        });
+      };
 
-    // Get all data points to calculate visible range
-    const allData = poolsData.flatMap(pool => pool.data);
-    if (allData.length > 0) {
-      // Sort by time to get the range
-      const sortedData = [...allData].sort((a, b) => a.time - b.time);
-      const totalPoints = sortedData.length;
-      const firstTime = sortedData[0].time;
-      const lastTime = sortedData[totalPoints - 1].time;
+      chart.timeScale().subscribeVisibleLogicalRangeChange(debugLogHandler);
+    }
 
-      let fromTime: number;
+    // Set initial chart position
+    // fitContent() respects barSpacing and rightOffset to set initial zoom/position
+    chart.timeScale().fitContent();
 
-      // Show all data for all timeframes - users can zoom in/out as needed
-      // The minBarSpacing: 0.001 allows full zoom out capability
-      fromTime = firstTime;
+    // Log initial state for mobile debugging
+    if (isMobile) {
+      setTimeout(() => {
+        const allData = poolsData.flatMap(pool => pool.data);
+        const position = chart.timeScale().scrollPosition();
+        const visibleRange = chart.timeScale().getVisibleLogicalRange();
+        const barsVisible = visibleRange ? (visibleRange.to - visibleRange.from).toFixed(1) : 'N/A';
 
-      // Check if there's a saved position in localStorage for this timeframe
-      const storageKey = `chartPosition_${timeframe}`;
-      const savedPosition = SafeStorage.getJSON<{ from: number; to: number }>(storageKey);
-
-      let finalFrom: number;
-      let finalTo: number;
-
-      if (savedPosition) {
-        // Restore saved position
-        finalFrom = savedPosition.from;
-        finalTo = savedPosition.to;
-      } else {
-        // No saved position, use default with mobile shift
-        const timeWindow = lastTime - fromTime;
-        const mobileShiftRatio = 0.756; // Shift forward to show both migration lines clearly
-        const shiftAmount = isMobile ? Math.floor(timeWindow * mobileShiftRatio) : 0;
-
-        finalFrom = fromTime + shiftAmount;
-        finalTo = lastTime + shiftAmount;
-      }
-
-      // Set the visible range to show the calculated window
-      // The rightOffset in timeScale options will add space on the right
-      // Note: We DON'T call fitContent() after this because it would override
-      // our custom visible range and show all data. The autoScale: true setting
-      // on rightPriceScale will automatically adjust the price axis for visible data.
-      chart.timeScale().setVisibleRange({
-        from: finalFrom as Time,
-        to: finalTo as Time,
-      });
-
-      // TODO: Implement proper price scale persistence
-      // The margin-based approach produces negative prices which is invalid.
-      // lightweight-charts doesn't provide a direct API to set price ranges.
-      // Possible solutions to explore:
-      // 1. Use applyOptions with custom price range calculation
-      // 2. Save visible bar indices instead of price values
-      // 3. Use timeScale.scrollToPosition + priceScale.applyOptions coordination
+        console.log('📊 [INITIAL CHART STATE]');
+        console.log(`  Total bars: ${allData.length}`);
+        console.log(`  Current barSpacing: 5px`);
+        console.log(`  rightOffset: 25 bars`);
+        console.log(`  Visible bars: ${barsVisible}`);
+        console.log(`  scrollPosition: ${position}`);
+        console.log('');
+        console.log('💡 Scroll your mouse wheel to zoom. Watch the barsVisible value.');
+        console.log('   Your preference: ~79 bars. Adjust barSpacing (line 255) to fine-tune.');
+        console.log('   Current barSpacing: 8px. Higher = fewer bars (more zoomed in).');
+      }, 100);
     }
 
     return () => {
@@ -1003,7 +983,11 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       // Unsubscribe from chart events
       chart.unsubscribeClick(handleChartClick);
       chart.unsubscribeCrosshairMove(handleCrosshairMove);
-      chart.timeScale().unsubscribeVisibleLogicalRangeChange(saveAndLogVisibleRange);
+
+      // Unsubscribe debug listener if it exists
+      if (debugLogHandler) {
+        chart.timeScale().unsubscribeVisibleLogicalRangeChange(debugLogHandler);
+      }
 
       // Remove mouse and touch event listeners from chart container using stored refs
       const chartContainer = chartContainerRef.current;
@@ -1184,7 +1168,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       )}
 
       {/* Desktop: Top Left Buttons - Info, Indicators and Drawing Tools */}
-      <div className="hidden md:flex absolute top-6 left-6 md:top-8 md:left-8 z-10 gap-2">
+      <div className="hidden lg:flex absolute top-6 left-6 md:top-8 md:left-8 z-10 gap-2">
         {/* About Info Button */}
         <button
           onClick={() => setShowAbout(!showAbout)}
@@ -1449,8 +1433,8 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         </div>
       </div>
 
-      {/* Mobile: Indicators and Drawing Tools Buttons (below hamburger menu) */}
-      <div className="md:hidden absolute top-3 left-3 z-30">
+      {/* Mobile and Tablet: Indicators and Drawing Tools Buttons (below hamburger menu) */}
+      <div className="lg:hidden absolute top-3 left-3 z-30">
         <div className="relative flex flex-col gap-2">
           {/* Settings Button */}
           {onOpenMobileMenu && (

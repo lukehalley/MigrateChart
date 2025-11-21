@@ -6,6 +6,17 @@ module.exports = {
     './app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
+    // Default Tailwind breakpoints (not overridden):
+    // sm: 640px   - Small phones (landscape)
+    // md: 768px   - Tablets and fold phones (unfolded)
+    // lg: 1024px  - Desktop/laptop screens
+    // xl: 1280px  - Large desktop screens
+    // 2xl: 1536px - Extra large screens
+    //
+    // Responsive strategy:
+    // Mobile:      < 768px   (mobile menu modal)
+    // Tablet:      768-1023px (wider mobile menu for fold phones/tablets)
+    // Desktop:     ≥ 1024px  (sidebar layout)
     extend: {
       colors: {
         background: '#000000',
