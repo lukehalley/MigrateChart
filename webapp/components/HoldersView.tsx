@@ -158,8 +158,8 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
               </CardDescription>
             </CardHeader>
             <CardContent className="flex-1 pb-0 md:min-h-0 flex flex-col md:flex-row gap-4">
-              {/* Chart - 3/4 width */}
-              <div className="flex-1 md:w-3/4 h-[250px] md:h-auto">
+              {/* Chart - 5/6 width */}
+              <div className="flex-1 md:w-5/6 h-[250px] md:h-auto">
                 <ChartContainer config={chartConfig} className="w-full h-full">
                   <AreaChart data={chartData}>
                     <defs>
@@ -202,8 +202,8 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
                 </ChartContainer>
               </div>
 
-              {/* Period Change - 1/4 width */}
-              <div className="md:w-1/4 flex items-center justify-center border-t md:border-t-0 md:border-l border-neutral-800 pt-4 md:pt-0 md:pl-4">
+              {/* Period Change - 1/6 width */}
+              <div className="md:w-1/6 flex items-center justify-center border-t md:border-t-0 md:border-l border-neutral-800 pt-4 md:pt-0 md:pl-4">
                 <div className="flex flex-col items-center gap-2">
                   <div className="text-xs text-white/40 font-medium uppercase tracking-wider">Period Change</div>
                   <div
