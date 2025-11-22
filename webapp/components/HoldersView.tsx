@@ -107,6 +107,19 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
     [primaryColor]
   );
 
+  // Calculate total holder change for the timeframe
+  const holderChange = useMemo(() => {
+    if (!chartData || chartData.length < 2) return 0;
+    return chartData[chartData.length - 1].holders - chartData[0].holders;
+  }, [chartData]);
+
+  // Get color for holder change indicator
+  const getChangeColor = (change: number) => {
+    if (change > 0) return 'rgb(34, 197, 94)'; // green-500
+    if (change < 0) return 'rgb(239, 68, 68)'; // red-500
+    return 'rgb(115, 115, 115)'; // neutral-500
+  };
+
   if (holdersLoading || !holdersData) {
     return <HoldersChartSkeleton />;
   }
@@ -144,47 +157,69 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
                 Total Token Holders - Updates Every Hour
               </CardDescription>
             </CardHeader>
-            <CardContent className="flex-1 pb-0 md:min-h-0">
-              <ChartContainer config={chartConfig} className="w-full h-[250px] md:h-full">
-                <AreaChart data={chartData}>
-                  <defs>
-                    <linearGradient id="fillHolders" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="var(--color-holders)" stopOpacity={0.8} />
-                      <stop offset="95%" stopColor="var(--color-holders)" stopOpacity={0.1} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-white/10" />
-                  <XAxis
-                    dataKey="dateTime"
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={8}
-                    minTickGap={32}
-                  />
-                  <YAxis
-                    domain={['dataMin', (dataMax: number) => dataMax * domainPadding.holder]}
-                    tickLine={false}
-                    axisLine={false}
-                    tickFormatter={(value) => formatNumber(value)}
-                  />
-                  <ChartTooltip
-                    content={
-                      <ChartTooltipContent
-                        className="bg-neutral-900 border-neutral-800"
-                        labelFormatter={(value, payload) => payload?.[0]?.payload?.dateTimeWithTime || value}
-                        formatter={(value) => formatNumber(Number(value))}
-                      />
-                    }
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="holders"
-                    stroke="var(--color-holders)"
-                    fill="url(#fillHolders)"
-                    strokeWidth={2}
-                  />
-                </AreaChart>
-              </ChartContainer>
+            <CardContent className="flex-1 pb-0 md:min-h-0 flex flex-col md:flex-row gap-4">
+              {/* Chart - 3/4 width */}
+              <div className="flex-1 md:w-3/4 h-[250px] md:h-auto">
+                <ChartContainer config={chartConfig} className="w-full h-full">
+                  <AreaChart data={chartData}>
+                    <defs>
+                      <linearGradient id="fillHolders" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="var(--color-holders)" stopOpacity={0.8} />
+                        <stop offset="95%" stopColor="var(--color-holders)" stopOpacity={0.1} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-white/10" />
+                    <XAxis
+                      dataKey="dateTime"
+                      tickLine={false}
+                      axisLine={false}
+                      tickMargin={8}
+                      minTickGap={32}
+                    />
+                    <YAxis
+                      domain={['dataMin', (dataMax: number) => dataMax * domainPadding.holder]}
+                      tickLine={false}
+                      axisLine={false}
+                      tickFormatter={(value) => formatNumber(value)}
+                    />
+                    <ChartTooltip
+                      content={
+                        <ChartTooltipContent
+                          className="bg-neutral-900 border-neutral-800"
+                          labelFormatter={(value, payload) => payload?.[0]?.payload?.dateTimeWithTime || value}
+                          formatter={(value) => formatNumber(Number(value))}
+                        />
+                      }
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="holders"
+                      stroke="var(--color-holders)"
+                      fill="url(#fillHolders)"
+                      strokeWidth={2}
+                    />
+                  </AreaChart>
+                </ChartContainer>
+              </div>
+
+              {/* Period Change - 1/4 width */}
+              <div className="md:w-1/4 flex items-center justify-center border-t md:border-t-0 md:border-l border-neutral-800 pt-4 md:pt-0 md:pl-4">
+                <div className="flex flex-col items-center gap-2">
+                  <div className="text-xs text-white/40 font-medium uppercase tracking-wider">Period Change</div>
+                  <div
+                    className="text-5xl md:text-6xl font-black tabular-nums tracking-tight"
+                    style={{
+                      color: getChangeColor(holderChange),
+                      textShadow: `0 0 20px ${getChangeColor(holderChange)}40`
+                    }}
+                  >
+                    {holderChange > 0 ? '+' : ''}{formatNumber(holderChange)}
+                  </div>
+                  <div className="text-xs text-white/40 font-medium uppercase tracking-wider">
+                    Holders
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
