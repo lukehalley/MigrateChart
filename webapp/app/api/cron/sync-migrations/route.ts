@@ -3,9 +3,9 @@ import { migrationSyncService } from '@/lib/services/migrationSyncService';
 
 /**
  * Cron job endpoint to sync active migrations from migrate.fun
- * This should be triggered by Vercel Cron (see vercel.json)
+ * Triggered daily at midnight UTC via Vercel Cron (see vercel.json)
  *
- * Vercel Cron authentication uses the Authorization header with a cron secret
+ * Authentication: Bearer token with CRON_SECRET
  *
  * @route GET /api/cron/sync-migrations
  */

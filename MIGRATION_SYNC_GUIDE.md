@@ -422,7 +422,9 @@ open http://localhost:3000/?token=memeverse
 
 ---
 
-## Deployment
+## Deployment (Vercel Pro)
+
+Since you have Vercel Pro, the automated sync runs via **Vercel Cron** (already configured).
 
 ### 1. Deploy to Vercel
 ```bash
@@ -435,17 +437,26 @@ vercel --prod
 
 ### 2. Set Environment Variables
 
-Required in Vercel:
-- `CRON_SECRET` - For cron authentication
-- `SUPABASE_SERVICE_ROLE_KEY` - For database writes
+Required in Vercel (if not already set):
+- `CRON_SECRET` - For cron authentication (generate: `openssl rand -base64 32`)
+- `SUPABASE_SERVICE_ROLE_KEY` - For database writes (from Supabase Dashboard)
 - `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Public Supabase key
 
 ### 3. Verify Cron Setup
 
 1. Go to Vercel Dashboard → Your Project → Settings → Cron Jobs
-2. You should see: `/api/cron/sync-migrations` scheduled for `0 0 * * *`
+2. You should see: `/api/cron/sync-migrations` scheduled for `0 0 * * *` (daily at midnight)
 3. Click "Run now" to test immediately
+4. Check logs in Vercel Dashboard → Your Project → Logs
+
+### 4. Manual Test
+
+You can also trigger manually via API:
+```bash
+curl https://your-app.vercel.app/api/cron/sync-migrations \
+  -H "Authorization: Bearer YOUR_CRON_SECRET"
+```
 
 ---
 
