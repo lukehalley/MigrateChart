@@ -263,7 +263,21 @@ export class MigrationSyncService {
 
     console.log(`    ✓ Migration record created`);
 
-    // 6. Backfill OHLC data
+    // 6. Create metadata cache entries for both tokens
+    console.log('  📝 Creating metadata cache...');
+
+    await supabase.from('metadata_cache').insert([
+      {
+        token_address: migration.newTokenMint,
+        pool_address: newPoolAddress,
+        token_symbol: newTokenMeta.symbol,
+        project_id: project.id
+      }
+    ]);
+
+    console.log(`    ✓ Metadata cache created`);
+
+    // 7. Backfill OHLC data
     console.log('  📈 Backfilling OHLC data...');
     await this.backfillOHLCData(migration.oldTokenMint, project.id);
     await this.backfillOHLCData(migration.newTokenMint, project.id);
