@@ -45,9 +45,9 @@ async function main() {
       const stats = await migrationSyncService.getSyncStats();
 
       console.log('Statistics:');
-      console.log(`  Active on migrate.fun: ${stats.migrateFunActive}`);
-      console.log(`  Already in database:   ${stats.inOurDatabase}`);
-      console.log(`  Needs sync:            ${stats.needsSync}`);
+      console.log(`  Recent claims (90 days): ${stats.migrateFunActive}`);
+      console.log(`  Already in database:     ${stats.inOurDatabase}`);
+      console.log(`  Needs sync:              ${stats.needsSync}`);
       console.log('');
 
       if (stats.needsSync === 0) {

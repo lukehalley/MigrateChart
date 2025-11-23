@@ -43,8 +43,8 @@ export interface MigrationSyncResult {
 
 export class MigrationSyncService {
   /**
-   * Main sync function - fetches active migrations from migrate.fun
-   * and ensures they exist in our database
+   * Main sync function - fetches recent completed (Claims) migrations from migrate.fun
+   * Note: We sync Claims instead of Active because the new token doesn't exist until migration completes
    */
   async syncActiveMigrations(dryRun: boolean = false): Promise<MigrationSyncResult> {
     console.log('🔄 Starting migration sync from migrate.fun...\n');
@@ -57,11 +57,12 @@ export class MigrationSyncService {
     };
 
     try {
-      // Fetch active migrations from migrate.fun
-      const activeMigrations = await migrateFunApi.fetchActiveProjects();
-      console.log(`Found ${activeMigrations.length} active migrations on migrate.fun\n`);
+      // Fetch recent completed migrations (last 90 days)
+      // We use Claims status because both old and new tokens exist and have data
+      const recentClaims = await migrateFunApi.fetchRecentClaims(90);
+      console.log(`Found ${recentClaims.length} recent completed migrations (last 90 days)\n`);
 
-      for (const migration of activeMigrations) {
+      for (const migration of recentClaims) {
         try {
           console.log(`Processing: ${migration.projectName} (${migration.migrationId})`);
 
@@ -484,8 +485,8 @@ export class MigrationSyncService {
       throw new Error(`Migration ${migrationId} not found`);
     }
 
-    if (migration.status !== 'Active') {
-      throw new Error(`Migration ${migrationId} is not active (status: ${migration.status})`);
+    if (migration.status !== 'Claims') {
+      console.warn(`⚠️  Warning: Migration ${migrationId} status is ${migration.status}, not Claims. New token may not have data yet.`);
     }
 
     await this.createProject(migration);
@@ -500,11 +501,11 @@ export class MigrationSyncService {
     inOurDatabase: number;
     needsSync: number;
   }> {
-    const activeMigrations = await migrateFunApi.fetchActiveProjects();
+    const recentClaims = await migrateFunApi.fetchRecentClaims(90);
 
     let inDatabase = 0;
 
-    for (const migration of activeMigrations) {
+    for (const migration of recentClaims) {
       if (migration.oldTokenMint && migration.newTokenMint) {
         const exists = await this.migrationExists(
           migration.oldTokenMint,
@@ -515,9 +516,9 @@ export class MigrationSyncService {
     }
 
     return {
-      migrateFunActive: activeMigrations.length,
+      migrateFunActive: recentClaims.length,
       inOurDatabase: inDatabase,
-      needsSync: activeMigrations.length - inDatabase
+      needsSync: recentClaims.length - inDatabase
     };
   }
 }
