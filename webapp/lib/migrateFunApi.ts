@@ -155,7 +155,10 @@ export class MigrateFunAPI {
       const projectName = this.bufferToString(buffer, nameStart, nameStart + nameLength);
 
       // Token mint addresses (32 bytes each)
-      const oldTokenMintOffset = nameStart + nameLength;
+      // Note: First pubkey after name is vault/authority, skip it
+      // Old token mint is at offset +32, new token mint at offset +64
+      const firstPubkeyOffset = nameStart + nameLength;
+      const oldTokenMintOffset = firstPubkeyOffset + 32;  // Skip first pubkey
       const newTokenMintOffset = oldTokenMintOffset + 32;
 
       let oldTokenMint: string | null = null;
