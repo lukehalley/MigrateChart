@@ -5,13 +5,25 @@
  * Creates project records, pool records, migration records, and backfills OHLC data.
  */
 
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { migrateFunApi, MigrationProject } from '../migrateFunApi';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Lazy initialize Supabase client to avoid build-time errors
+let supabaseInstance: SupabaseClient | null = null;
+
+function getSupabaseClient(): SupabaseClient {
+  if (!supabaseInstance) {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error('Supabase credentials not configured');
+    }
+
+    supabaseInstance = createClient(supabaseUrl, supabaseKey);
+  }
+  return supabaseInstance;
+}
 
 export interface TokenMetadata {
   address: string;
@@ -105,6 +117,7 @@ export class MigrationSyncService {
     oldTokenMint: string,
     newTokenMint: string
   ): Promise<boolean> {
+    const supabase = getSupabaseClient();
     const { data, error } = await supabase
       .from('pools')
       .select('id')
@@ -126,6 +139,8 @@ export class MigrationSyncService {
     if (!migration.oldTokenMint || !migration.newTokenMint) {
       throw new Error('Missing token mint addresses');
     }
+
+    const supabase = getSupabaseClient();
 
     console.log('  📦 Fetching token metadata...');
 
@@ -315,6 +330,8 @@ export class MigrationSyncService {
    * Backfill OHLC data from Jupiter API
    */
   private async backfillOHLCData(tokenMint: string, projectId: string): Promise<void> {
+    const supabase = getSupabaseClient();
+
     try {
       // Fetch daily candles (last 500 days)
       const dailyCandles = await this.fetchJupiterCandles(tokenMint, '1_DAY', 500);
