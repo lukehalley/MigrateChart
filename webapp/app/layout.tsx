@@ -5,15 +5,11 @@ import './globals.css';
 export const metadata: Metadata = {
   title: 'Migration Chart',
   description: 'Track complete price history across token migrations with interactive charts and real-time data',
-  icons: {
-    icon: [
-      { url: '/favicon.ico', sizes: 'any' },
-      { url: '/favicon.ico', sizes: '16x16', type: 'image/x-icon' },
-      { url: '/favicon.ico', sizes: '32x32', type: 'image/x-icon' },
-    ],
-    shortcut: '/favicon.ico',
-    apple: '/favicon.ico',
-  },
+  // Icons are automatically served from /app directory:
+  // - favicon.ico (32x32)
+  // - icon.svg (vector)
+  // - icon.png (192x192)
+  // - apple-icon.png (180x180)
 };
 
 export const viewport: Viewport = {

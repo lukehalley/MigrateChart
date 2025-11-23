@@ -19,7 +19,6 @@ import { TokenLoadingLogo } from '@/components/TokenLoadingLogo';
 import { TokenSwitcher } from '@/components/TokenSwitcher';
 import { TokenContextProvider, useTokenContext } from '@/lib/TokenContext';
 import { useTheme } from '@/lib/useTheme';
-import { useFavicon } from '@/lib/useFavicon';
 import { fetchAllPoolsData, fetchTokenStats, fetchWalletBalance, fetchTokenBalance } from '@/lib/api';
 import { PoolData, Timeframe, ProjectConfig } from '@/lib/types';
 import { SafeStorage } from '@/lib/localStorage';
@@ -38,9 +37,6 @@ function HomeContent() {
   const themeStyles = useTheme(currentProject?.primaryColor || 'var(--primary-color)');
   const primaryColor = currentProject?.primaryColor || '#52C97D';
   const secondaryColor = currentProject?.secondaryColor || '#000000';
-
-  // Update favicon when project changes
-  useFavicon(currentProject?.logoUrl);
 
   // Helper function to convert hex to rgba
   const hexToRgba = (hex: string, alpha: number) => {
@@ -715,7 +711,16 @@ function HomeContent() {
             className="w-full relative px-3 sm:px-6"
           >
           {/* Desktop: 3-column layout (≥ 1024px) */}
-          <div className="hidden lg:flex items-center justify-center gap-4 py-4">
+          <div className="hidden lg:flex items-center justify-center gap-4 py-5">
+            {/* Logo - Far Left */}
+            <div className="absolute left-6 flex items-center justify-center">
+              <img
+                src="/logo/MC_Logo_White.svg"
+                alt="Migrate Chart"
+                className="w-12 h-12"
+              />
+            </div>
+
             {/* Column 1: Address Bar + Copy Button */}
             <div className="flex items-center justify-center gap-2">
               <motion.div
@@ -855,28 +860,40 @@ function HomeContent() {
           </div>
 
           {/* Mobile and Tablet: Stacked layout (< 1024px) */}
-          <div className="flex lg:hidden flex-col items-center gap-2 py-2">
-            {/* Call to Action */}
-            <div className="flex items-center gap-1.5">
-              <motion.div
-                animate={{
-                  scale: [1, 1.15, 1],
-                }}
-                transition={{
-                  duration: 1.5,
-                  repeat: Infinity,
-                  ease: 'easeInOut'
-                }}
-              >
-                <Heart className="w-4 h-4 text-[var(--primary-color)] fill-[var(--primary-color)]" />
-              </motion.div>
-              <div className="text-center">
-                <p className="text-white font-bold text-xs leading-tight">
-                  Support This Free Tool
-                </p>
-                <p className="text-white/70 text-[10px] leading-tight">
-                  Donate via Solana Network
-                </p>
+          <div className="flex lg:hidden flex-col items-center gap-2 py-3 w-full relative">
+            {/* Logo and Call to Action Row */}
+            <div className="flex items-center justify-between w-full px-3">
+              {/* Logo - Far Left */}
+              <div className="flex-shrink-0">
+                <img
+                  src="/logo/MC_Logo_White.svg"
+                  alt="Migrate Chart"
+                  className="w-10 h-10"
+                />
+              </div>
+
+              {/* Call to Action - Centered */}
+              <div className="flex items-center gap-2 absolute left-1/2 -translate-x-1/2">
+                <motion.div
+                  animate={{
+                    scale: [1, 1.15, 1],
+                  }}
+                  transition={{
+                    duration: 1.5,
+                    repeat: Infinity,
+                    ease: 'easeInOut'
+                  }}
+                >
+                  <Heart className="w-4 h-4 text-[var(--primary-color)] fill-[var(--primary-color)]" />
+                </motion.div>
+                <div className="text-center">
+                  <p className="text-white font-bold text-xs leading-tight">
+                    Support This Free Tool
+                  </p>
+                  <p className="text-white/70 text-[10px] leading-tight">
+                    Donate via Solana Network
+                  </p>
+                </div>
               </div>
             </div>
 
