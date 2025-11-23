@@ -441,6 +441,14 @@ export async function fetchTokenStats(
     const allCached = cachedStatsArray.every(stat =>
       stat !== null && stat.all_time_high_price > 0
     );
+
+    console.log('[fetchTokenStats] Cache check:', {
+      allCached,
+      cachedCount: cachedStatsArray.filter(s => s !== null).length,
+      totalTokens: uniqueTokens.length,
+      cachedStats: cachedStatsArray.map(s => s ? { addr: s.token_address.slice(0, 8), price: s.all_time_high_price } : null)
+    });
+
     if (allCached) {
       allTimeVolume = cachedStatsArray.reduce((sum, stat) => sum + (stat?.all_time_volume || 0), 0);
       allTimeFees = cachedStatsArray.reduce((sum, stat) => sum + (stat?.all_time_fees || 0), 0);
@@ -509,12 +517,15 @@ export async function fetchTokenStats(
     }
 
     // Step 2: Fetch current market data from DexScreener
+    console.log('[fetchTokenStats] Fetching DexScreener for pool:', poolAddress);
+
     const data = await rateLimiter.execute('dexscreener', async () => {
       const response = await fetch(`${DEXSCREENER_API}/pairs/solana/${poolAddress}`, {
         next: { revalidate: 60 }, // Cache for 1 minute
       });
 
       if (!response.ok) {
+        console.log('[fetchTokenStats] DexScreener error:', response.status);
         const error: any = new Error(`HTTP error! status: ${response.status}`);
         error.status = response.status;
         throw error;
@@ -523,10 +534,33 @@ export async function fetchTokenStats(
       return response.json();
     });
 
+    console.log('[fetchTokenStats] DexScreener returned:', !!data.pair || !!data.pairs?.[0]);
+
     const pair = data.pair || data.pairs?.[0];
 
     if (!pair) {
-      return null;
+      console.log('[fetchTokenStats] No DexScreener pair found - using cached/default values');
+
+      // Return stats with cached all-time data but no live price
+      // This happens for tokens that aren't tracked on DexScreener yet
+      return {
+        price: 0, // No current price available
+        priceChange24h: 0,
+        volume24h: 0,
+        fees24h: 0,
+        allTimeVolume,
+        allTimeFees,
+        marketCap: 0,
+        allTimeHighMarketCap,
+        liquidity: 0,
+        allTimeHighLiquidity: 0,
+        holders: 0, // Will be fetched separately if available
+        buyCount24h: 0,
+        sellCount24h: 0,
+        twitter: undefined,
+        telegram: undefined,
+        website: undefined,
+      };
     }
 
     // Step 3: Fetch holder count for current token (with caching)
