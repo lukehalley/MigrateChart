@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/collect-holders",
       "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/sync-migrations",
+      "schedule": "0 0 * * *"
     }
   ]
 }
