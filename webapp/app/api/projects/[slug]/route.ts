@@ -29,6 +29,7 @@ export async function GET(
       .select('*')
       .eq('slug', slug)
       .eq('is_active', true)
+      .eq('enabled', true) // Only allow enabled projects
       .single();
 
     if (projectError || !project) {

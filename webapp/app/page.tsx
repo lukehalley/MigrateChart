@@ -13,8 +13,9 @@ async function getFirstProject() {
 
     const { data: projects, error } = await supabase
       .from('projects')
-      .select('slug')
+      .select('slug, enabled')
       .eq('is_active', true)
+      .eq('enabled', true) // Only redirect to enabled projects
       .order('is_default', { ascending: false }) // Default project first
       .order('name', { ascending: true })
       .limit(1);
