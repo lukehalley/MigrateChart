@@ -1,6 +1,9 @@
 import { redirect } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 
+// Force dynamic rendering to prevent build-time Supabase calls
+export const dynamic = 'force-dynamic';
+
 // Get the first active project from the database
 async function getFirstProject() {
   try {
