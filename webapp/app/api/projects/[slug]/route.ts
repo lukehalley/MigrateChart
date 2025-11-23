@@ -106,6 +106,7 @@ export async function GET(
       donationAddress: project.donation_address,
       isDefault: project.is_default,
       isActive: project.is_active,
+      burnsEnabled: project.burns_enabled || false,
       pools: poolConfigs,
       migrations: migrationConfigs,
       createdAt: project.created_at,

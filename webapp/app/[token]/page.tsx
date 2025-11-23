@@ -10,6 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import Chart from '@/components/Chart';
 import { FeesView } from '@/components/FeesView';
 import { HoldersView } from '@/components/HoldersView';
+import { BurnsView } from '@/components/BurnsView';
 import TimeframeToggle from '@/components/TimeframeToggle';
 import FeesTimeframeToggle from '@/components/FeesTimeframeToggle';
 import HoldersTimeframeToggle from '@/components/HoldersTimeframeToggle';
@@ -52,7 +53,7 @@ function HomeContent() {
 
   // Get parameters from URL or use defaults
   const urlChartTimeframe = searchParams.get('chartTimeframe') as Timeframe | null;
-  const urlView = searchParams.get('view') as 'chart' | 'fees' | 'holders' | null;
+  const urlView = searchParams.get('view') as 'chart' | 'fees' | 'holders' | 'burns' | null;
   const urlFeesTimeframe = searchParams.get('feesTimeframe') as '7D' | '30D' | '90D' | 'ALL' | null;
   const urlHoldersTimeframe = searchParams.get('holdersTimeframe') as '1D' | '7D' | '30D' | '90D' | 'ALL' | null;
 
@@ -61,7 +62,7 @@ function HomeContent() {
   const validHoldersTimeframes = ['1D', '7D', '30D', '90D', 'ALL'];
 
   const initialTimeframe = urlChartTimeframe && validTimeframes.includes(urlChartTimeframe) ? urlChartTimeframe : '1D';
-  const initialViewMode = urlView && ['chart', 'fees', 'holders'].includes(urlView) ? urlView : 'chart';
+  const initialViewMode = urlView && ['chart', 'fees', 'holders', 'burns'].includes(urlView) ? urlView : 'chart';
   const initialFeesTimeframe = urlFeesTimeframe && validFeesTimeframes.includes(urlFeesTimeframe) ? urlFeesTimeframe : 'ALL';
   const initialHoldersTimeframe = urlHoldersTimeframe && validHoldersTimeframes.includes(urlHoldersTimeframe) ? urlHoldersTimeframe : '30D';
 
@@ -70,7 +71,7 @@ function HomeContent() {
   const [isMenuClosing, setIsMenuClosing] = useState(false);
   const [showCopied, setShowCopied] = useState(false);
   const [mobileMenuTab, setMobileMenuTab] = useState<'settings' | 'about'>('settings');
-  const [viewMode, setViewModeState] = useState<'chart' | 'fees' | 'holders'>(initialViewMode);
+  const [viewMode, setViewModeState] = useState<'chart' | 'fees' | 'holders' | 'burns'>(initialViewMode);
   const [feesTimeframe, setFeesTimeframeState] = useState<'7D' | '30D' | '90D' | 'ALL'>(initialFeesTimeframe);
   const [holdersTimeframe, setHoldersTimeframeState] = useState<'1D' | '7D' | '30D' | '90D' | 'ALL'>(initialHoldersTimeframe);
 
@@ -127,14 +128,14 @@ function HomeContent() {
   // Sync state with URL params when they change
   useEffect(() => {
     const urlChartTimeframe = searchParams.get('chartTimeframe') as Timeframe | null;
-    const urlView = searchParams.get('view') as 'chart' | 'fees' | 'holders' | null;
+    const urlView = searchParams.get('view') as 'chart' | 'fees' | 'holders' | 'burns' | null;
     const urlFeesTimeframe = searchParams.get('feesTimeframe') as '7D' | '30D' | '90D' | 'ALL' | null;
     const urlHoldersTimeframe = searchParams.get('holdersTimeframe') as '1D' | '7D' | '30D' | '90D' | 'ALL' | null;
 
     if (urlChartTimeframe && validTimeframes.includes(urlChartTimeframe)) {
       setTimeframeState(urlChartTimeframe);
     }
-    if (urlView && ['chart', 'fees', 'holders'].includes(urlView)) {
+    if (urlView && ['chart', 'fees', 'holders', 'burns'].includes(urlView)) {
       setViewModeState(urlView);
     }
     if (urlFeesTimeframe && validFeesTimeframes.includes(urlFeesTimeframe)) {
@@ -235,7 +236,7 @@ function HomeContent() {
   };
 
   // Update URL when view mode changes
-  const setViewMode = (newViewMode: 'chart' | 'fees' | 'holders') => {
+  const setViewMode = (newViewMode: 'chart' | 'fees' | 'holders' | 'burns') => {
     setViewModeState(newViewMode);
     const params = new URLSearchParams(searchParams.toString());
     params.set('view', newViewMode);
@@ -249,6 +250,10 @@ function HomeContent() {
       params.delete('chartTimeframe');
       params.delete('feesTimeframe');
       params.set('holdersTimeframe', holdersTimeframe);
+    } else if (newViewMode === 'burns') {
+      params.delete('chartTimeframe');
+      params.delete('feesTimeframe');
+      params.delete('holdersTimeframe');
     } else if (newViewMode === 'chart') {
       params.set('chartTimeframe', timeframe);
       params.delete('feesTimeframe');
@@ -1223,6 +1228,32 @@ function HomeContent() {
                       </svg>
                       <span className="relative z-10">Holders</span>
                     </button>
+                    {currentProject?.burnsEnabled && (
+                      <button
+                        onClick={() => {
+                          setViewMode('burns');
+                          closeMobileMenu();
+                        }}
+                        className={`relative flex-1 py-2 px-2 rounded-md text-xs font-bold flex items-center justify-center gap-1 z-10 transition-colors duration-200 ${
+                          viewMode === 'burns'
+                            ? ''
+                            : 'text-white/70 hover:text-white'
+                        }`}
+                        style={viewMode === 'burns' ? { color: secondaryColor } : undefined}
+                      >
+                        {viewMode === 'burns' && (
+                          <motion.div
+                            layoutId="viewModeIndicator"
+                            className="absolute inset-0 bg-[var(--primary-color)] rounded-md"
+                            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                          />
+                        )}
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10">
+                          <path d="M12 2c.55 0 1 .45 1 1v1.07c1.01.18 1.99.56 2.89 1.13l.76-.76c.39-.39 1.02-.39 1.41 0 .39.39.39 1.02 0 1.41l-.76.76c.57.9.95 1.88 1.13 2.89H20c.55 0 1 .45 1 1s-.45 1-1 1h-1.07c-.18 1.01-.56 1.99-1.13 2.89l.76.76c.39.39.39 1.02 0 1.41-.39.39-1.02.39-1.41 0l-.76-.76c-.9.57-1.88.95-2.89 1.13V20c0 .55-.45 1-1 1s-1-.45-1-1v-1.07c-1.01-.18-1.99-.56-2.89-1.13l-.76.76c-.39.39-1.02.39-1.41 0-.39-.39-.39-1.02 0-1.41l.76-.76c-.57-.9-.95-1.88-1.13-2.89H3c-.55 0-1-.45-1-1s.45-1 1-1h1.07c.18-1.01.56-1.99 1.13-2.89l-.76-.76c-.39-.39-.39-1.02 0-1.41.39-.39 1.02-.39 1.41 0l.76.76c.9-.57 1.88-.95 2.89-1.13V3c0-.55.45-1 1-1zm0 5c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5z" fill="currentColor"/>
+                        </svg>
+                        <span className="relative z-10">Burns</span>
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1510,7 +1541,7 @@ function HomeContent() {
                       onOpenMobileMenu={() => setShowMobileMenu(true)}
                     />
                   </motion.div>
-                ) : (
+                ) : viewMode === 'holders' ? (
                   <motion.div
                     key="holders"
                     initial={{ opacity: 0 }}
@@ -1527,7 +1558,22 @@ function HomeContent() {
                       onOpenMobileMenu={() => setShowMobileMenu(true)}
                     />
                   </motion.div>
-                )}
+                ) : viewMode === 'burns' ? (
+                  <motion.div
+                    key="burns"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.4, ease: [0.4, 0.0, 0.2, 1] }}
+                    className="w-full h-full"
+                  >
+                    <BurnsView
+                      projectSlug={currentProject.slug}
+                      primaryColor={currentProject.primaryColor}
+                      onOpenMobileMenu={() => setShowMobileMenu(true)}
+                    />
+                  </motion.div>
+                ) : null}
               </AnimatePresence>
             )}
           </AnimatePresence>
@@ -1616,7 +1662,7 @@ function HomeContent() {
                       onOpenMobileMenu={() => setShowMobileMenu(true)}
                     />
                   </motion.div>
-                ) : (
+                ) : viewMode === 'holders' ? (
                   <motion.div
                     key="holders"
                     initial={{ opacity: 0 }}
@@ -1633,7 +1679,22 @@ function HomeContent() {
                       onOpenMobileMenu={() => setShowMobileMenu(true)}
                     />
                   </motion.div>
-                )}
+                ) : viewMode === 'burns' ? (
+                  <motion.div
+                    key="burns"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.4, ease: [0.4, 0.0, 0.2, 1] }}
+                    className="w-full h-full"
+                  >
+                    <BurnsView
+                      projectSlug={currentProject.slug}
+                      primaryColor={currentProject.primaryColor}
+                      onOpenMobileMenu={() => setShowMobileMenu(true)}
+                    />
+                  </motion.div>
+                ) : null}
               </AnimatePresence>
             )}
           </AnimatePresence>
@@ -1773,6 +1834,24 @@ function HomeContent() {
                         <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
                     </button>
+
+                    {/* Burns View */}
+                    {currentProject?.burnsEnabled && (
+                      <button
+                        onClick={() => setViewMode('burns')}
+                        className={`w-12 h-12 rounded-lg flex items-center justify-center transition-all ${
+                          viewMode === 'burns'
+                            ? 'bg-[var(--primary-color)] shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)]'
+                            : 'bg-black/50 border border-[var(--primary-color)]/30 hover:bg-[var(--primary-color)]/20'
+                        }`}
+                        title="Burns View"
+                        style={viewMode === 'burns' ? { color: secondaryColor } : undefined}
+                      >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={viewMode === 'burns' ? '' : 'text-[var(--primary-color)]'} style={viewMode === 'burns' ? { color: secondaryColor } : undefined}>
+                          <path d="M12 2c.55 0 1 .45 1 1v1.07c1.01.18 1.99.56 2.89 1.13l.76-.76c.39-.39 1.02-.39 1.41 0 .39.39.39 1.02 0 1.41l-.76.76c.57.9.95 1.88 1.13 2.89H20c.55 0 1 .45 1 1s-.45 1-1 1h-1.07c-.18 1.01-.56 1.99-1.13 2.89l.76.76c.39.39.39 1.02 0 1.41-.39.39-1.02.39-1.41 0l-.76-.76c-.9.57-1.88.95-2.89 1.13V20c0 .55-.45 1-1 1s-1-.45-1-1v-1.07c-1.01-.18-1.99-.56-2.89-1.13l-.76.76c-.39.39-1.02.39-1.41 0-.39-.39-.39-1.02 0-1.41l.76-.76c-.57-.9-.95-1.88-1.13-2.89H3c-.55 0-1-.45-1-1s.45-1 1-1h1.07c.18-1.01.56-1.99 1.13-2.89l-.76-.76c-.39-.39-.39-1.02 0-1.41.39-.39 1.02-.39 1.41 0l.76.76c.9-.57 1.88-.95 2.89-1.13V3c0-.55.45-1 1-1zm0 5c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5z" fill="currentColor"/>
+                        </svg>
+                      </button>
+                    )}
                   </div>
 
                   {/* Divider */}
@@ -2252,6 +2331,29 @@ function HomeContent() {
                   </svg>
                   <span className="relative z-10">Holders</span>
                 </button>
+                {currentProject?.burnsEnabled && (
+                  <button
+                    onClick={() => setViewMode('burns')}
+                    className={`relative flex-1 py-1.5 px-1 rounded-md text-[10px] font-bold flex items-center justify-center gap-0.5 z-10 transition-colors duration-200 ${
+                      viewMode === 'burns'
+                        ? ''
+                        : 'text-white/70 hover:text-white'
+                    }`}
+                    style={viewMode === 'burns' ? { color: secondaryColor } : undefined}
+                  >
+                    {viewMode === 'burns' && (
+                      <motion.div
+                        layoutId="viewModeIndicatorDesktop"
+                        className="absolute inset-0 bg-[var(--primary-color)] rounded-md"
+                        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                      />
+                    )}
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10 flex-shrink-0">
+                      <path d="M12 2c.55 0 1 .45 1 1v1.07c1.01.18 1.99.56 2.89 1.13l.76-.76c.39-.39 1.02-.39 1.41 0 .39.39.39 1.02 0 1.41l-.76.76c.57.9.95 1.88 1.13 2.89H20c.55 0 1 .45 1 1s-.45 1-1 1h-1.07c-.18 1.01-.56 1.99-1.13 2.89l.76.76c.39.39.39 1.02 0 1.41-.39.39-1.02.39-1.41 0l-.76-.76c-.9.57-1.88.95-2.89 1.13V20c0 .55-.45 1-1 1s-1-.45-1-1v-1.07c-1.01-.18-1.99-.56-2.89-1.13l-.76.76c-.39.39-1.02.39-1.41 0-.39-.39-.39-1.02 0-1.41l.76-.76c-.57-.9-.95-1.88-1.13-2.89H3c-.55 0-1-.45-1-1s.45-1 1-1h1.07c.18-1.01.56-1.99 1.13-2.89l-.76-.76c-.39-.39-.39-1.02 0-1.41.39-.39 1.02-.39 1.41 0l.76.76c.9-.57 1.88-.95 2.89-1.13V3c0-.55.45-1 1-1zm0 5c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5z" fill="currentColor"/>
+                    </svg>
+                    <span className="relative z-10">Burns</span>
+                  </button>
+                )}
               </div>
             </div>
 

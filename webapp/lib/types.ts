@@ -87,6 +87,7 @@ export interface ProjectConfig {
   donationAddress: string;
   isDefault: boolean;
   isActive: boolean;
+  burnsEnabled?: boolean; // Optional flag to enable burns tracking
   pools: PoolConfig[];
   migrations: MigrationConfig[];
   createdAt: string;
