@@ -18,6 +18,11 @@
  *   npx tsx scripts/sync-migrations.ts --stats
  */
 
+// Load environment variables from .env.local
+import { config } from 'dotenv';
+import { resolve } from 'path';
+config({ path: resolve(__dirname, '../.env.local') });
+
 import { migrationSyncService } from '../lib/services/migrationSyncService';
 
 async function main() {
