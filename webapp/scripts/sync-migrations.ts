@@ -11,11 +11,14 @@
  *   --dry-run              Show what would be added without making changes
  *   --migration <id>       Sync a single migration by ID (e.g., mig77)
  *   --stats                Show sync statistics only
+ *   --days <n>             Look back N days for claims (default: 30)
+ *   --limit <n>            Sync at most N migrations (default: unlimited)
  *
  * Examples:
  *   npx tsx scripts/sync-migrations.ts --dry-run
  *   npx tsx scripts/sync-migrations.ts --migration mig77
- *   npx tsx scripts/sync-migrations.ts --stats
+ *   npx tsx scripts/sync-migrations.ts --stats --days 90
+ *   npx tsx scripts/sync-migrations.ts --limit 5
  */
 
 // Load environment variables from .env.local
@@ -34,6 +37,13 @@ async function main() {
   const migrationIdIndex = args.indexOf('--migration');
   const specificMigration = migrationIdIndex >= 0 ? args[migrationIdIndex + 1] : null;
 
+  // Parse --days and --limit
+  const daysIndex = args.indexOf('--days');
+  const daysBack = daysIndex >= 0 ? parseInt(args[daysIndex + 1]) || 30 : 30;
+
+  const limitIndex = args.indexOf('--limit');
+  const limit = limitIndex >= 0 ? parseInt(args[limitIndex + 1]) : undefined;
+
   console.log('🚀 Migration Sync Tool\n');
   console.log('═'.repeat(60));
   console.log('');
@@ -41,11 +51,11 @@ async function main() {
   try {
     // Show stats only
     if (statsOnly) {
-      console.log('📊 Fetching sync statistics...\n');
-      const stats = await migrationSyncService.getSyncStats();
+      console.log(`📊 Fetching sync statistics (last ${daysBack} days)...\n`);
+      const stats = await migrationSyncService.getSyncStats(daysBack);
 
       console.log('Statistics:');
-      console.log(`  Recent claims (90 days): ${stats.migrateFunActive}`);
+      console.log(`  Recent claims (${daysBack} days): ${stats.migrateFunActive}`);
       console.log(`  Already in database:     ${stats.inOurDatabase}`);
       console.log(`  Needs sync:              ${stats.needsSync}`);
       console.log('');
@@ -54,6 +64,9 @@ async function main() {
         console.log('✨ All migrations are already synced!');
       } else {
         console.log(`💡 Run without --stats to sync ${stats.needsSync} migration(s)`);
+        if (limit) {
+          console.log(`💡 Or use --limit ${Math.min(5, stats.needsSync)} to sync just the most recent`);
+        }
       }
 
       return;
@@ -73,12 +86,16 @@ async function main() {
       return;
     }
 
-    // Sync all active migrations
+    // Sync all recent claims
     if (dryRun) {
       console.log('🧪 DRY RUN MODE - No changes will be made\n');
     }
 
-    const result = await migrationSyncService.syncActiveMigrations(dryRun);
+    if (limit) {
+      console.log(`📊 Limiting to ${limit} migration(s)\n`);
+    }
+
+    const result = await migrationSyncService.syncActiveMigrations(dryRun, daysBack, limit);
 
     console.log('\n' + '═'.repeat(60));
     console.log('\n📋 Summary:\n');

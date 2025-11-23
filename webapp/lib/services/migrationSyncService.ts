@@ -46,7 +46,7 @@ export class MigrationSyncService {
    * Main sync function - fetches recent completed (Claims) migrations from migrate.fun
    * Note: We sync Claims instead of Active because the new token doesn't exist until migration completes
    */
-  async syncActiveMigrations(dryRun: boolean = false): Promise<MigrationSyncResult> {
+  async syncActiveMigrations(dryRun: boolean = false, daysBack: number = 30, limit?: number): Promise<MigrationSyncResult> {
     console.log('🔄 Starting migration sync from migrate.fun...\n');
 
     const result: MigrationSyncResult = {
@@ -57,10 +57,16 @@ export class MigrationSyncService {
     };
 
     try {
-      // Fetch recent completed migrations (last 90 days)
+      // Fetch recent completed migrations
       // We use Claims status because both old and new tokens exist and have data
-      const recentClaims = await migrateFunApi.fetchRecentClaims(90);
-      console.log(`Found ${recentClaims.length} recent completed migrations (last 90 days)\n`);
+      let recentClaims = await migrateFunApi.fetchRecentClaims(daysBack);
+
+      // Apply limit if specified
+      if (limit && limit > 0) {
+        recentClaims = recentClaims.slice(0, limit);
+      }
+
+      console.log(`Found ${recentClaims.length} recent completed migrations (last ${daysBack} days)\n`);
 
       for (const migration of recentClaims) {
         try {
@@ -496,12 +502,12 @@ export class MigrationSyncService {
   /**
    * Get sync statistics
    */
-  async getSyncStats(): Promise<{
+  async getSyncStats(daysBack: number = 30): Promise<{
     migrateFunActive: number;
     inOurDatabase: number;
     needsSync: number;
   }> {
-    const recentClaims = await migrateFunApi.fetchRecentClaims(90);
+    const recentClaims = await migrateFunApi.fetchRecentClaims(daysBack);
 
     let inDatabase = 0;
 
