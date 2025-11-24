@@ -1,23 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Connection, PublicKey } from '@solana/web3.js';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
 // Force dynamic rendering to prevent build-time execution
 export const dynamic = 'force-dynamic';
+export const maxDuration = 300; // 5 minutes for backfill
 
-const ZERA_MINT = '8avjtjHAHFqp4g2RR9ALAGBpSTqKPZR8nRbzSTwZERA';
 const HELIUS_API_KEY = process.env.HELIUS_API_KEY;
-const BURN_WALLET = 'CPpFuUbudkRjavR41v1oXjqyjRKcvnr6Aesy7BhExBF5'; // ZERA dev wallet doing burns
-const NOV_18_2025 = 1763366400; // Nov 18, 2025 00:00:00 UTC - only track burns from this date onwards
+const HELIUS_RPC = HELIUS_API_KEY
+  ? `https://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`
+  : 'https://api.mainnet-beta.solana.com';
 
 /**
  * Admin endpoint to backfill historical burn transactions
- * This scans Helius transaction history and stores burns in the database
+ * This scans all transactions from the burn program and stores burns in the database
  *
  * Authentication: Uses CRON_SECRET for security
  *
  * Query params:
- * - maxFetches: Number of pagination batches to fetch (default: 100)
- * - projectId: Optional specific project ID (defaults to ZERA)
+ * - limit: Max transactions to fetch per batch (default: 1000)
+ * - projectSlug: Specific project slug (defaults to all projects with burns enabled)
  */
 export async function POST(request: NextRequest) {
   try {
@@ -39,150 +41,171 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!HELIUS_API_KEY) {
-      return NextResponse.json(
-        { error: 'Helius API key not configured' },
-        { status: 500 }
-      );
-    }
-
     // Get query params
     const { searchParams } = new URL(request.url);
-    const maxFetches = parseInt(searchParams.get('maxFetches') || '100');
-    const projectIdParam = searchParams.get('projectId');
+    const limit = parseInt(searchParams.get('limit') || '1000');
+    const projectSlug = searchParams.get('projectSlug');
 
-    // Get ZERA project ID
-    const { data: project } = await supabase!
+    // Get projects with burns enabled
+    let query = supabase!
       .from('projects')
-      .select('id, slug')
-      .eq('slug', 'zera')
-      .single();
+      .select('id, slug, burn_program_address')
+      .eq('burns_enabled', true)
+      .not('burn_program_address', 'is', null);
 
-    if (!project) {
-      return NextResponse.json(
-        { error: 'ZERA project not found' },
-        { status: 404 }
-      );
+    if (projectSlug) {
+      query = query.eq('slug', projectSlug);
     }
 
-    const projectId = projectIdParam || project.id;
+    const { data: projects, error: projectError } = await query;
 
-    // Fetch burns from Helius with pagination
-    const burns: Array<{
-      signature: string;
-      timestamp: number;
-      amount: number;
-      from: string;
-    }> = [];
-
-    let beforeSignature: string | null = null;
-    let fetchCount = 0;
-    let totalTransactions = 0;
-
-    console.log(`[BACKFILL-BURNS] Starting burn backfill for project ${project.slug} from wallet ${BURN_WALLET}`);
-
-    while (fetchCount < maxFetches) {
-      // Query by burn wallet address instead of mint address
-      const url: string = beforeSignature
-        ? `https://api.helius.xyz/v0/addresses/${BURN_WALLET}/transactions?api-key=${HELIUS_API_KEY}&before=${beforeSignature}`
-        : `https://api.helius.xyz/v0/addresses/${BURN_WALLET}/transactions?api-key=${HELIUS_API_KEY}`;
-
-      const response = await fetch(url);
-
-      if (!response.ok) {
-        console.warn(`[BACKFILL-BURNS] Helius API error: ${response.statusText}`);
-        break;
-      }
-
-      const transactions = await response.json();
-
-      if (!transactions || transactions.length === 0) {
-        console.log('[BACKFILL-BURNS] No more transactions');
-        break;
-      }
-
-      totalTransactions += transactions.length;
-      console.log(`[BACKFILL-BURNS] Batch ${fetchCount + 1}: ${transactions.length} transactions (total: ${totalTransactions})`);
-
-      // Filter for burn transactions (ZERA only, from Nov 18 onwards)
-      for (const tx of transactions) {
-        // Skip transactions before Nov 18, 2025
-        if (tx.timestamp < NOV_18_2025) {
-          console.log(`[BACKFILL-BURNS] Reached transactions before Nov 18, stopping`);
-          fetchCount = maxFetches; // Stop pagination
-          break;
-        }
-
-        if (tx.tokenTransfers && tx.tokenTransfers.length > 0) {
-          const burnTransfer = tx.tokenTransfers.find((t: any) =>
-            t.mint === ZERA_MINT && (!t.toUserAccount || t.toUserAccount === '')
-          );
-
-          if (burnTransfer && burnTransfer.tokenAmount) {
-            burns.push({
-              signature: tx.signature,
-              timestamp: tx.timestamp,
-              amount: burnTransfer.tokenAmount,
-              from: burnTransfer.fromUserAccount || BURN_WALLET,
-            });
-          }
-        }
-      }
-
-      beforeSignature = transactions[transactions.length - 1].signature;
-      fetchCount++;
-
-      // Add small delay to avoid rate limits
-      await new Promise(resolve => setTimeout(resolve, 100));
+    if (projectError) {
+      throw new Error(`Failed to fetch projects: ${projectError.message}`);
     }
 
-    console.log(`[BACKFILL-BURNS] Found ${burns.length} total burns`);
-
-    if (burns.length === 0) {
+    if (!projects || projects.length === 0) {
       return NextResponse.json({
-        success: true,
-        message: 'No burns found',
-        scanned: totalTransactions,
-        inserted: 0,
-        skipped: 0,
+        success: false,
+        error: 'No projects found with burns enabled',
       });
     }
 
-    // Insert burns into database (ignore duplicates)
-    let inserted = 0;
-    let skipped = 0;
+    console.log(`[BACKFILL-BURNS] Processing ${projects.length} projects`);
 
-    for (const burn of burns) {
-      const { error } = await supabase!
-        .from('burn_transactions')
-        .insert({
-          project_id: projectId,
-          signature: burn.signature,
-          timestamp: burn.timestamp,
-          amount: burn.amount,
-          from_account: burn.from,
-        })
-        .select();
+    const results = [];
 
-      if (error) {
-        if (error.code === '23505') {
-          // Duplicate signature
-          skipped++;
-        } else {
-          console.error(`[BACKFILL-BURNS] Error inserting burn ${burn.signature}:`, error);
-        }
-      } else {
-        inserted++;
+    for (const project of projects) {
+      console.log(`[BACKFILL-BURNS] Backfilling burns for ${project.slug}...`);
+
+      const connection = new Connection(HELIUS_RPC, 'confirmed');
+      const programPubkey = new PublicKey(project.burn_program_address);
+
+      // Fetch all signatures (paginate if needed)
+      let allSignatures: any[] = [];
+      let beforeSignature: string | undefined;
+      let fetchCount = 0;
+      const maxFetches = Math.ceil(limit / 1000); // Max 1000 per request
+
+      while (fetchCount < maxFetches) {
+        const signatures = await connection.getSignaturesForAddress(programPubkey, {
+          limit: 1000,
+          before: beforeSignature,
+        });
+
+        if (signatures.length === 0) break;
+
+        allSignatures = allSignatures.concat(signatures);
+        beforeSignature = signatures[signatures.length - 1].signature;
+        fetchCount++;
+
+        console.log(`[BACKFILL-BURNS] Fetched ${allSignatures.length} signatures for ${project.slug}`);
+
+        if (signatures.length < 1000) break; // No more pages
       }
+
+      console.log(`[BACKFILL-BURNS] Found ${allSignatures.length} total signatures for ${project.slug}`);
+
+      // Fetch full transaction details in batches and extract burns
+      const batchSize = 10;
+      const burns: Array<{
+        signature: string;
+        timestamp: number;
+        amount: number;
+        from: string;
+      }> = [];
+
+      for (let i = 0; i < allSignatures.length; i += batchSize) {
+        const batch = allSignatures.slice(i, i + batchSize);
+        const txPromises = batch.map((sig) =>
+          connection.getParsedTransaction(sig.signature, {
+            maxSupportedTransactionVersion: 0,
+          })
+        );
+
+        const txResults = await Promise.all(txPromises);
+
+        for (let j = 0; j < txResults.length; j++) {
+          const tx = txResults[j];
+          const sig = batch[j];
+
+          if (!tx || !tx.meta || !tx.transaction) continue;
+
+          // Check inner instructions for burns
+          if (tx.meta.innerInstructions) {
+            for (const innerIxGroup of tx.meta.innerInstructions) {
+              for (const ix of innerIxGroup.instructions) {
+                if ('parsed' in ix) {
+                  const parsed = ix.parsed;
+
+                  // Check for token burn instruction
+                  if (parsed.type === 'burn' || parsed.type === 'burnChecked') {
+                    const amount = parsed.info.amount;
+                    const authority = parsed.info.authority;
+
+                    burns.push({
+                      signature: sig.signature,
+                      timestamp: sig.blockTime || Math.floor(Date.now() / 1000),
+                      amount: typeof amount === 'string' ? parseFloat(amount) : amount,
+                      from: authority,
+                    });
+
+                    // Only count first burn per transaction
+                    break;
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        if ((i + batchSize) % 100 === 0) {
+          console.log(`[BACKFILL-BURNS] Processed ${Math.min(i + batchSize, allSignatures.length)}/${allSignatures.length} transactions for ${project.slug}`);
+        }
+      }
+
+      console.log(`[BACKFILL-BURNS] Found ${burns.length} burns for ${project.slug}`);
+
+      // Insert burns into database
+      let inserted = 0;
+      let skipped = 0;
+
+      for (const burn of burns) {
+        const { error } = await supabase!
+          .from('burn_transactions')
+          .insert({
+            project_id: project.id,
+            signature: burn.signature,
+            timestamp: burn.timestamp,
+            amount: burn.amount,
+            from_account: burn.from,
+          });
+
+        if (error) {
+          if (error.code === '23505') {
+            // Duplicate signature
+            skipped++;
+          } else {
+            console.error(`[BACKFILL-BURNS] Error inserting burn ${burn.signature}:`, error);
+          }
+        } else {
+          inserted++;
+        }
+      }
+
+      console.log(`[BACKFILL-BURNS] Inserted ${inserted} new burns for ${project.slug} (skipped ${skipped} duplicates)`);
+
+      results.push({
+        project: project.slug,
+        scanned: allSignatures.length,
+        found: burns.length,
+        inserted,
+        skipped,
+      });
     }
 
     return NextResponse.json({
       success: true,
-      scanned: totalTransactions,
-      found: burns.length,
-      inserted,
-      skipped,
-      fetches: fetchCount,
+      results,
     });
   } catch (error) {
     console.error('[BACKFILL-BURNS] Error:', error);
