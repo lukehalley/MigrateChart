@@ -1152,107 +1152,199 @@ function HomeContent() {
               <div className="info-card-small">
                 <div className="py-1.5 px-1.5">
                   <p className="text-white text-[10px] mb-1 text-center">View Mode</p>
-                  <div className="relative bg-black/50 border border-white/20 rounded-lg p-1 flex gap-1">
-                    <button
-                      onClick={() => {
-                        setViewMode('chart');
-                        closeMobileMenu();
-                      }}
-                      className={`relative flex-1 py-2 px-2 rounded-md text-xs font-bold flex items-center justify-center gap-1 z-10 transition-colors duration-200 ${
-                        viewMode === 'chart'
-                          ? ''
-                          : 'text-white/70 hover:text-white'
-                      }`}
-                      style={viewMode === 'chart' ? { color: secondaryColor } : undefined}
-                    >
-                      {viewMode === 'chart' && (
-                        <motion.div
-                          layoutId="viewModeIndicator"
-                          className="absolute inset-0 bg-[var(--primary-color)] rounded-md"
-                          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                        />
-                      )}
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10">
-                        <path d="M3 3v18h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d="M18 9l-5 5-4-4-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                      <span className="relative z-10">Chart</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        setViewMode('fees');
-                        closeMobileMenu();
-                      }}
-                      className={`relative flex-1 py-2 px-2 rounded-md text-xs font-bold flex items-center justify-center gap-1 z-10 transition-colors duration-200 ${
-                        viewMode === 'fees'
-                          ? ''
-                          : 'text-white/70 hover:text-white'
-                      }`}
-                      style={viewMode === 'fees' ? { color: secondaryColor } : undefined}
-                    >
-                      {viewMode === 'fees' && (
-                        <motion.div
-                          layoutId="viewModeIndicator"
-                          className="absolute inset-0 bg-[var(--primary-color)] rounded-md"
-                          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                        />
-                      )}
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10">
-                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                      <span className="relative z-10">Fees</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        setViewMode('holders');
-                        closeMobileMenu();
-                      }}
-                      className={`relative flex-1 py-2 px-2 rounded-md text-xs font-bold flex items-center justify-center gap-1 z-10 transition-colors duration-200 ${
-                        viewMode === 'holders'
-                          ? ''
-                          : 'text-white/70 hover:text-white'
-                      }`}
-                      style={viewMode === 'holders' ? { color: secondaryColor } : undefined}
-                    >
-                      {viewMode === 'holders' && (
-                        <motion.div
-                          layoutId="viewModeIndicator"
-                          className="absolute inset-0 bg-[var(--primary-color)] rounded-md"
-                          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                        />
-                      )}
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                      <span className="relative z-10">Holders</span>
-                    </button>
-                    {currentProject?.burnsEnabled && (
-                      <button
-                        onClick={() => {
-                          setViewMode('burns');
-                          closeMobileMenu();
-                        }}
-                        className={`relative flex-1 py-2 px-2 rounded-md text-xs font-bold flex items-center justify-center gap-1 z-10 transition-colors duration-200 ${
-                          viewMode === 'burns'
-                            ? ''
-                            : 'text-white/70 hover:text-white'
-                        }`}
-                        style={viewMode === 'burns' ? { color: secondaryColor } : undefined}
-                      >
-                        {viewMode === 'burns' && (
-                          <motion.div
-                            layoutId="viewModeIndicator"
-                            className="absolute inset-0 bg-[var(--primary-color)] rounded-md"
-                            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                          />
-                        )}
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10">
-                          <path d="M12 2c.55 0 1 .45 1 1v1.07c1.01.18 1.99.56 2.89 1.13l.76-.76c.39-.39 1.02-.39 1.41 0 .39.39.39 1.02 0 1.41l-.76.76c.57.9.95 1.88 1.13 2.89H20c.55 0 1 .45 1 1s-.45 1-1 1h-1.07c-.18 1.01-.56 1.99-1.13 2.89l.76.76c.39.39.39 1.02 0 1.41-.39.39-1.02.39-1.41 0l-.76-.76c-.9.57-1.88.95-2.89 1.13V20c0 .55-.45 1-1 1s-1-.45-1-1v-1.07c-1.01-.18-1.99-.56-2.89-1.13l-.76.76c-.39.39-1.02.39-1.41 0-.39-.39-.39-1.02 0-1.41l.76-.76c-.57-.9-.95-1.88-1.13-2.89H3c-.55 0-1-.45-1-1s.45-1 1-1h1.07c.18-1.01.56-1.99 1.13-2.89l-.76-.76c-.39-.39-.39-1.02 0-1.41.39-.39 1.02-.39 1.41 0l.76.76c.9-.57 1.88-.95 2.89-1.13V3c0-.55.45-1 1-1zm0 5c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5z" fill="currentColor"/>
-                        </svg>
-                        <span className="relative z-10">Burns</span>
-                      </button>
+                  <div className="relative bg-black/50 border border-white/20 rounded-lg p-1">
+                    {currentProject?.burnsEnabled ? (
+                      /* Burns enabled: 2x2 grid with Chart and Fees in first row */
+                      <div className="flex flex-col gap-1">
+                        {/* First row: Chart and Fees */}
+                        <div className="flex gap-1">
+                          <button
+                            onClick={() => {
+                              setViewMode('chart');
+                              closeMobileMenu();
+                            }}
+                            className={`relative flex-1 py-2 px-2 rounded-md text-xs font-bold flex items-center justify-center gap-1 z-10 transition-colors duration-200 ${
+                              viewMode === 'chart'
+                                ? ''
+                                : 'text-white/70 hover:text-white'
+                            }`}
+                            style={viewMode === 'chart' ? { color: secondaryColor } : undefined}
+                          >
+                            {viewMode === 'chart' && (
+                              <motion.div
+                                layoutId="viewModeIndicator"
+                                className="absolute inset-0 bg-[var(--primary-color)] rounded-md"
+                                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                              />
+                            )}
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10">
+                              <path d="M3 3v18h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                              <path d="M18 9l-5 5-4-4-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                            <span className="relative z-10">Chart</span>
+                          </button>
+                          <button
+                            onClick={() => {
+                              setViewMode('fees');
+                              closeMobileMenu();
+                            }}
+                            className={`relative flex-1 py-2 px-2 rounded-md text-xs font-bold flex items-center justify-center gap-1 z-10 transition-colors duration-200 ${
+                              viewMode === 'fees'
+                                ? ''
+                                : 'text-white/70 hover:text-white'
+                            }`}
+                            style={viewMode === 'fees' ? { color: secondaryColor } : undefined}
+                          >
+                            {viewMode === 'fees' && (
+                              <motion.div
+                                layoutId="viewModeIndicator"
+                                className="absolute inset-0 bg-[var(--primary-color)] rounded-md"
+                                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                              />
+                            )}
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10">
+                              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                            <span className="relative z-10">Fees</span>
+                          </button>
+                        </div>
+                        {/* Second row: Holders and Burns */}
+                        <div className="flex gap-1">
+                          <button
+                            onClick={() => {
+                              setViewMode('holders');
+                              closeMobileMenu();
+                            }}
+                            className={`relative flex-1 py-2 px-2 rounded-md text-xs font-bold flex items-center justify-center gap-1 z-10 transition-colors duration-200 ${
+                              viewMode === 'holders'
+                                ? ''
+                                : 'text-white/70 hover:text-white'
+                            }`}
+                            style={viewMode === 'holders' ? { color: secondaryColor } : undefined}
+                          >
+                            {viewMode === 'holders' && (
+                              <motion.div
+                                layoutId="viewModeIndicator"
+                                className="absolute inset-0 bg-[var(--primary-color)] rounded-md"
+                                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                              />
+                            )}
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10">
+                              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                              <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                              <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                            <span className="relative z-10">Holders</span>
+                          </button>
+                          <button
+                            onClick={() => {
+                              setViewMode('burns');
+                              closeMobileMenu();
+                            }}
+                            className={`relative flex-1 py-2 px-2 rounded-md text-xs font-bold flex items-center justify-center gap-1 z-10 transition-colors duration-200 ${
+                              viewMode === 'burns'
+                                ? ''
+                                : 'text-white/70 hover:text-white'
+                            }`}
+                            style={viewMode === 'burns' ? { color: secondaryColor } : undefined}
+                          >
+                            {viewMode === 'burns' && (
+                              <motion.div
+                                layoutId="viewModeIndicator"
+                                className="absolute inset-0 bg-[var(--primary-color)] rounded-md"
+                                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                              />
+                            )}
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10">
+                              <path d="M12 2c.55 0 1 .45 1 1v1.07c1.01.18 1.99.56 2.89 1.13l.76-.76c.39-.39 1.02-.39 1.41 0 .39.39.39 1.02 0 1.41l-.76.76c.57.9.95 1.88 1.13 2.89H20c.55 0 1 .45 1 1s-.45 1-1 1h-1.07c-.18 1.01-.56 1.99-1.13 2.89l.76.76c.39.39.39 1.02 0 1.41-.39.39-1.02.39-1.41 0l-.76-.76c-.9.57-1.88.95-2.89 1.13V20c0 .55-.45 1-1 1s-1-.45-1-1v-1.07c-1.01-.18-1.99-.56-2.89-1.13l-.76.76c-.39.39-1.02.39-1.41 0-.39-.39-.39-1.02 0-1.41l.76-.76c-.57-.9-.95-1.88-1.13-2.89H3c-.55 0-1-.45-1-1s.45-1 1-1h1.07c.18-1.01.56-1.99 1.13-2.89l-.76-.76c-.39-.39-.39-1.02 0-1.41.39-.39 1.02-.39 1.41 0l.76.76c.9-.57 1.88-.95 2.89-1.13V3c0-.55.45-1 1-1zm0 5c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5z" fill="currentColor"/>
+                            </svg>
+                            <span className="relative z-10">Burns</span>
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      /* Burns disabled: Chart full width, Holders and Fees split second row */
+                      <div className="flex flex-col gap-1">
+                        {/* First row: Chart (full width) */}
+                        <button
+                          onClick={() => {
+                            setViewMode('chart');
+                            closeMobileMenu();
+                          }}
+                          className={`relative w-full py-2 px-2 rounded-md text-xs font-bold flex items-center justify-center gap-1 z-10 transition-colors duration-200 ${
+                            viewMode === 'chart'
+                              ? ''
+                              : 'text-white/70 hover:text-white'
+                          }`}
+                          style={viewMode === 'chart' ? { color: secondaryColor } : undefined}
+                        >
+                          {viewMode === 'chart' && (
+                            <motion.div
+                              layoutId="viewModeIndicator"
+                              className="absolute inset-0 bg-[var(--primary-color)] rounded-md"
+                              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                            />
+                          )}
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10">
+                            <path d="M3 3v18h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            <path d="M18 9l-5 5-4-4-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                          <span className="relative z-10">Chart</span>
+                        </button>
+                        {/* Second row: Holders and Fees */}
+                        <div className="flex gap-1">
+                          <button
+                            onClick={() => {
+                              setViewMode('holders');
+                              closeMobileMenu();
+                            }}
+                            className={`relative flex-1 py-2 px-2 rounded-md text-xs font-bold flex items-center justify-center gap-1 z-10 transition-colors duration-200 ${
+                              viewMode === 'holders'
+                                ? ''
+                                : 'text-white/70 hover:text-white'
+                            }`}
+                            style={viewMode === 'holders' ? { color: secondaryColor } : undefined}
+                          >
+                            {viewMode === 'holders' && (
+                              <motion.div
+                                layoutId="viewModeIndicator"
+                                className="absolute inset-0 bg-[var(--primary-color)] rounded-md"
+                                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                              />
+                            )}
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10">
+                              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                              <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                              <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                            <span className="relative z-10">Holders</span>
+                          </button>
+                          <button
+                            onClick={() => {
+                              setViewMode('fees');
+                              closeMobileMenu();
+                            }}
+                            className={`relative flex-1 py-2 px-2 rounded-md text-xs font-bold flex items-center justify-center gap-1 z-10 transition-colors duration-200 ${
+                              viewMode === 'fees'
+                                ? ''
+                                : 'text-white/70 hover:text-white'
+                            }`}
+                            style={viewMode === 'fees' ? { color: secondaryColor } : undefined}
+                          >
+                            {viewMode === 'fees' && (
+                              <motion.div
+                                layoutId="viewModeIndicator"
+                                className="absolute inset-0 bg-[var(--primary-color)] rounded-md"
+                                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                              />
+                            )}
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10">
+                              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                            <span className="relative z-10">Fees</span>
+                          </button>
+                        </div>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -2264,95 +2356,178 @@ function HomeContent() {
             {/* View Mode Switch */}
             <div className="stat-card">
               <p className="text-white text-[10px] font-medium mb-1 text-center">View Mode</p>
-              <div className="relative bg-black/50 border border-white/20 rounded-lg p-0.5 flex gap-0.5">
-                <button
-                  onClick={() => setViewMode('chart')}
-                  className={`relative flex-1 py-1.5 px-1 rounded-md text-[10px] font-bold flex items-center justify-center gap-0.5 z-10 transition-colors duration-200 ${
-                    viewMode === 'chart'
-                      ? ''
-                      : 'text-white/70 hover:text-white'
-                  }`}
-                  style={viewMode === 'chart' ? { color: secondaryColor } : undefined}
-                >
-                  {viewMode === 'chart' && (
-                    <motion.div
-                      layoutId="viewModeIndicatorDesktop"
-                      className="absolute inset-0 bg-[var(--primary-color)] rounded-md"
-                      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                    />
-                  )}
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10 flex-shrink-0">
-                    <path d="M3 3v18h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M18 9l-5 5-4-4-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                  <span className="relative z-10">Chart</span>
-                </button>
-                <button
-                  onClick={() => setViewMode('fees')}
-                  className={`relative flex-1 py-1.5 px-1 rounded-md text-[10px] font-bold flex items-center justify-center gap-0.5 z-10 transition-colors duration-200 ${
-                    viewMode === 'fees'
-                      ? ''
-                      : 'text-white/70 hover:text-white'
-                  }`}
-                  style={viewMode === 'fees' ? { color: secondaryColor } : undefined}
-                >
-                  {viewMode === 'fees' && (
-                    <motion.div
-                      layoutId="viewModeIndicatorDesktop"
-                      className="absolute inset-0 bg-[var(--primary-color)] rounded-md"
-                      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                    />
-                  )}
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10 flex-shrink-0">
-                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                  <span className="relative z-10">Fees</span>
-                </button>
-                <button
-                  onClick={() => setViewMode('holders')}
-                  className={`relative flex-1 py-1.5 px-1 rounded-md text-[10px] font-bold flex items-center justify-center gap-0.5 z-10 transition-colors duration-200 ${
-                    viewMode === 'holders'
-                      ? ''
-                      : 'text-white/70 hover:text-white'
-                  }`}
-                  style={viewMode === 'holders' ? { color: secondaryColor } : undefined}
-                >
-                  {viewMode === 'holders' && (
-                    <motion.div
-                      layoutId="viewModeIndicatorDesktop"
-                      className="absolute inset-0 bg-[var(--primary-color)] rounded-md"
-                      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                    />
-                  )}
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10 flex-shrink-0">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                  <span className="relative z-10">Holders</span>
-                </button>
-                {currentProject?.burnsEnabled && (
-                  <button
-                    onClick={() => setViewMode('burns')}
-                    className={`relative flex-1 py-1.5 px-1 rounded-md text-[10px] font-bold flex items-center justify-center gap-0.5 z-10 transition-colors duration-200 ${
-                      viewMode === 'burns'
-                        ? ''
-                        : 'text-white/70 hover:text-white'
-                    }`}
-                    style={viewMode === 'burns' ? { color: secondaryColor } : undefined}
-                  >
-                    {viewMode === 'burns' && (
-                      <motion.div
-                        layoutId="viewModeIndicatorDesktop"
-                        className="absolute inset-0 bg-[var(--primary-color)] rounded-md"
-                        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                      />
-                    )}
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10 flex-shrink-0">
-                      <path d="M12 2c.55 0 1 .45 1 1v1.07c1.01.18 1.99.56 2.89 1.13l.76-.76c.39-.39 1.02-.39 1.41 0 .39.39.39 1.02 0 1.41l-.76.76c.57.9.95 1.88 1.13 2.89H20c.55 0 1 .45 1 1s-.45 1-1 1h-1.07c-.18 1.01-.56 1.99-1.13 2.89l.76.76c.39.39.39 1.02 0 1.41-.39.39-1.02.39-1.41 0l-.76-.76c-.9.57-1.88.95-2.89 1.13V20c0 .55-.45 1-1 1s-1-.45-1-1v-1.07c-1.01-.18-1.99-.56-2.89-1.13l-.76.76c-.39.39-1.02.39-1.41 0-.39-.39-.39-1.02 0-1.41l.76-.76c-.57-.9-.95-1.88-1.13-2.89H3c-.55 0-1-.45-1-1s.45-1 1-1h1.07c.18-1.01.56-1.99 1.13-2.89l-.76-.76c-.39-.39-.39-1.02 0-1.41.39-.39 1.02-.39 1.41 0l.76.76c.9-.57 1.88-.95 2.89-1.13V3c0-.55.45-1 1-1zm0 5c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5z" fill="currentColor"/>
-                    </svg>
-                    <span className="relative z-10">Burns</span>
-                  </button>
+              <div className="relative bg-black/50 border border-white/20 rounded-lg p-0.5">
+                {currentProject?.burnsEnabled ? (
+                  /* Burns enabled: 2x2 grid with Chart and Fees in first row */
+                  <div className="flex flex-col gap-0.5">
+                    {/* First row: Chart and Fees */}
+                    <div className="flex gap-0.5">
+                      <button
+                        onClick={() => setViewMode('chart')}
+                        className={`relative flex-1 py-1.5 px-1 rounded-md text-[10px] font-bold flex items-center justify-center gap-0.5 z-10 transition-colors duration-200 ${
+                          viewMode === 'chart'
+                            ? ''
+                            : 'text-white/70 hover:text-white'
+                        }`}
+                        style={viewMode === 'chart' ? { color: secondaryColor } : undefined}
+                      >
+                        {viewMode === 'chart' && (
+                          <motion.div
+                            layoutId="viewModeIndicatorDesktop"
+                            className="absolute inset-0 bg-[var(--primary-color)] rounded-md"
+                            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                          />
+                        )}
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10 flex-shrink-0">
+                          <path d="M3 3v18h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M18 9l-5 5-4-4-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                        <span className="relative z-10">Chart</span>
+                      </button>
+                      <button
+                        onClick={() => setViewMode('fees')}
+                        className={`relative flex-1 py-1.5 px-1 rounded-md text-[10px] font-bold flex items-center justify-center gap-0.5 z-10 transition-colors duration-200 ${
+                          viewMode === 'fees'
+                            ? ''
+                            : 'text-white/70 hover:text-white'
+                        }`}
+                        style={viewMode === 'fees' ? { color: secondaryColor } : undefined}
+                      >
+                        {viewMode === 'fees' && (
+                          <motion.div
+                            layoutId="viewModeIndicatorDesktop"
+                            className="absolute inset-0 bg-[var(--primary-color)] rounded-md"
+                            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                          />
+                        )}
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10 flex-shrink-0">
+                          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                        <span className="relative z-10">Fees</span>
+                      </button>
+                    </div>
+                    {/* Second row: Holders and Burns */}
+                    <div className="flex gap-0.5">
+                      <button
+                        onClick={() => setViewMode('holders')}
+                        className={`relative flex-1 py-1.5 px-1 rounded-md text-[10px] font-bold flex items-center justify-center gap-0.5 z-10 transition-colors duration-200 ${
+                          viewMode === 'holders'
+                            ? ''
+                            : 'text-white/70 hover:text-white'
+                        }`}
+                        style={viewMode === 'holders' ? { color: secondaryColor } : undefined}
+                      >
+                        {viewMode === 'holders' && (
+                          <motion.div
+                            layoutId="viewModeIndicatorDesktop"
+                            className="absolute inset-0 bg-[var(--primary-color)] rounded-md"
+                            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                          />
+                        )}
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10 flex-shrink-0">
+                          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                        <span className="relative z-10">Holders</span>
+                      </button>
+                      <button
+                        onClick={() => setViewMode('burns')}
+                        className={`relative flex-1 py-1.5 px-1 rounded-md text-[10px] font-bold flex items-center justify-center gap-0.5 z-10 transition-colors duration-200 ${
+                          viewMode === 'burns'
+                            ? ''
+                            : 'text-white/70 hover:text-white'
+                        }`}
+                        style={viewMode === 'burns' ? { color: secondaryColor } : undefined}
+                      >
+                        {viewMode === 'burns' && (
+                          <motion.div
+                            layoutId="viewModeIndicatorDesktop"
+                            className="absolute inset-0 bg-[var(--primary-color)] rounded-md"
+                            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                          />
+                        )}
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10 flex-shrink-0">
+                          <path d="M12 2c.55 0 1 .45 1 1v1.07c1.01.18 1.99.56 2.89 1.13l.76-.76c.39-.39 1.02-.39 1.41 0 .39.39.39 1.02 0 1.41l-.76.76c.57.9.95 1.88 1.13 2.89H20c.55 0 1 .45 1 1s-.45 1-1 1h-1.07c-.18 1.01-.56 1.99-1.13 2.89l.76.76c.39.39.39 1.02 0 1.41-.39.39-1.02.39-1.41 0l-.76-.76c-.9.57-1.88.95-2.89 1.13V20c0 .55-.45 1-1 1s-1-.45-1-1v-1.07c-1.01-.18-1.99-.56-2.89-1.13l-.76.76c-.39.39-1.02.39-1.41 0-.39-.39-.39-1.02 0-1.41l.76-.76c-.57-.9-.95-1.88-1.13-2.89H3c-.55 0-1-.45-1-1s.45-1 1-1h1.07c.18-1.01.56-1.99 1.13-2.89l-.76-.76c-.39-.39-.39-1.02 0-1.41.39-.39 1.02-.39 1.41 0l.76.76c.9-.57 1.88-.95 2.89-1.13V3c0-.55.45-1 1-1zm0 5c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5z" fill="currentColor"/>
+                        </svg>
+                        <span className="relative z-10">Burns</span>
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  /* Burns disabled: Chart full width, Holders and Fees split second row */
+                  <div className="flex flex-col gap-0.5">
+                    {/* First row: Chart (full width) */}
+                    <button
+                      onClick={() => setViewMode('chart')}
+                      className={`relative w-full py-1.5 px-1 rounded-md text-[10px] font-bold flex items-center justify-center gap-0.5 z-10 transition-colors duration-200 ${
+                        viewMode === 'chart'
+                          ? ''
+                          : 'text-white/70 hover:text-white'
+                      }`}
+                      style={viewMode === 'chart' ? { color: secondaryColor } : undefined}
+                    >
+                      {viewMode === 'chart' && (
+                        <motion.div
+                          layoutId="viewModeIndicatorDesktop"
+                          className="absolute inset-0 bg-[var(--primary-color)] rounded-md"
+                          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                        />
+                      )}
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10 flex-shrink-0">
+                        <path d="M3 3v18h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M18 9l-5 5-4-4-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      <span className="relative z-10">Chart</span>
+                    </button>
+                    {/* Second row: Holders and Fees */}
+                    <div className="flex gap-0.5">
+                      <button
+                        onClick={() => setViewMode('holders')}
+                        className={`relative flex-1 py-1.5 px-1 rounded-md text-[10px] font-bold flex items-center justify-center gap-0.5 z-10 transition-colors duration-200 ${
+                          viewMode === 'holders'
+                            ? ''
+                            : 'text-white/70 hover:text-white'
+                        }`}
+                        style={viewMode === 'holders' ? { color: secondaryColor } : undefined}
+                      >
+                        {viewMode === 'holders' && (
+                          <motion.div
+                            layoutId="viewModeIndicatorDesktop"
+                            className="absolute inset-0 bg-[var(--primary-color)] rounded-md"
+                            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                          />
+                        )}
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10 flex-shrink-0">
+                          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                        <span className="relative z-10">Holders</span>
+                      </button>
+                      <button
+                        onClick={() => setViewMode('fees')}
+                        className={`relative flex-1 py-1.5 px-1 rounded-md text-[10px] font-bold flex items-center justify-center gap-0.5 z-10 transition-colors duration-200 ${
+                          viewMode === 'fees'
+                            ? ''
+                            : 'text-white/70 hover:text-white'
+                        }`}
+                        style={viewMode === 'fees' ? { color: secondaryColor } : undefined}
+                      >
+                        {viewMode === 'fees' && (
+                          <motion.div
+                            layoutId="viewModeIndicatorDesktop"
+                            className="absolute inset-0 bg-[var(--primary-color)] rounded-md"
+                            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                          />
+                        )}
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10 flex-shrink-0">
+                          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                        <span className="relative z-10">Fees</span>
+                      </button>
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
