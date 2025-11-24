@@ -4,19 +4,55 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 // Add these to your .env.local file:
 // NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 // NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+// SUPABASE_SERVICE_ROLE_KEY=your_service_role_key (for server-side operations)
+// SUPABASE_SERVICE_ROLE_KEY_FT=your_service_role_key (for feature testing)
 
 // Lazy initialization to prevent build-time errors
 let supabaseInstance: SupabaseClient | null = null;
+let supabaseAdminInstance: SupabaseClient | null = null;
 
 // Check if Supabase is configured
 export const isSupabaseConfigured = () => {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY_FT;
+
+  // For server-side operations, check service role key
+  if (typeof window === 'undefined') {
+    return Boolean(supabaseUrl && serviceRoleKey);
+  }
+
   return Boolean(supabaseUrl && supabaseAnonKey);
 };
 
+// Get or create Supabase client with service role (for server-side admin operations)
+function getSupabaseAdminClient(): SupabaseClient {
+  if (!supabaseAdminInstance) {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY_FT || '';
+
+    // Only create client if configured
+    if (!supabaseUrl || !serviceRoleKey) {
+      throw new Error('Supabase not configured');
+    }
+
+    supabaseAdminInstance = createClient(supabaseUrl, serviceRoleKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
+  }
+  return supabaseAdminInstance;
+}
+
 // Get or create Supabase client (lazy initialization)
 function getSupabaseClient(): SupabaseClient {
+  // For server-side, use admin client
+  if (typeof window === 'undefined') {
+    return getSupabaseAdminClient();
+  }
+
   if (!supabaseInstance) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
