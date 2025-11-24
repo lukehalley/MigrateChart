@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
 
     while (fetchCount < maxFetches) {
       // Query by burn wallet address instead of mint address
-      const url = beforeSignature
+      const url: string = beforeSignature
         ? `https://api.helius.xyz/v0/addresses/${BURN_WALLET}/transactions?api-key=${HELIUS_API_KEY}&before=${beforeSignature}`
         : `https://api.helius.xyz/v0/addresses/${BURN_WALLET}/transactions?api-key=${HELIUS_API_KEY}`;
 

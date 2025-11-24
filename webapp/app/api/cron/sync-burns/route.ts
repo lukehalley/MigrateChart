@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
 
     // Fetch recent transactions from burn wallet (not mint address)
     // Only need to check recent batches since we're syncing hourly
-    const url = `https://api.helius.xyz/v0/addresses/${BURN_WALLET}/transactions?api-key=${HELIUS_API_KEY}`;
+    const url: string = `https://api.helius.xyz/v0/addresses/${BURN_WALLET}/transactions?api-key=${HELIUS_API_KEY}`;
 
     const response = await fetch(url);
 
