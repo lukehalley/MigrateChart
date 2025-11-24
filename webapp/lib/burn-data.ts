@@ -31,8 +31,9 @@ export interface BurnStats {
 /**
  * Fetches daily burn history from database
  * Returns empty array if no data, fills in days with 0 burns
+ * @param days Number of days to fetch (undefined means from first burn onwards)
  */
-export async function getDailyBurnHistory(days: number = 90): Promise<DailyBurnData[]> {
+export async function getDailyBurnHistory(days?: number): Promise<DailyBurnData[]> {
   try {
     if (!supabase) {
       console.warn('[BURN-DATA] Supabase not configured');
@@ -51,14 +52,36 @@ export async function getDailyBurnHistory(days: number = 90): Promise<DailyBurnD
       return [];
     }
 
-    // Calculate cutoff timestamp for the number of days requested
-    const cutoffTimestamp = Math.floor(Date.now() / 1000) - (days * 24 * 3600);
+    // If days is undefined, fetch ALL burns to find the first one
+    let cutoffTimestamp: number;
 
-    // Fetch burns from database
+    if (days === undefined) {
+      // Find the timestamp of the first burn
+      const { data: firstBurn, error: firstBurnError } = await supabase
+        .from('burn_transactions')
+        .select('timestamp')
+        .eq('project_id', project.id)
+        .order('timestamp', { ascending: true })
+        .limit(1)
+        .single();
+
+      if (firstBurnError || !firstBurn) {
+        // No burns yet, return empty
+        return [];
+      }
+
+      cutoffTimestamp = firstBurn.timestamp;
+    } else {
+      // Calculate cutoff timestamp for the number of days requested
+      cutoffTimestamp = Math.floor(Date.now() / 1000) - (days * 24 * 3600);
+    }
+
+    // Fetch burns from database (only successful ones)
     const { data: burns, error } = await supabase
       .from('burn_transactions')
       .select('timestamp, amount')
       .eq('project_id', project.id)
+      .eq('success', true)
       .gte('timestamp', cutoffTimestamp)
       .order('timestamp', { ascending: true });
 
@@ -123,11 +146,12 @@ export async function getRecentBurns(limit: number = 20): Promise<BurnTransactio
       return [];
     }
 
-    // Fetch recent burns from database
+    // Fetch recent burns from database (only successful ones)
     const { data: burns, error } = await supabase
       .from('burn_transactions')
       .select('signature, timestamp, amount, from_account')
       .eq('project_id', project.id)
+      .eq('success', true)
       .order('timestamp', { ascending: false })
       .limit(limit);
 
@@ -173,11 +197,12 @@ export async function getBurnStats(): Promise<BurnStats> {
       throw new Error('ZERA project not found');
     }
 
-    // Calculate total burned from database
+    // Calculate total burned from database (only successful burns)
     const { data: burns, error } = await supabase
       .from('burn_transactions')
       .select('amount')
-      .eq('project_id', project.id);
+      .eq('project_id', project.id)
+      .eq('success', true);
 
     if (error) {
       throw new Error(`Database error: ${error.message}`);
@@ -221,11 +246,12 @@ export async function getBurnStats(): Promise<BurnStats> {
 
 /**
  * Gets comprehensive burn data for the tracker page
+ * @param days Number of days to fetch history for (undefined means from first burn onwards)
  */
-export async function getAllBurnData() {
+export async function getAllBurnData(days?: number) {
   const [stats, dailyHistory, recentBurns] = await Promise.all([
     getBurnStats(),
-    getDailyBurnHistory(),
+    getDailyBurnHistory(days),
     getRecentBurns(),
   ]);
 

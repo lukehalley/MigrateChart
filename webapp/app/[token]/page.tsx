@@ -4,7 +4,7 @@ import React, { Suspense, useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, Copy, Check, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Heart, Copy, Check, ChevronLeft, ChevronRight, Flame } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import Chart from '@/components/Chart';
@@ -14,6 +14,7 @@ import { BurnsView } from '@/components/BurnsView';
 import TimeframeToggle from '@/components/TimeframeToggle';
 import FeesTimeframeToggle from '@/components/FeesTimeframeToggle';
 import HoldersTimeframeToggle from '@/components/HoldersTimeframeToggle';
+import BurnsTimeframeToggle from '@/components/BurnsTimeframeToggle';
 import ChartControls from '@/components/ChartControls';
 import TokenStats from '@/components/TokenStats';
 import { TokenLoadingLogo } from '@/components/TokenLoadingLogo';
@@ -56,15 +57,18 @@ function HomeContent() {
   const urlView = searchParams.get('view') as 'chart' | 'fees' | 'holders' | 'burns' | null;
   const urlFeesTimeframe = searchParams.get('feesTimeframe') as '7D' | '30D' | '90D' | 'ALL' | null;
   const urlHoldersTimeframe = searchParams.get('holdersTimeframe') as '1D' | '7D' | '30D' | '90D' | 'ALL' | null;
+  const urlBurnsTimeframe = searchParams.get('burnsTimeframe') as '7D' | '30D' | '90D' | 'ALL' | null;
 
   const validTimeframes: Timeframe[] = ['1H', '4H', '8H', '1D', 'MAX'];
   const validFeesTimeframes = ['7D', '30D', '90D', 'ALL'];
   const validHoldersTimeframes = ['1D', '7D', '30D', '90D', 'ALL'];
+  const validBurnsTimeframes = ['7D', '30D', '90D', 'ALL'];
 
   const initialTimeframe = urlChartTimeframe && validTimeframes.includes(urlChartTimeframe) ? urlChartTimeframe : '1D';
   const initialViewMode = urlView && ['chart', 'fees', 'holders', 'burns'].includes(urlView) ? urlView : 'chart';
   const initialFeesTimeframe = urlFeesTimeframe && validFeesTimeframes.includes(urlFeesTimeframe) ? urlFeesTimeframe : 'ALL';
   const initialHoldersTimeframe = urlHoldersTimeframe && validHoldersTimeframes.includes(urlHoldersTimeframe) ? urlHoldersTimeframe : '30D';
+  const initialBurnsTimeframe = urlBurnsTimeframe && validBurnsTimeframes.includes(urlBurnsTimeframe) ? urlBurnsTimeframe : 'ALL';
 
   const [timeframe, setTimeframeState] = useState<Timeframe>(initialTimeframe);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -74,6 +78,7 @@ function HomeContent() {
   const [viewMode, setViewModeState] = useState<'chart' | 'fees' | 'holders' | 'burns'>(initialViewMode);
   const [feesTimeframe, setFeesTimeframeState] = useState<'7D' | '30D' | '90D' | 'ALL'>(initialFeesTimeframe);
   const [holdersTimeframe, setHoldersTimeframeState] = useState<'1D' | '7D' | '30D' | '90D' | 'ALL'>(initialHoldersTimeframe);
+  const [burnsTimeframe, setBurnsTimeframeState] = useState<'7D' | '30D' | '90D' | 'ALL'>(initialBurnsTimeframe);
 
   // Reset chart position function
   const handleResetChartPosition = () => {
@@ -131,6 +136,7 @@ function HomeContent() {
     const urlView = searchParams.get('view') as 'chart' | 'fees' | 'holders' | 'burns' | null;
     const urlFeesTimeframe = searchParams.get('feesTimeframe') as '7D' | '30D' | '90D' | 'ALL' | null;
     const urlHoldersTimeframe = searchParams.get('holdersTimeframe') as '1D' | '7D' | '30D' | '90D' | 'ALL' | null;
+    const urlBurnsTimeframe = searchParams.get('burnsTimeframe') as '7D' | '30D' | '90D' | 'ALL' | null;
 
     if (urlChartTimeframe && validTimeframes.includes(urlChartTimeframe)) {
       setTimeframeState(urlChartTimeframe);
@@ -143,6 +149,9 @@ function HomeContent() {
     }
     if (urlHoldersTimeframe && validHoldersTimeframes.includes(urlHoldersTimeframe)) {
       setHoldersTimeframeState(urlHoldersTimeframe);
+    }
+    if (urlBurnsTimeframe && validBurnsTimeframes.includes(urlBurnsTimeframe)) {
+      setBurnsTimeframeState(urlBurnsTimeframe);
     }
   }, [searchParams]);
 
@@ -245,19 +254,23 @@ function HomeContent() {
     if (newViewMode === 'fees') {
       params.delete('chartTimeframe');
       params.delete('holdersTimeframe');
+      params.delete('burnsTimeframe');
       params.set('feesTimeframe', feesTimeframe);
     } else if (newViewMode === 'holders') {
       params.delete('chartTimeframe');
       params.delete('feesTimeframe');
+      params.delete('burnsTimeframe');
       params.set('holdersTimeframe', holdersTimeframe);
     } else if (newViewMode === 'burns') {
       params.delete('chartTimeframe');
       params.delete('feesTimeframe');
       params.delete('holdersTimeframe');
+      params.set('burnsTimeframe', burnsTimeframe);
     } else if (newViewMode === 'chart') {
       params.set('chartTimeframe', timeframe);
       params.delete('feesTimeframe');
       params.delete('holdersTimeframe');
+      params.delete('burnsTimeframe');
     }
 
     const tokenSlug = currentProject?.slug || 'zera';
@@ -278,6 +291,15 @@ function HomeContent() {
     setHoldersTimeframeState(newHoldersTimeframe);
     const params = new URLSearchParams(searchParams.toString());
     params.set('holdersTimeframe', newHoldersTimeframe);
+    const tokenSlug = currentProject?.slug || 'zera';
+    router.push(`/${tokenSlug}?${params.toString()}`, { scroll: false });
+  };
+
+  // Update URL when burns timeframe changes
+  const setBurnsTimeframe = (newBurnsTimeframe: '7D' | '30D' | '90D' | 'ALL') => {
+    setBurnsTimeframeState(newBurnsTimeframe);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('burnsTimeframe', newBurnsTimeframe);
     const tokenSlug = currentProject?.slug || 'zera';
     router.push(`/${tokenSlug}?${params.toString()}`, { scroll: false });
   };
@@ -421,9 +443,9 @@ function HomeContent() {
   useEffect(() => {
     if (currentProject && tokenStats) {
       const priceStr = formatPriceForTitle(tokenStats.price);
-      document.title = `${currentProject.name} Migration | ${priceStr}`;
+      document.title = `${currentProject.name} | ${priceStr}`;
     } else if (currentProject) {
-      document.title = `${currentProject.name} Migration Chart`;
+      document.title = `${currentProject.name}`;
     }
   }, [currentProject, tokenStats]);
 
@@ -1255,9 +1277,7 @@ function HomeContent() {
                                 transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                               />
                             )}
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10">
-                              <path d="M12 2c.55 0 1 .45 1 1v1.07c1.01.18 1.99.56 2.89 1.13l.76-.76c.39-.39 1.02-.39 1.41 0 .39.39.39 1.02 0 1.41l-.76.76c.57.9.95 1.88 1.13 2.89H20c.55 0 1 .45 1 1s-.45 1-1 1h-1.07c-.18 1.01-.56 1.99-1.13 2.89l.76.76c.39.39.39 1.02 0 1.41-.39.39-1.02.39-1.41 0l-.76-.76c-.9.57-1.88.95-2.89 1.13V20c0 .55-.45 1-1 1s-1-.45-1-1v-1.07c-1.01-.18-1.99-.56-2.89-1.13l-.76.76c-.39.39-1.02.39-1.41 0-.39-.39-.39-1.02 0-1.41l.76-.76c-.57-.9-.95-1.88-1.13-2.89H3c-.55 0-1-.45-1-1s.45-1 1-1h1.07c.18-1.01.56-1.99 1.13-2.89l-.76-.76c-.39-.39-.39-1.02 0-1.41.39-.39 1.02-.39 1.41 0l.76.76c.9-.57 1.88-.95 2.89-1.13V3c0-.55.45-1 1-1zm0 5c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5z" fill="currentColor"/>
-                            </svg>
+                            <Flame className="w-3 h-3 relative z-10" />
                             <span className="relative z-10">Burns</span>
                           </button>
                         </div>
@@ -1379,11 +1399,21 @@ function HomeContent() {
                       primaryColor={primaryColor}
                       secondaryColor={secondaryColor}
                     />
-                  ) : (
+                  ) : viewMode === 'holders' ? (
                     <HoldersTimeframeToggle
                       currentTimeframe={holdersTimeframe}
                       onTimeframeChange={(newTimeframe) => {
                         setHoldersTimeframe(newTimeframe);
+                        closeMobileMenu();
+                      }}
+                      primaryColor={primaryColor}
+                      secondaryColor={secondaryColor}
+                    />
+                  ) : (
+                    <BurnsTimeframeToggle
+                      currentTimeframe={burnsTimeframe}
+                      onTimeframeChange={(newTimeframe) => {
+                        setBurnsTimeframe(newTimeframe);
                         closeMobileMenu();
                       }}
                       primaryColor={primaryColor}
@@ -1662,6 +1692,8 @@ function HomeContent() {
                     <BurnsView
                       projectSlug={currentProject.slug}
                       primaryColor={currentProject.primaryColor}
+                      timeframe={burnsTimeframe}
+                      onTimeframeChange={setBurnsTimeframe}
                       onOpenMobileMenu={() => setShowMobileMenu(true)}
                     />
                   </motion.div>
@@ -1783,6 +1815,8 @@ function HomeContent() {
                     <BurnsView
                       projectSlug={currentProject.slug}
                       primaryColor={currentProject.primaryColor}
+                      timeframe={burnsTimeframe}
+                      onTimeframeChange={setBurnsTimeframe}
                       onOpenMobileMenu={() => setShowMobileMenu(true)}
                     />
                   </motion.div>
@@ -1939,9 +1973,7 @@ function HomeContent() {
                         title="Burns View"
                         style={viewMode === 'burns' ? { color: secondaryColor } : undefined}
                       >
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={viewMode === 'burns' ? '' : 'text-[var(--primary-color)]'} style={viewMode === 'burns' ? { color: secondaryColor } : undefined}>
-                          <path d="M12 2c.55 0 1 .45 1 1v1.07c1.01.18 1.99.56 2.89 1.13l.76-.76c.39-.39 1.02-.39 1.41 0 .39.39.39 1.02 0 1.41l-.76.76c.57.9.95 1.88 1.13 2.89H20c.55 0 1 .45 1 1s-.45 1-1 1h-1.07c-.18 1.01-.56 1.99-1.13 2.89l.76.76c.39.39.39 1.02 0 1.41-.39.39-1.02.39-1.41 0l-.76-.76c-.9.57-1.88.95-2.89 1.13V20c0 .55-.45 1-1 1s-1-.45-1-1v-1.07c-1.01-.18-1.99-.56-2.89-1.13l-.76.76c-.39.39-1.02.39-1.41 0-.39-.39-.39-1.02 0-1.41l.76-.76c-.57-.9-.95-1.88-1.13-2.89H3c-.55 0-1-.45-1-1s.45-1 1-1h1.07c.18-1.01.56-1.99 1.13-2.89l-.76-.76c-.39-.39-.39-1.02 0-1.41.39-.39 1.02-.39 1.41 0l.76.76c.9-.57 1.88-.95 2.89-1.13V3c0-.55.45-1 1-1zm0 5c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5z" fill="currentColor"/>
-                        </svg>
+                        <Flame className="w-5 h-5" style={viewMode === 'burns' ? { color: secondaryColor } : { color: primaryColor }} />
                       </button>
                     )}
                   </div>
@@ -1956,7 +1988,7 @@ function HomeContent() {
                         <span className="text-white/50 text-[7px] font-medium">TIME</span>
                         <div className="px-2 py-1 bg-[var(--primary-color)]/20 border border-[var(--primary-color)]/50 rounded hover:bg-[var(--primary-color)]/30 transition-colors">
                           <span className="text-[var(--primary-color)] text-xs font-bold">
-                            {viewMode === 'chart' ? timeframe : viewMode === 'fees' ? feesTimeframe : holdersTimeframe}
+                            {viewMode === 'chart' ? timeframe : viewMode === 'fees' ? feesTimeframe : viewMode === 'holders' ? holdersTimeframe : burnsTimeframe}
                           </span>
                         </div>
                       </button>
@@ -2033,7 +2065,7 @@ function HomeContent() {
                               </button>
                             ))}
                           </>
-                        ) : (
+                        ) : viewMode === 'holders' ? (
                           <>
                             {(['1D', '7D', '30D', '90D', 'ALL'] as const).map((tf) => (
                               <button
@@ -2055,6 +2087,36 @@ function HomeContent() {
                                 }}
                                 onMouseLeave={(e) => {
                                   if (holdersTimeframe !== tf) {
+                                    e.currentTarget.style.backgroundColor = 'transparent';
+                                  }
+                                }}
+                              >
+                                {tf}
+                              </button>
+                            ))}
+                          </>
+                        ) : (
+                          <>
+                            {(['7D', '30D', '90D', 'ALL'] as const).map((tf) => (
+                              <button
+                                key={tf}
+                                onClick={() => {
+                                  setBurnsTimeframe(tf);
+                                  setIsTimeframePopoverOpen(false);
+                                }}
+                                className="px-3 py-2 text-xs font-bold rounded transition-all flex items-center justify-center"
+                                style={
+                                  burnsTimeframe === tf
+                                    ? { backgroundColor: primaryColor, color: '#000' }
+                                    : { color: primaryColor, backgroundColor: 'transparent' }
+                                }
+                                onMouseEnter={(e) => {
+                                  if (burnsTimeframe !== tf) {
+                                    e.currentTarget.style.backgroundColor = `${primaryColor}33`;
+                                  }
+                                }}
+                                onMouseLeave={(e) => {
+                                  if (burnsTimeframe !== tf) {
                                     e.currentTarget.style.backgroundColor = 'transparent';
                                   }
                                 }}
@@ -2447,9 +2509,7 @@ function HomeContent() {
                             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                           />
                         )}
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10 flex-shrink-0">
-                          <path d="M12 2c.55 0 1 .45 1 1v1.07c1.01.18 1.99.56 2.89 1.13l.76-.76c.39-.39 1.02-.39 1.41 0 .39.39.39 1.02 0 1.41l-.76.76c.57.9.95 1.88 1.13 2.89H20c.55 0 1 .45 1 1s-.45 1-1 1h-1.07c-.18 1.01-.56 1.99-1.13 2.89l.76.76c.39.39.39 1.02 0 1.41-.39.39-1.02.39-1.41 0l-.76-.76c-.9.57-1.88.95-2.89 1.13V20c0 .55-.45 1-1 1s-1-.45-1-1v-1.07c-1.01-.18-1.99-.56-2.89-1.13l-.76.76c-.39.39-1.02.39-1.41 0-.39-.39-.39-1.02 0-1.41l.76-.76c-.57-.9-.95-1.88-1.13-2.89H3c-.55 0-1-.45-1-1s.45-1 1-1h1.07c.18-1.01.56-1.99 1.13-2.89l-.76-.76c-.39-.39-.39-1.02 0-1.41.39-.39 1.02-.39 1.41 0l.76.76c.9-.57 1.88-.95 2.89-1.13V3c0-.55.45-1 1-1zm0 5c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5z" fill="currentColor"/>
-                        </svg>
+                        <Flame className="w-2.5 h-2.5 relative z-10 flex-shrink-0" />
                         <span className="relative z-10">Burns</span>
                       </button>
                     </div>
@@ -2552,10 +2612,17 @@ function HomeContent() {
                   primaryColor={primaryColor}
                   secondaryColor={secondaryColor}
                 />
-              ) : (
+              ) : viewMode === 'holders' ? (
                 <HoldersTimeframeToggle
                   currentTimeframe={holdersTimeframe}
                   onTimeframeChange={setHoldersTimeframe}
+                  primaryColor={primaryColor}
+                  secondaryColor={secondaryColor}
+                />
+              ) : (
+                <BurnsTimeframeToggle
+                  currentTimeframe={burnsTimeframe}
+                  onTimeframeChange={setBurnsTimeframe}
                   primaryColor={primaryColor}
                   secondaryColor={secondaryColor}
                 />

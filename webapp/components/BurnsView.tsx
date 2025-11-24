@@ -1,11 +1,15 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import useSWR from 'swr';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
-import { Flame, TrendingDown, Activity } from 'lucide-react';
+import { Flame, TrendingDown, Activity, ExternalLink, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from '@/components/ui/chart';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { TokenLoadingLogo } from '@/components/TokenLoadingLogo';
+import { useTokenContext } from '@/lib/TokenContext';
+import BurnsTimeframeToggle from '@/components/BurnsTimeframeToggle';
 
 interface BurnStats {
   totalBurned: number;
@@ -42,12 +46,33 @@ const getChartConfig = (primaryColor: string): ChartConfig => ({
 interface BurnsViewProps {
   projectSlug: string;
   primaryColor: string;
+  timeframe?: '7D' | '30D' | '90D' | 'ALL';
+  onTimeframeChange?: (timeframe: '7D' | '30D' | '90D' | 'ALL') => void;
   onOpenMobileMenu?: () => void;
 }
 
-export function BurnsView({ projectSlug, primaryColor, onOpenMobileMenu }: BurnsViewProps) {
+export function BurnsView({ projectSlug, primaryColor, timeframe = 'ALL', onTimeframeChange, onOpenMobileMenu }: BurnsViewProps) {
+  const { currentProject } = useTokenContext();
+
+  // Sort state
+  type SortField = 'amount' | 'timestamp';
+  type SortDirection = 'asc' | 'desc';
+  const [sortField, setSortField] = useState<SortField>('timestamp');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      // Toggle direction if same field
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      // New field, default to descending
+      setSortField(field);
+      setSortDirection('desc');
+    }
+  };
+
   const { data: burnsData, error: burnsError, isLoading: burnsLoading } = useSWR<BurnsResponse>(
-    `/api/burns/${projectSlug}`,
+    `/api/burns/${projectSlug}?timeframe=${timeframe}`,
     async (url: string) => {
       const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to fetch burns data');
@@ -72,6 +97,27 @@ export function BurnsView({ projectSlug, primaryColor, onOpenMobileMenu }: Burns
 
   const chartConfig = useMemo(() => getChartConfig(primaryColor), [primaryColor]);
 
+  // Sorted burns for table
+  const sortedBurns = useMemo(() => {
+    if (!burnsData?.recentBurns) return [];
+
+    const burns = [...burnsData.recentBurns];
+
+    burns.sort((a, b) => {
+      let compareValue = 0;
+
+      if (sortField === 'amount') {
+        compareValue = a.amount - b.amount;
+      } else if (sortField === 'timestamp') {
+        compareValue = a.timestamp - b.timestamp;
+      }
+
+      return sortDirection === 'asc' ? compareValue : -compareValue;
+    });
+
+    return burns;
+  }, [burnsData?.recentBurns, sortField, sortDirection]);
+
   const formatNumber = (num: number) => {
     if (num >= 1_000_000) {
       return `${(num / 1_000_000).toFixed(2)}M`;
@@ -86,28 +132,14 @@ export function BurnsView({ projectSlug, primaryColor, onOpenMobileMenu }: Burns
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
-  const formatRelativeTime = (timestamp: number): string => {
-    const now = Date.now() / 1000;
-    const diff = now - timestamp;
-
-    if (diff < 60) {
-      return 'Just now';
-    } else if (diff < 3600) {
-      const mins = Math.floor(diff / 60);
-      return `${mins} min${mins > 1 ? 's' : ''} ago`;
-    } else if (diff < 86400) {
-      const hours = Math.floor(diff / 3600);
-      return `${hours} hour${hours > 1 ? 's' : ''} ago`;
-    } else {
-      const days = Math.floor(diff / 86400);
-      return `${days} day${days > 1 ? 's' : ''} ago`;
-    }
-  };
-
   if (burnsLoading || !burnsData) {
     return (
-      <div className="w-full h-full flex items-center justify-center">
-        <div className="text-white/50">Loading burn data...</div>
+      <div className="w-full h-full flex items-center justify-center backdrop-blur-xl">
+        <TokenLoadingLogo
+          svgUrl={currentProject?.loaderUrl}
+          color={currentProject?.primaryColor || primaryColor}
+          isLoading={burnsLoading}
+        />
       </div>
     );
   }
@@ -138,7 +170,7 @@ export function BurnsView({ projectSlug, primaryColor, onOpenMobileMenu }: Burns
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2" style={{ color: primaryColor }}>
                 <Flame className="w-4 h-4" />
-                Total Burned
+                Total Burned Tokens
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -186,17 +218,17 @@ export function BurnsView({ projectSlug, primaryColor, onOpenMobileMenu }: Burns
           <CardHeader>
             <CardTitle className="flex items-center gap-2" style={{ color: primaryColor }}>
               <Flame className="w-5 h-5" />
-              Individual Burn Transactions
+              Daily Burn History
             </CardTitle>
-            <CardDescription>Each bar represents one burn event - hover to see details</CardDescription>
+            <CardDescription>Each Bar Represents Daily Burn Activity</CardDescription>
           </CardHeader>
           <CardContent>
             {burnsData.recentBurns.length === 0 ? (
               <div className="h-[300px] flex items-center justify-center">
                 <div className="text-center">
                   <Flame className="w-12 h-12 mx-auto mb-2 opacity-20" style={{ color: primaryColor }} />
-                  <p className="text-white/50">No burn history yet</p>
-                  <p className="text-white/30 text-sm">Burns will appear here once they occur</p>
+                  <p className="text-white/50">No Burn History Yet</p>
+                  <p className="text-white/30 text-sm">Burns Will Appear Here Once They Occur</p>
                 </div>
               </div>
             ) : (
@@ -241,74 +273,107 @@ export function BurnsView({ projectSlug, primaryColor, onOpenMobileMenu }: Burns
           </CardContent>
         </Card>
 
-        {/* Recent Burns */}
+        {/* Recent Burns Table */}
         <Card className="bg-black/50 border" style={{ borderColor: `${primaryColor}40` }}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2" style={{ color: primaryColor }}>
               <Flame className="w-5 h-5" />
-              Recent Protocol Burns
+              Recent Burns
             </CardTitle>
-            <CardDescription>Last 20 burn transactions (SPL Token Burns only)</CardDescription>
           </CardHeader>
           <CardContent>
-            {burnsData.recentBurns.length === 0 ? (
+            {sortedBurns.length === 0 ? (
               <div className="py-8 text-center">
                 <Flame className="w-12 h-12 mx-auto mb-2 opacity-20" style={{ color: primaryColor }} />
-                <p className="text-white/50">No recent burns</p>
-                <p className="text-white/30 text-sm">Protocol burns will appear here</p>
+                <p className="text-white/50">No Recent Burns</p>
+                <p className="text-white/30 text-sm">Burn Transactions Will Appear Here</p>
               </div>
             ) : (
-              <div className="space-y-3">
-                {burnsData.recentBurns.map((burn, index) => (
-                  <div
-                    key={`${burn.signature}-${index}`}
-                    className="border rounded-lg p-3 hover:bg-black/30 transition-colors"
-                    style={{ borderColor: `${primaryColor}30` }}
-                  >
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <Flame className="w-4 h-4 flex-shrink-0" style={{ color: primaryColor }} />
-                        <div>
-                          <p className="font-bold" style={{ color: primaryColor }}>
+              <div className="rounded-md border" style={{ borderColor: `${primaryColor}30` }}>
+                <Table>
+                  <TableHeader>
+                    <TableRow style={{ borderColor: `${primaryColor}20` }}>
+                      <TableHead className="text-white/70">
+                        <button
+                          onClick={() => handleSort('amount')}
+                          className="flex items-center gap-1 hover:text-white transition-colors"
+                        >
+                          Amount
+                          {sortField === 'amount' ? (
+                            sortDirection === 'asc' ? (
+                              <ArrowUp className="w-3 h-3" />
+                            ) : (
+                              <ArrowDown className="w-3 h-3" />
+                            )
+                          ) : (
+                            <ArrowUpDown className="w-3 h-3 opacity-50" />
+                          )}
+                        </button>
+                      </TableHead>
+                      <TableHead className="text-white/70">From</TableHead>
+                      <TableHead className="text-white/70">
+                        <button
+                          onClick={() => handleSort('timestamp')}
+                          className="flex items-center gap-1 hover:text-white transition-colors"
+                        >
+                          Time
+                          {sortField === 'timestamp' ? (
+                            sortDirection === 'asc' ? (
+                              <ArrowUp className="w-3 h-3" />
+                            ) : (
+                              <ArrowDown className="w-3 h-3" />
+                            )
+                          ) : (
+                            <ArrowUpDown className="w-3 h-3 opacity-50" />
+                          )}
+                        </button>
+                      </TableHead>
+                      <TableHead className="text-white/70 text-right">Transaction</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {sortedBurns.map((burn, index) => (
+                      <TableRow
+                        key={`${burn.signature}-${index}`}
+                        className="hover:bg-black/30 transition-colors"
+                        style={{ borderColor: `${primaryColor}20` }}
+                      >
+                        <TableCell className="font-medium" style={{ color: primaryColor }}>
+                          <div className="flex items-center gap-2">
+                            <Flame className="w-3.5 h-3.5 flex-shrink-0" />
                             {formatNumber(burn.amount)} ZERA
-                          </p>
-                          <p className="text-white/50 text-xs">Burned</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-white/70 text-sm">{formatRelativeTime(burn.timestamp)}</p>
-                        <p className="text-white/40 text-[10px]">
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <a
+                            href={`https://solscan.io/account/${burn.from}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-mono text-xs hover:underline text-white/70 hover:text-white flex items-center gap-1"
+                          >
+                            {truncateAddress(burn.from)}
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        </TableCell>
+                        <TableCell className="text-white/60 text-sm whitespace-nowrap">
                           {new Date(burn.timestamp * 1000).toLocaleString()}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 text-[11px] mb-2">
-                      <span className="text-white/40">From:</span>
-                      <a
-                        href={`https://solscan.io/account/${burn.from}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="font-mono hover:underline"
-                        style={{ color: primaryColor }}
-                      >
-                        {truncateAddress(burn.from)}
-                      </a>
-                    </div>
-
-                    <div className="pt-2 border-t" style={{ borderColor: `${primaryColor}20` }}>
-                      <a
-                        href={`https://solscan.io/tx/${burn.signature}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[10px] font-mono hover:underline break-all"
-                        style={{ color: `${primaryColor}90` }}
-                      >
-                        {burn.signature}
-                      </a>
-                    </div>
-                  </div>
-                ))}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <a
+                            href={`https://solscan.io/tx/${burn.signature}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-mono text-xs hover:underline inline-flex items-center gap-1"
+                            style={{ color: `${primaryColor}90` }}
+                          >
+                            {truncateAddress(burn.signature)}
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </div>
             )}
           </CardContent>

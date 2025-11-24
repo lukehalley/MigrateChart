@@ -124,6 +124,12 @@ export async function GET(request: NextRequest) {
 
           if (!tx || !tx.meta || !tx.transaction) continue;
 
+          // Skip failed transactions - only process successful ones
+          if (tx.meta.err !== null) {
+            console.log(`[SYNC-BURNS] Skipping failed transaction: ${sig.signature}`);
+            continue;
+          }
+
           // Check inner instructions for burns
           if (tx.meta.innerInstructions) {
             for (const innerIxGroup of tx.meta.innerInstructions) {

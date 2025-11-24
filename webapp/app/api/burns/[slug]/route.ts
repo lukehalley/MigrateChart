@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 60; // Cache for 60 seconds
 
 /**
- * GET /api/burns/[slug]
+ * GET /api/burns/[slug]?timeframe=7D|30D|90D|ALL
  * Fetches burn statistics and history for the project
  */
 export async function GET(
@@ -23,8 +23,30 @@ export async function GET(
       );
     }
 
-    // Fetch all burn data
-    const burnsData = await getAllBurnData();
+    // Extract timeframe from query parameters
+    const { searchParams } = new URL(request.url);
+    const timeframe = searchParams.get('timeframe') || 'ALL';
+
+    // Convert timeframe to days (undefined for ALL means "from first burn")
+    let days: number | undefined;
+    switch (timeframe) {
+      case '7D':
+        days = 7;
+        break;
+      case '30D':
+        days = 30;
+        break;
+      case '90D':
+        days = 90;
+        break;
+      case 'ALL':
+      default:
+        days = undefined; // Will fetch from first burn onwards
+        break;
+    }
+
+    // Fetch burn data with the specified timeframe
+    const burnsData = await getAllBurnData(days);
 
     return NextResponse.json(burnsData, {
       headers: {
