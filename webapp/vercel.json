@@ -7,10 +7,6 @@
     {
       "path": "/api/cron/sync-migrations",
       "schedule": "0 0 * * *"
-    },
-    {
-      "path": "/api/cron/sync-burns",
-      "schedule": "0 * * * *"
     }
   ]
 }
