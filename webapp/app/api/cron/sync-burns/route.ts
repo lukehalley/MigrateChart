@@ -6,7 +6,7 @@ export const maxDuration = 60; // 60 seconds max execution
 
 const ZERA_MINT = '8avjtjHAHFqp4g2RR9ALAGBpSTqKPZR8nRbzSTwZERA';
 const HELIUS_API_KEY = process.env.HELIUS_API_KEY;
-const BURN_WALLET = 'CPpFuUbudkRjavR41v1oXjqyjRKcvnr6Aesy7BhExBF5'; // ZERA dev wallet doing burns
+const BITQUERY_API_KEY = process.env.BITQUERY_API_KEY;
 
 /**
  * Cron job endpoint to sync new burn transactions
@@ -67,17 +67,64 @@ export async function GET(request: NextRequest) {
 
     console.log(`[SYNC-BURNS] Latest burn in DB:`, latestBurn?.signature || 'none');
 
-    // Fetch recent transactions from burn wallet (not mint address)
-    // Only need to check recent batches since we're syncing hourly
-    const url: string = `https://api.helius.xyz/v0/addresses/${BURN_WALLET}/transactions?api-key=${HELIUS_API_KEY}`;
+    // Use Bitquery to find ALL recent burn instructions for ZERA mint
+    const cutoffTime = latestBurn
+      ? new Date(latestBurn.timestamp * 1000).toISOString()
+      : new Date(Date.now() - 7200000).toISOString(); // Last 2 hours if no burns in DB
 
-    const response = await fetch(url);
+    const query = `
+      query {
+        Solana {
+          Instructions(
+            where: {
+              Instruction: {
+                Program: { Method: { in: ["burn", "burnChecked"] } }
+                Accounts: { includes: { Address: { is: "${ZERA_MINT}" } } }
+              }
+              Transaction: { Result: { Success: true } }
+              Block: { Time: { after: "${cutoffTime}" } }
+            }
+            limit: { count: 50 }
+            orderBy: { descending: Block_Time }
+          ) {
+            Instruction {
+              Accounts {
+                Address
+                Token {
+                  Mint
+                }
+              }
+            }
+            Transaction {
+              Signature
+              Signer
+            }
+            Block {
+              Time
+            }
+          }
+        }
+      }
+    `;
+
+    const response = await fetch('https://streaming.bitquery.io/graphql', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${BITQUERY_API_KEY}`,
+      },
+      body: JSON.stringify({ query }),
+    });
 
     if (!response.ok) {
-      throw new Error(`Helius API error: ${response.statusText}`);
+      throw new Error(`Bitquery API error: ${response.statusText}`);
     }
 
-    const transactions = await response.json();
+    const data = await response.json();
+    const instructions = data?.data?.Solana?.Instructions || [];
+
+    console.log(`[SYNC-BURNS] Bitquery returned ${instructions.length} burn instructions`);
+
     const newBurns: Array<{
       signature: string;
       timestamp: number;
@@ -85,37 +132,57 @@ export async function GET(request: NextRequest) {
       from: string;
     }> = [];
 
-    // Process transactions
-    for (const tx of transactions) {
-      // Stop if we've reached a transaction we already have
-      if (latestBurn && tx.signature === latestBurn.signature) {
-        console.log('[SYNC-BURNS] Reached already-synced transaction');
-        break;
-      }
+    // Build list of signatures
+    const burnSignatures = instructions.map((item: any) => item.Transaction.Signature);
 
-      if (tx.tokenTransfers && tx.tokenTransfers.length > 0) {
-        const burnTransfer = tx.tokenTransfers.find((t: any) =>
-          t.mint === ZERA_MINT && (!t.toUserAccount || t.toUserAccount === '')
-        );
+    if (burnSignatures.length === 0) {
+      return NextResponse.json({
+        success: true,
+        message: 'No new burns to sync',
+        scanned: 0,
+        inserted: 0,
+      });
+    }
 
-        if (burnTransfer && burnTransfer.tokenAmount) {
-          newBurns.push({
-            signature: tx.signature,
-            timestamp: tx.timestamp,
-            amount: burnTransfer.tokenAmount,
-            from: burnTransfer.fromUserAccount || 'Unknown',
-          });
+    // Fetch burn amounts from Helius
+    if (HELIUS_API_KEY) {
+      const heliusResponse = await fetch(
+        `https://api.helius.xyz/v0/transactions?api-key=${HELIUS_API_KEY}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ transactions: burnSignatures }),
         }
+      );
+
+      if (heliusResponse.ok) {
+        const transactions = await heliusResponse.json();
+        instructions.forEach((item: any, idx: number) => {
+          const tx = transactions[idx];
+          if (tx && tx.tokenTransfers) {
+            const burnTransfer = tx.tokenTransfers.find((t: any) =>
+              t.mint === ZERA_MINT && (!t.toUserAccount || t.toUserAccount === '')
+            );
+            if (burnTransfer) {
+              newBurns.push({
+                signature: item.Transaction.Signature,
+                timestamp: new Date(item.Block.Time).getTime() / 1000,
+                amount: burnTransfer.tokenAmount,
+                from: item.Transaction.Signer,
+              });
+            }
+          }
+        });
       }
     }
 
-    console.log(`[SYNC-BURNS] Found ${newBurns.length} new burns`);
+    console.log(`[SYNC-BURNS] Found ${newBurns.length} new burns with amounts`);
 
     if (newBurns.length === 0) {
       return NextResponse.json({
         success: true,
         message: 'No new burns to sync',
-        scanned: transactions.length,
+        scanned: instructions.length,
         inserted: 0,
       });
     }
@@ -145,7 +212,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      scanned: transactions.length,
+      scanned: instructions.length,
       found: newBurns.length,
       inserted,
     });
