@@ -304,11 +304,8 @@ export function BurnsView({ projectSlug, primaryColor, timeframe = 'ALL', onTime
                         className="hover:bg-black/30 transition-colors"
                         style={{ borderColor: `${primaryColor}20` }}
                       >
-                        <TableCell className="font-medium text-xs md:text-sm py-2 md:py-3 md:text-center" style={{ color: primaryColor }}>
-                          <div className="flex items-center justify-start md:justify-center gap-1 md:gap-2">
-                            <Flame className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0 hidden md:inline" />
-                            {formatNumber(burn.amount)}
-                          </div>
+                        <TableCell className="font-medium text-xs md:text-sm py-2 md:py-3 text-left md:text-center" style={{ color: primaryColor }}>
+                          {formatNumber(burn.amount)} ZERA
                         </TableCell>
                         <TableCell className="py-2 md:py-3 md:text-center">
                           <a
