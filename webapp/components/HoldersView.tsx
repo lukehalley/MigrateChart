@@ -82,24 +82,8 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
     });
   }, [chartData]);
 
-  // Calculate dynamic domain padding based on timeframe
-  const domainPadding = useMemo(() => {
-    const dataPointCount = chartData.length;
-
-    // For timeframes with fewer data points, use slightly more padding for visual breathing room
-    // For timeframes with many data points, use minimal padding to show more detail
-    if (dataPointCount <= 24) { // 1D with hourly data
-      return { holder: 1.03, change: 1.05, percent: 1.05 }; // Minimal padding
-    } else if (dataPointCount <= 168) { // 7D
-      return { holder: 1.025, change: 1.04, percent: 1.04 };
-    } else if (dataPointCount <= 720) { // 30D
-      return { holder: 1.02, change: 1.03, percent: 1.03 };
-    } else if (dataPointCount <= 2160) { // 90D
-      return { holder: 1.015, change: 1.025, percent: 1.025 };
-    } else { // ALL
-      return { holder: 1.01, change: 1.02, percent: 1.02 }; // Very tight for overview
-    }
-  }, [chartData]);
+  // Fixed buffer of 50 for all charts
+  const domainBuffer = 50;
 
   // Get chart config with project color
   const chartConfig = useMemo(() =>
@@ -115,8 +99,8 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
 
   // Get color for holder change indicator
   const getChangeColor = (change: number) => {
-    if (change > 0) return 'rgb(34, 197, 94)'; // green-500
-    if (change < 0) return 'rgb(239, 68, 68)'; // red-500
+    if (change > 0) return primaryColor; // ZERA green
+    if (change < 0) return '#C95252'; // Calm red
     return 'rgb(115, 115, 115)'; // neutral-500
   };
 
@@ -126,26 +110,9 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
 
   return (
     <div className="w-full h-full relative flex flex-col overflow-hidden">
-      {/* Mobile and Tablet: Settings Button */}
-      {onOpenMobileMenu && (
-        <div className="lg:hidden absolute top-3 left-3 z-30">
-          <button
-            onClick={onOpenMobileMenu}
-            className="w-11 h-11 rounded-full flex items-center justify-center bg-black/90 hover:bg-black border-2 shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)] hover:shadow-[0_0_16px_rgba(var(--primary-rgb),0.5)] transition-all backdrop-blur-sm"
-            style={{ borderColor: primaryColor }}
-            aria-label="Open settings"
-          >
-            <svg className="w-5 h-5" style={{ color: primaryColor }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-          </button>
-        </div>
-      )}
-
       {/* Charts Grid - Scrollable on mobile */}
       <div className="flex-1 overflow-y-auto p-4 md:p-6 md:min-h-0 md:overflow-hidden">
-        <div className="flex flex-col gap-4 pt-16 md:pt-0 h-auto md:h-full">
+        <div className="flex flex-col gap-4 h-auto md:h-full">
         {/* Stats Cards */}
         <div className="grid grid-cols-3 gap-2 md:gap-4 flex-shrink-0">
           <div className="p-2 md:p-6 bg-black/50 border rounded-lg flex flex-col items-center text-center" style={{ borderColor: `${primaryColor}40` }}>
@@ -162,13 +129,13 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
           <div className="p-2 md:p-6 bg-black/50 border rounded-lg flex flex-col items-center text-center" style={{ borderColor: `${primaryColor}40` }}>
             <div className="flex flex-col items-center gap-0.5 md:gap-1 mb-1 md:mb-2">
               {holderChange >= 0 ? (
-                <ArrowUp className="w-3.5 h-3.5 md:w-4 md:h-4 text-green-500" />
+                <ArrowUp className="w-3.5 h-3.5 md:w-4 md:h-4" style={{ color: primaryColor }} />
               ) : (
-                <ArrowDown className="w-3.5 h-3.5 md:w-4 md:h-4 text-red-500" />
+                <ArrowDown className="w-3.5 h-3.5 md:w-4 md:h-4" style={{ color: '#C95252' }} />
               )}
               <span className="text-[11px] md:text-sm font-medium leading-tight text-white/80">Change</span>
             </div>
-            <div className={`text-sm md:text-2xl font-bold leading-tight ${holderChange >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+            <div className={`text-sm md:text-2xl font-bold leading-tight`} style={{ color: holderChange >= 0 ? primaryColor : '#C95252' }}>
               {holderChange >= 0 ? '+' : ''}{formatNumber(holderChange)}
             </div>
             <p className="text-[9px] md:text-xs text-white/60 leading-tight">{timeframe}</p>
@@ -176,12 +143,25 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
 
           <div className="p-2 md:p-6 bg-black/50 border rounded-lg flex flex-col items-center text-center" style={{ borderColor: `${primaryColor}40` }}>
             <div className="flex flex-col items-center gap-0.5 md:gap-1 mb-1 md:mb-2">
-              <TrendingUp className="w-3.5 h-3.5 md:w-4 md:h-4 text-white/80" />
+              {(() => {
+                const growthRate = chartData.length >= 2 ? (holderChange / chartData[0].holders) * 100 : 0;
+                if (growthRate > 0) return <TrendingUp className="w-3.5 h-3.5 md:w-4 md:h-4" style={{ color: primaryColor }} />;
+                if (growthRate < 0) return <TrendingUp className="w-3.5 h-3.5 md:w-4 md:h-4 rotate-180" style={{ color: '#C95252' }} />;
+                return <TrendingUp className="w-3.5 h-3.5 md:w-4 md:h-4 text-neutral-500" />;
+              })()}
               <span className="text-[11px] md:text-sm font-medium leading-tight text-white/80">Growth Rate</span>
             </div>
-            <div className="text-sm md:text-2xl font-bold text-white leading-tight">
+            <div className={`text-sm md:text-2xl font-bold leading-tight`} style={{
+              color: chartData.length >= 2
+                ? (holderChange / chartData[0].holders) * 100 > 0
+                  ? primaryColor
+                  : (holderChange / chartData[0].holders) * 100 < 0
+                  ? '#C95252'
+                  : 'rgb(115, 115, 115)'
+                : 'rgb(115, 115, 115)'
+            }}>
               {chartData.length >= 2 ? (
-                `${((holderChange / chartData[0].holders) * 100).toFixed(1)}%`
+                `${((holderChange / chartData[0].holders) * 100) > 0 ? '+' : ''}${((holderChange / chartData[0].holders) * 100).toFixed(1)}%`
               ) : '0%'}
             </div>
             <p className="text-[9px] md:text-xs text-white/60 leading-tight">{timeframe}</p>
@@ -220,7 +200,7 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
                       minTickGap={32}
                     />
                     <YAxis
-                      domain={['dataMin', (dataMax: number) => dataMax * domainPadding.holder]}
+                      domain={[(dataMin: number) => dataMin - domainBuffer, (dataMax: number) => dataMax + domainBuffer]}
                       tickLine={false}
                       axisLine={false}
                       tickFormatter={(value) => formatNumber(value)}
@@ -291,7 +271,7 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
                       minTickGap={32}
                     />
                     <YAxis
-                      domain={[(dataMin: number) => dataMin * domainPadding.change, (dataMax: number) => dataMax * domainPadding.change]}
+                      domain={[(dataMin: number) => dataMin - domainBuffer, (dataMax: number) => dataMax + domainBuffer]}
                       tickLine={false}
                       axisLine={false}
                       tickFormatter={(value) => {
@@ -345,7 +325,7 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
                       minTickGap={32}
                     />
                     <YAxis
-                      domain={[(dataMin: number) => dataMin * domainPadding.percent, (dataMax: number) => dataMax * domainPadding.percent]}
+                      domain={[(dataMin: number) => dataMin - 50, (dataMax: number) => dataMax + 50]}
                       tickLine={false}
                       axisLine={false}
                       tickFormatter={(value) => {

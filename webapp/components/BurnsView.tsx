@@ -7,7 +7,7 @@ import { Flame, TrendingDown, Activity, ExternalLink, ArrowUpDown, ArrowUp, Arro
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from '@/components/ui/chart';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { TokenLoadingLogo } from '@/components/TokenLoadingLogo';
+import { BurnsChartSkeleton } from '@/components/BurnsChartSkeleton';
 import { useTokenContext } from '@/lib/TokenContext';
 import BurnsTimeframeToggle from '@/components/BurnsTimeframeToggle';
 
@@ -133,39 +133,14 @@ export function BurnsView({ projectSlug, primaryColor, timeframe = 'ALL', onTime
   };
 
   if (burnsLoading || !burnsData) {
-    return (
-      <div className="w-full h-full flex items-center justify-center backdrop-blur-xl">
-        <TokenLoadingLogo
-          svgUrl={currentProject?.loaderUrl}
-          color={currentProject?.primaryColor || primaryColor}
-          isLoading={burnsLoading}
-        />
-      </div>
-    );
+    return <BurnsChartSkeleton />;
   }
 
   return (
     <div className="w-full h-full relative flex flex-col overflow-hidden">
-      {/* Mobile and Tablet: Settings Button */}
-      {onOpenMobileMenu && (
-        <div className="lg:hidden absolute top-3 left-3 z-30">
-          <button
-            onClick={onOpenMobileMenu}
-            className="w-11 h-11 rounded-full flex items-center justify-center bg-black/90 hover:bg-black border-2 shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)] hover:shadow-[0_0_16px_rgba(var(--primary-rgb),0.5)] transition-all backdrop-blur-sm"
-            style={{ borderColor: primaryColor }}
-            aria-label="Open settings"
-          >
-            <svg className="w-5 h-5" style={{ color: primaryColor }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-          </button>
-        </div>
-      )}
-
       {/* Scrollable Content */}
       <div className="flex-1 overflow-y-auto p-4 md:p-6">
-        <div className="flex flex-col gap-4 pt-16 md:pt-0">
+        <div className="flex flex-col gap-4">
         {/* Stats Cards */}
         <div className="grid grid-cols-3 gap-2 md:gap-4 flex-shrink-0">
           <div className="p-2 md:p-6 bg-black/50 border rounded-lg flex flex-col items-center text-center" style={{ borderColor: `${primaryColor}40` }}>
@@ -234,6 +209,7 @@ export function BurnsView({ projectSlug, primaryColor, timeframe = 'ALL', onTime
                     height={70}
                   />
                   <YAxis
+                    domain={[0, (dataMax: number) => dataMax + 50]}
                     stroke="rgba(255,255,255,0.5)"
                     tick={{ fill: 'rgba(255,255,255,0.7)', fontSize: 11 }}
                     tickFormatter={formatNumber}
@@ -330,8 +306,8 @@ export function BurnsView({ projectSlug, primaryColor, timeframe = 'ALL', onTime
                       >
                         <TableCell className="font-medium text-xs py-2" style={{ color: primaryColor }}>
                           <div className="flex items-center gap-1">
-                            <Flame className="w-3 h-3 flex-shrink-0" />
-                            {formatNumber(burn.amount)} ZERA
+                            <Flame className="w-3 h-3 flex-shrink-0 hidden md:inline" />
+                            {formatNumber(burn.amount)}
                           </div>
                         </TableCell>
                         <TableCell className="py-2">
@@ -346,7 +322,8 @@ export function BurnsView({ projectSlug, primaryColor, timeframe = 'ALL', onTime
                           </a>
                         </TableCell>
                         <TableCell className="text-white/60 text-[10px] py-2 whitespace-nowrap">
-                          {new Date(burn.timestamp * 1000).toLocaleString()}
+                          <span className="md:hidden">{new Date(burn.timestamp * 1000).toLocaleDateString()}</span>
+                          <span className="hidden md:inline">{new Date(burn.timestamp * 1000).toLocaleString()}</span>
                         </TableCell>
                         <TableCell className="text-right py-2">
                           <a

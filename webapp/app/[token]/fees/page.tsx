@@ -241,6 +241,7 @@ function FeesPageContent() {
                         minTickGap={32}
                       />
                       <YAxis
+                        domain={[0, (dataMax: number) => dataMax + 50]}
                         tickLine={false}
                         axisLine={false}
                         tickFormatter={(value) => {
@@ -291,6 +292,7 @@ function FeesPageContent() {
                         minTickGap={32}
                       />
                       <YAxis
+                        domain={[0, (dataMax: number) => dataMax + 50]}
                         tickLine={false}
                         axisLine={false}
                         tickFormatter={(value) => {
@@ -341,6 +343,7 @@ function FeesPageContent() {
                         minTickGap={32}
                       />
                       <YAxis
+                        domain={[0, (dataMax: number) => dataMax + 50]}
                         tickLine={false}
                         axisLine={false}
                         tickFormatter={(value) => {
@@ -391,6 +394,7 @@ function FeesPageContent() {
                         minTickGap={32}
                       />
                       <YAxis
+                        domain={[0, (dataMax: number) => dataMax + 50]}
                         tickLine={false}
                         axisLine={false}
                         tickFormatter={(value) => {

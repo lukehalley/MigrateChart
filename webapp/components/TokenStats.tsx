@@ -183,9 +183,14 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D', display
               {formatPrice(stats.price)}
             </p>
             <p
-              className={`text-sm font-semibold select-text ${
-                stats.priceChange24h >= 0 ? 'text-[#52C97D]' : 'text-[#ef5350]'
-              } ${flashingFields.has('priceChange') ? 'flash-update' : ''}`}
+              className={`text-sm font-semibold select-text ${flashingFields.has('priceChange') ? 'flash-update' : ''}`}
+              style={{
+                color: stats.priceChange24h > 0
+                  ? 'var(--primary-color)'
+                  : stats.priceChange24h < 0
+                  ? '#C95252'
+                  : 'rgb(115, 115, 115)'
+              }}
             >
               {formatPercent(stats.priceChange24h)}
             </p>

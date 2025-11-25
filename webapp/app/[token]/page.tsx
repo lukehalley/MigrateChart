@@ -923,6 +923,22 @@ function HomeContent() {
                 </svg>
               </div>
 
+              {/* Menu Button - Far Right */}
+              <motion.button
+                onClick={() => setShowMobileMenu(true)}
+                className="flex-shrink-0 w-10 h-10 flex items-center justify-center bg-black/60 border-2 rounded-lg backdrop-blur-sm hover:bg-black/80 transition-all"
+                style={{ borderColor: `${primaryColor}40` }}
+                whileHover={{
+                  borderColor: hexToRgba(primaryColor, 0.7),
+                  boxShadow: `0 0 12px ${hexToRgba(primaryColor, 0.3)}`
+                }}
+                aria-label="Open menu"
+              >
+                <svg className="w-5 h-5" style={{ color: primaryColor }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </motion.button>
+
               {/* Call to Action - Centered */}
               <div className="flex items-center gap-2 absolute left-1/2 -translate-x-1/2">
                 <motion.div
