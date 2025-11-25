@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import useSWR from 'swr';
 import { Area, AreaChart, Bar, BarChart, Line, LineChart, CartesianGrid, XAxis, YAxis } from 'recharts';
-import { TrendingUp, Activity, BarChart3, LineChart as LineChartIcon } from 'lucide-react';
+import { TrendingUp, Activity, BarChart3, LineChart as LineChartIcon, DollarSign, Calendar } from 'lucide-react';
 import { FeesResponse } from '@/app/api/fees/[slug]/route';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from '@/components/ui/chart';
@@ -111,8 +111,41 @@ export function FeesView({ projectSlug, primaryColor, timeframe, onTimeframeChan
       )}
 
       {/* Charts Grid - Scrollable on mobile */}
-      <div className="flex-1 overflow-y-auto md:overflow-hidden p-4 md:p-6 md:min-h-0">
-        <div className="grid gap-4 grid-cols-1 lg:grid-cols-2 pt-16 md:pt-0 h-auto md:h-full md:grid-rows-2">
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 md:min-h-0 md:overflow-hidden">
+        <div className="flex flex-col gap-4 pt-16 md:pt-0 h-auto md:h-full">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-3 gap-2 md:gap-4 flex-shrink-0">
+          <div className="p-2 md:p-6 bg-black/50 border rounded-lg flex flex-col items-center text-center" style={{ borderColor: `${primaryColor}40` }}>
+            <div className="flex flex-col items-center gap-0.5 md:gap-1 mb-1 md:mb-2">
+              <DollarSign className="w-3.5 h-3.5 md:w-4 md:h-4" style={{ color: primaryColor }} />
+              <span className="text-[11px] md:text-sm font-medium leading-tight" style={{ color: primaryColor }}>Total Fees</span>
+            </div>
+            <div className="text-sm md:text-2xl font-bold text-white leading-tight">{formatNumber(feesData.totalFees)}</div>
+            <p className="text-[9px] md:text-xs text-white/60 leading-tight">{timeframe}</p>
+          </div>
+
+          <div className="p-2 md:p-6 bg-black/50 border rounded-lg flex flex-col items-center text-center" style={{ borderColor: `${primaryColor}40` }}>
+            <div className="flex flex-col items-center gap-0.5 md:gap-1 mb-1 md:mb-2">
+              <Activity className="w-3.5 h-3.5 md:w-4 md:h-4 text-white/80" />
+              <span className="text-[11px] md:text-sm font-medium leading-tight text-white/80">Avg Daily</span>
+            </div>
+            <div className="text-sm md:text-2xl font-bold text-white leading-tight">{formatNumber(feesData.avgDailyFees)}</div>
+            <p className="text-[9px] md:text-xs text-white/60 leading-tight">Per Day</p>
+          </div>
+
+          <div className="p-2 md:p-6 bg-black/50 border rounded-lg flex flex-col items-center text-center" style={{ borderColor: `${primaryColor}40` }}>
+            <div className="flex flex-col items-center gap-0.5 md:gap-1 mb-1 md:mb-2">
+              <TrendingUp className="w-3.5 h-3.5 md:w-4 md:h-4 text-white/80" />
+              <span className="text-[11px] md:text-sm font-medium leading-tight text-white/80">Peak Day</span>
+            </div>
+            <div className="text-sm md:text-2xl font-bold text-white leading-tight">
+              {formatNumber(Math.max(...feesData.dailyFees.map(d => d.fees)))}
+            </div>
+            <p className="text-[9px] md:text-xs text-white/60 leading-tight">Highest</p>
+          </div>
+        </div>
+
+        <div className="grid gap-4 grid-cols-1 lg:grid-cols-2 flex-1 md:min-h-0 md:grid-rows-2">
             {/* Daily Fees Bar Chart */}
             <Card className="bg-neutral-900 border border-neutral-800 flex flex-col md:min-h-0">
           <CardHeader>
@@ -318,6 +351,7 @@ export function FeesView({ projectSlug, primaryColor, timeframe, onTimeframeChan
             </ChartContainer>
           </CardContent>
         </Card>
+        </div>
         </div>
       </div>
     </div>

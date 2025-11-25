@@ -2,7 +2,7 @@
 
 import React, { useMemo } from 'react';
 import useSWR from 'swr';
-import { Users, TrendingUp, Percent } from 'lucide-react';
+import { Users, TrendingUp, Percent, ArrowUp, ArrowDown } from 'lucide-react';
 import { Area, AreaChart, Bar, BarChart, Line, LineChart, CartesianGrid, XAxis, YAxis, ReferenceLine } from 'recharts';
 import { HoldersResponse } from '@/app/api/holders/[slug]/route';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -144,8 +144,51 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
       )}
 
       {/* Charts Grid - Scrollable on mobile */}
-      <div className="flex-1 overflow-y-auto md:overflow-hidden p-4 md:p-6 md:min-h-0">
-        <div className="grid gap-4 grid-cols-1 pt-16 md:pt-0 h-auto md:h-full md:grid-rows-[1fr_1fr]">
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 md:min-h-0 md:overflow-hidden">
+        <div className="flex flex-col gap-4 pt-16 md:pt-0 h-auto md:h-full">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-3 gap-2 md:gap-4 flex-shrink-0">
+          <div className="p-2 md:p-6 bg-black/50 border rounded-lg flex flex-col items-center text-center" style={{ borderColor: `${primaryColor}40` }}>
+            <div className="flex flex-col items-center gap-0.5 md:gap-1 mb-1 md:mb-2">
+              <Users className="w-3.5 h-3.5 md:w-4 md:h-4" style={{ color: primaryColor }} />
+              <span className="text-[11px] md:text-sm font-medium leading-tight" style={{ color: primaryColor }}>Current Holders</span>
+            </div>
+            <div className="text-sm md:text-2xl font-bold text-white leading-tight">
+              {formatNumber(chartData[chartData.length - 1]?.holders || 0)}
+            </div>
+            <p className="text-[9px] md:text-xs text-white/60 leading-tight">Total</p>
+          </div>
+
+          <div className="p-2 md:p-6 bg-black/50 border rounded-lg flex flex-col items-center text-center" style={{ borderColor: `${primaryColor}40` }}>
+            <div className="flex flex-col items-center gap-0.5 md:gap-1 mb-1 md:mb-2">
+              {holderChange >= 0 ? (
+                <ArrowUp className="w-3.5 h-3.5 md:w-4 md:h-4 text-green-500" />
+              ) : (
+                <ArrowDown className="w-3.5 h-3.5 md:w-4 md:h-4 text-red-500" />
+              )}
+              <span className="text-[11px] md:text-sm font-medium leading-tight text-white/80">Change</span>
+            </div>
+            <div className={`text-sm md:text-2xl font-bold leading-tight ${holderChange >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+              {holderChange >= 0 ? '+' : ''}{formatNumber(holderChange)}
+            </div>
+            <p className="text-[9px] md:text-xs text-white/60 leading-tight">{timeframe}</p>
+          </div>
+
+          <div className="p-2 md:p-6 bg-black/50 border rounded-lg flex flex-col items-center text-center" style={{ borderColor: `${primaryColor}40` }}>
+            <div className="flex flex-col items-center gap-0.5 md:gap-1 mb-1 md:mb-2">
+              <TrendingUp className="w-3.5 h-3.5 md:w-4 md:h-4 text-white/80" />
+              <span className="text-[11px] md:text-sm font-medium leading-tight text-white/80">Growth Rate</span>
+            </div>
+            <div className="text-sm md:text-2xl font-bold text-white leading-tight">
+              {chartData.length >= 2 ? (
+                `${((holderChange / chartData[0].holders) * 100).toFixed(1)}%`
+              ) : '0%'}
+            </div>
+            <p className="text-[9px] md:text-xs text-white/60 leading-tight">{timeframe}</p>
+          </div>
+        </div>
+
+        <div className="grid gap-4 grid-cols-1 flex-1 md:min-h-0 md:grid-rows-[1fr_1fr]">
           {/* Holder Count Growth Area Chart */}
           <Card className="bg-neutral-900 border border-neutral-800 flex flex-col md:min-h-0">
             <CardHeader>
@@ -335,6 +378,7 @@ export function HoldersView({ projectSlug, primaryColor, timeframe, onTimeframeC
               </CardContent>
             </Card>
           </div>
+        </div>
         </div>
       </div>
     </div>

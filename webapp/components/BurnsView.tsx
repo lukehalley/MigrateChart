@@ -151,66 +151,56 @@ export function BurnsView({ projectSlug, primaryColor, timeframe = 'ALL', onTime
         <div className="lg:hidden absolute top-3 left-3 z-30">
           <button
             onClick={onOpenMobileMenu}
-            className="flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-black/60 border rounded-lg backdrop-blur-sm hover:bg-black/80 transition-colors"
-            style={{ borderColor: `${primaryColor}40`, color: primaryColor }}
+            className="w-11 h-11 rounded-full flex items-center justify-center bg-black/90 hover:bg-black border-2 shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)] hover:shadow-[0_0_16px_rgba(var(--primary-rgb),0.5)] transition-all backdrop-blur-sm"
+            style={{ borderColor: primaryColor }}
+            aria-label="Open settings"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            <svg className="w-5 h-5" style={{ color: primaryColor }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
-            Settings
           </button>
         </div>
       )}
 
       {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 md:p-6">
+        <div className="flex flex-col gap-4 pt-16 md:pt-0">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card className="bg-black/50 border" style={{ borderColor: `${primaryColor}40` }}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2" style={{ color: primaryColor }}>
-                <Flame className="w-4 h-4" />
-                Total Burned Tokens
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">{formatNumber(burnsData.stats.totalBurned)}</div>
-              <p className="text-xs text-white/60 mt-1">ZERA Tokens</p>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-3 gap-2 md:gap-4 flex-shrink-0">
+          <div className="p-2 md:p-6 bg-black/50 border rounded-lg flex flex-col items-center text-center" style={{ borderColor: `${primaryColor}40` }}>
+            <div className="flex flex-col items-center gap-0.5 md:gap-1 mb-1 md:mb-2">
+              <Flame className="w-3.5 h-3.5 md:w-4 md:h-4" style={{ color: primaryColor }} />
+              <span className="text-[11px] md:text-sm font-medium leading-tight" style={{ color: primaryColor }}>Total Burned</span>
+            </div>
+            <div className="text-sm md:text-2xl font-bold text-white leading-tight">{formatNumber(burnsData.stats.totalBurned)}</div>
+            <p className="text-[9px] md:text-xs text-white/60 leading-tight">ZERA</p>
+          </div>
 
-          <Card className="bg-black/50 border" style={{ borderColor: `${primaryColor}40` }}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2 text-white/80">
-                <TrendingDown className="w-4 h-4" />
-                Current Supply
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">{formatNumber(burnsData.stats.currentSupply)}</div>
-              <p className="text-xs text-white/60 mt-1">ZERA Tokens</p>
-            </CardContent>
-          </Card>
+          <div className="p-2 md:p-6 bg-black/50 border rounded-lg flex flex-col items-center text-center" style={{ borderColor: `${primaryColor}40` }}>
+            <div className="flex flex-col items-center gap-0.5 md:gap-1 mb-1 md:mb-2">
+              <TrendingDown className="w-3.5 h-3.5 md:w-4 md:h-4 text-white/80" />
+              <span className="text-[11px] md:text-sm font-medium leading-tight text-white/80">Current Supply</span>
+            </div>
+            <div className="text-sm md:text-2xl font-bold text-white leading-tight">{formatNumber(burnsData.stats.currentSupply)}</div>
+            <p className="text-[9px] md:text-xs text-white/60 leading-tight">ZERA</p>
+          </div>
 
-          <Card className="bg-black/50 border" style={{ borderColor: `${primaryColor}40` }}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2 text-white/80">
-                <Activity className="w-4 h-4" />
-                Burn Rate
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">
-                {burnsData.stats.burnPercentage >= 0.01
-                  ? `${burnsData.stats.burnPercentage.toFixed(2)}%`
-                  : burnsData.stats.burnPercentage >= 0.0001
-                  ? `${burnsData.stats.burnPercentage.toFixed(4)}%`
-                  : `${burnsData.stats.burnPercentage.toFixed(6)}%`
-                }
-              </div>
-              <p className="text-xs text-white/60 mt-1">Of Initial Supply</p>
-            </CardContent>
-          </Card>
+          <div className="p-2 md:p-6 bg-black/50 border rounded-lg flex flex-col items-center text-center" style={{ borderColor: `${primaryColor}40` }}>
+            <div className="flex flex-col items-center gap-0.5 md:gap-1 mb-1 md:mb-2">
+              <Activity className="w-3.5 h-3.5 md:w-4 md:h-4 text-white/80" />
+              <span className="text-[11px] md:text-sm font-medium leading-tight text-white/80">Burn Rate</span>
+            </div>
+            <div className="text-sm md:text-2xl font-bold text-white leading-tight">
+              {burnsData.stats.burnPercentage >= 0.01
+                ? `${burnsData.stats.burnPercentage.toFixed(2)}%`
+                : burnsData.stats.burnPercentage >= 0.0001
+                ? `${burnsData.stats.burnPercentage.toFixed(4)}%`
+                : `${burnsData.stats.burnPercentage >= 0.000001 ? burnsData.stats.burnPercentage.toFixed(6) : burnsData.stats.burnPercentage.toExponential(2)}%`
+              }
+            </div>
+            <p className="text-[9px] md:text-xs text-white/60 leading-tight">Of Initial Supply</p>
+          </div>
         </div>
 
         {/* Chart - Individual Burns */}
@@ -293,42 +283,42 @@ export function BurnsView({ projectSlug, primaryColor, timeframe = 'ALL', onTime
                 <Table>
                   <TableHeader>
                     <TableRow style={{ borderColor: `${primaryColor}20` }}>
-                      <TableHead className="text-white/70">
+                      <TableHead className="text-white/70 text-xs py-2">
                         <button
                           onClick={() => handleSort('amount')}
-                          className="flex items-center gap-1 hover:text-white transition-colors"
+                          className="flex items-center gap-0.5 hover:text-white transition-colors"
                         >
                           Amount
                           {sortField === 'amount' ? (
                             sortDirection === 'asc' ? (
-                              <ArrowUp className="w-3 h-3" />
+                              <ArrowUp className="w-2.5 h-2.5" />
                             ) : (
-                              <ArrowDown className="w-3 h-3" />
+                              <ArrowDown className="w-2.5 h-2.5" />
                             )
                           ) : (
-                            <ArrowUpDown className="w-3 h-3 opacity-50" />
+                            <ArrowUpDown className="w-2.5 h-2.5 opacity-50" />
                           )}
                         </button>
                       </TableHead>
-                      <TableHead className="text-white/70">From</TableHead>
-                      <TableHead className="text-white/70">
+                      <TableHead className="text-white/70 text-xs py-2">From</TableHead>
+                      <TableHead className="text-white/70 text-xs py-2">
                         <button
                           onClick={() => handleSort('timestamp')}
-                          className="flex items-center gap-1 hover:text-white transition-colors"
+                          className="flex items-center gap-0.5 hover:text-white transition-colors"
                         >
                           Time
                           {sortField === 'timestamp' ? (
                             sortDirection === 'asc' ? (
-                              <ArrowUp className="w-3 h-3" />
+                              <ArrowUp className="w-2.5 h-2.5" />
                             ) : (
-                              <ArrowDown className="w-3 h-3" />
+                              <ArrowDown className="w-2.5 h-2.5" />
                             )
                           ) : (
-                            <ArrowUpDown className="w-3 h-3 opacity-50" />
+                            <ArrowUpDown className="w-2.5 h-2.5 opacity-50" />
                           )}
                         </button>
                       </TableHead>
-                      <TableHead className="text-white/70 text-right">Transaction</TableHead>
+                      <TableHead className="text-white/70 text-xs py-2 text-right">Transaction</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -338,36 +328,36 @@ export function BurnsView({ projectSlug, primaryColor, timeframe = 'ALL', onTime
                         className="hover:bg-black/30 transition-colors"
                         style={{ borderColor: `${primaryColor}20` }}
                       >
-                        <TableCell className="font-medium" style={{ color: primaryColor }}>
-                          <div className="flex items-center gap-2">
-                            <Flame className="w-3.5 h-3.5 flex-shrink-0" />
+                        <TableCell className="font-medium text-xs py-2" style={{ color: primaryColor }}>
+                          <div className="flex items-center gap-1">
+                            <Flame className="w-3 h-3 flex-shrink-0" />
                             {formatNumber(burn.amount)} ZERA
                           </div>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="py-2">
                           <a
                             href={`https://solscan.io/account/${burn.from}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="font-mono text-xs hover:underline text-white/70 hover:text-white flex items-center gap-1"
+                            className="font-mono text-[10px] hover:underline text-white/70 hover:text-white flex items-center gap-0.5"
                           >
                             {truncateAddress(burn.from)}
-                            <ExternalLink className="w-3 h-3" />
+                            <ExternalLink className="w-2.5 h-2.5" />
                           </a>
                         </TableCell>
-                        <TableCell className="text-white/60 text-sm whitespace-nowrap">
+                        <TableCell className="text-white/60 text-[10px] py-2 whitespace-nowrap">
                           {new Date(burn.timestamp * 1000).toLocaleString()}
                         </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="text-right py-2">
                           <a
                             href={`https://solscan.io/tx/${burn.signature}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="font-mono text-xs hover:underline inline-flex items-center gap-1"
+                            className="font-mono text-[10px] hover:underline inline-flex items-center gap-0.5"
                             style={{ color: `${primaryColor}90` }}
                           >
                             {truncateAddress(burn.signature)}
-                            <ExternalLink className="w-3 h-3" />
+                            <ExternalLink className="w-2.5 h-2.5" />
                           </a>
                         </TableCell>
                       </TableRow>
@@ -378,6 +368,7 @@ export function BurnsView({ projectSlug, primaryColor, timeframe = 'ALL', onTime
             )}
           </CardContent>
         </Card>
+        </div>
       </div>
     </div>
   );
