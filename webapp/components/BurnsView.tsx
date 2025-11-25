@@ -259,42 +259,42 @@ export function BurnsView({ projectSlug, primaryColor, timeframe = 'ALL', onTime
                 <Table>
                   <TableHeader>
                     <TableRow style={{ borderColor: `${primaryColor}20` }}>
-                      <TableHead className="text-white/70 text-xs py-2">
+                      <TableHead className="text-white/70 text-xs md:text-sm py-2">
                         <button
                           onClick={() => handleSort('amount')}
-                          className="flex items-center gap-0.5 hover:text-white transition-colors"
+                          className="flex items-center gap-0.5 md:gap-1 hover:text-white transition-colors"
                         >
                           Amount
                           {sortField === 'amount' ? (
                             sortDirection === 'asc' ? (
-                              <ArrowUp className="w-2.5 h-2.5" />
+                              <ArrowUp className="w-2.5 h-2.5 md:w-3.5 md:h-3.5" />
                             ) : (
-                              <ArrowDown className="w-2.5 h-2.5" />
+                              <ArrowDown className="w-2.5 h-2.5 md:w-3.5 md:h-3.5" />
                             )
                           ) : (
-                            <ArrowUpDown className="w-2.5 h-2.5 opacity-50" />
+                            <ArrowUpDown className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 opacity-50" />
                           )}
                         </button>
                       </TableHead>
-                      <TableHead className="text-white/70 text-xs py-2">From</TableHead>
-                      <TableHead className="text-white/70 text-xs py-2">
+                      <TableHead className="text-white/70 text-xs md:text-sm py-2">From</TableHead>
+                      <TableHead className="text-white/70 text-xs md:text-sm py-2">
                         <button
                           onClick={() => handleSort('timestamp')}
-                          className="flex items-center gap-0.5 hover:text-white transition-colors"
+                          className="flex items-center gap-0.5 md:gap-1 hover:text-white transition-colors"
                         >
                           Time
                           {sortField === 'timestamp' ? (
                             sortDirection === 'asc' ? (
-                              <ArrowUp className="w-2.5 h-2.5" />
+                              <ArrowUp className="w-2.5 h-2.5 md:w-3.5 md:h-3.5" />
                             ) : (
-                              <ArrowDown className="w-2.5 h-2.5" />
+                              <ArrowDown className="w-2.5 h-2.5 md:w-3.5 md:h-3.5" />
                             )
                           ) : (
-                            <ArrowUpDown className="w-2.5 h-2.5 opacity-50" />
+                            <ArrowUpDown className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 opacity-50" />
                           )}
                         </button>
                       </TableHead>
-                      <TableHead className="text-white/70 text-xs py-2 text-right">Transaction</TableHead>
+                      <TableHead className="text-white/70 text-xs md:text-sm py-2 text-right">Transaction</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -304,37 +304,37 @@ export function BurnsView({ projectSlug, primaryColor, timeframe = 'ALL', onTime
                         className="hover:bg-black/30 transition-colors"
                         style={{ borderColor: `${primaryColor}20` }}
                       >
-                        <TableCell className="font-medium text-xs py-2" style={{ color: primaryColor }}>
-                          <div className="flex items-center gap-1">
-                            <Flame className="w-3 h-3 flex-shrink-0 hidden md:inline" />
+                        <TableCell className="font-medium text-xs md:text-sm py-2 md:py-3" style={{ color: primaryColor }}>
+                          <div className="flex items-center gap-1 md:gap-2">
+                            <Flame className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0 hidden md:inline" />
                             {formatNumber(burn.amount)}
                           </div>
                         </TableCell>
-                        <TableCell className="py-2">
+                        <TableCell className="py-2 md:py-3">
                           <a
                             href={`https://solscan.io/account/${burn.from}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="font-mono text-[10px] hover:underline text-white/70 hover:text-white flex items-center gap-0.5"
+                            className="font-mono text-[10px] md:text-xs hover:underline text-white/70 hover:text-white flex items-center gap-0.5 md:gap-1"
                           >
                             {truncateAddress(burn.from)}
-                            <ExternalLink className="w-2.5 h-2.5" />
+                            <ExternalLink className="w-2.5 h-2.5 md:w-3 md:h-3" />
                           </a>
                         </TableCell>
-                        <TableCell className="text-white/60 text-[10px] py-2 whitespace-nowrap">
+                        <TableCell className="text-white/60 text-[10px] md:text-sm py-2 md:py-3 whitespace-nowrap">
                           <span className="md:hidden">{new Date(burn.timestamp * 1000).toLocaleDateString()}</span>
                           <span className="hidden md:inline">{new Date(burn.timestamp * 1000).toLocaleString()}</span>
                         </TableCell>
-                        <TableCell className="text-right py-2">
+                        <TableCell className="text-right py-2 md:py-3">
                           <a
                             href={`https://solscan.io/tx/${burn.signature}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="font-mono text-[10px] hover:underline inline-flex items-center gap-0.5"
+                            className="font-mono text-[10px] md:text-xs hover:underline inline-flex items-center gap-0.5 md:gap-1"
                             style={{ color: `${primaryColor}90` }}
                           >
                             {truncateAddress(burn.signature)}
-                            <ExternalLink className="w-2.5 h-2.5" />
+                            <ExternalLink className="w-2.5 h-2.5 md:w-3 md:h-3" />
                           </a>
                         </TableCell>
                       </TableRow>
