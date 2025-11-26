@@ -1,19 +1,20 @@
-# ZERA Interactive Price Chart
+# Migrate Chart - Interactive Migration Tracker
 
-A Next.js web application that displays an interactive, real-time price chart for the ZERA token, tracking its complete history across all pool migrations (M0N3Y → ZERA Raydium → ZERA Meteora).
+A Next.js web application that displays interactive, real-time price charts for tokens across pool migrations and transitions. Currently tracking ZERA token's complete migration history (M0N3Y → ZERA Raydium → ZERA Meteora), but designed to support any token migration scenario.
 
-**Live App**: [zera-chart.vercel.app](https://zera-chart.vercel.app)
+**Live App**: [migrate-chart.vercel.app](https://migrate-chart.vercel.app)
 
 ## Features
 
-- 📊 **Interactive Candlestick Chart** - Built with TradingView's lightweight-charts library
-- 🔄 **Real-time Data** - Fetches live data from GeckoTerminal API with automatic updates
-- 📈 **Peak & Trough Markers** - Automatically detects and labels significant highs and lows
-- 🔀 **Migration Tracking** - Visual markers showing pool migrations
-- 🎨 **Dark Theme** - Professional dark theme matching dexscreener aesthetics
+- 📊 **Interactive Candlestick Chart** - Professional charting with TradingView's lightweight-charts library
+- 🔄 **Real-time Data** - Fetches live data from GeckoTerminal API with smart automatic updates
+- 📈 **Peak & Trough Markers** - Automatically detects and labels significant price levels
+- 🔀 **Migration Tracking** - Visual markers and event indicators for pool migrations and transitions
+- 🎨 **Dark Theme** - Professional dark theme with excellent readability
 - ⚡ **Multiple Timeframes** - Switch between 1M (minute), 1H (hour), and 1D (day) views
-- 📊 **Statistics** - Live price changes, ATH/ATL, volume, and more
-- 🔍 **Zoom & Pan** - Full interactivity with crosshair tooltips
+- 📊 **Comprehensive Statistics** - Live price changes, ATH/ATL, volume, and cross-pool analytics
+- 🔍 **Full Interactivity** - Zoom, pan, and crosshair tooltips for detailed analysis
+- 🎯 **Configurable** - Easily adapt to track any token migration scenario
 
 ## Tech Stack
 
@@ -70,44 +71,45 @@ webapp/
 
 ### Data Flow
 
-1. **SWR Hook** fetches data from GeckoTerminal API for all 3 pools
-2. **Data Processing** filters data based on migration timestamps
-3. **Peak/Trough Detection** identifies significant price levels
-4. **Chart Rendering** displays candlesticks with markers
-5. **Auto-Refresh** updates data based on timeframe:
+1. **SWR Hook** fetches data from GeckoTerminal API for all configured pools
+2. **Data Processing** filters and consolidates data based on migration timestamps
+3. **Peak/Trough Detection** identifies significant price levels across all migration periods
+4. **Chart Rendering** displays unified candlesticks with migration event markers
+5. **Smart Auto-Refresh** updates data based on timeframe:
    - 1M: Every 60 seconds
    - 1H: Every 5 minutes
    - 1D: Every hour
 
-### Pool Configuration
+### Example Configuration: ZERA Token
 
-The app tracks three pools:
+The current instance tracks three pools for ZERA:
 - **M0N3Y (Original)**: `95AT5r4i85gfqeew2yR6BYFG8RLrY1d9ztPs7qrSKDVc`
 - **ZERA Raydium**: `Nn9VMHJTqgG9L9F8SP3GEuFWC5zVuHrADCwehh7N7Di`
 - **ZERA Meteora**: `6oUJD1EHNVBNMeTpytmY2NxKWicz5C2JUbByUrHEsjhc`
 
-### Migration Dates
-
+**Migration Dates:**
 - **M0N3Y → ZERA Raydium**: October 2, 2025 08:00:00 UTC
 - **ZERA Raydium → ZERA Meteora**: November 5, 2025 08:00:00 UTC
 
-## Features Comparison
+To track a different token, update the pool addresses and migration dates in the configuration.
 
-✅ 1:1 Feature Parity with Python Chart:
-- [x] Candlestick OHLC display
-- [x] Multiple pool tracking
-- [x] Peak/trough detection
-- [x] Migration markers and labels
-- [x] Dark theme
-- [x] Live data updates
-- [x] Multiple timeframes
+## Core Capabilities
 
-✅ Additional Interactive Features:
-- [x] Zoom and pan
-- [x] Crosshair tooltips
+### Chart Features
+- [x] Professional candlestick OHLC display
+- [x] Multi-pool migration tracking
+- [x] Automatic peak/trough detection
+- [x] Migration event markers and labels
+- [x] Multiple timeframe support (1M, 1H, 1D)
+- [x] Dark theme optimized for readability
+
+### Interactive Features
+- [x] Zoom and pan functionality
+- [x] Crosshair tooltips with detailed data
 - [x] Real-time price updates
-- [x] Responsive design
-- [x] Auto-refresh data
+- [x] Responsive design (mobile & desktop)
+- [x] Smart auto-refresh based on timeframe
+- [x] Comprehensive statistics dashboard
 
 ## API Rate Limiting
 
@@ -118,11 +120,21 @@ GeckoTerminal API has rate limits. The app uses SWR caching and smart refresh in
 
 ## Deployment
 
-Can be deployed to:
-- Vercel (recommended)
-- Netlify
-- Railway
-- Self-hosted
+This Next.js application can be deployed to any platform that supports Node.js:
+- **Vercel** (recommended) - Zero-config deployment
+- **Netlify** - Easy deployment with continuous integration
+- **Railway** - Simple container deployment
+- **Self-hosted** - Deploy on your own infrastructure
+
+## Customization
+
+To track a different token migration:
+1. Update pool addresses in the configuration file
+2. Set migration timestamps
+3. Adjust token symbols and names
+4. Customize chart colors and branding as needed
+
+The platform is designed to be easily adaptable to any token migration scenario.
 
 ## License
 

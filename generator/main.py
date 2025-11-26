@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
 """
-ZERA Historical Price Tracker
-Main orchestration script
+Token Migration Tracker - Main Orchestration Script
+
+This script tracks token price history across pool migrations and transitions.
+Currently configured for ZERA token, but can be adapted for any token migration.
 
 This script:
-1. Fetches historical price data from GeckoTerminal for M0N3Y and ZERA pools
-2. Consolidates the data into a unified timeline
-3. Generates visualizations and exports data
+1. Fetches historical price data from GeckoTerminal for all configured pools
+2. Consolidates the data into a unified timeline with migration handling
+3. Generates visualizations and exports data to CSV
+
+Configure pool addresses and migration dates in config.py to track different tokens.
 """
 
 import os
@@ -31,11 +35,11 @@ from src.zera_tracker import (
 def main(use_cache: bool = False):
     """Main execution function"""
     print("="*70)
-    print("ZERA HISTORICAL PRICE TRACKER")
+    print("TOKEN MIGRATION TRACKER")
     print("="*70)
     print(f"\nStarting data collection at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    print("\nThis tool tracks the complete price history of ZERA token,")
-    print("including its previous incarnation as M0N3Y and pool migrations.\n")
+    print("\nThis tool tracks complete price history across pool migrations.")
+    print(f"Currently configured for: {config.CSV_FILENAME.replace('_unified_price_history.csv', '').upper()}\n")
 
     # Step 1: Fetch data from GeckoTerminal API (or load from cache)
     if use_cache:
@@ -130,7 +134,7 @@ def main(use_cache: bool = False):
 if __name__ == "__main__":
     # Parse command line arguments
     parser = argparse.ArgumentParser(
-        description='ZERA Historical Price Tracker - Track token prices across pool migrations'
+        description='Token Migration Tracker - Track token prices across pool migrations and transitions'
     )
     parser.add_argument('--cache', action='store_true',
                        help='Use cached API data instead of fetching from GeckoTerminal')

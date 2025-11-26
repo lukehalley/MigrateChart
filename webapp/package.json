@@ -1,7 +1,7 @@
 {
-  "name": "webapp",
+  "name": "migrate-chart-webapp",
   "version": "1.0.0",
-  "description": "ZERA Interactive Price Chart",
+  "description": "Interactive token migration tracking platform - Visualize price history across pool migrations and transitions",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
