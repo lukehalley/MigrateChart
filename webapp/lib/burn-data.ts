@@ -90,24 +90,27 @@ export async function getDailyBurnHistory(days?: number): Promise<DailyBurnData[
       return [];
     }
 
-    // Aggregate burns by day
+    // Aggregate burns by day (using local timezone)
     const burnsByDay = new Map<string, number>();
 
     if (burns && burns.length > 0) {
       burns.forEach((burn) => {
-        const date = new Date(burn.timestamp * 1000).toISOString().split('T')[0];
+        // Use local timezone instead of UTC for daily grouping
+        const burnDate = new Date(burn.timestamp * 1000);
+        const date = `${burnDate.getFullYear()}-${String(burnDate.getMonth() + 1).padStart(2, '0')}-${String(burnDate.getDate()).padStart(2, '0')}`;
         const amount = typeof burn.amount === 'string' ? parseFloat(burn.amount) : burn.amount;
         burnsByDay.set(date, (burnsByDay.get(date) || 0) + amount);
       });
     }
 
-    // Fill in all days in the range with 0 for days without burns
+    // Fill in all days in the range with 0 for days without burns (using local timezone)
     const now = new Date();
     const startDate = new Date(cutoffTimestamp * 1000);
     const result: DailyBurnData[] = [];
 
     for (let d = new Date(startDate); d <= now; d.setDate(d.getDate() + 1)) {
-      const date = d.toISOString().split('T')[0];
+      // Use local timezone for consistency
+      const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
       const amount = burnsByDay.get(date) || 0;
       result.push({
         date,

@@ -319,8 +319,8 @@ export function BurnsView({ projectSlug, primaryColor, timeframe = 'ALL', onTime
                           </a>
                         </TableCell>
                         <TableCell className="text-white/60 text-[10px] md:text-sm py-2 md:py-3 whitespace-nowrap md:text-center">
-                          <span className="md:hidden">{new Date(burn.timestamp * 1000).toLocaleDateString()}</span>
-                          <span className="hidden md:inline">{new Date(burn.timestamp * 1000).toLocaleString()}</span>
+                          <span className="md:hidden">{new Date(burn.timestamp * 1000).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
+                          <span className="hidden md:inline">{new Date(burn.timestamp * 1000).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ', ' + new Date(burn.timestamp * 1000).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
                         </TableCell>
                         <TableCell className="text-right md:text-center py-2 md:py-3">
                           <a

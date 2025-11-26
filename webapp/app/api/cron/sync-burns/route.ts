@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
     // Get projects with burns enabled and program address
     const { data: projects, error: projectError } = await supabase!
       .from('projects')
-      .select('id, slug, burn_program_address')
+      .select('id, slug, burn_program_address, token_decimals')
       .eq('burns_enabled', true)
       .not('burn_program_address', 'is', null);
 
@@ -142,10 +142,14 @@ export async function GET(request: NextRequest) {
                     const amount = parsed.info.amount;
                     const authority = parsed.info.authority;
 
+                    // Convert raw amount to human-readable by dividing by 10^decimals
+                    const rawAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+                    const humanReadableAmount = rawAmount / Math.pow(10, project.token_decimals);
+
                     newBurns.push({
                       signature: sig.signature,
                       timestamp: sig.blockTime || Math.floor(Date.now() / 1000),
-                      amount: typeof amount === 'string' ? parseFloat(amount) : amount,
+                      amount: humanReadableAmount,
                       from: authority,
                     });
 
