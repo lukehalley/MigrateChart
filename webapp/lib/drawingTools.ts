@@ -10,7 +10,7 @@ import {
 } from 'lightweight-charts';
 
 // Types for drawing objects
-export type DrawingType = 'horizontal-line' | 'trend-line' | 'freehand' | 'ruler';
+export type DrawingType = 'horizontal-line' | 'trend-line' | 'freehand' | 'ruler' | 'text-box';
 
 export interface DrawingPoint {
   logical: number; // Using logical index instead of time - works beyond data range
@@ -47,18 +47,36 @@ export interface RulerDrawing {
   color: string;
 }
 
-export type Drawing = HorizontalLineDrawing | TrendLineDrawing | FreehandDrawing | RulerDrawing;
+export interface TextBoxDrawing {
+  type: 'text-box';
+  id: string;
+  point: DrawingPoint;
+  text: string;
+  color: string;
+  fontSize?: number;
+  fontFamily?: string;
+  fontWeight?: string;
+  textAlign?: 'left' | 'center' | 'right';
+  width?: number;
+  height?: number;
+  rotation?: number;
+  backgroundColor?: string;
+}
+
+export type Drawing = HorizontalLineDrawing | TrendLineDrawing | FreehandDrawing | RulerDrawing | TextBoxDrawing;
 
 // Pane View for rendering drawings
 class DrawingPaneView implements ISeriesPrimitivePaneView {
   private _drawings: Drawing[];
   private _series: ISeriesApi<'Candlestick'>;
   private _chart: IChartApi;
+  private _hiddenTextBoxIds: Set<string>;
 
-  constructor(drawings: Drawing[], series: ISeriesApi<'Candlestick'>, chart: IChartApi) {
+  constructor(drawings: Drawing[], series: ISeriesApi<'Candlestick'>, chart: IChartApi, hiddenTextBoxIds: Set<string>) {
     this._drawings = drawings;
     this._series = series;
     this._chart = chart;
+    this._hiddenTextBoxIds = hiddenTextBoxIds;
   }
 
   zOrder(): SeriesPrimitivePaneViewZOrder {
@@ -76,6 +94,11 @@ class DrawingPaneView implements ISeriesPrimitivePaneView {
           ctx.scale(scalingFactor, scope.verticalPixelRatio);
 
           this._drawings.forEach((drawing) => {
+            // Skip hidden textboxes (being rendered in HTML overlay)
+            if (drawing.type === 'text-box' && this._hiddenTextBoxIds.has(drawing.id)) {
+              return;
+            }
+
             if (drawing.type === 'horizontal-line') {
               this._drawHorizontalLine(ctx, drawing, scope);
             } else if (drawing.type === 'trend-line') {
@@ -84,6 +107,8 @@ class DrawingPaneView implements ISeriesPrimitivePaneView {
               this._drawFreehand(ctx, drawing);
             } else if (drawing.type === 'ruler') {
               this._drawRuler(ctx, drawing, scope);
+            } else if (drawing.type === 'text-box') {
+              this._drawTextBox(ctx, drawing, scope);
             }
           });
 
@@ -269,6 +294,133 @@ class DrawingPaneView implements ISeriesPrimitivePaneView {
     ctx.textBaseline = 'middle';
     ctx.fillText(detailsText, midX, boxY + boxHeight / 2);
   }
+
+  private _drawTextBox(
+    ctx: CanvasRenderingContext2D,
+    textBox: TextBoxDrawing,
+    scope: any
+  ) {
+    if (!this._chart) return;
+
+    const y = this._series.priceToCoordinate(textBox.point.price);
+    const timeScale = this._chart.timeScale();
+    const x = timeScale.logicalToCoordinate(textBox.point.logical as Logical);
+
+    if (y === null || x === null) return;
+
+    const fontSize = textBox.fontSize || 14;
+    const fontFamily = textBox.fontFamily || 'Inter, system-ui, -apple-system, sans-serif';
+    const fontWeight = textBox.fontWeight || '400';
+    const textAlign = textBox.textAlign || 'left';
+    const rotation = textBox.rotation || 0;
+    const padding = 12;
+    const lineHeight = fontSize * 1.4;
+
+    const totalWidth = textBox.width || 224;
+    const totalHeight = textBox.height || 100;
+    const contentWidth = totalWidth - (padding * 2);
+
+    // Save current state and reset transform for text rendering
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+    // Scale coordinates manually to bitmap space
+    const bitmapX = x * scope.horizontalPixelRatio;
+    const bitmapY = y * scope.verticalPixelRatio;
+    const bitmapPadding = padding * scope.horizontalPixelRatio;
+    const bitmapFontSize = fontSize * scope.verticalPixelRatio;
+    const bitmapContentWidth = contentWidth * scope.horizontalPixelRatio;
+    const bitmapTotalWidth = totalWidth * scope.horizontalPixelRatio;
+    const bitmapTotalHeight = totalHeight * scope.verticalPixelRatio;
+    const bitmapLineHeight = lineHeight * scope.verticalPixelRatio;
+
+    // Apply rotation transform around the center of the box
+    const centerX = bitmapX + bitmapTotalWidth / 2;
+    const centerY = bitmapY + bitmapTotalHeight / 2;
+    ctx.translate(centerX, centerY);
+    ctx.rotate((rotation * Math.PI) / 180);
+    ctx.translate(-centerX, -centerY);
+
+    // Set font for measuring (with scaled font size)
+    ctx.font = `${fontWeight} ${bitmapFontSize}px ${fontFamily}`;
+
+    // Split text into lines based on content width (excluding padding)
+    const words = textBox.text.split(' ');
+    const lines: string[] = [];
+    let currentLine = '';
+
+    for (const word of words) {
+      const testLine = currentLine ? `${currentLine} ${word}` : word;
+      const metrics = ctx.measureText(testLine);
+
+      if (metrics.width > bitmapContentWidth && currentLine) {
+        lines.push(currentLine);
+        currentLine = word;
+      } else {
+        currentLine = testLine;
+      }
+    }
+    if (currentLine) {
+      lines.push(currentLine);
+    }
+
+    // Use the exact total dimensions
+    const boxWidth = bitmapTotalWidth;
+    const boxHeight = bitmapTotalHeight;
+
+    // Draw background with rounded corners
+    const cornerRadius = 8 * scope.horizontalPixelRatio;
+    const backgroundColor = textBox.backgroundColor || textBox.color;
+    ctx.fillStyle = backgroundColor;
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
+    ctx.shadowBlur = 8 * scope.horizontalPixelRatio;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 2 * scope.verticalPixelRatio;
+
+    ctx.beginPath();
+    ctx.roundRect(bitmapX, bitmapY, boxWidth, boxHeight, cornerRadius);
+    ctx.fill();
+
+    // Reset shadow for text
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+
+    // Determine text color based on background color brightness
+    const rgb = this._hexToRgb(backgroundColor);
+    const brightness = rgb ? (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000 : 0;
+    ctx.fillStyle = brightness > 128 ? '#000000' : '#ffffff';
+
+    // Draw text lines with alignment
+    ctx.textAlign = textAlign;
+    ctx.textBaseline = 'top';
+
+    lines.forEach((line, index) => {
+      const textY = bitmapY + bitmapPadding + index * bitmapLineHeight;
+      let textX = bitmapX + bitmapPadding;
+
+      if (textAlign === 'center') {
+        textX = bitmapX + boxWidth / 2;
+      } else if (textAlign === 'right') {
+        textX = bitmapX + boxWidth - bitmapPadding;
+      }
+
+      ctx.fillText(line, textX, textY);
+    });
+
+    // Restore transform
+    ctx.restore();
+  }
+
+  private _hexToRgb(hex: string): { r: number; g: number; b: number } | null {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : null;
+  }
 }
 
 // Main Drawing Primitive
@@ -277,9 +429,16 @@ export class DrawingToolsPrimitive implements ISeriesPrimitive<Time> {
   private _series: ISeriesApi<'Candlestick'> | null = null;
   private _chart: IChartApi | null = null;
   private _requestUpdate?: () => void;
+  private _hiddenTextBoxIds: Set<string> = new Set();
 
   constructor(chart: IChartApi) {
     this._chart = chart;
+  }
+
+  // Set which textboxes to hide from canvas rendering (when being edited in HTML overlay)
+  setHiddenTextBoxIds(ids: string[]) {
+    this._hiddenTextBoxIds = new Set(ids);
+    this._requestUpdate?.();
   }
 
   attached(param: SeriesAttachedParameter<Time>): void {
@@ -294,7 +453,7 @@ export class DrawingToolsPrimitive implements ISeriesPrimitive<Time> {
 
   paneViews() {
     if (!this._series || !this._chart) return [];
-    return [new DrawingPaneView(this._drawings, this._series, this._chart)];
+    return [new DrawingPaneView(this._drawings, this._series, this._chart, this._hiddenTextBoxIds)];
   }
 
   // Add a horizontal line
@@ -390,6 +549,114 @@ export class DrawingToolsPrimitive implements ISeriesPrimitive<Time> {
       lastDrawing.point2 = point;
       this._requestUpdate?.();
     }
+  }
+
+  // Add a text box
+  addTextBox(
+    point: DrawingPoint,
+    text: string,
+    color: string = '#52C97D',
+    fontSize?: number,
+    width?: number,
+    height?: number
+  ): string {
+    const id = `tb-${Date.now()}-${Math.random()}`;
+    this._drawings.push({
+      type: 'text-box',
+      id,
+      point,
+      text,
+      color: '#000000', // Text color
+      backgroundColor: color, // Background color
+      fontSize: fontSize || 16,
+      fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
+      fontWeight: '400',
+      textAlign: 'left',
+      width: width || 224,
+      height: height || 100,
+      rotation: 0,
+    });
+    this._requestUpdate?.();
+    return id;
+  }
+
+  // Update text box content
+  updateTextBox(id: string, updates: Partial<Omit<TextBoxDrawing, 'type' | 'id'>>): void {
+    const drawing = this._drawings.find(d => d.id === id);
+    if (drawing && drawing.type === 'text-box') {
+      Object.assign(drawing, updates);
+      this._requestUpdate?.();
+    }
+  }
+
+  // Move text box to new position
+  moveTextBox(id: string, point: DrawingPoint): void {
+    const drawing = this._drawings.find(d => d.id === id);
+    if (drawing && drawing.type === 'text-box') {
+      drawing.point = point;
+      this._requestUpdate?.();
+    }
+  }
+
+  // Get text box by ID
+  getTextBox(id: string): TextBoxDrawing | undefined {
+    const drawing = this._drawings.find(d => d.id === id);
+    return drawing && drawing.type === 'text-box' ? drawing : undefined;
+  }
+
+  // Find text box at coordinates
+  findTextBoxAtCoordinates(screenX: number, screenY: number): TextBoxDrawing | null {
+    if (!this._series || !this._chart) return null;
+
+    // Iterate through drawings in reverse order (top-most first)
+    for (let i = this._drawings.length - 1; i >= 0; i--) {
+      const drawing = this._drawings[i];
+      if (drawing.type !== 'text-box') continue;
+
+      const textBox = drawing as TextBoxDrawing;
+      const y = this._series.priceToCoordinate(textBox.point.price);
+      const timeScale = this._chart.timeScale();
+      const x = timeScale.logicalToCoordinate(textBox.point.logical as Logical);
+
+      if (y === null || x === null) continue;
+
+      // Calculate text box dimensions - use stored total width
+      const fontSize = textBox.fontSize || 14;
+      const padding = 12;
+      const lineHeight = fontSize * 1.4;
+      const totalWidth = textBox.width || 224; // Total width including padding
+      const contentWidth = totalWidth - (padding * 2);
+
+      // Simple word wrapping calculation for line count
+      const words = textBox.text.split(' ');
+      let lineCount = 1;
+      let currentLine = '';
+
+      for (const word of words) {
+        const testLine = currentLine ? `${currentLine} ${word}` : word;
+        if (testLine.length * (fontSize * 0.6) > contentWidth && currentLine) {
+          lineCount++;
+          currentLine = word;
+        } else {
+          currentLine = testLine;
+        }
+      }
+
+      const boxWidth = totalWidth;
+      const boxHeight = lineCount * lineHeight + padding * 2;
+
+      // Check if coordinates are within the text box
+      if (
+        screenX >= x &&
+        screenX <= x + boxWidth &&
+        screenY >= y &&
+        screenY <= y + boxHeight
+      ) {
+        return textBox;
+      }
+    }
+
+    return null;
   }
 
   // Remove a drawing by ID

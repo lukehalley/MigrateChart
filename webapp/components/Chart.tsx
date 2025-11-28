@@ -19,6 +19,7 @@ import {
   INDICATORS,
   OHLCData
 } from '@/lib/indicators';
+import TextBoxEditor, { TextBoxData } from '@/components/TextBoxEditor';
 
 interface ChartProps {
   poolsData: PoolData[];
@@ -91,20 +92,13 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
   const [showIndicatorMenu, setShowIndicatorMenu] = useState(false);
 
   // Text box editor state
-  const [editingTextBox, setEditingTextBox] = useState<{
-    id: string | null;
-    text: string;
-    x: number;
-    y: number;
-    logical: number;
-    price: number;
-    width?: number;
-    height?: number;
-  } | null>(null);
-  const textBoxInputRef = useRef<HTMLDivElement>(null);
+  const [selectedTextBoxId, setSelectedTextBoxId] = useState<string | null>(null);
+  const [editingTextBoxId, setEditingTextBoxId] = useState<string | null>(null);
+  const [textBoxes, setTextBoxes] = useState<Map<string, any>>(new Map());
   const [isDraggingTextBox, setIsDraggingTextBox] = useState(false);
   const [isResizingTextBox, setIsResizingTextBox] = useState(false);
-  const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
+  const [resizeHandle, setResizeHandle] = useState<string | null>(null);
+  const [dragStart, setDragStart] = useState<{ x: number; y: number; startX?: number; startY?: number; startWidth?: number; startHeight?: number; startRotation?: number } | null>(null);
   const isClosingEditorRef = useRef(false);
 
   // Store migration lines cleanup function
@@ -623,36 +617,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       const drawingPrimitive = drawingPrimitiveRef.current;
       if (!series || !drawingPrimitive) return;
 
-      // Check if clicking on an existing text box (works even when not in drawing mode)
-      const clickedTextBox = drawingPrimitive.findTextBoxAtCoordinates(param.point.x, param.point.y);
-      if (clickedTextBox) {
-        // Open editor for existing text box
-        setEditingTextBox({
-          id: clickedTextBox.id,
-          text: clickedTextBox.text,
-          x: param.point.x,
-          y: param.point.y,
-          logical: clickedTextBox.point.logical,
-          price: clickedTextBox.point.price,
-          width: clickedTextBox.width,
-        });
-
-        // Focus the input after a brief delay
-        setTimeout(() => {
-          if (textBoxInputRef.current) {
-            textBoxInputRef.current.focus();
-            // Select all text for easy editing
-            const range = document.createRange();
-            range.selectNodeContents(textBoxInputRef.current);
-            const selection = window.getSelection();
-            selection?.removeAllRanges();
-            selection?.addRange(range);
-          }
-        }, 50);
-        return;
-      }
-
-      // If not in drawing mode and didn't click a text box, ignore
+      // If not in drawing mode, ignore (textbox clicks handled by TextBoxEditor component)
       if (!drawingStateRef.current.isDrawingMode()) return;
 
       const price = series.coordinateToPrice(param.point.y);
@@ -735,8 +700,15 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
           // Remove the ruler preview
           drawingPrimitive.removeLastDrawing();
 
-          // Create text box at the top-left corner with calculated width
-          const id = drawingPrimitive.addTextBox({ logical: rectLogical, price: rectPrice }, 'Text', primaryColor, undefined, finalWidth);
+          // Create text box at the top-left corner with calculated dimensions
+          const id = drawingPrimitive.addTextBox(
+            { logical: rectLogical, price: rectPrice },
+            'Text',
+            primaryColor,
+            undefined,
+            finalWidth,
+            finalHeight
+          );
 
           drawingStateRef.current.setTempPoint(null);
           drawingStateRef.current.setIsDrawing(false);
@@ -745,30 +717,9 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
           SafeStorage.setJSON(`drawings_${timeframe}`, updatedDrawings);
           setDrawingCount(updatedDrawings.length);
 
-          // Show editor overlay at the exact rectangle position with exact size
-          setEditingTextBox({
-            id,
-            text: 'Text',
-            x: rectX,
-            y: rectY,
-            logical: rectLogical,
-            price: rectPrice,
-            width: finalWidth,
-            height: finalHeight,
-          });
-
-          // Focus the input after a brief delay
-          setTimeout(() => {
-            if (textBoxInputRef.current) {
-              textBoxInputRef.current.focus();
-              // Select all text
-              const range = document.createRange();
-              range.selectNodeContents(textBoxInputRef.current);
-              const selection = window.getSelection();
-              selection?.removeAllRanges();
-              selection?.addRange(range);
-            }
-          }, 50);
+          // Select the new text box and start editing
+          setSelectedTextBoxId(id);
+          setEditingTextBoxId(id);
         }
       }
     };
@@ -1233,7 +1184,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
     if (!chartRef.current) return;
 
     // Hide crosshair completely when in text-box mode
-    const hideCrosshair = activeDrawingTool === 'text-box' || editingTextBox !== null;
+    const hideCrosshair = activeDrawingTool === 'text-box' || editingTextBoxId !== null;
 
     chartRef.current.applyOptions({
       crosshair: {
@@ -1267,7 +1218,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         mouse: false,
       },
     });
-  }, [isDrawingMode, chartVersion, activeDrawingTool, editingTextBox]);
+  }, [isDrawingMode, chartVersion, activeDrawingTool, editingTextBoxId]);
 
   // Handle ESC key to cancel trend line drawing
   useEffect(() => {
@@ -1309,45 +1260,6 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
     };
   }, []);
 
-  // Handle text box resizing globally
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (isResizingTextBox && dragStart && editingTextBox) {
-        const deltaX = e.clientX - dragStart.x;
-        const newWidth = Math.max(224, (editingTextBox.width || 224) + deltaX); // Min 224px (200 content + 24 padding)
-
-        setEditingTextBox(prev => prev ? { ...prev, width: newWidth } : null);
-        setDragStart({ x: e.clientX, y: e.clientY });
-
-        // Update the drawing primitive
-        if (editingTextBox.id && drawingPrimitiveRef.current) {
-          drawingPrimitiveRef.current.updateTextBox(editingTextBox.id, { width: newWidth });
-        }
-      }
-    };
-
-    const handleMouseUp = () => {
-      if (isResizingTextBox) {
-        setIsResizingTextBox(false);
-        setDragStart(null);
-        // Save to storage
-        if (drawingPrimitiveRef.current) {
-          const updatedDrawings = drawingPrimitiveRef.current.getDrawings();
-          SafeStorage.setJSON(`drawings_${timeframe}`, updatedDrawings);
-        }
-      }
-    };
-
-    if (isResizingTextBox) {
-      window.addEventListener('mousemove', handleMouseMove);
-      window.addEventListener('mouseup', handleMouseUp);
-
-      return () => {
-        window.removeEventListener('mousemove', handleMouseMove);
-        window.removeEventListener('mouseup', handleMouseUp);
-      };
-    }
-  }, [isResizingTextBox, dragStart, editingTextBox, timeframe]);
 
   // Helper function to convert hex to rgba
   const hexToRgba = (hex: string, alpha: number) => {
@@ -1357,6 +1269,211 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
     const b = parseInt(h.substring(4, 6), 16);
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
   };
+
+  // Convert drawing to TextBoxData for rendering
+  const getTextBoxData = (textBox: any): TextBoxData | null => {
+    if (!chartRef.current || !candlestickSeriesRef.current) return null;
+
+    const y = candlestickSeriesRef.current.priceToCoordinate(textBox.point.price);
+    const x = chartRef.current.timeScale().logicalToCoordinate(textBox.point.logical as Logical);
+
+    if (y === null || x === null) return null;
+
+    return {
+      id: textBox.id,
+      x,
+      y,
+      width: textBox.width || 224,
+      height: textBox.height || 100,
+      text: textBox.text,
+      fontSize: textBox.fontSize || 16,
+      fontFamily: textBox.fontFamily || 'Inter, system-ui, -apple-system, sans-serif',
+      fontWeight: textBox.fontWeight || '400',
+      color: textBox.color || '#000000',
+      backgroundColor: textBox.backgroundColor || primaryColor,
+      textAlign: textBox.textAlign || 'left',
+      rotation: textBox.rotation || 0,
+      logical: textBox.point.logical,
+      price: textBox.point.price,
+    };
+  };
+
+  // Handle text box interactions
+  const handleTextBoxUpdate = (id: string, updates: Partial<TextBoxData>) => {
+    const primitive = drawingPrimitiveRef.current;
+    if (!primitive) return;
+
+    // If updating position, convert screen coords to logical coords
+    if (updates.x !== undefined && updates.y !== undefined && chartRef.current && candlestickSeriesRef.current) {
+      const price = candlestickSeriesRef.current.coordinateToPrice(updates.y);
+      const logical = chartRef.current.timeScale().coordinateToLogical(updates.x);
+
+      if (price !== null && logical !== null) {
+        primitive.updateTextBox(id, {
+          point: { logical, price },
+          ...updates,
+        });
+      }
+    } else {
+      primitive.updateTextBox(id, updates);
+    }
+
+    // Save to storage
+    const updatedDrawings = primitive.getDrawings();
+    SafeStorage.setJSON(`drawings_${timeframe}`, updatedDrawings);
+  };
+
+  const handleTextBoxDragStart = (id: string, e: React.MouseEvent, handle?: string) => {
+    const textBox = drawingPrimitiveRef.current?.getTextBox(id);
+    if (!textBox) return;
+
+    const data = getTextBoxData(textBox);
+    if (!data) return;
+
+    if (handle === 'rotate') {
+      // Rotation mode
+      setResizeHandle('rotate');
+      setDragStart({
+        x: e.clientX,
+        y: e.clientY,
+        startX: data.x + data.width / 2,
+        startY: data.y + data.height / 2,
+        startRotation: data.rotation,
+      });
+    } else if (handle) {
+      // Resize mode
+      setIsResizingTextBox(true);
+      setResizeHandle(handle);
+      setDragStart({
+        x: e.clientX,
+        y: e.clientY,
+        startX: data.x,
+        startY: data.y,
+        startWidth: data.width,
+        startHeight: data.height,
+      });
+    } else {
+      // Drag mode
+      setIsDraggingTextBox(true);
+      setDragStart({
+        x: e.clientX - data.x,
+        y: e.clientY - data.y,
+      });
+    }
+  };
+
+  // Global mouse move/up handlers for text box interactions
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!selectedTextBoxId || !dragStart) return;
+
+      const textBox = drawingPrimitiveRef.current?.getTextBox(selectedTextBoxId);
+      if (!textBox) return;
+
+      const data = getTextBoxData(textBox);
+      if (!data) return;
+
+      if (resizeHandle === 'rotate') {
+        // Handle rotation
+        const centerX = dragStart.startX!;
+        const centerY = dragStart.startY!;
+        const angle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI);
+        const newRotation = angle + 90; // Offset by 90 degrees to start from top
+
+        handleTextBoxUpdate(selectedTextBoxId, { rotation: newRotation });
+      } else if (isResizingTextBox && resizeHandle) {
+        // Handle resize
+        const deltaX = e.clientX - dragStart.x;
+        const deltaY = e.clientY - dragStart.y;
+
+        let newX = dragStart.startX!;
+        let newY = dragStart.startY!;
+        let newWidth = dragStart.startWidth!;
+        let newHeight = dragStart.startHeight!;
+
+        // Calculate new dimensions based on handle
+        if (resizeHandle.includes('e')) {
+          newWidth = Math.max(100, dragStart.startWidth! + deltaX);
+        }
+        if (resizeHandle.includes('w')) {
+          newWidth = Math.max(100, dragStart.startWidth! - deltaX);
+          newX = dragStart.startX! + deltaX;
+        }
+        if (resizeHandle.includes('s')) {
+          newHeight = Math.max(60, dragStart.startHeight! + deltaY);
+        }
+        if (resizeHandle.includes('n')) {
+          newHeight = Math.max(60, dragStart.startHeight! - deltaY);
+          newY = dragStart.startY! + deltaY;
+        }
+
+        handleTextBoxUpdate(selectedTextBoxId, {
+          x: newX,
+          y: newY,
+          width: newWidth,
+          height: newHeight,
+        });
+      } else if (isDraggingTextBox) {
+        // Handle drag
+        const newX = e.clientX - dragStart.x;
+        const newY = e.clientY - dragStart.y;
+
+        handleTextBoxUpdate(selectedTextBoxId, { x: newX, y: newY });
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsDraggingTextBox(false);
+      setIsResizingTextBox(false);
+      setResizeHandle(null);
+      setDragStart(null);
+    };
+
+    if (isDraggingTextBox || isResizingTextBox || resizeHandle) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+
+      return () => {
+        window.removeEventListener('mousemove', handleMouseMove);
+        window.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [isDraggingTextBox, isResizingTextBox, resizeHandle, selectedTextBoxId, dragStart, timeframe]);
+
+  // Handle clicks outside textboxes to deselect
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      // Don't deselect if currently editing, dragging, or resizing
+      if (editingTextBoxId || isDraggingTextBox || isResizingTextBox) return;
+
+      // Check if click is on any textbox or toolbar element
+      const target = e.target as HTMLElement;
+
+      // Check if clicking on a textbox editor element
+      if (target.closest('[data-textbox-editor]') || target.closest('[data-textbox-toolbar]')) {
+        return;
+      }
+
+      // Deselect textbox
+      if (selectedTextBoxId) {
+        setSelectedTextBoxId(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [selectedTextBoxId, editingTextBoxId, isDraggingTextBox, isResizingTextBox]);
+
+  // Update hidden textboxes in drawing primitive
+  useEffect(() => {
+    if (!drawingPrimitiveRef.current) return;
+
+    // Hide any textbox that is selected (so we only see the HTML overlay version)
+    const hiddenIds = selectedTextBoxId ? [selectedTextBoxId] : [];
+    drawingPrimitiveRef.current.setHiddenTextBoxIds(hiddenIds);
+  }, [selectedTextBoxId]);
 
   return (
     <div className="w-full h-full relative">
@@ -2120,141 +2237,42 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         </>
       )}
 
-      {/* Text Box Editor Overlay */}
-      {editingTextBox && (() => {
-        // Calculate text color based on background brightness
-        const brightness = (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
-        const textColor = brightness > 128 ? '#000000' : '#ffffff';
+      {/* TextBox Editors */}
+      {drawingPrimitiveRef.current?.getDrawings()
+        .filter(d => d.type === 'text-box')
+        .map((drawing: any) => {
+          const textBoxData = getTextBoxData(drawing);
+          if (!textBoxData) return null;
 
-        return (
-          <div
-            className="absolute z-50 rounded-lg shadow-lg min-w-[200px] overflow-hidden"
-            style={{
-              left: `${editingTextBox.x}px`,
-              top: `${editingTextBox.y}px`,
-              backgroundColor: primaryColor,
-              boxShadow: `0 4px 12px rgba(0, 0, 0, 0.15)`,
-              width: editingTextBox.width ? `${editingTextBox.width}px` : '224px', // Total box width
-              cursor: isDraggingTextBox ? 'move' : 'default',
-            }}
-            onMouseDown={(e) => {
-              // Start dragging anywhere on the box except the content editable
-              if (e.target === e.currentTarget) {
-                e.stopPropagation();
-                setIsDraggingTextBox(true);
-                setDragStart({ x: e.clientX - editingTextBox.x, y: e.clientY - editingTextBox.y });
-              }
-            }}
-            onMouseMove={(e) => {
-            if (isDraggingTextBox && dragStart && chartRef.current) {
-              e.stopPropagation();
-              const newX = e.clientX - dragStart.x;
-              const newY = e.clientY - dragStart.y;
-
-              // Convert new screen position to logical coordinates
-              const series = candlestickSeriesRef.current;
-              if (series && chartRef.current) {
-                const price = series.coordinateToPrice(newY);
-                const logical = chartRef.current.timeScale().coordinateToLogical(newX);
-
-                if (price !== null && logical !== null) {
-                  setEditingTextBox(prev => prev ? { ...prev, x: newX, y: newY, logical, price } : null);
-
-                  // Update the drawing primitive
-                  if (editingTextBox.id && drawingPrimitiveRef.current) {
-                    drawingPrimitiveRef.current.moveTextBox(editingTextBox.id, { logical, price });
-                  }
-                }
-              }
-            }
-          }}
-          onMouseUp={() => {
-            if (isDraggingTextBox) {
-              setIsDraggingTextBox(false);
-              setDragStart(null);
-              // Save to storage
-              if (drawingPrimitiveRef.current) {
-                const updatedDrawings = drawingPrimitiveRef.current.getDrawings();
-                SafeStorage.setJSON(`drawings_${timeframe}`, updatedDrawings);
-              }
-            }
-          }}
-        >
-          <div
-            key={editingTextBox.id}
-            ref={textBoxInputRef}
-            contentEditable
-            suppressContentEditableWarning
-            className="outline-none text-sm leading-relaxed"
-            style={{
-              minHeight: '30px',
-              wordWrap: 'break-word',
-              cursor: isDraggingTextBox ? 'move' : 'text',
-              color: textColor,
-              padding: '12px', // Match canvas padding
-            }}
-            onMouseDown={(e) => {
-              // Allow dragging by clicking and holding on the text area
-              if (!textBoxInputRef.current?.contains(document.activeElement)) {
-                e.preventDefault();
-                e.stopPropagation();
-                setIsDraggingTextBox(true);
-                setDragStart({ x: e.clientX - editingTextBox.x, y: e.clientY - editingTextBox.y });
-              }
-            }}
-            onBlur={() => {
-              // Save the text box when focus is lost
-              if (editingTextBox && drawingPrimitiveRef.current && !isDraggingTextBox) {
-                const text = textBoxInputRef.current?.textContent || 'Text';
-                if (editingTextBox.id) {
-                  drawingPrimitiveRef.current.updateTextBox(editingTextBox.id, { text });
-                }
-                const updatedDrawings = drawingPrimitiveRef.current.getDrawings();
-                SafeStorage.setJSON(`drawings_${timeframe}`, updatedDrawings);
-
-                // Set flag to ignore the next click (which is the blur click)
-                isClosingEditorRef.current = true;
-                setEditingTextBox(null);
-
-                // Clear the flag after a short delay
-                setTimeout(() => {
-                  isClosingEditorRef.current = false;
-                }, 100);
-              }
-            }}
-            onKeyDown={(e) => {
-              if (e.key === 'Escape') {
-                e.currentTarget.blur();
-              }
-            }}
-            dangerouslySetInnerHTML={{ __html: editingTextBox.text }}
-          />
-
-          {/* Resize Handle */}
-          <div
-            className="absolute bottom-1 right-1 w-3 h-3 cursor-se-resize opacity-50"
-            onMouseDown={(e) => {
-              e.stopPropagation();
-              setIsResizingTextBox(true);
-              setDragStart({ x: e.clientX, y: e.clientY });
-            }}
-          >
-            <svg className="w-full h-full" viewBox="0 0 10 10" fill={textColor}>
-              <circle cx="8" cy="8" r="1" />
-              <circle cx="5" cy="8" r="1" />
-              <circle cx="8" cy="5" r="1" />
-            </svg>
-          </div>
-        </div>
-        );
-      })()}
+          return (
+            <TextBoxEditor
+              key={drawing.id}
+              textBox={textBoxData}
+              isSelected={selectedTextBoxId === drawing.id}
+              isEditing={editingTextBoxId === drawing.id}
+              onUpdate={(updates) => handleTextBoxUpdate(drawing.id, updates)}
+              onStartDrag={(e, handle) => {
+                setSelectedTextBoxId(drawing.id);
+                handleTextBoxDragStart(drawing.id, e, handle);
+              }}
+              onDoubleClick={() => {
+                setSelectedTextBoxId(drawing.id);
+                setEditingTextBoxId(drawing.id);
+              }}
+              onBlur={() => {
+                setEditingTextBoxId(null);
+              }}
+              primaryColor={primaryColor}
+            />
+          );
+        })}
 
       <div
         ref={chartContainerRef}
         className="w-full h-full"
         style={{
           touchAction: 'manipulation',
-          cursor: isDrawingMode && activeDrawingTool !== 'text-box' && !editingTextBox ? 'crosshair' : 'default'
+          cursor: isDrawingMode && activeDrawingTool !== 'text-box' && !editingTextBoxId ? 'crosshair' : 'default'
         }}
       />
     </div>
