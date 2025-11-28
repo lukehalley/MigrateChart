@@ -3,8 +3,15 @@ import { Analytics } from '@vercel/analytics/next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Migration Chart',
-  description: 'Track complete price history across token migrations with interactive charts and real-time data',
+  title: 'Migrate Chart',
+  description: 'Visualize complete price history across pool migrations with interactive charts and real-time data. Never lose sight of your token\'s journey.',
+  keywords: ['token migration', 'crypto tracking', 'DeFi', 'pool migration', 'price charts', 'token transitions'],
+  authors: [{ name: 'Migration Chart' }],
+  openGraph: {
+    title: 'Migration Chart - Track Every Token Transition',
+    description: 'Visualize complete price history across pool migrations with interactive charts and real-time data.',
+    type: 'website',
+  },
   // Icons are automatically served from /app directory:
   // - favicon.ico (32x32)
   // - icon.svg (vector)

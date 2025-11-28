@@ -86,6 +86,7 @@ function FeesPageContent() {
         <TokenLoadingLogo
           svgUrl={currentProject?.loaderUrl}
           color={currentProject?.primaryColor || '#52C97D'}
+          slug={currentProject?.slug}
         />
       </div>
     );

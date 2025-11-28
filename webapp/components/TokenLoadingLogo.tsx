@@ -7,9 +7,10 @@ interface TokenLoadingLogoProps {
   svgUrl?: string; // URL to SVG file in storage
   color: string;
   isLoading?: boolean; // External loading state
+  slug?: string; // Project slug for size customization
 }
 
-export function TokenLoadingLogo({ svgUrl, color, isLoading = false }: TokenLoadingLogoProps) {
+export function TokenLoadingLogo({ svgUrl, color, isLoading = false, slug }: TokenLoadingLogoProps) {
   // Debug: Log component state
   console.log('[TokenLoadingLogo] Render state:', {
     hasSvgUrl: !!svgUrl,
@@ -64,7 +65,7 @@ export function TokenLoadingLogo({ svgUrl, color, isLoading = false }: TokenLoad
 
   return (
     <div className="flex items-center justify-center px-4">
-      <div className="relative w-72 h-72 md:w-[32rem] md:h-[32rem]">
+      <div className="relative w-48 h-48 md:w-64 md:h-64">
         {/* Token logo SVG */}
         <motion.div
           className="w-full h-full"

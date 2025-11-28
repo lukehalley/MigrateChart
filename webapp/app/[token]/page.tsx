@@ -704,7 +704,7 @@ function HomeContent() {
   }
 
   return (
-    <main className="w-screen h-screen overflow-hidden grid grid-rows-[auto_1fr]" style={themeStyles}>
+    <main data-chart-page className="w-screen h-screen overflow-hidden grid grid-rows-[auto_1fr]" style={themeStyles}>
       {/* Donation Banner */}
       <motion.div
         className="relative bg-gradient-to-r from-black via-[var(--primary-darker)]/30 to-black border-b-2 border-[var(--primary-color)]/50 backdrop-blur-sm"
@@ -1520,6 +1520,7 @@ function HomeContent() {
                   svgUrl={switchingFromProjectRef.current?.loaderUrl || currentProject?.loaderUrl}
                   isLoading={projectLoading || isSwitching}
                   color={switchingFromProjectRef.current?.primaryColor || currentProject?.primaryColor || '#52C97D'}
+                  slug={switchingFromProjectRef.current?.slug || currentProject?.slug}
                 />
               </motion.div>
             )}
@@ -1643,6 +1644,7 @@ function HomeContent() {
                   svgUrl={switchingFromProjectRef.current?.loaderUrl || currentProject?.loaderUrl}
                   isLoading={projectLoading || isSwitching}
                   color={switchingFromProjectRef.current?.primaryColor || currentProject?.primaryColor || '#52C97D'}
+                  slug={switchingFromProjectRef.current?.slug || currentProject?.slug}
                 />
               </motion.div>
             )}

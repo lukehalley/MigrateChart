@@ -20,7 +20,7 @@ export async function GET() {
 
     const { data: projects, error } = await supabase
       .from('projects')
-      .select('slug, name, primary_color, logo_url, enabled')
+      .select('slug, name, primary_color, logo_url, loader_url, enabled')
       .eq('is_active', true)
       .eq('enabled', true) // Only show enabled projects
       .order('is_default', { ascending: false }) // Default project first
@@ -39,6 +39,7 @@ export async function GET() {
       name: p.name,
       primaryColor: p.primary_color,
       logoUrl: p.logo_url,
+      loaderUrl: p.loader_url,
     }));
 
     return NextResponse.json(projectList, {

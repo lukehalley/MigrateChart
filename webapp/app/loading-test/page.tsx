@@ -10,7 +10,7 @@ export default function LoadingTestPage() {
     <div className="min-h-screen bg-black flex flex-col items-center justify-center gap-8">
       <h1 className="text-white text-2xl font-bold mb-4">Token Loading Animation Test</h1>
 
-      <TokenLoadingLogo svgUrl={loaderUrl} color="#52C97D" />
+      <TokenLoadingLogo svgUrl={loaderUrl} color="#52C97D" slug="zera" />
 
       <div className="text-white/60 text-sm text-center max-w-md mt-8">
         <p>This loading animation pulses with dynamic colors.</p>

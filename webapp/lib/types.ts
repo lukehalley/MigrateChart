@@ -124,4 +124,5 @@ export interface ProjectListItem {
   name: string;
   primaryColor: string;
   logoUrl: string;
+  loaderUrl: string;
 }
