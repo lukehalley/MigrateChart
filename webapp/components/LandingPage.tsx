@@ -79,6 +79,8 @@ export default function LandingPage() {
 
   const handleTrackClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
+    if (!currentProject) return;
+
     setIsPaused(true);
     setIsTransitioning(true);
 
