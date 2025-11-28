@@ -90,6 +90,23 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
   });
   const [showIndicatorMenu, setShowIndicatorMenu] = useState(false);
 
+  // Text box editor state
+  const [editingTextBox, setEditingTextBox] = useState<{
+    id: string | null;
+    text: string;
+    x: number;
+    y: number;
+    logical: number;
+    price: number;
+    width?: number;
+    height?: number;
+  } | null>(null);
+  const textBoxInputRef = useRef<HTMLDivElement>(null);
+  const [isDraggingTextBox, setIsDraggingTextBox] = useState(false);
+  const [isResizingTextBox, setIsResizingTextBox] = useState(false);
+  const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
+  const isClosingEditorRef = useRef(false);
+
   // Store migration lines cleanup function
   const migrationLinesCleanupRef = useRef<(() => void) | null>(null);
 
@@ -595,12 +612,48 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
     // Add mouse event handlers for drawing tools
     const handleChartClick = (param: MouseEventParams) => {
-      if (!drawingStateRef.current.isDrawingMode()) return;
       if (!param.point) return;
+
+      // Ignore click if we just closed the editor
+      if (isClosingEditorRef.current) {
+        return;
+      }
 
       const series = candlestickSeriesRef.current;
       const drawingPrimitive = drawingPrimitiveRef.current;
       if (!series || !drawingPrimitive) return;
+
+      // Check if clicking on an existing text box (works even when not in drawing mode)
+      const clickedTextBox = drawingPrimitive.findTextBoxAtCoordinates(param.point.x, param.point.y);
+      if (clickedTextBox) {
+        // Open editor for existing text box
+        setEditingTextBox({
+          id: clickedTextBox.id,
+          text: clickedTextBox.text,
+          x: param.point.x,
+          y: param.point.y,
+          logical: clickedTextBox.point.logical,
+          price: clickedTextBox.point.price,
+          width: clickedTextBox.width,
+        });
+
+        // Focus the input after a brief delay
+        setTimeout(() => {
+          if (textBoxInputRef.current) {
+            textBoxInputRef.current.focus();
+            // Select all text for easy editing
+            const range = document.createRange();
+            range.selectNodeContents(textBoxInputRef.current);
+            const selection = window.getSelection();
+            selection?.removeAllRanges();
+            selection?.addRange(range);
+          }
+        }, 50);
+        return;
+      }
+
+      // If not in drawing mode and didn't click a text box, ignore
+      if (!drawingStateRef.current.isDrawingMode()) return;
 
       const price = series.coordinateToPrice(param.point.y);
       if (price === null) return;
@@ -645,6 +698,77 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
           const updatedDrawings = drawingPrimitive.getDrawings();
           SafeStorage.setJSON(`drawings_${timeframe}`, updatedDrawings);
           setDrawingCount(updatedDrawings.length);
+        }
+      } else if (activeToolType === 'text-box') {
+        const tempPoint = drawingStateRef.current.getTempPoint();
+
+        if (!tempPoint) {
+          // First click - create a ruler preview rectangle (like ruler tool)
+          drawingStateRef.current.setTempPoint({ logical, price });
+          drawingStateRef.current.setIsDrawing(true);
+          drawingPrimitive.addRuler({ logical, price }, { logical, price }, primaryColor);
+        } else {
+          // Second click - convert ruler preview to text box
+          // Calculate rectangle bounds (can be drawn in any direction)
+          const startX = chart.timeScale().logicalToCoordinate(tempPoint.logical as Logical);
+          const startY = series.priceToCoordinate(tempPoint.price);
+          const endX = param.point.x;
+          const endY = param.point.y;
+
+          if (startX === null || startY === null) return;
+
+          // Calculate top-left corner of rectangle (minimum x, minimum y)
+          const rectX = Math.min(startX, endX);
+          const rectY = Math.min(startY, endY);
+          const rectWidth = Math.abs(endX - startX);
+          const rectHeight = Math.abs(endY - startY);
+
+          const finalWidth = Math.max(224, rectWidth); // Min width 224px
+          const finalHeight = Math.max(60, rectHeight); // Min height ~60px
+
+          // Convert top-left position back to logical coordinates for storage
+          const rectLogical = chart.timeScale().coordinateToLogical(rectX);
+          const rectPrice = series.coordinateToPrice(rectY);
+
+          if (rectLogical === null || rectPrice === null) return;
+
+          // Remove the ruler preview
+          drawingPrimitive.removeLastDrawing();
+
+          // Create text box at the top-left corner with calculated width
+          const id = drawingPrimitive.addTextBox({ logical: rectLogical, price: rectPrice }, 'Text', primaryColor, undefined, finalWidth);
+
+          drawingStateRef.current.setTempPoint(null);
+          drawingStateRef.current.setIsDrawing(false);
+
+          const updatedDrawings = drawingPrimitive.getDrawings();
+          SafeStorage.setJSON(`drawings_${timeframe}`, updatedDrawings);
+          setDrawingCount(updatedDrawings.length);
+
+          // Show editor overlay at the exact rectangle position with exact size
+          setEditingTextBox({
+            id,
+            text: 'Text',
+            x: rectX,
+            y: rectY,
+            logical: rectLogical,
+            price: rectPrice,
+            width: finalWidth,
+            height: finalHeight,
+          });
+
+          // Focus the input after a brief delay
+          setTimeout(() => {
+            if (textBoxInputRef.current) {
+              textBoxInputRef.current.focus();
+              // Select all text
+              const range = document.createRange();
+              range.selectNodeContents(textBoxInputRef.current);
+              const selection = window.getSelection();
+              selection?.removeAllRanges();
+              selection?.addRange(range);
+            }
+          }, 50);
         }
       }
     };
@@ -747,6 +871,31 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         }
       }
 
+      // Update preview rectangle for text box while drawing (using ruler)
+      if (
+        drawingStateRef.current.isDrawingMode() &&
+        drawingStateRef.current.isDrawing() &&
+        activeToolType === 'text-box' &&
+        param.point
+      ) {
+        const series = candlestickSeriesRef.current;
+        if (!series) return;
+
+        const price = series.coordinateToPrice(param.point.y);
+        if (price === null) return;
+
+        const logical = chart.timeScale().coordinateToLogical(param.point.x);
+        if (logical === null) return;
+
+        const drawingPrimitive = drawingPrimitiveRef.current;
+        const tempPoint = drawingStateRef.current.getTempPoint();
+
+        if (drawingPrimitive && tempPoint) {
+          // Update the ruler preview rectangle (same as ruler tool)
+          drawingPrimitive.updateLastRulerPoint2({ logical, price });
+        }
+      }
+
       // Add points to freehand drawing while mouse is down (with throttling)
       if (
         drawingStateRef.current.isDrawingMode() &&
@@ -831,9 +980,9 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
       const time = chart.timeScale().coordinateToTime(x);
 
-      // For trend lines, rulers, and horizontal lines, use click handler
+      // For trend lines, rulers, horizontal lines, and text boxes, use click handler
       const activeToolType = drawingStateRef.current.getActiveToolType();
-      if (activeToolType === 'trend-line' || activeToolType === 'horizontal-line' || activeToolType === 'ruler') {
+      if (activeToolType === 'trend-line' || activeToolType === 'horizontal-line' || activeToolType === 'ruler' || activeToolType === 'text-box') {
         handleChartClick({ point: { x, y }, time } as MouseEventParams);
       } else if (activeToolType === 'freehand') {
         // For freehand, start the drawing
@@ -1083,7 +1232,18 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
   useEffect(() => {
     if (!chartRef.current) return;
 
+    // Hide crosshair completely when in text-box mode
+    const hideCrosshair = activeDrawingTool === 'text-box' || editingTextBox !== null;
+
     chartRef.current.applyOptions({
+      crosshair: {
+        vertLine: {
+          visible: !hideCrosshair,
+        },
+        horzLine: {
+          visible: !hideCrosshair,
+        },
+      },
       handleScroll: {
         mouseWheel: !isDrawingMode,
         pressedMouseMove: !isDrawingMode,
@@ -1107,7 +1267,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         mouse: false,
       },
     });
-  }, [isDrawingMode, chartVersion]);
+  }, [isDrawingMode, chartVersion, activeDrawingTool, editingTextBox]);
 
   // Handle ESC key to cancel trend line drawing
   useEffect(() => {
@@ -1118,11 +1278,11 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       const drawingState = drawingStateRef.current;
       const drawingPrimitive = drawingPrimitiveRef.current;
 
-      // Check if we're currently drawing a trend line or ruler
+      // Check if we're currently drawing a trend line, ruler, or text-box
       const activeToolType = drawingState.getActiveToolType();
       if (
         drawingState.isDrawing() &&
-        (activeToolType === 'trend-line' || activeToolType === 'ruler') &&
+        (activeToolType === 'trend-line' || activeToolType === 'ruler' || activeToolType === 'text-box') &&
         drawingPrimitive
       ) {
         // Prevent default ESC behavior only when actually canceling a drawing
@@ -1133,6 +1293,10 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         drawingPrimitive.removeLastDrawing();
         drawingState.setTempPoint(null);
         drawingState.setIsDrawing(false);
+        // Clear text box ID if canceling text box
+        if (activeToolType === 'text-box') {
+          delete (drawingState as any)._textBoxId;
+        }
       }
     };
 
@@ -1144,6 +1308,46 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
+
+  // Handle text box resizing globally
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (isResizingTextBox && dragStart && editingTextBox) {
+        const deltaX = e.clientX - dragStart.x;
+        const newWidth = Math.max(224, (editingTextBox.width || 224) + deltaX); // Min 224px (200 content + 24 padding)
+
+        setEditingTextBox(prev => prev ? { ...prev, width: newWidth } : null);
+        setDragStart({ x: e.clientX, y: e.clientY });
+
+        // Update the drawing primitive
+        if (editingTextBox.id && drawingPrimitiveRef.current) {
+          drawingPrimitiveRef.current.updateTextBox(editingTextBox.id, { width: newWidth });
+        }
+      }
+    };
+
+    const handleMouseUp = () => {
+      if (isResizingTextBox) {
+        setIsResizingTextBox(false);
+        setDragStart(null);
+        // Save to storage
+        if (drawingPrimitiveRef.current) {
+          const updatedDrawings = drawingPrimitiveRef.current.getDrawings();
+          SafeStorage.setJSON(`drawings_${timeframe}`, updatedDrawings);
+        }
+      }
+    };
+
+    if (isResizingTextBox) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+
+      return () => {
+        window.removeEventListener('mousemove', handleMouseMove);
+        window.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [isResizingTextBox, dragStart, editingTextBox, timeframe]);
 
   // Helper function to convert hex to rgba
   const hexToRgba = (hex: string, alpha: number) => {
@@ -1172,7 +1376,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         {/* About Info Button */}
         <button
           onClick={() => setShowAbout(!showAbout)}
-          className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-all hover:bg-white/90"
+          className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-all hover:bg-[var(--primary-color)]/5"
           style={buttonBaseStyle}
           aria-label="About this chart"
         >
@@ -1195,7 +1399,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                 drawingStateRef.current.setActiveToolType(null);
               }
             }}
-            className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-all hover:bg-white/90"
+            className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-all hover:bg-[var(--primary-color)]/5"
             style={showIndicatorMenu || enabledIndicators.size > 0 ? buttonActiveStyle : buttonBaseStyle}
             aria-label="Technical indicators"
             title="Technical Indicators"
@@ -1286,7 +1490,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
           {/* Toggle Drawing Mode Button */}
           <button
             onClick={toggleDrawingMode}
-            className="relative w-9 h-9 md:w-10 md:h-10 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-all hover:bg-white/90"
+            className="relative w-9 h-9 md:w-10 md:h-10 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-all hover:bg-[var(--primary-color)]/5"
             style={isDrawingMode ? buttonActiveStyle : buttonBaseStyle}
             aria-label="Toggle drawing mode"
             title="Toggle Drawing Mode"
@@ -1310,7 +1514,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   className={`w-9 h-9 md:w-10 md:h-10 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
                     activeDrawingTool === 'horizontal-line'
                       ? 'bg-[var(--primary-color)]/30 border-[var(--primary-color)] shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)]'
-                      : 'border-[var(--primary-color)]/50 hover:bg-white/90 hover:border-[var(--primary-color)]'
+                      : 'border-[var(--primary-color)]/50 hover:bg-[var(--primary-color)]/5 hover:border-[var(--primary-color)]'
                   }`}
                   initial={{ x: 20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
@@ -1330,7 +1534,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   className={`w-9 h-9 md:w-10 md:h-10 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
                     activeDrawingTool === 'trend-line'
                       ? 'bg-[var(--primary-color)]/30 border-[var(--primary-color)] shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)]'
-                      : 'border-[var(--primary-color)]/50 hover:bg-white/90 hover:border-[var(--primary-color)]'
+                      : 'border-[var(--primary-color)]/50 hover:bg-[var(--primary-color)]/5 hover:border-[var(--primary-color)]'
                   }`}
                   initial={{ x: 20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
@@ -1350,7 +1554,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   className={`w-9 h-9 md:w-10 md:h-10 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
                     activeDrawingTool === 'freehand'
                       ? 'bg-[var(--primary-color)]/30 border-[var(--primary-color)] shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)]'
-                      : 'border-[var(--primary-color)]/50 hover:bg-white/90 hover:border-[var(--primary-color)]'
+                      : 'border-[var(--primary-color)]/50 hover:bg-[var(--primary-color)]/5 hover:border-[var(--primary-color)]'
                   }`}
                   initial={{ x: 20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
@@ -1370,7 +1574,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   className={`w-9 h-9 md:w-10 md:h-10 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
                     activeDrawingTool === 'ruler'
                       ? 'bg-[var(--primary-color)]/30 border-[var(--primary-color)] shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)]'
-                      : 'border-[var(--primary-color)]/50 hover:bg-white/90 hover:border-[var(--primary-color)]'
+                      : 'border-[var(--primary-color)]/50 hover:bg-[var(--primary-color)]/5 hover:border-[var(--primary-color)]'
                   }`}
                   initial={{ x: 20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
@@ -1381,6 +1585,26 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                 >
                   <Ruler className="w-5 h-5 text-[var(--primary-color)]" strokeWidth={2} />
                 </motion.button>
+
+                {/* Text Box Tool - Hidden for now */}
+                {/* <motion.button
+                  onClick={() => selectDrawingTool('text-box')}
+                  className={`w-9 h-9 md:w-10 md:h-10 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
+                    activeDrawingTool === 'text-box'
+                      ? 'bg-[var(--primary-color)]/30 border-[var(--primary-color)] shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)]'
+                      : 'border-[var(--primary-color)]/50 hover:bg-[var(--primary-color)]/5 hover:border-[var(--primary-color)]'
+                  }`}
+                  initial={{ x: 20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  exit={{ x: 20, opacity: 0 }}
+                  transition={{ duration: 0.2, delay: 0.225, ease: 'easeOut' }}
+                  aria-label="Text box tool"
+                  title="Text Box"
+                >
+                  <svg className="w-5 h-5 text-[var(--primary-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                  </svg>
+                </motion.button> */}
 
                 {/* Undo Last Drawing Button */}
                 <motion.button
@@ -1453,7 +1677,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
               className={`w-11 h-11 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-all ${
                 showIndicatorMenu || enabledIndicators.size > 0
                   ? 'bg-[var(--primary-color)]/30 border-[var(--primary-color)] shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)]'
-                  : 'border-[var(--primary-color)] hover:bg-white/90 shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)] hover:shadow-[0_0_16px_rgba(var(--primary-rgb),0.5)]'
+                  : 'border-[var(--primary-color)] hover:bg-[var(--primary-color)]/5 shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)] hover:shadow-[0_0_16px_rgba(var(--primary-rgb),0.5)]'
               }`}
               aria-label="Technical indicators"
               title="Technical Indicators"
@@ -1540,7 +1764,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
             className={`w-11 h-11 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-all ${
               isDrawingMode
                 ? 'bg-[var(--primary-color)]/30 border-[var(--primary-color)] shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)]'
-                : 'border-[var(--primary-color)] hover:bg-white/90 shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)] hover:shadow-[0_0_16px_rgba(var(--primary-rgb),0.5)]'
+                : 'border-[var(--primary-color)] hover:bg-[var(--primary-color)]/5 shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)] hover:shadow-[0_0_16px_rgba(var(--primary-rgb),0.5)]'
             }`}
             aria-label="Toggle drawing mode"
             title="Toggle Drawing Mode"
@@ -1564,7 +1788,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   className={`w-11 h-11 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
                     activeDrawingTool === 'horizontal-line'
                       ? 'bg-[var(--primary-color)]/30 border-[var(--primary-color)] shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)]'
-                      : 'border-[var(--primary-color)] hover:bg-white/90 shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)]'
+                      : 'border-[var(--primary-color)] hover:bg-[var(--primary-color)]/5 shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)]'
                   }`}
                   initial={{ y: -20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
@@ -1584,7 +1808,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   className={`w-11 h-11 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
                     activeDrawingTool === 'trend-line'
                       ? 'bg-[var(--primary-color)]/30 border-[var(--primary-color)] shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)]'
-                      : 'border-[var(--primary-color)] hover:bg-white/90 shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)]'
+                      : 'border-[var(--primary-color)] hover:bg-[var(--primary-color)]/5 shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)]'
                   }`}
                   initial={{ y: -20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
@@ -1604,7 +1828,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   className={`w-11 h-11 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
                     activeDrawingTool === 'freehand'
                       ? 'bg-[var(--primary-color)]/30 border-[var(--primary-color)] shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)]'
-                      : 'border-[var(--primary-color)] hover:bg-white/90 shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)]'
+                      : 'border-[var(--primary-color)] hover:bg-[var(--primary-color)]/5 shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)]'
                   }`}
                   initial={{ y: -20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
@@ -1624,7 +1848,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   className={`w-11 h-11 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
                     activeDrawingTool === 'ruler'
                       ? 'bg-[var(--primary-color)]/30 border-[var(--primary-color)] shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)]'
-                      : 'border-[var(--primary-color)] hover:bg-white/90 shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)]'
+                      : 'border-[var(--primary-color)] hover:bg-[var(--primary-color)]/5 shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)]'
                   }`}
                   initial={{ y: -20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
@@ -1635,6 +1859,26 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                 >
                   <Ruler className="w-5 h-5 text-[var(--primary-color)]" strokeWidth={2} />
                 </motion.button>
+
+                {/* Text Box Tool - Hidden for now */}
+                {/* <motion.button
+                  onClick={() => selectDrawingTool('text-box')}
+                  className={`w-11 h-11 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
+                    activeDrawingTool === 'text-box'
+                      ? 'bg-[var(--primary-color)]/30 border-[var(--primary-color)] shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)]'
+                      : 'border-[var(--primary-color)] hover:bg-[var(--primary-color)]/5 shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)]'
+                  }`}
+                  initial={{ y: -20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -20, opacity: 0 }}
+                  transition={{ duration: 0.2, delay: 0.225, ease: 'easeOut' }}
+                  aria-label="Text box tool"
+                  title="Text Box"
+                >
+                  <svg className="w-5 h-5 text-[var(--primary-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                  </svg>
+                </motion.button> */}
 
                 {/* Undo Last Drawing Button */}
                 <motion.button
@@ -1708,7 +1952,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   <h2 style={{ margin: 0 }} className="text-[var(--primary-color)] text-xl md:text-2xl font-bold tracking-wide">About This Chart</h2>
                   <button
                     onClick={closeAboutModal}
-                    className="w-9 h-9 flex items-center justify-center text-white/50 hover:text-[var(--primary-color)] hover:bg-[var(--primary-color)]/10 rounded-full transition-all"
+                    className="w-9 h-9 flex items-center justify-center text-white/50 hover:text-[var(--primary-color)] hover:bg-[var(--primary-color)]/5 rounded-full transition-all"
                     aria-label="Close"
                   >
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1876,12 +2120,141 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         </>
       )}
 
+      {/* Text Box Editor Overlay */}
+      {editingTextBox && (() => {
+        // Calculate text color based on background brightness
+        const brightness = (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
+        const textColor = brightness > 128 ? '#000000' : '#ffffff';
+
+        return (
+          <div
+            className="absolute z-50 rounded-lg shadow-lg min-w-[200px] overflow-hidden"
+            style={{
+              left: `${editingTextBox.x}px`,
+              top: `${editingTextBox.y}px`,
+              backgroundColor: primaryColor,
+              boxShadow: `0 4px 12px rgba(0, 0, 0, 0.15)`,
+              width: editingTextBox.width ? `${editingTextBox.width}px` : '224px', // Total box width
+              cursor: isDraggingTextBox ? 'move' : 'default',
+            }}
+            onMouseDown={(e) => {
+              // Start dragging anywhere on the box except the content editable
+              if (e.target === e.currentTarget) {
+                e.stopPropagation();
+                setIsDraggingTextBox(true);
+                setDragStart({ x: e.clientX - editingTextBox.x, y: e.clientY - editingTextBox.y });
+              }
+            }}
+            onMouseMove={(e) => {
+            if (isDraggingTextBox && dragStart && chartRef.current) {
+              e.stopPropagation();
+              const newX = e.clientX - dragStart.x;
+              const newY = e.clientY - dragStart.y;
+
+              // Convert new screen position to logical coordinates
+              const series = candlestickSeriesRef.current;
+              if (series && chartRef.current) {
+                const price = series.coordinateToPrice(newY);
+                const logical = chartRef.current.timeScale().coordinateToLogical(newX);
+
+                if (price !== null && logical !== null) {
+                  setEditingTextBox(prev => prev ? { ...prev, x: newX, y: newY, logical, price } : null);
+
+                  // Update the drawing primitive
+                  if (editingTextBox.id && drawingPrimitiveRef.current) {
+                    drawingPrimitiveRef.current.moveTextBox(editingTextBox.id, { logical, price });
+                  }
+                }
+              }
+            }
+          }}
+          onMouseUp={() => {
+            if (isDraggingTextBox) {
+              setIsDraggingTextBox(false);
+              setDragStart(null);
+              // Save to storage
+              if (drawingPrimitiveRef.current) {
+                const updatedDrawings = drawingPrimitiveRef.current.getDrawings();
+                SafeStorage.setJSON(`drawings_${timeframe}`, updatedDrawings);
+              }
+            }
+          }}
+        >
+          <div
+            key={editingTextBox.id}
+            ref={textBoxInputRef}
+            contentEditable
+            suppressContentEditableWarning
+            className="outline-none text-sm leading-relaxed"
+            style={{
+              minHeight: '30px',
+              wordWrap: 'break-word',
+              cursor: isDraggingTextBox ? 'move' : 'text',
+              color: textColor,
+              padding: '12px', // Match canvas padding
+            }}
+            onMouseDown={(e) => {
+              // Allow dragging by clicking and holding on the text area
+              if (!textBoxInputRef.current?.contains(document.activeElement)) {
+                e.preventDefault();
+                e.stopPropagation();
+                setIsDraggingTextBox(true);
+                setDragStart({ x: e.clientX - editingTextBox.x, y: e.clientY - editingTextBox.y });
+              }
+            }}
+            onBlur={() => {
+              // Save the text box when focus is lost
+              if (editingTextBox && drawingPrimitiveRef.current && !isDraggingTextBox) {
+                const text = textBoxInputRef.current?.textContent || 'Text';
+                if (editingTextBox.id) {
+                  drawingPrimitiveRef.current.updateTextBox(editingTextBox.id, { text });
+                }
+                const updatedDrawings = drawingPrimitiveRef.current.getDrawings();
+                SafeStorage.setJSON(`drawings_${timeframe}`, updatedDrawings);
+
+                // Set flag to ignore the next click (which is the blur click)
+                isClosingEditorRef.current = true;
+                setEditingTextBox(null);
+
+                // Clear the flag after a short delay
+                setTimeout(() => {
+                  isClosingEditorRef.current = false;
+                }, 100);
+              }
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') {
+                e.currentTarget.blur();
+              }
+            }}
+            dangerouslySetInnerHTML={{ __html: editingTextBox.text }}
+          />
+
+          {/* Resize Handle */}
+          <div
+            className="absolute bottom-1 right-1 w-3 h-3 cursor-se-resize opacity-50"
+            onMouseDown={(e) => {
+              e.stopPropagation();
+              setIsResizingTextBox(true);
+              setDragStart({ x: e.clientX, y: e.clientY });
+            }}
+          >
+            <svg className="w-full h-full" viewBox="0 0 10 10" fill={textColor}>
+              <circle cx="8" cy="8" r="1" />
+              <circle cx="5" cy="8" r="1" />
+              <circle cx="8" cy="5" r="1" />
+            </svg>
+          </div>
+        </div>
+        );
+      })()}
+
       <div
         ref={chartContainerRef}
         className="w-full h-full"
         style={{
           touchAction: 'manipulation',
-          cursor: isDrawingMode ? 'crosshair' : 'default'
+          cursor: isDrawingMode && activeDrawingTool !== 'text-box' && !editingTextBox ? 'crosshair' : 'default'
         }}
       />
     </div>
