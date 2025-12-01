@@ -184,18 +184,6 @@ export default function LandingPage() {
                 ))}
               </div>
             </motion.div>
-
-            {/* Footer Info */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 1, delay: 0.8 }}
-              className="mt-8 md:mt-12 text-center"
-            >
-              <p className="text-xs text-white/30 tracking-widest uppercase">
-                Real-time data • Seamless tracking • Built for traders
-              </p>
-            </motion.div>
           </div>
       </motion.div>
     </div>
