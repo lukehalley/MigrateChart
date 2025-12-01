@@ -1,0 +1,31 @@
+name: Collect Holders (Hourly)
+
+on:
+  schedule:
+    # Run every hour at minute 0
+    - cron: '0 * * * *'
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  collect-holders:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Call collect-holders API
+        run: |
+          response=$(curl -s -w "\n%{http_code}" \
+            -X GET "https://migrate-chart.fun/api/cron/collect-holders" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}")
+
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+
+          echo "HTTP Status: $http_code"
+          echo "Response: $body"
+
+          if [ "$http_code" -ne 200 ]; then
+            echo "Error: API returned status $http_code"
+            exit 1
+          fi
+
+          echo "✅ Successfully collected holder snapshots"
