@@ -114,14 +114,14 @@ class HolderDataExtractor:
         print(f"Starting message fetch from chat: {chat_id}")
         print(f"Looking for messages from: {bot_name}")
         print(f"Pattern: {HOLDER_PATTERN}")
-        print(f"Starting from: January 1, 2025\n")
+        print(f"Starting from: November 23, 2025\n")
         print("This may take a while depending on chat history size...\n")
 
         message_count = 0
         holder_count_messages = 0
 
-        # Start date: January 1, 2025
-        start_date = dt(2025, 1, 1)
+        # Start date: November 23, 2025 (to backfill missing data gaps)
+        start_date = dt(2025, 11, 23)
 
         # Use iter_history to get all messages from start of 2025
         async for message in self.app.get_chat_history(
