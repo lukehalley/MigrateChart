@@ -1,12 +1,11 @@
 import type { Metadata, Viewport } from 'next';
 import { Analytics } from '@vercel/analytics/next';
-import { IBM_Plex_Mono } from 'next/font/google';
+import { Inter } from 'next/font/google';
 import './globals.css';
 
-const ibmPlexMono = IBM_Plex_Mono({
-  weight: ['400', '500', '600', '700'],
+const inter = Inter({
   subsets: ['latin'],
-  variable: '--font-ibm-plex-mono',
+  variable: '--font-inter',
   display: 'swap',
 });
 
@@ -39,7 +38,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={ibmPlexMono.variable}>
+    <html lang="en" className={inter.variable}>
       <body className="bg-background text-text">
         {children}
         <Analytics />
