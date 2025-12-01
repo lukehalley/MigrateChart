@@ -63,10 +63,10 @@ body:has([data-chart-page]) {
 }
 
 body {
-  font-family: ui-monospace, 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', 'Courier New', monospace;
+  font-family: var(--font-ibm-plex-mono), ui-monospace, 'SF Mono', monospace;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  letter-spacing: -0.01em;
+  letter-spacing: 0.01em;
   font-variant-numeric: tabular-nums;
 }
 
