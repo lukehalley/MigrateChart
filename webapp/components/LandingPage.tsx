@@ -15,8 +15,10 @@ interface ProjectListItem {
 export default function LandingPage() {
   const [projects, setProjects] = useState<ProjectListItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const startTime = Date.now();
     const minDisplayTime = 1200;
 
@@ -37,6 +39,14 @@ export default function LandingPage() {
     }
     fetchProjects();
   }, []);
+
+  if (!mounted) {
+    return (
+      <div className="fixed inset-0 bg-black flex items-center justify-center">
+        <MigrateChartLogoLoading />
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 bg-black" suppressHydrationWarning>
@@ -138,7 +148,7 @@ export default function LandingPage() {
                 animate={{ opacity: 1 }}
                 transition={{ duration: 1, delay: 0.3 }}
               >
-                Track Token Migrations
+                migrate-chart.fun
               </motion.h1>
               <motion.p
                 className="text-sm md:text-base text-white/50 tracking-wide"
@@ -146,7 +156,7 @@ export default function LandingPage() {
                 animate={{ opacity: 1 }}
                 transition={{ duration: 1, delay: 0.5 }}
               >
-                Complete price history across all pool transitions
+                Complete Price History Across All Pool Transitions
               </motion.p>
             </motion.div>
 
