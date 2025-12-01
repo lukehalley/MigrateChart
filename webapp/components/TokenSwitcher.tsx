@@ -8,6 +8,11 @@ import { useTokenContext } from '@/lib/TokenContext';
 export function TokenSwitcher() {
   const { currentProject, allProjects, switchProject } = useTokenContext();
   const [isOpen, setIsOpen] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState<Record<string, boolean>>({});
+
+  const handleImageLoad = (slug: string) => {
+    setImageLoaded(prev => ({ ...prev, [slug]: true }));
+  };
 
   if (!currentProject) {
     return (
@@ -22,11 +27,19 @@ export function TokenSwitcher() {
   if (allProjects.length <= 1) {
     return (
       <div className="flex items-center gap-3">
-        <img
-          src={currentProject.logoUrl}
-          alt={currentProject.name}
-          className="h-8 w-8"
-        />
+        <div className="relative h-8 w-8">
+          {!imageLoaded[currentProject.slug] && (
+            <div className="absolute inset-0 bg-gray-700 rounded-full animate-pulse" />
+          )}
+          <img
+            src={currentProject.logoUrl}
+            alt={currentProject.name}
+            className={`h-8 w-8 transition-opacity duration-300 ${
+              imageLoaded[currentProject.slug] ? 'opacity-100' : 'opacity-0'
+            }`}
+            onLoad={() => handleImageLoad(currentProject.slug)}
+          />
+        </div>
         <h1 className="text-lg font-bold text-white">{currentProject.name}</h1>
       </div>
     );
@@ -39,11 +52,19 @@ export function TokenSwitcher() {
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer group"
       >
-        <img
-          src={currentProject.logoUrl}
-          alt={currentProject.name}
-          className="h-8 w-8 group-hover:scale-105 transition-transform"
-        />
+        <div className="relative h-8 w-8">
+          {!imageLoaded[currentProject.slug] && (
+            <div className="absolute inset-0 bg-gray-700 rounded-full animate-pulse" />
+          )}
+          <img
+            src={currentProject.logoUrl}
+            alt={currentProject.name}
+            className={`h-8 w-8 group-hover:scale-105 transition-all duration-300 ${
+              imageLoaded[currentProject.slug] ? 'opacity-100' : 'opacity-0'
+            }`}
+            onLoad={() => handleImageLoad(currentProject.slug)}
+          />
+        </div>
         <h1 className="text-lg font-bold text-white group-hover:text-[var(--primary-color)] transition-colors">
           {currentProject.name}
         </h1>
@@ -90,11 +111,19 @@ export function TokenSwitcher() {
                         : 'hover:bg-white/10 cursor-pointer'
                     }`}
                   >
-                    <img
-                      src={project.logoUrl}
-                      alt={project.name}
-                      className="h-6 w-6"
-                    />
+                    <div className="relative h-6 w-6">
+                      {!imageLoaded[project.slug] && (
+                        <div className="absolute inset-0 bg-gray-700 rounded-full animate-pulse" />
+                      )}
+                      <img
+                        src={project.logoUrl}
+                        alt={project.name}
+                        className={`h-6 w-6 transition-opacity duration-300 ${
+                          imageLoaded[project.slug] ? 'opacity-100' : 'opacity-0'
+                        }`}
+                        onLoad={() => handleImageLoad(project.slug)}
+                      />
+                    </div>
                     <span
                       className={`text-sm font-bold ${
                         isActive ? 'text-[var(--primary-color)]' : 'text-white'
