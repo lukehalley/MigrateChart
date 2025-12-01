@@ -145,10 +145,10 @@ function FeesPageContent() {
           <div className="flex-1">
             <h1 className="text-2xl  font-bold flex items-center gap-3 tracking-tight" style={{ color: primaryColor }}>
               <Zap className="h-7 w-7" />
-              FEE_ANALYTICS
+              FEE ANALYTICS
             </h1>
             <p className="text-xs  text-white/50 mt-0.5">
-              REAL-TIME FEE COLLECTION METRICS
+              Real-time fee collection metrics
             </p>
           </div>
 
@@ -212,7 +212,7 @@ function FeesPageContent() {
                   <div className="flex items-start justify-between mb-4">
                     <div>
                       <p className="text-xs  tracking-wider mb-2" style={{ color: `${primaryColor}80` }}>
-                        TOTAL_COLLECTED
+                        TOTAL COLLECTED
                       </p>
                       <div className="text-5xl  font-bold data-glow mb-2" style={{ color: primaryColor }}>
                         {formatLargeNumber(feesData.totalFees)}
@@ -235,7 +235,7 @@ function FeesPageContent() {
                 >
                   <Activity className="h-6 w-6 mb-3 opacity-60" style={{ color: primaryColor }} />
                   <p className="text-[10px]  tracking-wider mb-2" style={{ color: `${primaryColor}80` }}>
-                    AVG_DAILY
+                    AVG DAILY
                   </p>
                   <div className="text-2xl  font-bold" style={{ color: primaryColor }}>
                     {formatNumber(feesData.avgDailyFees)}
@@ -252,7 +252,7 @@ function FeesPageContent() {
                 >
                   <TrendingUp className="h-6 w-6 mb-3 opacity-60" style={{ color: primaryColor }} />
                   <p className="text-[10px]  tracking-wider mb-2" style={{ color: `${primaryColor}80` }}>
-                    PEAK_DAY
+                    PEAK DAY
                   </p>
                   <div className="text-2xl  font-bold" style={{ color: primaryColor }}>
                     {formatNumber(peakDay)}
@@ -269,7 +269,7 @@ function FeesPageContent() {
                 >
                   <Calendar className="h-6 w-6 mb-3 opacity-60" style={{ color: primaryColor }} />
                   <p className="text-[10px]  tracking-wider mb-2" style={{ color: `${primaryColor}80` }}>
-                    DAYS_ACTIVE
+                    DAYS ACTIVE
                   </p>
                   <div className="text-2xl  font-bold" style={{ color: primaryColor }}>
                     {feesData.dailyFees.length}
@@ -297,7 +297,7 @@ function FeesPageContent() {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    {view === 'daily' ? 'DAILY_FLOW' : 'CUMULATIVE_GROWTH'}
+                    {view === 'daily' ? 'DAILY FLOW' : 'CUMULATIVE GROWTH'}
                   </motion.button>
                 ))}
               </motion.div>
@@ -313,7 +313,7 @@ function FeesPageContent() {
                 <div className="flex items-center justify-between mb-6">
                   <div>
                     <h2 className="text-xl  font-bold tracking-tight mb-1" style={{ color: primaryColor }}>
-                      {chartView === 'daily' ? 'DAILY_COLLECTION_FLOW' : 'CUMULATIVE_GROWTH_TRAJECTORY'}
+                      {chartView === 'daily' ? 'DAILY COLLECTION FLOW' : 'CUMULATIVE GROWTH TRAJECTORY'}
                     </h2>
                     <p className="text-xs  text-white/40">
                       {chartView === 'daily'
@@ -438,7 +438,7 @@ function FeesPageContent() {
                 style={{ borderColor: `${primaryColor}40` }}
               >
                 <p className="text-xs  text-white/40 tracking-wider">
-                  FEE_CALCULATION_BASED_ON_POOL_CONFIGURATIONS_AND_MIGRATION_TIMESTAMPS
+                  Fee calculation based on pool configurations and migration timestamps
                 </p>
               </motion.div>
             </motion.div>

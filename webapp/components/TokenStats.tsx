@@ -122,7 +122,7 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D', display
         <div className="flex items-start gap-3">
           {/* Current price */}
           <div className="flex-1">
-            <p className="text-white/60 text-[9px] tracking-wider mb-1.5">PRICE_USD</p>
+            <p className="text-white/60 text-[9px] tracking-wider mb-1.5">PRICE USD</p>
             <p className={`text-white text-xl font-bold select-text mb-1 ${flashingFields.has('price') ? 'flash-update' : ''}`}>
               {formatPrice(stats.price)}
             </p>
@@ -144,14 +144,14 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D', display
             <div className="flex-1 text-right">
               {displayMode === 'price' ? (
                 <>
-                  <p className="text-white/60 text-[9px] tracking-wider mb-1.5">ATH_PRICE</p>
+                  <p className="text-white/60 text-[9px] tracking-wider mb-1.5">ATH PRICE</p>
                   <p className="text-white/80 text-base select-text">
                     {formatPrice(stats.allTimeHighMarketCap / 1_000_000_000)}
                   </p>
                 </>
               ) : (
                 <>
-                  <p className="text-white/60 text-[9px] tracking-wider mb-1.5">ATH_MCAP</p>
+                  <p className="text-white/60 text-[9px] tracking-wider mb-1.5">ATH MCAP</p>
                   <p className="text-white/80 text-base select-text">
                     {formatNumber(stats.allTimeHighMarketCap)}
                   </p>
@@ -180,7 +180,7 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D', display
             </p>
           </div>
           <div className="flex-1 text-right">
-            <p className="text-white/60 text-[9px]  tracking-wider mb-1.5">MKT_CAP</p>
+            <p className="text-white/60 text-[9px]  tracking-wider mb-1.5">MKT CAP</p>
             <p className={`text-white text-base  font-bold select-text ${flashingFields.has('marketCap') ? 'flash-update' : ''}`}>
               {formatNumber(stats.marketCap)}
             </p>
@@ -207,7 +207,7 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D', display
           </div>
           {stats.allTimeVolume !== undefined && timeframeLabel !== 'ALL TIME' && (
             <div className="flex-1 text-right">
-              <p className="text-white/60 text-[9px]  tracking-wider mb-1.5">VOL_ATH</p>
+              <p className="text-white/60 text-[9px]  tracking-wider mb-1.5">VOL ATH</p>
               <p className="text-white/80 text-base  select-text">
                 {formatNumber(stats.allTimeVolume)}
               </p>
@@ -234,7 +234,7 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D', display
             </div>
             {stats.allTimeFees !== undefined && timeframeLabel !== 'ALL TIME' && (
               <div className="flex-1 text-right">
-                <p className="text-white/60 text-[9px]  tracking-wider mb-1.5">FEES_ATH</p>
+                <p className="text-white/60 text-[9px]  tracking-wider mb-1.5">FEES ATH</p>
                 <p className="text-white/80 text-base  select-text">
                   {formatNumber(stats.allTimeFees)}
                 </p>
@@ -250,7 +250,7 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D', display
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3, delay: 0.2 }}
           >
-            <p className="text-white/60 text-[9px]  tracking-wider mb-1.5">AVG_DAILY_FEES</p>
+            <p className="text-white/60 text-[9px]  tracking-wider mb-1.5">AVG DAILY FEES</p>
             <p className="text-white text-base  font-bold select-text">
               {formatNumber(avgDailyFees)}
             </p>
@@ -288,7 +288,7 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D', display
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.3, delay: 0.3 }}
         >
-          <p className="text-white/60 text-[9px]  tracking-wider mb-2 text-center">TRANSACTIONS_24H</p>
+          <p className="text-white/60 text-[9px]  tracking-wider mb-2 text-center">TRANSACTIONS 24H</p>
           <div className="flex items-center justify-center gap-6">
             <div className="text-center">
               <p className="text-white/60 text-[8px]  tracking-wider mb-1">BUYS</p>
