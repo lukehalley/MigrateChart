@@ -740,7 +740,13 @@ function HomeContent() {
           {/* Desktop: 3-column layout (≥ 1024px) */}
           <div className="hidden lg:flex items-center justify-center gap-4 py-5">
             {/* Logo - Far Left */}
-            <div className="absolute left-6 flex items-center justify-center">
+            <motion.button
+              onClick={() => router.push('/')}
+              className="absolute left-6 flex items-center justify-center cursor-pointer"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              aria-label="Go to home page"
+            >
               <svg
                 className="w-12 h-12"
                 style={{
@@ -758,7 +764,7 @@ function HomeContent() {
                 <path fill="currentColor" d="M290.446106,290.423218 C290.253357,289.345978 289.834564,288.244904 289.832825,287.143219 C289.795258,263.321381 289.801147,239.499527 289.815552,215.677673 C289.816132,214.720184 289.982727,213.762787 290.090454,212.607132 C315.730774,212.607132 341.153046,212.607132 366.859802,212.607132 C366.859802,238.324921 366.859802,263.892670 366.859802,290.047455 C341.672607,290.047455 316.414978,290.047455 290.760803,290.192200 C290.364258,290.336945 290.414307,290.399109 290.446106,290.423218z"/>
                 <path fill="currentColor" d="M445.290466,302.007385 C445.290466,323.963470 445.290466,345.421448 445.290466,367.245850 C419.480499,367.245850 393.966675,367.245850 368.177490,367.245850 C368.177490,341.667480 368.177490,316.112549 368.177490,290.260376 C393.644684,290.260376 419.183838,290.260376 445.290466,290.260376 C445.290466,293.993011 445.290466,297.751160 445.290466,302.007385z"/>
               </svg>
-            </div>
+            </motion.button>
 
             {/* Column 1: Address Bar + Copy Button */}
             <div className="flex items-center justify-center gap-2">
@@ -903,7 +909,13 @@ function HomeContent() {
             {/* Logo and Call to Action Row */}
             <div className="flex items-center justify-between w-full px-3">
               {/* Logo - Far Left */}
-              <div className="flex-shrink-0">
+              <motion.button
+                onClick={() => router.push('/')}
+                className="flex-shrink-0 cursor-pointer"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                aria-label="Go to home page"
+              >
                 <svg
                   className="w-10 h-10"
                   style={{
@@ -921,7 +933,7 @@ function HomeContent() {
                   <path fill="currentColor" d="M290.446106,290.423218 C290.253357,289.345978 289.834564,288.244904 289.832825,287.143219 C289.795258,263.321381 289.801147,239.499527 289.815552,215.677673 C289.816132,214.720184 289.982727,213.762787 290.090454,212.607132 C315.730774,212.607132 341.153046,212.607132 366.859802,212.607132 C366.859802,238.324921 366.859802,263.892670 366.859802,290.047455 C341.672607,290.047455 316.414978,290.047455 290.760803,290.192200 C290.364258,290.336945 290.414307,290.399109 290.446106,290.423218z"/>
                   <path fill="currentColor" d="M445.290466,302.007385 C445.290466,323.963470 445.290466,345.421448 445.290466,367.245850 C419.480499,367.245850 393.966675,367.245850 368.177490,367.245850 C368.177490,341.667480 368.177490,316.112549 368.177490,290.260376 C393.644684,290.260376 419.183838,290.260376 445.290466,290.260376 C445.290466,293.993011 445.290466,297.751160 445.290466,302.007385z"/>
                 </svg>
-              </div>
+              </motion.button>
 
               {/* Menu Button - Far Right */}
               <motion.button
