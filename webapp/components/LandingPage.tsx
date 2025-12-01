@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface ProjectListItem {
   slug: string;
@@ -40,21 +40,34 @@ export default function LandingPage() {
 
   return (
     <div className="fixed inset-0 bg-black" suppressHydrationWarning>
-      {/* Loading Screen - no exit animation, just instant hide */}
-      {loading && (
-        <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
+      {/* Loading Screen - soft fade in and out */}
+      <AnimatePresence>
+        {loading && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+            className="fixed inset-0 bg-black flex items-center justify-center z-50"
           >
-            <MigrateChartLogoLoading />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <MigrateChartLogoLoading />
+            </motion.div>
           </motion.div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
 
       {/* Main Content */}
-      <div className="fixed inset-0 overflow-auto">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+        className="fixed inset-0 overflow-auto"
+      >
           {/* Animated Background Orbs */}
           <motion.div
             className="fixed top-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full blur-[150px] opacity-20"
@@ -174,7 +187,7 @@ export default function LandingPage() {
               </p>
             </motion.div>
           </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
@@ -189,11 +202,11 @@ function TokenCard({ project, index }: TokenCardProps) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 30 }}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{
-        duration: 0.7,
-        delay: index * 0.06,
+        duration: 0.9,
+        delay: index * 0.08,
         ease: [0.22, 1, 0.36, 1],
       }}
     >
@@ -213,7 +226,7 @@ function TokenCard({ project, index }: TokenCardProps) {
 
         {/* Spotlight Effect */}
         <motion.div
-          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
+          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none"
           style={{
             background: `radial-gradient(circle at center, ${project.primaryColor}20 0%, transparent 60%)`,
           }}
@@ -221,7 +234,7 @@ function TokenCard({ project, index }: TokenCardProps) {
 
         {/* Hover Glow Ring */}
         <motion.div
-          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-800"
           style={{
             boxShadow: `inset 0 0 80px ${project.primaryColor}25, 0 0 100px ${project.primaryColor}15`,
           }}
@@ -229,7 +242,7 @@ function TokenCard({ project, index }: TokenCardProps) {
 
         {/* Glassmorphic Border Frame */}
         <div
-          className="absolute inset-0 border backdrop-blur-sm transition-all duration-500 bg-gradient-to-br from-white/5 to-transparent"
+          className="absolute inset-0 border backdrop-blur-sm transition-all duration-800 bg-gradient-to-br from-white/5 to-transparent"
           style={{
             borderColor: isHovered ? `${project.primaryColor}CC` : '#262626',
             borderWidth: isHovered ? '2px' : '1px',
@@ -241,12 +254,12 @@ function TokenCard({ project, index }: TokenCardProps) {
         <div className="relative w-full h-full flex items-center justify-center p-8 md:p-10 lg:p-12">
           <motion.div
             animate={{
-              scale: isHovered ? 1.15 : 1,
+              scale: isHovered ? 1.05 : 1,
               filter: isHovered
-                ? `drop-shadow(0 0 40px ${project.primaryColor}80) drop-shadow(0 0 80px ${project.primaryColor}40)`
+                ? `drop-shadow(0 0 30px ${project.primaryColor}60) drop-shadow(0 0 60px ${project.primaryColor}30)`
                 : 'drop-shadow(0 0 10px rgba(255,255,255,0.1))',
             }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
             className="relative w-full h-full"
           >
             <img
@@ -254,8 +267,8 @@ function TokenCard({ project, index }: TokenCardProps) {
               alt={project.name}
               className="w-full h-full object-contain"
               style={{
-                filter: isHovered ? 'brightness(1.3) contrast(1.1)' : 'brightness(1.05)',
-                transition: 'filter 0.6s cubic-bezier(0.22, 1, 0.36, 1)',
+                filter: isHovered ? 'brightness(1.15) contrast(1.05)' : 'brightness(1.05)',
+                transition: 'filter 0.8s cubic-bezier(0.22, 1, 0.36, 1)',
               }}
             />
           </motion.div>
@@ -267,9 +280,9 @@ function TokenCard({ project, index }: TokenCardProps) {
           style={{
             borderColor: `${project.primaryColor}40`,
           }}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: isHovered ? 1 : 0, y: isHovered ? 0 : 10 }}
-          transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: isHovered ? 1 : 0, y: isHovered ? 0 : 8 }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         >
           <p
             className="text-sm md:text-base font-bold tracking-wide"
@@ -290,12 +303,12 @@ function TokenCard({ project, index }: TokenCardProps) {
           }}
           initial={{ opacity: 0 }}
           animate={{ opacity: isHovered ? 1 : 0 }}
-          transition={{ duration: 0.3 }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         />
 
         {/* Corner Accent */}
         <div
-          className="absolute top-0 right-0 w-16 h-16 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+          className="absolute top-0 right-0 w-16 h-16 opacity-0 group-hover:opacity-100 transition-opacity duration-800"
           style={{
             background: `linear-gradient(135deg, ${project.primaryColor}20 0%, transparent 100%)`,
           }}
