@@ -122,12 +122,12 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D', display
         <div className="flex items-start gap-3">
           {/* Current price */}
           <div className="flex-1">
-            <p className="text-white/60 text-[9px] font-mono tracking-wider mb-1.5">PRICE_USD</p>
-            <p className={`text-white text-xl font-bold font-mono select-text mb-1 ${flashingFields.has('price') ? 'flash-update' : ''}`}>
+            <p className="text-white/60 text-[9px] tracking-wider mb-1.5">PRICE_USD</p>
+            <p className={`text-white text-xl font-bold select-text mb-1 ${flashingFields.has('price') ? 'flash-update' : ''}`}>
               {formatPrice(stats.price)}
             </p>
             <p
-              className={`text-sm font-mono font-bold select-text ${flashingFields.has('priceChange') ? 'flash-update' : ''}`}
+              className={`text-sm font-bold select-text ${flashingFields.has('priceChange') ? 'flash-update' : ''}`}
               style={{
                 color: stats.priceChange24h > 0
                   ? 'var(--primary-color)'
@@ -144,15 +144,15 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D', display
             <div className="flex-1 text-right">
               {displayMode === 'price' ? (
                 <>
-                  <p className="text-white/60 text-[9px] font-mono tracking-wider mb-1.5">ATH_PRICE</p>
-                  <p className="text-white/80 text-base font-mono select-text">
+                  <p className="text-white/60 text-[9px] tracking-wider mb-1.5">ATH_PRICE</p>
+                  <p className="text-white/80 text-base select-text">
                     {formatPrice(stats.allTimeHighMarketCap / 1_000_000_000)}
                   </p>
                 </>
               ) : (
                 <>
-                  <p className="text-white/60 text-[9px] font-mono tracking-wider mb-1.5">ATH_MCAP</p>
-                  <p className="text-white/80 text-base font-mono select-text">
+                  <p className="text-white/60 text-[9px] tracking-wider mb-1.5">ATH_MCAP</p>
+                  <p className="text-white/80 text-base select-text">
                     {formatNumber(stats.allTimeHighMarketCap)}
                   </p>
                 </>
@@ -174,14 +174,14 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D', display
       >
         <div className="flex items-start gap-3">
           <div className="flex-1">
-            <p className="text-white/60 text-[9px] font-mono tracking-wider mb-1.5">LIQUIDITY</p>
-            <p className={`text-white text-base font-mono font-bold select-text ${flashingFields.has('liquidity') ? 'flash-update' : ''}`}>
+            <p className="text-white/60 text-[9px]  tracking-wider mb-1.5">LIQUIDITY</p>
+            <p className={`text-white text-base  font-bold select-text ${flashingFields.has('liquidity') ? 'flash-update' : ''}`}>
               {formatNumber(stats.liquidity)}
             </p>
           </div>
           <div className="flex-1 text-right">
-            <p className="text-white/60 text-[9px] font-mono tracking-wider mb-1.5">MKT_CAP</p>
-            <p className={`text-white text-base font-mono font-bold select-text ${flashingFields.has('marketCap') ? 'flash-update' : ''}`}>
+            <p className="text-white/60 text-[9px]  tracking-wider mb-1.5">MKT_CAP</p>
+            <p className={`text-white text-base  font-bold select-text ${flashingFields.has('marketCap') ? 'flash-update' : ''}`}>
               {formatNumber(stats.marketCap)}
             </p>
           </div>
@@ -200,15 +200,15 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D', display
       >
         <div className="flex items-start gap-3">
           <div className="flex-1">
-            <p className="text-white/60 text-[9px] font-mono tracking-wider mb-1.5">VOLUME</p>
-            <p className={`text-white text-base font-mono font-bold select-text ${flashingFields.has('volume') ? 'flash-update' : ''}`}>
+            <p className="text-white/60 text-[9px]  tracking-wider mb-1.5">VOLUME</p>
+            <p className={`text-white text-base  font-bold select-text ${flashingFields.has('volume') ? 'flash-update' : ''}`}>
               {formatNumber(stats.volume24h)}
             </p>
           </div>
           {stats.allTimeVolume !== undefined && timeframeLabel !== 'ALL TIME' && (
             <div className="flex-1 text-right">
-              <p className="text-white/60 text-[9px] font-mono tracking-wider mb-1.5">VOL_ATH</p>
-              <p className="text-white/80 text-base font-mono select-text">
+              <p className="text-white/60 text-[9px]  tracking-wider mb-1.5">VOL_ATH</p>
+              <p className="text-white/80 text-base  select-text">
                 {formatNumber(stats.allTimeVolume)}
               </p>
             </div>
@@ -227,15 +227,15 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D', display
         >
           <div className="flex items-start gap-3">
             <div className="flex-1">
-              <p className="text-white/60 text-[9px] font-mono tracking-wider mb-1.5">FEES</p>
-              <p className={`text-white text-base font-mono font-bold select-text ${flashingFields.has('fees') ? 'flash-update' : ''}`}>
+              <p className="text-white/60 text-[9px]  tracking-wider mb-1.5">FEES</p>
+              <p className={`text-white text-base  font-bold select-text ${flashingFields.has('fees') ? 'flash-update' : ''}`}>
                 {formatNumber(stats.fees24h)}
               </p>
             </div>
             {stats.allTimeFees !== undefined && timeframeLabel !== 'ALL TIME' && (
               <div className="flex-1 text-right">
-                <p className="text-white/60 text-[9px] font-mono tracking-wider mb-1.5">FEES_ATH</p>
-                <p className="text-white/80 text-base font-mono select-text">
+                <p className="text-white/60 text-[9px]  tracking-wider mb-1.5">FEES_ATH</p>
+                <p className="text-white/80 text-base  select-text">
                   {formatNumber(stats.allTimeFees)}
                 </p>
               </div>
@@ -250,8 +250,8 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D', display
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3, delay: 0.2 }}
           >
-            <p className="text-white/60 text-[9px] font-mono tracking-wider mb-1.5">AVG_DAILY_FEES</p>
-            <p className="text-white text-base font-mono font-bold select-text">
+            <p className="text-white/60 text-[9px]  tracking-wider mb-1.5">AVG_DAILY_FEES</p>
+            <p className="text-white text-base  font-bold select-text">
               {formatNumber(avgDailyFees)}
             </p>
           </motion.div>
@@ -270,8 +270,8 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D', display
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.3, delay: 0.25 }}
         >
-          <p className="text-white/60 text-[9px] font-mono tracking-wider mb-1.5">HOLDERS</p>
-          <p className={`text-white text-base font-mono font-bold select-text ${flashingFields.has('holders') ? 'flash-update' : ''}`}>
+          <p className="text-white/60 text-[9px]  tracking-wider mb-1.5">HOLDERS</p>
+          <p className={`text-white text-base  font-bold select-text ${flashingFields.has('holders') ? 'flash-update' : ''}`}>
             {formatCount(stats.holders)}
           </p>
         </motion.div>
@@ -288,18 +288,18 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D', display
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.3, delay: 0.3 }}
         >
-          <p className="text-white/60 text-[9px] font-mono tracking-wider mb-2 text-center">TRANSACTIONS_24H</p>
+          <p className="text-white/60 text-[9px]  tracking-wider mb-2 text-center">TRANSACTIONS_24H</p>
           <div className="flex items-center justify-center gap-6">
             <div className="text-center">
-              <p className="text-white/60 text-[8px] font-mono tracking-wider mb-1">BUYS</p>
-              <p className={`text-[#52C97D] text-base font-mono font-bold select-text ${flashingFields.has('buys') ? 'flash-update' : ''}`}>
+              <p className="text-white/60 text-[8px]  tracking-wider mb-1">BUYS</p>
+              <p className={`text-[#52C97D] text-base  font-bold select-text ${flashingFields.has('buys') ? 'flash-update' : ''}`}>
                 {stats.buyCount24h || 0}
               </p>
             </div>
             <div className="w-px h-8 bg-white/20"></div>
             <div className="text-center">
-              <p className="text-white/60 text-[8px] font-mono tracking-wider mb-1">SELLS</p>
-              <p className={`text-[#ef5350] text-base font-mono font-bold select-text ${flashingFields.has('sells') ? 'flash-update' : ''}`}>
+              <p className="text-white/60 text-[8px]  tracking-wider mb-1">SELLS</p>
+              <p className={`text-[#ef5350] text-base  font-bold select-text ${flashingFields.has('sells') ? 'flash-update' : ''}`}>
                 {stats.sellCount24h || 0}
               </p>
             </div>

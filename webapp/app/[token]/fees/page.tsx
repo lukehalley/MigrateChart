@@ -143,11 +143,11 @@ function FeesPageContent() {
           </motion.button>
 
           <div className="flex-1">
-            <h1 className="text-2xl font-mono font-bold flex items-center gap-3 tracking-tight" style={{ color: primaryColor }}>
+            <h1 className="text-2xl  font-bold flex items-center gap-3 tracking-tight" style={{ color: primaryColor }}>
               <Zap className="h-7 w-7" />
               FEE_ANALYTICS
             </h1>
-            <p className="text-xs font-mono text-white/50 mt-0.5">
+            <p className="text-xs  text-white/50 mt-0.5">
               REAL-TIME FEE COLLECTION METRICS
             </p>
           </div>
@@ -158,7 +158,7 @@ function FeesPageContent() {
               <motion.button
                 key={tf}
                 onClick={() => setTimeframe(tf)}
-                className="px-4 py-2 font-mono text-xs font-bold transition-all terminal-card"
+                className="px-4 py-2  text-xs font-bold transition-all terminal-card"
                 style={{
                   borderColor: timeframe === tf ? primaryColor : `${primaryColor}40`,
                   color: timeframe === tf ? '#000' : primaryColor,
@@ -211,13 +211,13 @@ function FeesPageContent() {
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div>
-                      <p className="text-xs font-mono tracking-wider mb-2" style={{ color: `${primaryColor}80` }}>
+                      <p className="text-xs  tracking-wider mb-2" style={{ color: `${primaryColor}80` }}>
                         TOTAL_COLLECTED
                       </p>
-                      <div className="text-5xl font-mono font-bold data-glow mb-2" style={{ color: primaryColor }}>
+                      <div className="text-5xl  font-bold data-glow mb-2" style={{ color: primaryColor }}>
                         {formatLargeNumber(feesData.totalFees)}
                       </div>
-                      <p className="text-xs font-mono text-white/40">
+                      <p className="text-xs  text-white/40">
                         {timeframe} PERIOD
                       </p>
                     </div>
@@ -234,10 +234,10 @@ function FeesPageContent() {
                   style={{ borderColor: `${primaryColor}60` }}
                 >
                   <Activity className="h-6 w-6 mb-3 opacity-60" style={{ color: primaryColor }} />
-                  <p className="text-[10px] font-mono tracking-wider mb-2" style={{ color: `${primaryColor}80` }}>
+                  <p className="text-[10px]  tracking-wider mb-2" style={{ color: `${primaryColor}80` }}>
                     AVG_DAILY
                   </p>
-                  <div className="text-2xl font-mono font-bold" style={{ color: primaryColor }}>
+                  <div className="text-2xl  font-bold" style={{ color: primaryColor }}>
                     {formatNumber(feesData.avgDailyFees)}
                   </div>
                 </motion.div>
@@ -251,10 +251,10 @@ function FeesPageContent() {
                   style={{ borderColor: `${primaryColor}60` }}
                 >
                   <TrendingUp className="h-6 w-6 mb-3 opacity-60" style={{ color: primaryColor }} />
-                  <p className="text-[10px] font-mono tracking-wider mb-2" style={{ color: `${primaryColor}80` }}>
+                  <p className="text-[10px]  tracking-wider mb-2" style={{ color: `${primaryColor}80` }}>
                     PEAK_DAY
                   </p>
-                  <div className="text-2xl font-mono font-bold" style={{ color: primaryColor }}>
+                  <div className="text-2xl  font-bold" style={{ color: primaryColor }}>
                     {formatNumber(peakDay)}
                   </div>
                 </motion.div>
@@ -268,10 +268,10 @@ function FeesPageContent() {
                   style={{ borderColor: `${primaryColor}60` }}
                 >
                   <Calendar className="h-6 w-6 mb-3 opacity-60" style={{ color: primaryColor }} />
-                  <p className="text-[10px] font-mono tracking-wider mb-2" style={{ color: `${primaryColor}80` }}>
+                  <p className="text-[10px]  tracking-wider mb-2" style={{ color: `${primaryColor}80` }}>
                     DAYS_ACTIVE
                   </p>
-                  <div className="text-2xl font-mono font-bold" style={{ color: primaryColor }}>
+                  <div className="text-2xl  font-bold" style={{ color: primaryColor }}>
                     {feesData.dailyFees.length}
                   </div>
                 </motion.div>
@@ -288,7 +288,7 @@ function FeesPageContent() {
                   <motion.button
                     key={view}
                     onClick={() => setChartView(view)}
-                    className="px-6 py-3 font-mono text-sm font-bold terminal-card transition-all"
+                    className="px-6 py-3  text-sm font-bold terminal-card transition-all"
                     style={{
                       borderColor: chartView === view ? primaryColor : `${primaryColor}40`,
                       color: chartView === view ? '#000' : primaryColor,
@@ -312,10 +312,10 @@ function FeesPageContent() {
               >
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h2 className="text-xl font-mono font-bold tracking-tight mb-1" style={{ color: primaryColor }}>
+                    <h2 className="text-xl  font-bold tracking-tight mb-1" style={{ color: primaryColor }}>
                       {chartView === 'daily' ? 'DAILY_COLLECTION_FLOW' : 'CUMULATIVE_GROWTH_TRAJECTORY'}
                     </h2>
-                    <p className="text-xs font-mono text-white/40">
+                    <p className="text-xs  text-white/40">
                       {chartView === 'daily'
                         ? 'Fee volume collected per day across all transactions'
                         : 'Total accumulated fees over the selected timeframe'}
@@ -361,7 +361,7 @@ function FeesPageContent() {
                           <ChartTooltip
                             content={
                               <ChartTooltipContent
-                                className="terminal-card font-mono text-xs"
+                                className="terminal-card  text-xs"
                                 style={{ borderColor: primaryColor, backgroundColor: '#000' }}
                                 labelFormatter={(value) => `${value}`}
                                 formatter={(value) => formatNumber(Number(value))}
@@ -408,7 +408,7 @@ function FeesPageContent() {
                           <ChartTooltip
                             content={
                               <ChartTooltipContent
-                                className="terminal-card font-mono text-xs"
+                                className="terminal-card  text-xs"
                                 style={{ borderColor: primaryColor, backgroundColor: '#000' }}
                                 labelFormatter={(value) => `${value}`}
                                 formatter={(value) => formatNumber(Number(value))}
@@ -437,7 +437,7 @@ function FeesPageContent() {
                 className="text-center terminal-card p-4"
                 style={{ borderColor: `${primaryColor}40` }}
               >
-                <p className="text-xs font-mono text-white/40 tracking-wider">
+                <p className="text-xs  text-white/40 tracking-wider">
                   FEE_CALCULATION_BASED_ON_POOL_CONFIGURATIONS_AND_MIGRATION_TIMESTAMPS
                 </p>
               </motion.div>
