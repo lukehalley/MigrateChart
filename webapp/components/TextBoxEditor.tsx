@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { TextBoxDrawing } from '@/lib/drawingTools';
 
 export interface TextBoxData {
   id: string;
@@ -13,10 +14,19 @@ export interface TextBoxData {
   fontSize: number;
   fontFamily: string;
   fontWeight: string;
+  fontStyle?: 'normal' | 'italic';
+  textDecoration?: 'none' | 'underline';
   color: string;
   backgroundColor: string;
+  backgroundOpacity?: number;
+  backgroundEnabled?: boolean;
+  borderEnabled?: boolean;
+  borderColor?: string;
+  borderWidth?: number;
   textAlign: 'left' | 'center' | 'right';
   rotation: number;
+  padding?: number;
+  textWrap?: boolean;
   logical: number;
   price: number;
 }
@@ -29,6 +39,7 @@ interface TextBoxEditorProps {
   onStartDrag: (e: React.MouseEvent, handle?: string) => void;
   onDoubleClick: () => void;
   onBlur: () => void;
+  onRightClick?: (e: React.MouseEvent) => void;
   primaryColor: string;
 }
 
@@ -43,13 +54,27 @@ export default function TextBoxEditor({
   onStartDrag,
   onDoubleClick,
   onBlur,
-  primaryColor
+  onRightClick,
+  primaryColor,
 }: TextBoxEditorProps) {
   const textAreaRef = useRef<HTMLDivElement>(null);
-  const [showToolbar, setShowToolbar] = useState(false);
   const [localText, setLocalText] = useState(textBox.text);
+  const [isHovered, setIsHovered] = useState(false);
 
-  // Calculate text color based on background brightness
+  const fontSize = textBox.fontSize || 16;
+  const fontFamily = textBox.fontFamily || 'Inter, system-ui, -apple-system, sans-serif';
+  const fontWeight = textBox.fontWeight || '400';
+  const fontStyle = textBox.fontStyle || 'normal';
+  const textDecoration = textBox.textDecoration || 'none';
+  const backgroundColor = textBox.backgroundColor || '#FFFFFF';
+  const backgroundOpacity = textBox.backgroundOpacity !== undefined ? textBox.backgroundOpacity : 0.95;
+  const backgroundEnabled = textBox.backgroundEnabled !== false;
+  const borderEnabled = textBox.borderEnabled || false;
+  const borderColor = textBox.borderColor || '#000000';
+  const borderWidth = textBox.borderWidth || 2;
+  const padding = textBox.padding || 12;
+
+  // Calculate text color based on background brightness (if not explicitly set)
   const getTextColor = (bgColor: string) => {
     const hex = bgColor.replace('#', '');
     const r = parseInt(hex.substring(0, 2), 16);
@@ -59,11 +84,16 @@ export default function TextBoxEditor({
     return brightness > 128 ? '#000000' : '#ffffff';
   };
 
-  const textColor = textBox.color || getTextColor(textBox.backgroundColor);
+  const textColor = textBox.color || getTextColor(backgroundColor);
 
-  // Focus text area when editing starts
+  // Focus text area when editing starts and set initial content
   useEffect(() => {
     if (isEditing && textAreaRef.current) {
+      // Set content only once when entering edit mode
+      if (textAreaRef.current.textContent !== textBox.text) {
+        textAreaRef.current.textContent = textBox.text;
+      }
+
       textAreaRef.current.focus();
       // Select all text
       const range = document.createRange();
@@ -74,10 +104,12 @@ export default function TextBoxEditor({
     }
   }, [isEditing]);
 
-  // Update local text when textBox changes
+  // Update local text when textBox changes (only when not editing)
   useEffect(() => {
-    setLocalText(textBox.text);
-  }, [textBox.text]);
+    if (!isEditing) {
+      setLocalText(textBox.text);
+    }
+  }, [textBox.text, isEditing]);
 
   const handles = [
     { id: 'nw', x: 0, y: 0, cursor: 'nwse-resize' },
@@ -90,98 +122,137 @@ export default function TextBoxEditor({
     { id: 'w', x: 0, y: textBox.height / 2, cursor: 'ew-resize' },
   ];
 
-  return (
-    <>
-      {/* Main TextBox */}
-      <div
-        data-textbox-editor="true"
-        className="absolute select-none"
-        style={{
-          left: `${textBox.x}px`,
-          top: `${textBox.y}px`,
-          width: `${textBox.width}px`,
-          height: `${textBox.height}px`,
-          transform: `rotate(${textBox.rotation}deg)`,
-          transformOrigin: 'center center',
-          zIndex: isSelected ? 100 : 50,
-        }}
-        onDoubleClick={onDoubleClick}
-        onMouseDown={(e) => !isEditing && onStartDrag(e)}
-      >
-        {/* TextBox Content */}
-        <div
-          className={`w-full h-full rounded-lg shadow-lg flex items-center justify-center overflow-hidden ${
-            !isEditing ? 'cursor-move' : ''
-          }`}
-          style={{
-            backgroundColor: textBox.backgroundColor,
-            padding: '12px',
-          }}
-        >
-          {isEditing ? (
-            <div
-              ref={textAreaRef}
-              contentEditable
-              suppressContentEditableWarning
-              className="w-full h-full outline-none overflow-auto resize-none"
-              style={{
-                color: textColor,
-                fontSize: `${textBox.fontSize}px`,
-                fontFamily: textBox.fontFamily,
-                fontWeight: textBox.fontWeight,
-                textAlign: textBox.textAlign,
-                lineHeight: 1.4,
-                wordWrap: 'break-word',
-                cursor: 'text',
-              }}
-              onInput={(e) => {
-                const text = e.currentTarget.textContent || '';
-                setLocalText(text);
-                onUpdate({ text });
-              }}
-              onBlur={onBlur}
-              onKeyDown={(e) => {
-                if (e.key === 'Escape') {
-                  e.currentTarget.blur();
-                }
-              }}
-              dangerouslySetInnerHTML={{ __html: localText }}
-            />
-          ) : (
-            <div
-              className="w-full h-full overflow-hidden"
-              style={{
-                color: textColor,
-                fontSize: `${textBox.fontSize}px`,
-                fontFamily: textBox.fontFamily,
-                fontWeight: textBox.fontWeight,
-                textAlign: textBox.textAlign,
-                lineHeight: 1.4,
-                wordWrap: 'break-word',
-              }}
-            >
-              {textBox.text}
-            </div>
-          )}
-        </div>
+  // Helper to convert hex to rgba
+  const hexToRgba = (hex: string, alpha: number) => {
+    const h = hex.replace('#', '');
+    const r = parseInt(h.substring(0, 2), 16);
+    const g = parseInt(h.substring(2, 4), 16);
+    const b = parseInt(h.substring(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  };
 
-        {/* Selection Handles */}
+  return (
+    <div
+      data-textbox-editor="true"
+      className="absolute select-none"
+      style={{
+        left: `${textBox.x}px`,
+        top: `${textBox.y}px`,
+        width: `${textBox.width}px`,
+        height: `${textBox.height}px`,
+        transform: `rotate(${textBox.rotation}deg)`,
+        transformOrigin: 'center center',
+        zIndex: isSelected ? 100 : 50,
+      }}
+      onDoubleClick={onDoubleClick}
+      onMouseDown={(e) => !isEditing && onStartDrag(e)}
+      onContextMenu={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (onRightClick && !isEditing) {
+          onRightClick(e);
+        }
+      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {/* TextBox Content */}
+      <div
+        className={`w-full h-full rounded-lg flex items-center justify-center overflow-hidden transition-all ${
+          !isEditing ? 'cursor-move' : ''
+        }`}
+        style={{
+          backgroundColor: backgroundEnabled ? hexToRgba(backgroundColor, backgroundOpacity) : 'transparent',
+          padding: `${padding}px`,
+          border: borderEnabled ? `${borderWidth}px solid ${borderColor}` : 'none',
+          boxShadow: isSelected || isHovered
+            ? `0 4px 12px rgba(0, 0, 0, 0.15), 0 0 0 ${isSelected ? 2 : 1}px ${hexToRgba(primaryColor, isSelected ? 0.4 : 0.2)}`
+            : '0 2px 8px rgba(0, 0, 0, 0.1)',
+        }}
+      >
+        {isEditing ? (
+          <div
+            ref={textAreaRef}
+            contentEditable
+            suppressContentEditableWarning
+            className="w-full h-full outline-none overflow-auto resize-none"
+            style={{
+              color: textColor,
+              fontSize: `${fontSize}px`,
+              fontFamily,
+              fontWeight,
+              fontStyle,
+              textDecoration,
+              textAlign: textBox.textAlign,
+              lineHeight: 1.4,
+              wordWrap: 'break-word',
+              cursor: 'text',
+            }}
+            onInput={(e) => {
+              const text = e.currentTarget.textContent || '';
+              setLocalText(text);
+              onUpdate({ text });
+            }}
+            onBlur={onBlur}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') {
+                e.currentTarget.blur();
+              }
+            }}
+          />
+        ) : (
+          <div
+            className="w-full h-full overflow-hidden"
+            style={{
+              color: textColor,
+              fontSize: `${fontSize}px`,
+              fontFamily,
+              fontWeight,
+              fontStyle,
+              textDecoration,
+              textAlign: textBox.textAlign,
+              lineHeight: 1.4,
+              wordWrap: 'break-word',
+            }}
+          >
+            {textBox.text}
+          </div>
+        )}
+      </div>
+
+      {/* Selection Indicators and Handles */}
+      <AnimatePresence>
         {isSelected && !isEditing && (
-          <>
-            {/* Selection Border */}
-            <div
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+          >
+            {/* Selection Border with Pulse Effect */}
+            <motion.div
               className="absolute inset-0 border-2 rounded-lg pointer-events-none"
               style={{
                 borderColor: primaryColor,
-                boxShadow: `0 0 0 1px ${primaryColor}40`,
+              }}
+              animate={{
+                boxShadow: [
+                  `0 0 0 0 ${hexToRgba(primaryColor, 0.4)}`,
+                  `0 0 0 4px ${hexToRgba(primaryColor, 0)}`,
+                ],
+              }}
+              transition={{
+                duration: 0.6,
+                repeat: 1,
+                ease: 'easeOut',
               }}
             />
 
             {/* Resize Handles */}
             {handles.map((handle) => (
-              <div
+              <motion.div
                 key={handle.id}
-                className="absolute bg-white border-2 rounded-sm shadow-md hover:scale-125 transition-transform"
+                className="absolute bg-white border-2 rounded-sm shadow-lg transition-all"
                 style={{
                   width: `${HANDLE_SIZE}px`,
                   height: `${HANDLE_SIZE}px`,
@@ -191,6 +262,11 @@ export default function TextBoxEditor({
                   cursor: handle.cursor,
                   transform: `rotate(-${textBox.rotation}deg)`,
                 }}
+                whileHover={{
+                  scale: 1.3,
+                  boxShadow: `0 0 8px ${hexToRgba(primaryColor, 0.4)}`,
+                }}
+                transition={{ type: 'spring', stiffness: 400, damping: 17 }}
                 onMouseDown={(e) => {
                   e.stopPropagation();
                   onStartDrag(e, handle.id);
@@ -209,21 +285,32 @@ export default function TextBoxEditor({
             >
               <div className="relative flex flex-col items-center">
                 {/* Connection Line */}
-                <div
-                  className="w-0.5 h-6"
-                  style={{ backgroundColor: primaryColor }}
+                <motion.div
+                  className="w-0.5"
+                  style={{
+                    height: `${ROTATION_HANDLE_OFFSET - 12}px`,
+                    backgroundColor: primaryColor,
+                  }}
+                  initial={{ scaleY: 0 }}
+                  animate={{ scaleY: 1 }}
+                  transition={{ duration: 0.2, delay: 0.1 }}
                 />
                 {/* Rotation Handle */}
-                <div
-                  className="w-4 h-4 rounded-full border-2 bg-white shadow-md hover:scale-125 transition-transform cursor-grab active:cursor-grabbing"
+                <motion.div
+                  className="w-5 h-5 rounded-full border-2 bg-white shadow-lg cursor-grab active:cursor-grabbing flex items-center justify-center"
                   style={{ borderColor: primaryColor }}
+                  whileHover={{
+                    scale: 1.25,
+                    boxShadow: `0 0 12px ${hexToRgba(primaryColor, 0.5)}`,
+                  }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 17 }}
                   onMouseDown={(e) => {
                     e.stopPropagation();
                     onStartDrag(e, 'rotate');
                   }}
                 >
                   <svg
-                    className="w-full h-full"
+                    className="w-3 h-3"
                     viewBox="0 0 16 16"
                     fill="none"
                     stroke={primaryColor}
@@ -231,114 +318,12 @@ export default function TextBoxEditor({
                   >
                     <path d="M8 3 L8 8 L11 6" />
                   </svg>
-                </div>
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* Formatting Toolbar */}
-      <AnimatePresence>
-        {isSelected && showToolbar && !isEditing && (
-          <motion.div
-            data-textbox-toolbar="true"
-            className="absolute bg-black/95 backdrop-blur-lg border-2 rounded-lg shadow-2xl overflow-hidden"
-            style={{
-              left: `${textBox.x}px`,
-              top: `${textBox.y - 60}px`,
-              borderColor: primaryColor,
-              boxShadow: `0 0 20px ${primaryColor}40`,
-              zIndex: 200,
-            }}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10 }}
-            transition={{ duration: 0.2 }}
-          >
-            <div className="flex items-center gap-2 p-2">
-              {/* Font Size */}
-              <input
-                type="number"
-                value={textBox.fontSize}
-                onChange={(e) => onUpdate({ fontSize: parseInt(e.target.value) || 14 })}
-                className="w-16 px-2 py-1 bg-white/10 border border-white/20 rounded text-white text-sm"
-                min="8"
-                max="72"
-              />
-
-              {/* Font Weight */}
-              <select
-                value={textBox.fontWeight}
-                onChange={(e) => onUpdate({ fontWeight: e.target.value })}
-                className="px-2 py-1 bg-white/10 border border-white/20 rounded text-white text-sm"
-              >
-                <option value="400">Regular</option>
-                <option value="500">Medium</option>
-                <option value="600">Semi-Bold</option>
-                <option value="700">Bold</option>
-              </select>
-
-              {/* Text Align */}
-              <div className="flex gap-1 border-l border-white/20 pl-2">
-                {(['left', 'center', 'right'] as const).map((align) => (
-                  <button
-                    key={align}
-                    onClick={() => onUpdate({ textAlign: align })}
-                    className={`p-1 rounded transition-colors ${
-                      textBox.textAlign === align
-                        ? 'bg-white/20'
-                        : 'hover:bg-white/10'
-                    }`}
-                    style={{ color: textBox.textAlign === align ? primaryColor : 'white' }}
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      {align === 'left' && (
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h10M4 18h16" />
-                      )}
-                      {align === 'center' && (
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M7 12h10M4 18h16" />
-                      )}
-                      {align === 'right' && (
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M10 12h10M4 18h16" />
-                      )}
-                    </svg>
-                  </button>
-                ))}
-              </div>
-
-              {/* Background Color */}
-              <div className="flex items-center gap-2 border-l border-white/20 pl-2">
-                <input
-                  type="color"
-                  value={textBox.backgroundColor}
-                  onChange={(e) => onUpdate({ backgroundColor: e.target.value })}
-                  className="w-8 h-8 rounded cursor-pointer"
-                />
+                </motion.div>
               </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Toggle Toolbar Button */}
-      {isSelected && !isEditing && (
-        <button
-          data-textbox-toolbar="true"
-          className="absolute w-6 h-6 rounded-full border-2 bg-white shadow-md hover:scale-110 transition-transform flex items-center justify-center"
-          style={{
-            left: `${textBox.x + textBox.width + 12}px`,
-            top: `${textBox.y - 3}px`,
-            borderColor: primaryColor,
-            zIndex: 150,
-          }}
-          onClick={() => setShowToolbar(!showToolbar)}
-        >
-          <svg className="w-3 h-3" viewBox="0 0 16 16" fill="none" stroke={primaryColor} strokeWidth="2">
-            <path d="M2 4h12M2 8h12M2 12h12" />
-          </svg>
-        </button>
-      )}
-    </>
+    </div>
   );
 }

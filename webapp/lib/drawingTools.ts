@@ -52,15 +52,37 @@ export interface TextBoxDrawing {
   id: string;
   point: DrawingPoint;
   text: string;
+
+  // Text formatting
   color: string;
   fontSize?: number;
   fontFamily?: string;
   fontWeight?: string;
+  fontStyle?: 'normal' | 'italic';
+  textDecoration?: 'none' | 'underline';
   textAlign?: 'left' | 'center' | 'right';
+
+  // Background
+  backgroundColor?: string;
+  backgroundOpacity?: number;
+  backgroundEnabled?: boolean;
+
+  // Border
+  borderEnabled?: boolean;
+  borderColor?: string;
+  borderWidth?: number;
+
+  // Layout
   width?: number;
   height?: number;
   rotation?: number;
-  backgroundColor?: string;
+  textWrap?: boolean;
+  padding?: number;
+
+  // Visibility (future)
+  visibility?: {
+    timeframes?: string[];
+  };
 }
 
 export type Drawing = HorizontalLineDrawing | TrendLineDrawing | FreehandDrawing | RulerDrawing | TextBoxDrawing;
@@ -308,17 +330,29 @@ class DrawingPaneView implements ISeriesPrimitivePaneView {
 
     if (y === null || x === null) return;
 
-    const fontSize = textBox.fontSize || 14;
+    const fontSize = textBox.fontSize || 16;
     const fontFamily = textBox.fontFamily || 'Inter, system-ui, -apple-system, sans-serif';
     const fontWeight = textBox.fontWeight || '400';
+    const fontStyle = textBox.fontStyle || 'normal';
+    const textDecoration = textBox.textDecoration || 'none';
     const textAlign = textBox.textAlign || 'left';
     const rotation = textBox.rotation || 0;
-    const padding = 12;
+    const padding = textBox.padding || 12;
     const lineHeight = fontSize * 1.4;
 
     const totalWidth = textBox.width || 224;
     const totalHeight = textBox.height || 100;
     const contentWidth = totalWidth - (padding * 2);
+
+    // Background settings
+    const backgroundEnabled = textBox.backgroundEnabled !== false;
+    const backgroundColor = textBox.backgroundColor || '#FFFFFF';
+    const backgroundOpacity = textBox.backgroundOpacity !== undefined ? textBox.backgroundOpacity : 0.95;
+
+    // Border settings
+    const borderEnabled = textBox.borderEnabled || false;
+    const borderColor = textBox.borderColor || '#000000';
+    const borderWidth = textBox.borderWidth || 2;
 
     // Save current state and reset transform for text rendering
     ctx.save();
@@ -333,6 +367,7 @@ class DrawingPaneView implements ISeriesPrimitivePaneView {
     const bitmapTotalWidth = totalWidth * scope.horizontalPixelRatio;
     const bitmapTotalHeight = totalHeight * scope.verticalPixelRatio;
     const bitmapLineHeight = lineHeight * scope.verticalPixelRatio;
+    const bitmapBorderWidth = borderWidth * scope.horizontalPixelRatio;
 
     // Apply rotation transform around the center of the box
     const centerX = bitmapX + bitmapTotalWidth / 2;
@@ -341,56 +376,87 @@ class DrawingPaneView implements ISeriesPrimitivePaneView {
     ctx.rotate((rotation * Math.PI) / 180);
     ctx.translate(-centerX, -centerY);
 
-    // Set font for measuring (with scaled font size)
-    ctx.font = `${fontWeight} ${bitmapFontSize}px ${fontFamily}`;
+    // Set font for measuring (with scaled font size and italic support)
+    ctx.font = `${fontStyle} ${fontWeight} ${bitmapFontSize}px ${fontFamily}`;
 
     // Split text into lines based on content width (excluding padding)
-    const words = textBox.text.split(' ');
-    const lines: string[] = [];
-    let currentLine = '';
+    const textWrap = textBox.textWrap !== false;
+    let lines: string[] = [];
 
-    for (const word of words) {
-      const testLine = currentLine ? `${currentLine} ${word}` : word;
-      const metrics = ctx.measureText(testLine);
+    if (textWrap) {
+      const words = textBox.text.split(' ');
+      let currentLine = '';
 
-      if (metrics.width > bitmapContentWidth && currentLine) {
-        lines.push(currentLine);
-        currentLine = word;
-      } else {
-        currentLine = testLine;
+      for (const word of words) {
+        const testLine = currentLine ? `${currentLine} ${word}` : word;
+        const metrics = ctx.measureText(testLine);
+
+        if (metrics.width > bitmapContentWidth && currentLine) {
+          lines.push(currentLine);
+          currentLine = word;
+        } else {
+          currentLine = testLine;
+        }
       }
-    }
-    if (currentLine) {
-      lines.push(currentLine);
+      if (currentLine) {
+        lines.push(currentLine);
+      }
+    } else {
+      // No wrapping - treat as single line or preserve line breaks
+      lines = textBox.text.split('\n');
     }
 
     // Use the exact total dimensions
     const boxWidth = bitmapTotalWidth;
     const boxHeight = bitmapTotalHeight;
 
-    // Draw background with rounded corners
-    const cornerRadius = 8 * scope.horizontalPixelRatio;
-    const backgroundColor = textBox.backgroundColor || textBox.color;
-    ctx.fillStyle = backgroundColor;
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
-    ctx.shadowBlur = 8 * scope.horizontalPixelRatio;
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 2 * scope.verticalPixelRatio;
+    // Draw background with rounded corners if enabled
+    if (backgroundEnabled) {
+      const cornerRadius = 8 * scope.horizontalPixelRatio;
 
-    ctx.beginPath();
-    ctx.roundRect(bitmapX, bitmapY, boxWidth, boxHeight, cornerRadius);
-    ctx.fill();
+      // Convert hex color to rgba with opacity
+      const rgb = this._hexToRgb(backgroundColor);
+      if (rgb) {
+        ctx.fillStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${backgroundOpacity})`;
+      } else {
+        ctx.fillStyle = backgroundColor;
+      }
 
-    // Reset shadow for text
-    ctx.shadowColor = 'transparent';
-    ctx.shadowBlur = 0;
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 0;
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
+      ctx.shadowBlur = 8 * scope.horizontalPixelRatio;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 2 * scope.verticalPixelRatio;
 
-    // Determine text color based on background color brightness
-    const rgb = this._hexToRgb(backgroundColor);
-    const brightness = rgb ? (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000 : 0;
-    ctx.fillStyle = brightness > 128 ? '#000000' : '#ffffff';
+      ctx.beginPath();
+      ctx.roundRect(bitmapX, bitmapY, boxWidth, boxHeight, cornerRadius);
+      ctx.fill();
+
+      // Reset shadow
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
+    }
+
+    // Draw border if enabled
+    if (borderEnabled) {
+      const cornerRadius = 8 * scope.horizontalPixelRatio;
+      ctx.strokeStyle = borderColor;
+      ctx.lineWidth = bitmapBorderWidth;
+      ctx.beginPath();
+      ctx.roundRect(bitmapX, bitmapY, boxWidth, boxHeight, cornerRadius);
+      ctx.stroke();
+    }
+
+    // Determine text color
+    let textColor = textBox.color || '#000000';
+    if (backgroundEnabled && !textBox.color) {
+      // Auto-determine text color based on background brightness
+      const rgb = this._hexToRgb(backgroundColor);
+      const brightness = rgb ? (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000 : 0;
+      textColor = brightness > 128 ? '#000000' : '#FFFFFF';
+    }
+    ctx.fillStyle = textColor;
 
     // Draw text lines with alignment
     ctx.textAlign = textAlign;
@@ -406,7 +472,30 @@ class DrawingPaneView implements ISeriesPrimitivePaneView {
         textX = bitmapX + boxWidth - bitmapPadding;
       }
 
+      // Draw text
       ctx.fillText(line, textX, textY);
+
+      // Draw underline if enabled
+      if (textDecoration === 'underline') {
+        const metrics = ctx.measureText(line);
+        const underlineY = textY + bitmapFontSize + 2 * scope.verticalPixelRatio;
+        let underlineX = textX;
+        let underlineWidth = metrics.width;
+
+        // Adjust underline position based on alignment
+        if (textAlign === 'center') {
+          underlineX = textX - metrics.width / 2;
+        } else if (textAlign === 'right') {
+          underlineX = textX - metrics.width;
+        }
+
+        ctx.strokeStyle = textColor;
+        ctx.lineWidth = Math.max(1, bitmapFontSize * 0.05);
+        ctx.beginPath();
+        ctx.moveTo(underlineX, underlineY);
+        ctx.lineTo(underlineX + underlineWidth, underlineY);
+        ctx.stroke();
+      }
     });
 
     // Restore transform
@@ -568,13 +657,25 @@ export class DrawingToolsPrimitive implements ISeriesPrimitive<Time> {
       text,
       color: '#000000', // Text color
       backgroundColor: color, // Background color
+      backgroundOpacity: 0.95,
+      backgroundEnabled: true,
+      borderEnabled: false,
+      borderColor: '#000000',
+      borderWidth: 2,
       fontSize: fontSize || 16,
       fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
       fontWeight: '400',
+      fontStyle: 'normal',
+      textDecoration: 'none',
       textAlign: 'left',
       width: width || 224,
       height: height || 100,
       rotation: 0,
+      padding: 12,
+      textWrap: true,
+      visibility: {
+        timeframes: ['all'],
+      },
     });
     this._requestUpdate?.();
     return id;
@@ -693,6 +794,78 @@ export class DrawingToolsPrimitive implements ISeriesPrimitive<Time> {
   // Get drawing count
   getDrawingCount(): number {
     return this._drawings.length;
+  }
+
+  // Duplicate text box with offset
+  duplicateTextBox(id: string): string | null {
+    const original = this._drawings.find(d => d.id === id);
+    if (!original || original.type !== 'text-box') return null;
+
+    const newId = `tb-${Date.now()}-${Math.random()}`;
+    const duplicate = {
+      ...original,
+      id: newId,
+      point: {
+        logical: original.point.logical + 5, // Offset by 5 bars
+        price: original.point.price * 0.98, // Offset by 2% down
+      },
+    };
+
+    this._drawings.push(duplicate);
+    this._requestUpdate?.();
+    return newId;
+  }
+
+  // Get text box style (for cloning)
+  getTextBoxStyle(id: string): Partial<TextBoxDrawing> | null {
+    const textBox = this.getTextBox(id);
+    if (!textBox) return null;
+
+    return {
+      fontSize: textBox.fontSize,
+      fontFamily: textBox.fontFamily,
+      fontWeight: textBox.fontWeight,
+      fontStyle: textBox.fontStyle,
+      textDecoration: textBox.textDecoration,
+      color: textBox.color,
+      textAlign: textBox.textAlign,
+      backgroundColor: textBox.backgroundColor,
+      backgroundOpacity: textBox.backgroundOpacity,
+      backgroundEnabled: textBox.backgroundEnabled,
+      borderEnabled: textBox.borderEnabled,
+      borderColor: textBox.borderColor,
+      borderWidth: textBox.borderWidth,
+      padding: textBox.padding,
+      textWrap: textBox.textWrap,
+    };
+  }
+
+  // Apply style to text box
+  applyStyleToTextBox(id: string, style: Partial<TextBoxDrawing>): void {
+    const textBox = this._drawings.find(d => d.id === id);
+    if (textBox && textBox.type === 'text-box') {
+      Object.assign(textBox, style);
+      this._requestUpdate?.();
+    }
+  }
+
+  // Move text box to front/back (z-index management)
+  moveTextBoxToFront(id: string): void {
+    const index = this._drawings.findIndex(d => d.id === id);
+    if (index === -1) return;
+
+    const [drawing] = this._drawings.splice(index, 1);
+    this._drawings.push(drawing);
+    this._requestUpdate?.();
+  }
+
+  moveTextBoxToBack(id: string): void {
+    const index = this._drawings.findIndex(d => d.id === id);
+    if (index === -1) return;
+
+    const [drawing] = this._drawings.splice(index, 1);
+    this._drawings.unshift(drawing);
+    this._requestUpdate?.();
   }
 }
 

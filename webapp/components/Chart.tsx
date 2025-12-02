@@ -20,6 +20,9 @@ import {
   OHLCData
 } from '@/lib/indicators';
 import TextBoxEditor, { TextBoxData } from '@/components/TextBoxEditor';
+import TextBoxQuickToolbar from '@/components/TextBoxQuickToolbar';
+import TextBoxSettingsPanel from '@/components/TextBoxSettingsPanel';
+import TextBoxContextMenu, { TextBoxAction } from '@/components/TextBoxContextMenu';
 
 interface ChartProps {
   poolsData: PoolData[];
@@ -100,6 +103,13 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
   const [resizeHandle, setResizeHandle] = useState<string | null>(null);
   const [dragStart, setDragStart] = useState<{ x: number; y: number; startX?: number; startY?: number; startWidth?: number; startHeight?: number; startRotation?: number } | null>(null);
   const isClosingEditorRef = useRef(false);
+
+  // New text box UI state
+  const [showQuickToolbar, setShowQuickToolbar] = useState(false);
+  const [showSettingsPanel, setShowSettingsPanel] = useState(false);
+  const [showContextMenu, setShowContextMenu] = useState(false);
+  const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 });
+  const [copiedStyle, setCopiedStyle] = useState<any>(null);
 
   // Store migration lines cleanup function
   const migrationLinesCleanupRef = useRef<(() => void) | null>(null);
@@ -617,8 +627,19 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       const drawingPrimitive = drawingPrimitiveRef.current;
       if (!series || !drawingPrimitive) return;
 
-      // If not in drawing mode, ignore (textbox clicks handled by TextBoxEditor component)
-      if (!drawingStateRef.current.isDrawingMode()) return;
+      // Check if clicking on a text box (when not in drawing mode)
+      if (!drawingStateRef.current.isDrawingMode()) {
+        const clickedTextBox = drawingPrimitive.findTextBoxAtCoordinates(param.point.x, param.point.y);
+        if (clickedTextBox) {
+          setSelectedTextBoxId(clickedTextBox.id);
+          setShowQuickToolbar(false); // Will show after delay via useEffect
+          setShowContextMenu(false);
+          setShowSettingsPanel(false);
+          return;
+        }
+        // If not clicking on a text box, ignore
+        return;
+      }
 
       const price = series.coordinateToPrice(param.point.y);
       if (price === null) return;
@@ -717,7 +738,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
           SafeStorage.setJSON(`drawings_${timeframe}`, updatedDrawings);
           setDrawingCount(updatedDrawings.length);
 
-          // Select the new text box and start editing
+          // Select the new text box and start editing immediately
           setSelectedTextBoxId(id);
           setEditingTextBoxId(id);
         }
@@ -1289,10 +1310,19 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       fontSize: textBox.fontSize || 16,
       fontFamily: textBox.fontFamily || 'Inter, system-ui, -apple-system, sans-serif',
       fontWeight: textBox.fontWeight || '400',
+      fontStyle: textBox.fontStyle || 'normal',
+      textDecoration: textBox.textDecoration || 'none',
       color: textBox.color || '#000000',
       backgroundColor: textBox.backgroundColor || primaryColor,
+      backgroundOpacity: textBox.backgroundOpacity !== undefined ? textBox.backgroundOpacity : 0.95,
+      backgroundEnabled: textBox.backgroundEnabled !== false,
+      borderEnabled: textBox.borderEnabled || false,
+      borderColor: textBox.borderColor || '#000000',
+      borderWidth: textBox.borderWidth || 2,
       textAlign: textBox.textAlign || 'left',
       rotation: textBox.rotation || 0,
+      padding: textBox.padding || 12,
+      textWrap: textBox.textWrap !== false,
       logical: textBox.point.logical,
       price: textBox.point.price,
     };
@@ -1322,6 +1352,81 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
     const updatedDrawings = primitive.getDrawings();
     SafeStorage.setJSON(`drawings_${timeframe}`, updatedDrawings);
   };
+
+  // Handle text box actions from context menu
+  const handleTextBoxAction = (action: TextBoxAction) => {
+    if (!selectedTextBoxId || !drawingPrimitiveRef.current) return;
+
+    const primitive = drawingPrimitiveRef.current;
+
+    switch (action) {
+      case 'edit':
+        setShowSettingsPanel(true);
+        break;
+
+      case 'duplicate':
+        const newId = primitive.duplicateTextBox(selectedTextBoxId);
+        if (newId) {
+          setSelectedTextBoxId(newId);
+          const updatedDrawings = primitive.getDrawings();
+          SafeStorage.setJSON(`drawings_${timeframe}`, updatedDrawings);
+          setDrawingCount(updatedDrawings.length);
+        }
+        break;
+
+      case 'delete':
+        primitive.removeDrawing(selectedTextBoxId);
+        setSelectedTextBoxId(null);
+        const updatedDrawings = primitive.getDrawings();
+        SafeStorage.setJSON(`drawings_${timeframe}`, updatedDrawings);
+        setDrawingCount(updatedDrawings.length);
+        break;
+
+      case 'bringToFront':
+        primitive.moveTextBoxToFront(selectedTextBoxId);
+        primitive.getDrawings(); // Trigger update
+        const frontDrawings = primitive.getDrawings();
+        SafeStorage.setJSON(`drawings_${timeframe}`, frontDrawings);
+        break;
+
+      case 'sendToBack':
+        primitive.moveTextBoxToBack(selectedTextBoxId);
+        const backDrawings = primitive.getDrawings();
+        SafeStorage.setJSON(`drawings_${timeframe}`, backDrawings);
+        break;
+
+      case 'cloneStyle':
+        const style = primitive.getTextBoxStyle(selectedTextBoxId);
+        if (style) {
+          setCopiedStyle(style);
+        }
+        break;
+    }
+  };
+
+  // Handle keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!selectedTextBoxId || editingTextBoxId) return;
+
+      // Delete
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        e.preventDefault();
+        handleTextBoxAction('delete');
+      }
+
+      // Duplicate (Cmd/Ctrl + D)
+      if ((e.metaKey || e.ctrlKey) && e.key === 'd') {
+        e.preventDefault();
+        handleTextBoxAction('duplicate');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [selectedTextBoxId, editingTextBoxId, timeframe]);
 
   const handleTextBoxDragStart = (id: string, e: React.MouseEvent, handle?: string) => {
     const textBox = drawingPrimitiveRef.current?.getTextBox(id);
@@ -1446,17 +1551,25 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       // Don't deselect if currently editing, dragging, or resizing
       if (editingTextBoxId || isDraggingTextBox || isResizingTextBox) return;
 
-      // Check if click is on any textbox or toolbar element
+      // Check if click is on any textbox or UI element
       const target = e.target as HTMLElement;
 
-      // Check if clicking on a textbox editor element
-      if (target.closest('[data-textbox-editor]') || target.closest('[data-textbox-toolbar]')) {
+      // Check if clicking on a textbox editor element, toolbar, settings panel, or context menu
+      if (
+        target.closest('[data-textbox-editor]') ||
+        target.closest('[data-textbox-toolbar]') ||
+        target.closest('[data-textbox-settings]') ||
+        target.closest('[data-textbox-context]')
+      ) {
         return;
       }
 
-      // Deselect textbox
+      // Close all text box UI
       if (selectedTextBoxId) {
         setSelectedTextBoxId(null);
+        setShowQuickToolbar(false);
+        setShowSettingsPanel(false);
+        setShowContextMenu(false);
       }
     };
 
@@ -1470,10 +1583,24 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
   useEffect(() => {
     if (!drawingPrimitiveRef.current) return;
 
-    // Hide any textbox that is selected (so we only see the HTML overlay version)
+    // Hide any textbox that is selected, being dragged, or being resized
+    // This ensures only the HTML overlay version is visible during interactions
     const hiddenIds = selectedTextBoxId ? [selectedTextBoxId] : [];
     drawingPrimitiveRef.current.setHiddenTextBoxIds(hiddenIds);
-  }, [selectedTextBoxId]);
+  }, [selectedTextBoxId, isDraggingTextBox, isResizingTextBox]);
+
+  // Show quick toolbar when text box is selected
+  useEffect(() => {
+    if (selectedTextBoxId && !editingTextBoxId) {
+      // Small delay to show toolbar after selection
+      const timeoutId = setTimeout(() => {
+        setShowQuickToolbar(true);
+      }, 100);
+      return () => clearTimeout(timeoutId);
+    } else {
+      setShowQuickToolbar(false);
+    }
+  }, [selectedTextBoxId, editingTextBoxId]);
 
   return (
     <div className="w-full h-full relative">
@@ -1703,8 +1830,8 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   <Ruler className="w-5 h-5 text-[var(--primary-color)]" strokeWidth={2} />
                 </motion.button>
 
-                {/* Text Box Tool - Hidden for now */}
-                {/* <motion.button
+                {/* Text Box Tool */}
+                <motion.button
                   onClick={() => selectDrawingTool('text-box')}
                   className={`w-9 h-9 md:w-10 md:h-10 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
                     activeDrawingTool === 'text-box'
@@ -1716,12 +1843,12 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   exit={{ x: 20, opacity: 0 }}
                   transition={{ duration: 0.2, delay: 0.225, ease: 'easeOut' }}
                   aria-label="Text box tool"
-                  title="Text Box"
+                  title="Anchored Text"
                 >
                   <svg className="w-5 h-5 text-[var(--primary-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
-                </motion.button> */}
+                </motion.button>
 
                 {/* Undo Last Drawing Button */}
                 <motion.button
@@ -1977,8 +2104,8 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   <Ruler className="w-5 h-5 text-[var(--primary-color)]" strokeWidth={2} />
                 </motion.button>
 
-                {/* Text Box Tool - Hidden for now */}
-                {/* <motion.button
+                {/* Text Box Tool */}
+                <motion.button
                   onClick={() => selectDrawingTool('text-box')}
                   className={`w-11 h-11 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
                     activeDrawingTool === 'text-box'
@@ -1989,13 +2116,13 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   animate={{ y: 0, opacity: 1 }}
                   exit={{ y: -20, opacity: 0 }}
                   transition={{ duration: 0.2, delay: 0.225, ease: 'easeOut' }}
-                  aria-label="Text box tool"
-                  title="Text Box"
+                  aria-label="Anchored text tool"
+                  title="Anchored Text"
                 >
                   <svg className="w-5 h-5 text-[var(--primary-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
-                </motion.button> */}
+                </motion.button>
 
                 {/* Undo Last Drawing Button */}
                 <motion.button
@@ -2155,6 +2282,12 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                           </svg>
                           <span style={{ lineHeight: '1.4', margin: 0 }} className="text-white text-xs"><strong>Ruler:</strong> Measure distances</span>
                         </div>
+                        <div style={{ padding: '12px 16px' }} className="flex items-start gap-3 bg-black/50 border-2 border-[var(--primary-color)]/30 rounded-lg hover:border-[var(--primary-color)]/50 transition-all">
+                          <svg style={{ marginTop: '2px' }} className="w-4 h-4 text-[var(--primary-color)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          <span style={{ lineHeight: '1.4', margin: 0 }} className="text-white text-xs"><strong>Anchored Text:</strong> Rich annotations (right-click for options)</span>
+                        </div>
                       </div>
                     </div>
 
@@ -2237,35 +2370,106 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         </>
       )}
 
-      {/* TextBox Editors */}
-      {drawingPrimitiveRef.current?.getDrawings()
-        .filter(d => d.type === 'text-box')
-        .map((drawing: any) => {
-          const textBoxData = getTextBoxData(drawing);
+      {/* TextBox Editor - Only render HTML overlay for selected text box */}
+      {selectedTextBoxId && (() => {
+        const drawing = drawingPrimitiveRef.current?.getDrawings()
+          .find((d: any) => d.type === 'text-box' && d.id === selectedTextBoxId);
+
+        if (!drawing) return null;
+        const textBoxData = getTextBoxData(drawing);
+        if (!textBoxData) return null;
+
+        return (
+          <TextBoxEditor
+            key={drawing.id}
+            textBox={textBoxData}
+            isSelected={true}
+            isEditing={editingTextBoxId === drawing.id}
+            onUpdate={(updates) => handleTextBoxUpdate(drawing.id, updates)}
+            onStartDrag={(e, handle) => {
+              setShowQuickToolbar(false);
+              setShowContextMenu(false);
+              handleTextBoxDragStart(drawing.id, e, handle);
+            }}
+            onDoubleClick={() => {
+              setEditingTextBoxId(drawing.id);
+              setShowQuickToolbar(false);
+              setShowContextMenu(false);
+            }}
+            onBlur={() => {
+              setEditingTextBoxId(null);
+            }}
+            onRightClick={(e) => {
+              setShowContextMenu(true);
+              setContextMenuPosition({ x: e.clientX, y: e.clientY });
+              setShowQuickToolbar(false);
+            }}
+            primaryColor={primaryColor}
+          />
+        );
+      })()}
+
+      {/* Quick Toolbar - shown when text box is selected but not editing */}
+      <AnimatePresence>
+        {selectedTextBoxId && !editingTextBoxId && showQuickToolbar && (() => {
+          const textBox = drawingPrimitiveRef.current?.getTextBox(selectedTextBoxId);
+          if (!textBox) return null;
+          const textBoxData = getTextBoxData(textBox);
           if (!textBoxData) return null;
 
           return (
-            <TextBoxEditor
-              key={drawing.id}
-              textBox={textBoxData}
-              isSelected={selectedTextBoxId === drawing.id}
-              isEditing={editingTextBoxId === drawing.id}
-              onUpdate={(updates) => handleTextBoxUpdate(drawing.id, updates)}
-              onStartDrag={(e, handle) => {
-                setSelectedTextBoxId(drawing.id);
-                handleTextBoxDragStart(drawing.id, e, handle);
+            <TextBoxQuickToolbar
+              key={`toolbar-${selectedTextBoxId}`}
+              textBox={textBox}
+              position={{
+                x: textBoxData.x,
+                y: textBoxData.y - 60,
               }}
-              onDoubleClick={() => {
-                setSelectedTextBoxId(drawing.id);
-                setEditingTextBoxId(drawing.id);
-              }}
-              onBlur={() => {
-                setEditingTextBoxId(null);
+              onUpdate={(updates) => handleTextBoxUpdate(selectedTextBoxId, updates)}
+              onOpenSettings={() => {
+                setShowSettingsPanel(true);
+                setShowQuickToolbar(false);
               }}
               primaryColor={primaryColor}
             />
           );
-        })}
+        })()}
+      </AnimatePresence>
+
+      {/* Settings Panel */}
+      <AnimatePresence>
+        {selectedTextBoxId && showSettingsPanel && (() => {
+          const textBox = drawingPrimitiveRef.current?.getTextBox(selectedTextBoxId);
+          if (!textBox) return null;
+
+          return (
+            <TextBoxSettingsPanel
+              key={`settings-${selectedTextBoxId}`}
+              textBox={textBox}
+              isOpen={showSettingsPanel}
+              onClose={() => setShowSettingsPanel(false)}
+              onUpdate={(updates) => handleTextBoxUpdate(selectedTextBoxId, updates)}
+              onApply={() => {
+                setShowSettingsPanel(false);
+              }}
+              primaryColor={primaryColor}
+            />
+          );
+        })()}
+      </AnimatePresence>
+
+      {/* Context Menu */}
+      <AnimatePresence>
+        {selectedTextBoxId && showContextMenu && (
+          <TextBoxContextMenu
+            key={`context-${selectedTextBoxId}`}
+            position={contextMenuPosition}
+            onAction={handleTextBoxAction}
+            onClose={() => setShowContextMenu(false)}
+            primaryColor={primaryColor}
+          />
+        )}
+      </AnimatePresence>
 
       <div
         ref={chartContainerRef}
