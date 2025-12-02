@@ -333,33 +333,18 @@ class DrawingPaneView implements ISeriesPrimitivePaneView {
 
     if (y === null || x === null) return;
 
-    // Calculate zoom scale factor
-    let scaleFactor = 1;
-    if (textBox.baseBarSpacing) {
-      // Get current bar spacing by calculating from visible range
-      const visibleRange = timeScale.getVisibleLogicalRange();
-      if (visibleRange) {
-        const chartWidth = scope.bitmapSize.width / scope.horizontalPixelRatio;
-        const visibleBars = visibleRange.to - visibleRange.from;
-        const currentBarSpacing = chartWidth / visibleBars;
-        scaleFactor = currentBarSpacing / textBox.baseBarSpacing;
-        // Clamp scale factor to reasonable range (0.2x to 5x)
-        scaleFactor = Math.max(0.2, Math.min(5, scaleFactor));
-      }
-    }
-
-    const fontSize = (textBox.fontSize || 16) * scaleFactor;
+    const fontSize = textBox.fontSize || 20;
     const fontFamily = textBox.fontFamily || 'Inter, system-ui, -apple-system, sans-serif';
-    const fontWeight = textBox.fontWeight || '400';
+    const fontWeight = textBox.fontWeight || '600';
     const fontStyle = textBox.fontStyle || 'normal';
     const textDecoration = textBox.textDecoration || 'none';
     const textAlign = textBox.textAlign || 'left';
     const rotation = textBox.rotation || 0;
-    const padding = (textBox.padding || 12) * scaleFactor;
+    const padding = textBox.padding || 12;
     const lineHeight = fontSize * 1.4;
 
-    const totalWidth = (textBox.width || 224) * scaleFactor;
-    const totalHeight = (textBox.height || 100) * scaleFactor;
+    const totalWidth = textBox.width || 224;
+    const totalHeight = textBox.height || 100;
     const contentWidth = totalWidth - (padding * 2);
 
     // Background settings
@@ -370,7 +355,7 @@ class DrawingPaneView implements ISeriesPrimitivePaneView {
     // Border settings
     const borderEnabled = textBox.borderEnabled || false;
     const borderColor = textBox.borderColor || '#000000';
-    const borderWidth = (textBox.borderWidth || 2) * scaleFactor;
+    const borderWidth = textBox.borderWidth || 2;
 
     // Save current state and reset transform for text rendering
     ctx.save();
@@ -691,8 +676,7 @@ export class DrawingToolsPrimitive implements ISeriesPrimitive<Time> {
     color: string = '#52C97D',
     fontSize?: number,
     width?: number,
-    height?: number,
-    baseBarSpacing?: number
+    height?: number
   ): string {
     const id = `tb-${Date.now()}-${Math.random()}`;
     this._drawings.push({
@@ -718,7 +702,6 @@ export class DrawingToolsPrimitive implements ISeriesPrimitive<Time> {
       rotation: 0,
       padding: 16,
       textWrap: true,
-      baseBarSpacing: baseBarSpacing,
       visibility: {
         timeframes: ['all'],
       },
@@ -767,25 +750,10 @@ export class DrawingToolsPrimitive implements ISeriesPrimitive<Time> {
 
       if (y === null || x === null) continue;
 
-      // Calculate zoom scale factor
-      let scaleFactor = 1;
-      if (textBox.baseBarSpacing) {
-        const visibleRange = timeScale.getVisibleLogicalRange();
-        if (visibleRange) {
-          // Need chart width - approximate from visible range
-          const chartWidth = 800; // Rough estimate, good enough for hit detection
-          const visibleBars = visibleRange.to - visibleRange.from;
-          const currentBarSpacing = chartWidth / visibleBars;
-          scaleFactor = currentBarSpacing / textBox.baseBarSpacing;
-          scaleFactor = Math.max(0.2, Math.min(5, scaleFactor));
-        }
-      }
+      const boxWidth = textBox.width || 224;
+      const boxHeight = textBox.height || 100;
 
-      // Apply scale factor to dimensions
-      const boxWidth = (textBox.width || 224) * scaleFactor;
-      const boxHeight = (textBox.height || 100) * scaleFactor;
-
-      // Check if coordinates are within the text box (simplified hit detection)
+      // Check if coordinates are within the text box
       if (
         screenX >= x &&
         screenX <= x + boxWidth &&
@@ -848,8 +816,6 @@ export class DrawingToolsPrimitive implements ISeriesPrimitive<Time> {
         logical: original.point.logical + 5, // Offset by 5 bars
         price: original.point.price * 0.98, // Offset by 2% down
       },
-      // Preserve baseBarSpacing so duplicate scales the same way
-      baseBarSpacing: original.baseBarSpacing,
     };
 
     this._drawings.push(duplicate);
@@ -878,7 +844,6 @@ export class DrawingToolsPrimitive implements ISeriesPrimitive<Time> {
       borderWidth: textBox.borderWidth,
       padding: textBox.padding,
       textWrap: textBox.textWrap,
-      baseBarSpacing: textBox.baseBarSpacing,
     };
   }
 
