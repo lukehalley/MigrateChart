@@ -721,6 +721,15 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
           // Remove the ruler preview
           drawingPrimitive.removeLastDrawing();
 
+          // Get current barSpacing to store as baseline for zoom scaling
+          const visibleRange = chart.timeScale().getVisibleLogicalRange();
+          let baseBarSpacing: number | undefined;
+          if (visibleRange && chartContainerRef.current) {
+            const chartWidth = chartContainerRef.current.clientWidth;
+            const visibleBars = visibleRange.to - visibleRange.from;
+            baseBarSpacing = chartWidth / visibleBars;
+          }
+
           // Create text box at the top-left corner with calculated dimensions
           const id = drawingPrimitive.addTextBox(
             { logical: rectLogical, price: rectPrice },
@@ -728,7 +737,8 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
             primaryColor,
             undefined,
             finalWidth,
-            finalHeight
+            finalHeight,
+            baseBarSpacing
           );
 
           drawingStateRef.current.setTempPoint(null);
@@ -1293,21 +1303,35 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
   // Convert drawing to TextBoxData for rendering
   const getTextBoxData = (textBox: any): TextBoxData | null => {
-    if (!chartRef.current || !candlestickSeriesRef.current) return null;
+    if (!chartRef.current || !candlestickSeriesRef.current || !chartContainerRef.current) return null;
 
     const y = candlestickSeriesRef.current.priceToCoordinate(textBox.point.price);
     const x = chartRef.current.timeScale().logicalToCoordinate(textBox.point.logical as Logical);
 
     if (y === null || x === null) return null;
 
+    // Calculate zoom scale factor
+    let scaleFactor = 1;
+    if (textBox.baseBarSpacing) {
+      const visibleRange = chartRef.current.timeScale().getVisibleLogicalRange();
+      if (visibleRange) {
+        const chartWidth = chartContainerRef.current.clientWidth;
+        const visibleBars = visibleRange.to - visibleRange.from;
+        const currentBarSpacing = chartWidth / visibleBars;
+        scaleFactor = currentBarSpacing / textBox.baseBarSpacing;
+        // Clamp scale factor to reasonable range (0.2x to 5x)
+        scaleFactor = Math.max(0.2, Math.min(5, scaleFactor));
+      }
+    }
+
     return {
       id: textBox.id,
       x,
       y,
-      width: textBox.width || 224,
-      height: textBox.height || 100,
+      width: (textBox.width || 224) * scaleFactor,
+      height: (textBox.height || 100) * scaleFactor,
       text: textBox.text,
-      fontSize: textBox.fontSize || 16,
+      fontSize: (textBox.fontSize || 16) * scaleFactor,
       fontFamily: textBox.fontFamily || 'Inter, system-ui, -apple-system, sans-serif',
       fontWeight: textBox.fontWeight || '400',
       fontStyle: textBox.fontStyle || 'normal',
@@ -1318,11 +1342,12 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       backgroundEnabled: textBox.backgroundEnabled !== false,
       borderEnabled: textBox.borderEnabled || false,
       borderColor: textBox.borderColor || '#000000',
-      borderWidth: textBox.borderWidth || 2,
+      borderWidth: (textBox.borderWidth || 2) * scaleFactor,
       textAlign: textBox.textAlign || 'left',
       rotation: textBox.rotation || 0,
-      padding: textBox.padding || 12,
+      padding: (textBox.padding || 12) * scaleFactor,
       textWrap: textBox.textWrap !== false,
+      baseBarSpacing: textBox.baseBarSpacing,
       logical: textBox.point.logical,
       price: textBox.point.price,
     };
@@ -1333,6 +1358,38 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
     const primitive = drawingPrimitiveRef.current;
     if (!primitive) return;
 
+    // Calculate current scale factor for this text box
+    const textBox = primitive.getTextBox(id);
+    let scaleFactor = 1;
+    if (textBox?.baseBarSpacing && chartRef.current && chartContainerRef.current) {
+      const visibleRange = chartRef.current.timeScale().getVisibleLogicalRange();
+      if (visibleRange) {
+        const chartWidth = chartContainerRef.current.clientWidth;
+        const visibleBars = visibleRange.to - visibleRange.from;
+        const currentBarSpacing = chartWidth / visibleBars;
+        scaleFactor = currentBarSpacing / textBox.baseBarSpacing;
+        scaleFactor = Math.max(0.2, Math.min(5, scaleFactor));
+      }
+    }
+
+    // Unscale dimensional updates before storing
+    const unscaledUpdates = { ...updates };
+    if (updates.width !== undefined) {
+      unscaledUpdates.width = updates.width / scaleFactor;
+    }
+    if (updates.height !== undefined) {
+      unscaledUpdates.height = updates.height / scaleFactor;
+    }
+    if (updates.fontSize !== undefined) {
+      unscaledUpdates.fontSize = updates.fontSize / scaleFactor;
+    }
+    if (updates.padding !== undefined) {
+      unscaledUpdates.padding = updates.padding / scaleFactor;
+    }
+    if (updates.borderWidth !== undefined) {
+      unscaledUpdates.borderWidth = updates.borderWidth / scaleFactor;
+    }
+
     // If updating position, convert screen coords to logical coords
     if (updates.x !== undefined && updates.y !== undefined && chartRef.current && candlestickSeriesRef.current) {
       const price = candlestickSeriesRef.current.coordinateToPrice(updates.y);
@@ -1341,11 +1398,11 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       if (price !== null && logical !== null) {
         primitive.updateTextBox(id, {
           point: { logical, price },
-          ...updates,
+          ...unscaledUpdates,
         });
       }
     } else {
-      primitive.updateTextBox(id, updates);
+      primitive.updateTextBox(id, unscaledUpdates);
     }
 
     // Save to storage
@@ -1601,6 +1658,23 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       setShowQuickToolbar(false);
     }
   }, [selectedTextBoxId, editingTextBoxId]);
+
+  // Force re-render of text boxes when zoom changes (for scale updates)
+  const [zoomVersion, setZoomVersion] = useState(0);
+  useEffect(() => {
+    if (!chartRef.current) return;
+
+    const handleZoomChange = () => {
+      setZoomVersion(prev => prev + 1);
+    };
+
+    const timeScale = chartRef.current.timeScale();
+    timeScale.subscribeVisibleLogicalRangeChange(handleZoomChange);
+
+    return () => {
+      timeScale.unsubscribeVisibleLogicalRangeChange(handleZoomChange);
+    };
+  }, [chartVersion]);
 
   return (
     <div className="w-full h-full relative">
@@ -2381,7 +2455,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
         return (
           <TextBoxEditor
-            key={drawing.id}
+            key={`${drawing.id}-${zoomVersion}`}
             textBox={textBoxData}
             isSelected={true}
             isEditing={editingTextBoxId === drawing.id}
@@ -2419,7 +2493,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
           return (
             <TextBoxQuickToolbar
-              key={`toolbar-${selectedTextBoxId}`}
+              key={`toolbar-${selectedTextBoxId}-${zoomVersion}`}
               textBox={textBox}
               position={{
                 x: textBoxData.x,

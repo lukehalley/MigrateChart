@@ -27,6 +27,7 @@ export interface TextBoxData {
   rotation: number;
   padding?: number;
   textWrap?: boolean;
+  baseBarSpacing?: number;
   logical: number;
   price: number;
 }
