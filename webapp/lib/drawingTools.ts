@@ -440,10 +440,10 @@ class DrawingPaneView implements ISeriesPrimitivePaneView {
         ctx.fillStyle = backgroundColor;
       }
 
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
-      ctx.shadowBlur = 8 * scope.horizontalPixelRatio;
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+      ctx.shadowBlur = 12 * scope.horizontalPixelRatio;
       ctx.shadowOffsetX = 0;
-      ctx.shadowOffsetY = 2 * scope.verticalPixelRatio;
+      ctx.shadowOffsetY = 3 * scope.verticalPixelRatio;
 
       ctx.beginPath();
       ctx.roundRect(bitmapX, bitmapY, boxWidth, boxHeight, cornerRadius);
@@ -467,7 +467,7 @@ class DrawingPaneView implements ISeriesPrimitivePaneView {
     }
 
     // Determine text color
-    let textColor = textBox.color || '#000000';
+    let textColor = textBox.color || '#52C97D';
     if (backgroundEnabled && !textBox.color) {
       // Auto-determine text color based on background brightness
       const rgb = this._hexToRgb(backgroundColor);
@@ -476,7 +476,7 @@ class DrawingPaneView implements ISeriesPrimitivePaneView {
     }
     ctx.fillStyle = textColor;
 
-    // Draw text lines with alignment
+    // Draw text lines with alignment and neon glow effect
     ctx.textAlign = textAlign;
     ctx.textBaseline = 'top';
 
@@ -490,10 +490,28 @@ class DrawingPaneView implements ISeriesPrimitivePaneView {
         textX = bitmapX + boxWidth - bitmapPadding;
       }
 
-      // Draw text
+      // Multi-layer neon glow effect
+      // Layer 1: Outer atmospheric glow (largest, most diffuse)
+      ctx.shadowColor = textColor;
+      ctx.shadowBlur = 30 * scope.horizontalPixelRatio;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
       ctx.fillText(line, textX, textY);
 
-      // Draw underline if enabled
+      // Layer 2: Mid glow (medium spread)
+      ctx.shadowBlur = 15 * scope.horizontalPixelRatio;
+      ctx.fillText(line, textX, textY);
+
+      // Layer 3: Inner bright glow (tight, intense)
+      ctx.shadowBlur = 5 * scope.horizontalPixelRatio;
+      ctx.fillText(line, textX, textY);
+
+      // Layer 4: Solid text on top (no shadow)
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+      ctx.fillText(line, textX, textY);
+
+      // Draw underline if enabled (with glow)
       if (textDecoration === 'underline') {
         const metrics = ctx.measureText(line);
         const underlineY = textY + bitmapFontSize + 2 * scope.verticalPixelRatio;
@@ -509,10 +527,18 @@ class DrawingPaneView implements ISeriesPrimitivePaneView {
 
         ctx.strokeStyle = textColor;
         ctx.lineWidth = Math.max(1, bitmapFontSize * 0.05);
+
+        // Underline glow
+        ctx.shadowColor = textColor;
+        ctx.shadowBlur = 10 * scope.horizontalPixelRatio;
         ctx.beginPath();
         ctx.moveTo(underlineX, underlineY);
         ctx.lineTo(underlineX + underlineWidth, underlineY);
         ctx.stroke();
+
+        // Reset shadow
+        ctx.shadowColor = 'transparent';
+        ctx.shadowBlur = 0;
       }
     });
 
@@ -674,23 +700,23 @@ export class DrawingToolsPrimitive implements ISeriesPrimitive<Time> {
       id,
       point,
       text,
-      color: '#000000', // Text color
-      backgroundColor: color, // Background color
-      backgroundOpacity: 0.95,
-      backgroundEnabled: true,
+      color: color, // Glowing text color (primary color)
+      backgroundColor: '#000000', // Background color (default disabled)
+      backgroundOpacity: 0,
+      backgroundEnabled: false, // No background by default - pure glowing text
       borderEnabled: false,
-      borderColor: '#000000',
+      borderColor: color,
       borderWidth: 2,
-      fontSize: fontSize || 16,
-      fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
-      fontWeight: '400',
+      fontSize: fontSize || 20,
+      fontFamily: '"JetBrains Mono", "Courier New", monospace',
+      fontWeight: '600',
       fontStyle: 'normal',
       textDecoration: 'none',
-      textAlign: 'left',
+      textAlign: 'center',
       width: width || 224,
       height: height || 100,
       rotation: 0,
-      padding: 12,
+      padding: 16,
       textWrap: true,
       baseBarSpacing: baseBarSpacing,
       visibility: {

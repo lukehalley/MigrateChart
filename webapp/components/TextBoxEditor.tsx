@@ -44,8 +44,8 @@ interface TextBoxEditorProps {
   primaryColor: string;
 }
 
-const HANDLE_SIZE = 8;
-const ROTATION_HANDLE_OFFSET = 30;
+const HANDLE_SIZE = 6;
+const ROTATION_HANDLE_OFFSET = 25;
 
 export default function TextBoxEditor({
   textBox,
@@ -85,7 +85,15 @@ export default function TextBoxEditor({
     return brightness > 128 ? '#000000' : '#ffffff';
   };
 
-  const textColor = textBox.color || getTextColor(backgroundColor);
+  const textColor = textBox.color || (backgroundEnabled ? getTextColor(backgroundColor) : primaryColor);
+
+  // Create neon glow text-shadow effect
+  const textShadow = `
+    0 0 5px ${textColor},
+    0 0 10px ${textColor},
+    0 0 20px ${textColor},
+    0 0 30px ${textColor}
+  `;
 
   // Focus text area when editing starts and set initial content
   useEffect(() => {
@@ -166,9 +174,11 @@ export default function TextBoxEditor({
           backgroundColor: backgroundEnabled ? hexToRgba(backgroundColor, backgroundOpacity) : 'transparent',
           padding: `${padding}px`,
           border: borderEnabled ? `${borderWidth}px solid ${borderColor}` : 'none',
-          boxShadow: isSelected || isHovered
-            ? `0 4px 12px rgba(0, 0, 0, 0.15), 0 0 0 ${isSelected ? 2 : 1}px ${hexToRgba(primaryColor, isSelected ? 0.4 : 0.2)}`
-            : '0 2px 8px rgba(0, 0, 0, 0.1)',
+          boxShadow: backgroundEnabled
+            ? (isSelected || isHovered
+                ? `0 4px 12px rgba(0, 0, 0, 0.15), 0 0 0 ${isSelected ? 2 : 1}px ${hexToRgba(primaryColor, isSelected ? 0.4 : 0.2)}`
+                : '0 2px 8px rgba(0, 0, 0, 0.1)')
+            : 'none',
         }}
       >
         {isEditing ? (
@@ -188,6 +198,7 @@ export default function TextBoxEditor({
               lineHeight: 1.4,
               wordWrap: 'break-word',
               cursor: 'text',
+              textShadow,
             }}
             onInput={(e) => {
               const text = e.currentTarget.textContent || '';
@@ -214,6 +225,7 @@ export default function TextBoxEditor({
               textAlign: textBox.textAlign,
               lineHeight: 1.4,
               wordWrap: 'break-word',
+              textShadow,
             }}
           >
             {textBox.text}
@@ -230,17 +242,24 @@ export default function TextBoxEditor({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
           >
-            {/* Selection Border with Pulse Effect */}
+            {/* Selection Border - solid for background, dotted for pure text */}
             <motion.div
-              className="absolute inset-0 border-2 rounded-lg pointer-events-none"
+              className="absolute inset-0 rounded-lg pointer-events-none"
               style={{
-                borderColor: primaryColor,
+                border: backgroundEnabled
+                  ? `2px solid ${primaryColor}`
+                  : `1px dashed ${hexToRgba(primaryColor, 0.4)}`,
               }}
               animate={{
-                boxShadow: [
-                  `0 0 0 0 ${hexToRgba(primaryColor, 0.4)}`,
-                  `0 0 0 4px ${hexToRgba(primaryColor, 0)}`,
-                ],
+                boxShadow: backgroundEnabled
+                  ? [
+                      `0 0 0 0 ${hexToRgba(primaryColor, 0.4)}`,
+                      `0 0 0 4px ${hexToRgba(primaryColor, 0)}`,
+                    ]
+                  : [
+                      `0 0 0 0 ${hexToRgba(primaryColor, 0.2)}`,
+                      `0 0 0 2px ${hexToRgba(primaryColor, 0)}`,
+                    ],
               }}
               transition={{
                 duration: 0.6,
@@ -249,23 +268,29 @@ export default function TextBoxEditor({
               }}
             />
 
-            {/* Resize Handles */}
+            {/* Resize Handles - subtle and refined */}
             {handles.map((handle) => (
               <motion.div
                 key={handle.id}
-                className="absolute bg-white border-2 rounded-sm shadow-lg transition-all"
+                className="absolute rounded-full shadow-lg transition-all"
                 style={{
                   width: `${HANDLE_SIZE}px`,
                   height: `${HANDLE_SIZE}px`,
                   left: `${handle.x - HANDLE_SIZE / 2}px`,
                   top: `${handle.y - HANDLE_SIZE / 2}px`,
-                  borderColor: primaryColor,
+                  backgroundColor: backgroundEnabled ? '#ffffff' : primaryColor,
+                  border: backgroundEnabled ? `1.5px solid ${primaryColor}` : 'none',
                   cursor: handle.cursor,
                   transform: `rotate(-${textBox.rotation}deg)`,
+                  boxShadow: backgroundEnabled
+                    ? `0 0 4px ${hexToRgba(primaryColor, 0.3)}`
+                    : `0 0 8px ${primaryColor}, 0 0 4px ${primaryColor}`,
                 }}
                 whileHover={{
-                  scale: 1.3,
-                  boxShadow: `0 0 8px ${hexToRgba(primaryColor, 0.4)}`,
+                  scale: 1.5,
+                  boxShadow: backgroundEnabled
+                    ? `0 0 12px ${hexToRgba(primaryColor, 0.6)}`
+                    : `0 0 16px ${primaryColor}, 0 0 8px ${primaryColor}`,
                 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 17 }}
                 onMouseDown={(e) => {
@@ -285,24 +310,37 @@ export default function TextBoxEditor({
               }}
             >
               <div className="relative flex flex-col items-center">
-                {/* Connection Line */}
+                {/* Connection Line - glowing for pure text */}
                 <motion.div
-                  className="w-0.5"
                   style={{
+                    width: backgroundEnabled ? '2px' : '1px',
                     height: `${ROTATION_HANDLE_OFFSET - 12}px`,
                     backgroundColor: primaryColor,
+                    boxShadow: backgroundEnabled
+                      ? 'none'
+                      : `0 0 8px ${primaryColor}, 0 0 4px ${primaryColor}`,
                   }}
                   initial={{ scaleY: 0 }}
                   animate={{ scaleY: 1 }}
                   transition={{ duration: 0.2, delay: 0.1 }}
                 />
-                {/* Rotation Handle */}
+                {/* Rotation Handle - glowing for text, subtle for boxes */}
                 <motion.div
-                  className="w-5 h-5 rounded-full border-2 bg-white shadow-lg cursor-grab active:cursor-grabbing flex items-center justify-center"
-                  style={{ borderColor: primaryColor }}
+                  className="rounded-full shadow-lg cursor-grab active:cursor-grabbing flex items-center justify-center"
+                  style={{
+                    width: backgroundEnabled ? '20px' : '16px',
+                    height: backgroundEnabled ? '20px' : '16px',
+                    backgroundColor: backgroundEnabled ? '#ffffff' : primaryColor,
+                    border: backgroundEnabled ? `2px solid ${primaryColor}` : 'none',
+                    boxShadow: backgroundEnabled
+                      ? `0 0 8px ${hexToRgba(primaryColor, 0.3)}`
+                      : `0 0 12px ${primaryColor}, 0 0 6px ${primaryColor}`,
+                  }}
                   whileHover={{
-                    scale: 1.25,
-                    boxShadow: `0 0 12px ${hexToRgba(primaryColor, 0.5)}`,
+                    scale: 1.3,
+                    boxShadow: backgroundEnabled
+                      ? `0 0 16px ${hexToRgba(primaryColor, 0.6)}`
+                      : `0 0 20px ${primaryColor}, 0 0 10px ${primaryColor}`,
                   }}
                   transition={{ type: 'spring', stiffness: 400, damping: 17 }}
                   onMouseDown={(e) => {
@@ -310,15 +348,17 @@ export default function TextBoxEditor({
                     onStartDrag(e, 'rotate');
                   }}
                 >
-                  <svg
-                    className="w-3 h-3"
-                    viewBox="0 0 16 16"
-                    fill="none"
-                    stroke={primaryColor}
-                    strokeWidth="2"
-                  >
-                    <path d="M8 3 L8 8 L11 6" />
-                  </svg>
+                  {backgroundEnabled && (
+                    <svg
+                      className="w-3 h-3"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      stroke={primaryColor}
+                      strokeWidth="2"
+                    >
+                      <path d="M8 3 L8 8 L11 6" />
+                    </svg>
+                  )}
                 </motion.div>
               </div>
             </div>
