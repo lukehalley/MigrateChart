@@ -20,6 +20,7 @@ import {
   OHLCData
 } from '@/lib/indicators';
 import TextBoxEditor, { TextBoxData } from '@/components/TextBoxEditor';
+import TextBoxSizeControl from '@/components/TextBoxSizeControl';
 
 interface ChartProps {
   poolsData: PoolData[];
@@ -104,6 +105,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
   // New text box UI state
   const [isHoveringTextBox, setIsHoveringTextBox] = useState(false);
   const [textBoxUpdateCounter, setTextBoxUpdateCounter] = useState(0);
+  const [showSizeControl, setShowSizeControl] = useState(false);
   const justStartedTextBoxDragRef = useRef(false);
   const justDeselectedTextBoxRef = useRef(false);
 
@@ -1598,6 +1600,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       // Close all text box UI
       if (selectedTextBoxId) {
         setSelectedTextBoxId(null);
+        setShowSizeControl(false);
 
         // Set flag to prevent starting new text box drawing immediately after deselecting
         justDeselectedTextBoxRef.current = true;
@@ -1622,6 +1625,18 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
     const hiddenIds = selectedTextBoxId ? [selectedTextBoxId] : [];
     drawingPrimitiveRef.current.setHiddenTextBoxIds(hiddenIds);
   }, [selectedTextBoxId, isDraggingTextBox, isResizingTextBox]);
+
+  // Show size control when text box is selected (but not editing or dragging)
+  useEffect(() => {
+    if (selectedTextBoxId && !editingTextBoxId && !isDraggingTextBox && !isResizingTextBox) {
+      const timeoutId = setTimeout(() => {
+        setShowSizeControl(true);
+      }, 100);
+      return () => clearTimeout(timeoutId);
+    } else {
+      setShowSizeControl(false);
+    }
+  }, [selectedTextBoxId, editingTextBoxId, isDraggingTextBox, isResizingTextBox]);
 
 
   return (
@@ -2411,11 +2426,13 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
             onStartDrag={(e, handle) => {
               e.stopPropagation();
               setIsHoveringTextBox(false);
+              setShowSizeControl(false);
               handleTextBoxDragStart(drawing.id, e, handle);
             }}
             onDoubleClick={() => {
               setEditingTextBoxId(drawing.id);
               setIsHoveringTextBox(false);
+              setShowSizeControl(false);
 
               // Set flag to prevent new text box creation
               justStartedTextBoxDragRef.current = true;
@@ -2438,6 +2455,28 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         );
       })()}
 
+      {/* Font Size Control - shown when text box is selected but not editing */}
+      <AnimatePresence>
+        {selectedTextBoxId && !editingTextBoxId && showSizeControl && (() => {
+          const textBox = drawingPrimitiveRef.current?.getTextBox(selectedTextBoxId);
+          if (!textBox) return null;
+          const textBoxData = getTextBoxData(textBox);
+          if (!textBoxData) return null;
+
+          return (
+            <TextBoxSizeControl
+              key={`size-${selectedTextBoxId}`}
+              fontSize={textBox.fontSize || 18}
+              position={{
+                x: textBoxData.x + textBoxData.width / 2 - 60,
+                y: textBoxData.y - 40,
+              }}
+              onUpdate={(newSize) => handleTextBoxUpdate(selectedTextBoxId, { fontSize: newSize })}
+              primaryColor={primaryColor}
+            />
+          );
+        })()}
+      </AnimatePresence>
 
       <div
         ref={chartContainerRef}
