@@ -475,23 +475,19 @@ class DrawingPaneView implements ISeriesPrimitivePaneView {
         textX = bitmapX + boxWidth - bitmapPadding;
       }
 
-      // Multi-layer neon glow effect
-      // Layer 1: Outer atmospheric glow (largest, most diffuse)
+      // Subtle glow effect - refined and understated
+      // Layer 1: Soft outer glow
       ctx.shadowColor = textColor;
-      ctx.shadowBlur = 30 * scope.horizontalPixelRatio;
+      ctx.shadowBlur = 8 * scope.horizontalPixelRatio;
       ctx.shadowOffsetX = 0;
       ctx.shadowOffsetY = 0;
       ctx.fillText(line, textX, textY);
 
-      // Layer 2: Mid glow (medium spread)
-      ctx.shadowBlur = 15 * scope.horizontalPixelRatio;
+      // Layer 2: Tight inner glow
+      ctx.shadowBlur = 3 * scope.horizontalPixelRatio;
       ctx.fillText(line, textX, textY);
 
-      // Layer 3: Inner bright glow (tight, intense)
-      ctx.shadowBlur = 5 * scope.horizontalPixelRatio;
-      ctx.fillText(line, textX, textY);
-
-      // Layer 4: Solid text on top (no shadow)
+      // Layer 3: Solid text on top (no shadow)
       ctx.shadowColor = 'transparent';
       ctx.shadowBlur = 0;
       ctx.fillText(line, textX, textY);
@@ -513,9 +509,9 @@ class DrawingPaneView implements ISeriesPrimitivePaneView {
         ctx.strokeStyle = textColor;
         ctx.lineWidth = Math.max(1, bitmapFontSize * 0.05);
 
-        // Underline glow
+        // Subtle underline glow
         ctx.shadowColor = textColor;
-        ctx.shadowBlur = 10 * scope.horizontalPixelRatio;
+        ctx.shadowBlur = 4 * scope.horizontalPixelRatio;
         ctx.beginPath();
         ctx.moveTo(underlineX, underlineY);
         ctx.lineTo(underlineX + underlineWidth, underlineY);
