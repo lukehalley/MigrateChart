@@ -2075,7 +2075,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
             <AnimatePresence>
               {showIndicatorMenu && (
                 <motion.div
-                  className="fixed z-[100] bg-black/95 backdrop-blur-sm border-2 border-[var(--primary-color)]/50 rounded-lg p-3 shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)] left-16 sm:left-[4.5rem] top-4"
+                  className="fixed z-[100] bg-black/95 backdrop-blur-sm border-2 border-[var(--primary-color)]/50 rounded-lg p-3 shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)] left-20 sm:left-[4.5rem] top-48"
                   style={{
                     minWidth: '200px',
                     maxWidth: 'calc(100vw - 5.5rem)', // viewport width - left offset - padding
