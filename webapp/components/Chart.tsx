@@ -1249,6 +1249,9 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
     // Hide crosshair when in text-box mode, editing, or hovering over text box
     const hideCrosshair = activeDrawingTool === 'text-box' || editingTextBoxId !== null || isHoveringTextBox;
 
+    // Disable chart interactions when in drawing mode OR actively dragging/resizing text boxes
+    const disableChartInteractions = isDrawingMode || isDraggingTextBox || isResizingTextBox;
+
     chartRef.current.applyOptions({
       crosshair: {
         vertLine: {
@@ -1259,21 +1262,21 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         },
       },
       handleScroll: {
-        mouseWheel: !isDrawingMode,
-        pressedMouseMove: !isDrawingMode,
-        horzTouchDrag: !isDrawingMode,
-        vertTouchDrag: !isDrawingMode,
+        mouseWheel: !disableChartInteractions,
+        pressedMouseMove: !disableChartInteractions,
+        horzTouchDrag: !disableChartInteractions,
+        vertTouchDrag: !disableChartInteractions,
       },
       handleScale: {
         axisPressedMouseMove: {
-          time: !isDrawingMode,
-          price: !isDrawingMode,
+          time: !disableChartInteractions,
+          price: !disableChartInteractions,
         },
-        mouseWheel: !isDrawingMode,
-        pinch: !isDrawingMode,
+        mouseWheel: !disableChartInteractions,
+        pinch: !disableChartInteractions,
         axisDoubleClickReset: {
-          time: !isDrawingMode,
-          price: !isDrawingMode,
+          time: !disableChartInteractions,
+          price: !disableChartInteractions,
         },
       },
       kineticScroll: {
@@ -1281,7 +1284,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         mouse: false,
       },
     });
-  }, [isDrawingMode, chartVersion, activeDrawingTool, editingTextBoxId, isHoveringTextBox]);
+  }, [isDrawingMode, chartVersion, activeDrawingTool, editingTextBoxId, isHoveringTextBox, isDraggingTextBox, isResizingTextBox]);
 
   // Handle ESC key to cancel trend line drawing
   useEffect(() => {
