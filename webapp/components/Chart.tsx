@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { createChart, IChartApi, ISeriesApi, CandlestickData, Time, MouseEventParams, Logical } from 'lightweight-charts';
-import { ChartNetwork, Ruler } from 'lucide-react';
+import { ChartNetwork, Ruler, Eraser } from 'lucide-react';
 import { PoolData, Timeframe, MigrationConfig } from '@/lib/types';
 import { drawVerticalLines } from '@/lib/verticalLine';
 import { DrawingToolsPrimitive, DrawingStateManager, DrawingType } from '@/lib/drawingTools';
@@ -175,6 +175,11 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
     if (!isDrawingMode) {
       setIsDrawingMode(true);
       drawingStateRef.current.setDrawingMode(true);
+    }
+
+    // Deselect text box when switching to eraser
+    if (tool === 'eraser' && selectedTextBoxId) {
+      setSelectedTextBoxId(null);
     }
   };
 
@@ -675,6 +680,20 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
           const updatedDrawings = drawingPrimitive.getDrawings();
           SafeStorage.setJSON(`drawings_${timeframe}`, updatedDrawings);
           setDrawingCount(updatedDrawings.length);
+        }
+      } else if (activeToolType === 'eraser') {
+        // Eraser mode - delete whatever is clicked
+        const clickedDrawing = drawingPrimitive.findDrawingAtCoordinates(param.point.x, param.point.y);
+        if (clickedDrawing) {
+          drawingPrimitive.removeDrawing(clickedDrawing.id);
+          const updatedDrawings = drawingPrimitive.getDrawings();
+          SafeStorage.setJSON(`drawings_${timeframe}`, updatedDrawings);
+          setDrawingCount(updatedDrawings.length);
+
+          // If it was a selected text box, deselect it
+          if (selectedTextBoxId === clickedDrawing.id) {
+            setSelectedTextBoxId(null);
+          }
         }
       } else if (activeToolType === 'text-box') {
         // Check if we just started dragging an existing text box
@@ -1311,7 +1330,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       const drawingState = drawingStateRef.current;
       const drawingPrimitive = drawingPrimitiveRef.current;
 
-      // Check if we're currently drawing a trend line, ruler, or text-box
+      // Check if we're currently drawing a trend line, ruler, text-box, or using eraser
       const activeToolType = drawingState.getActiveToolType();
       if (
         drawingState.isDrawing() &&
@@ -1887,6 +1906,24 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   </svg>
                 </motion.button>
 
+                {/* Eraser Tool */}
+                <motion.button
+                  onClick={() => selectDrawingTool('eraser')}
+                  className={`w-9 h-9 md:w-10 md:h-10 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
+                    activeDrawingTool === 'eraser'
+                      ? 'bg-red-500/30 border-red-500 shadow-[0_0_12px_rgba(239,68,68,0.5)]'
+                      : 'border-red-500/50 hover:bg-red-500/5 hover:border-red-500'
+                  }`}
+                  initial={{ x: 20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  exit={{ x: 20, opacity: 0 }}
+                  transition={{ duration: 0.2, delay: 0.25, ease: 'easeOut' }}
+                  aria-label="Eraser tool"
+                  title="Eraser (Click to Delete)"
+                >
+                  <Eraser className="w-5 h-5 text-red-500" strokeWidth={2} />
+                </motion.button>
+
                 {/* Undo Last Drawing Button */}
                 <motion.button
                   key="undo-button"
@@ -1900,7 +1937,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   initial={false}
                   animate={{ opacity: 1 }}
                   exit={{ x: 20, opacity: 0 }}
-                  transition={{ duration: 0.2, delay: 0.25, ease: 'easeOut' }}
+                  transition={{ duration: 0.2, delay: 0.275, ease: 'easeOut' }}
                   style={{ x: 0 }}
                   aria-label="Undo last drawing"
                   title={drawingCount === 0 ? "No drawings to undo" : "Undo Last Drawing"}
@@ -2161,6 +2198,24 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   </svg>
                 </motion.button>
 
+                {/* Eraser Tool */}
+                <motion.button
+                  onClick={() => selectDrawingTool('eraser')}
+                  className={`w-11 h-11 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
+                    activeDrawingTool === 'eraser'
+                      ? 'bg-red-500/30 border-red-500 shadow-[0_0_12px_rgba(239,68,68,0.5)]'
+                      : 'border-red-500/50 hover:bg-red-500/5 hover:border-red-500 shadow-[0_0_12px_rgba(239,68,68,0.3)]'
+                  }`}
+                  initial={{ y: -20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -20, opacity: 0 }}
+                  transition={{ duration: 0.2, delay: 0.25, ease: 'easeOut' }}
+                  aria-label="Eraser tool"
+                  title="Eraser (Click to Delete)"
+                >
+                  <Eraser className="w-5 h-5 text-red-500" strokeWidth={2} />
+                </motion.button>
+
                 {/* Undo Last Drawing Button */}
                 <motion.button
                   key="undo-button-mobile"
@@ -2174,7 +2229,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   initial={false}
                   animate={{ opacity: 1 }}
                   exit={{ y: -20, opacity: 0 }}
-                  transition={{ duration: 0.2, delay: 0.25, ease: 'easeOut' }}
+                  transition={{ duration: 0.2, delay: 0.275, ease: 'easeOut' }}
                   style={{ y: 0 }}
                   aria-label="Undo last drawing"
                   title={drawingCount === 0 ? "No drawings to undo" : "Undo Last Drawing"}
@@ -2324,6 +2379,12 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                           </svg>
                           <span style={{ lineHeight: '1.4', margin: 0 }} className="text-white text-xs"><strong>Anchored Text:</strong> Drag area, type text, drag to move (Del to delete)</span>
+                        </div>
+                        <div style={{ padding: '12px 16px' }} className="flex items-start gap-3 bg-black/50 border-2 border-red-500/30 rounded-lg hover:border-red-500/50 transition-all">
+                          <svg style={{ marginTop: '2px' }} className="w-4 h-4 text-red-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                          <span style={{ lineHeight: '1.4', margin: 0 }} className="text-white text-xs"><strong>Eraser:</strong> Click any drawing to delete it</span>
                         </div>
                       </div>
                     </div>
@@ -2483,8 +2544,10 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         className="w-full h-full"
         style={{
           touchAction: 'manipulation',
-          cursor: isHoveringTextBox && !editingTextBoxId
+          cursor: isHoveringTextBox && !editingTextBoxId && activeDrawingTool !== 'eraser'
             ? 'move'
+            : isDrawingMode && activeDrawingTool === 'eraser'
+            ? 'not-allowed'
             : isDrawingMode && activeDrawingTool !== 'text-box' && !editingTextBoxId
             ? 'crosshair'
             : 'default',

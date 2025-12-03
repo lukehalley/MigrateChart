@@ -10,7 +10,7 @@ import {
 } from 'lightweight-charts';
 
 // Types for drawing objects
-export type DrawingType = 'horizontal-line' | 'trend-line' | 'freehand' | 'ruler' | 'text-box';
+export type DrawingType = 'horizontal-line' | 'trend-line' | 'freehand' | 'ruler' | 'text-box' | 'eraser';
 
 export interface DrawingPoint {
   logical: number; // Using logical index instead of time - works beyond data range
@@ -757,6 +757,94 @@ export class DrawingToolsPrimitive implements ISeriesPrimitive<Time> {
     }
 
     return null;
+  }
+
+  // Find any drawing at coordinates (for eraser tool)
+  findDrawingAtCoordinates(screenX: number, screenY: number): Drawing | null {
+    if (!this._series || !this._chart) return null;
+
+    const HIT_THRESHOLD = 10; // Pixels
+    const timeScale = this._chart.timeScale();
+
+    // Iterate through drawings in reverse order (top-most first)
+    for (let i = this._drawings.length - 1; i >= 0; i--) {
+      const drawing = this._drawings[i];
+
+      if (drawing.type === 'horizontal-line') {
+        const y = this._series.priceToCoordinate(drawing.price);
+        if (y !== null && Math.abs(screenY - y) < HIT_THRESHOLD) {
+          return drawing;
+        }
+      } else if (drawing.type === 'trend-line') {
+        const y1 = this._series.priceToCoordinate(drawing.point1.price);
+        const y2 = this._series.priceToCoordinate(drawing.point2.price);
+        const x1 = timeScale.logicalToCoordinate(drawing.point1.logical as Logical);
+        const x2 = timeScale.logicalToCoordinate(drawing.point2.logical as Logical);
+
+        if (y1 !== null && y2 !== null && x1 !== null && x2 !== null) {
+          // Distance from point to line segment
+          const distance = this._distanceToLineSegment(screenX, screenY, x1, y1, x2, y2);
+          if (distance < HIT_THRESHOLD) {
+            return drawing;
+          }
+        }
+      } else if (drawing.type === 'freehand') {
+        // Check if near any point in the freehand path
+        for (const point of drawing.points) {
+          const y = this._series.priceToCoordinate(point.price);
+          const x = timeScale.logicalToCoordinate(point.logical as Logical);
+          if (y !== null && x !== null) {
+            const distance = Math.sqrt(Math.pow(screenX - x, 2) + Math.pow(screenY - y, 2));
+            if (distance < HIT_THRESHOLD) {
+              return drawing;
+            }
+          }
+        }
+      } else if (drawing.type === 'ruler') {
+        const y1 = this._series.priceToCoordinate(drawing.point1.price);
+        const y2 = this._series.priceToCoordinate(drawing.point2.price);
+        const x1 = timeScale.logicalToCoordinate(drawing.point1.logical as Logical);
+        const x2 = timeScale.logicalToCoordinate(drawing.point2.logical as Logical);
+
+        if (y1 !== null && y2 !== null && x1 !== null && x2 !== null) {
+          // Check if inside rectangle
+          const minX = Math.min(x1, x2);
+          const maxX = Math.max(x1, x2);
+          const minY = Math.min(y1, y2);
+          const maxY = Math.max(y1, y2);
+
+          if (screenX >= minX && screenX <= maxX && screenY >= minY && screenY <= maxY) {
+            return drawing;
+          }
+        }
+      } else if (drawing.type === 'text-box') {
+        const textBox = this.findTextBoxAtCoordinates(screenX, screenY);
+        if (textBox) {
+          return drawing;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  // Helper: Calculate distance from point to line segment
+  private _distanceToLineSegment(px: number, py: number, x1: number, y1: number, x2: number, y2: number): number {
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const lengthSquared = dx * dx + dy * dy;
+
+    if (lengthSquared === 0) {
+      return Math.sqrt((px - x1) * (px - x1) + (py - y1) * (py - y1));
+    }
+
+    let t = ((px - x1) * dx + (py - y1) * dy) / lengthSquared;
+    t = Math.max(0, Math.min(1, t));
+
+    const projX = x1 + t * dx;
+    const projY = y1 + t * dy;
+
+    return Math.sqrt((px - projX) * (px - projX) + (py - projY) * (py - projY));
   }
 
   // Remove a drawing by ID
