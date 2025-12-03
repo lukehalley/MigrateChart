@@ -2032,7 +2032,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       </div>
 
       {/* Mobile and Tablet: Indicators and Drawing Tools Buttons */}
-      <div className="lg:hidden absolute top-4 left-4 z-30 max-h-[calc(100vh-8rem)] overflow-y-auto floating-icons-container">
+      <div className="lg:hidden absolute top-4 left-4 z-30 max-h-[calc(100vh-2rem)] overflow-y-auto floating-icons-container">
         <div className="relative flex flex-col gap-2.5">
           {/* Indicators Button */}
           <div className="relative">
@@ -2070,7 +2070,11 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
             <AnimatePresence>
               {showIndicatorMenu && (
                 <motion.div
-                  className="absolute top-0 left-12 sm:left-14 bg-black/95 backdrop-blur-sm border-2 border-[var(--primary-color)]/50 rounded-lg p-3 min-w-[200px] max-w-[calc(100vw-6rem)] shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)]"
+                  className="fixed z-50 bg-black/95 backdrop-blur-sm border-2 border-[var(--primary-color)]/50 rounded-lg p-3 shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)] left-16 sm:left-[4.5rem] top-4"
+                  style={{
+                    minWidth: '200px',
+                    maxWidth: 'calc(100vw - 5.5rem)', // viewport width - left offset - padding
+                  }}
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -10 }}
