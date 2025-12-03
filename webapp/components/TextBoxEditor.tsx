@@ -88,9 +88,8 @@ export default function TextBoxEditor({
 
   const textColor = textBox.color || (backgroundEnabled ? getTextColor(backgroundColor) : primaryColor);
 
-  // Create very subtle glow text-shadow effect
+  // Create very subtle glow text-shadow effect - matches canvas rendering
   const textShadow = `
-    0 0 2px ${textColor},
     0 0 4px ${textColor}
   `;
 
@@ -171,7 +170,7 @@ export default function TextBoxEditor({
     >
       {/* TextBox Content */}
       <div
-        className={`w-full h-full rounded-lg flex items-center justify-center overflow-hidden transition-all ${
+        className={`w-full h-full rounded-lg overflow-hidden transition-all ${
           !isEditing ? 'cursor-move' : 'cursor-text'
         }`}
         style={{
@@ -183,6 +182,9 @@ export default function TextBoxEditor({
                 ? `0 4px 12px rgba(0, 0, 0, 0.15), 0 0 0 ${isSelected ? 2 : 1}px ${hexToRgba(primaryColor, isSelected ? 0.4 : 0.2)}`
                 : '0 2px 8px rgba(0, 0, 0, 0.1)')
             : 'none',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
         onMouseDown={(e) => {
           // Start drag when clicking on the text content (when already selected)
@@ -192,56 +194,40 @@ export default function TextBoxEditor({
           }
         }}
       >
-        {isEditing ? (
-          <div
-            ref={textAreaRef}
-            contentEditable
-            suppressContentEditableWarning
-            className="w-full h-full outline-none overflow-auto resize-none"
-            style={{
-              color: textColor,
-              fontSize: `${fontSize}px`,
-              fontFamily,
-              fontWeight,
-              fontStyle,
-              textDecoration,
-              textAlign: textBox.textAlign,
-              lineHeight: 1.4,
-              wordWrap: 'break-word',
-              cursor: 'text',
-              textShadow,
-            }}
-            onInput={(e) => {
+        <div
+          ref={textAreaRef}
+          contentEditable={isEditing}
+          suppressContentEditableWarning
+          className="w-full h-full outline-none overflow-hidden"
+          style={{
+            color: textColor,
+            fontSize: `${fontSize}px`,
+            fontFamily,
+            fontWeight,
+            fontStyle,
+            textDecoration,
+            textAlign: textBox.textAlign,
+            lineHeight: 1.4,
+            wordWrap: 'break-word',
+            cursor: isEditing ? 'text' : 'inherit',
+            textShadow,
+          }}
+          onInput={(e) => {
+            if (isEditing) {
               const text = e.currentTarget.textContent || '';
               setLocalText(text);
               onUpdate({ text });
-            }}
-            onBlur={onBlur}
-            onKeyDown={(e) => {
-              if (e.key === 'Escape') {
-                e.currentTarget.blur();
-              }
-            }}
-          />
-        ) : (
-          <div
-            className="w-full h-full overflow-hidden"
-            style={{
-              color: textColor,
-              fontSize: `${fontSize}px`,
-              fontFamily,
-              fontWeight,
-              fontStyle,
-              textDecoration,
-              textAlign: textBox.textAlign,
-              lineHeight: 1.4,
-              wordWrap: 'break-word',
-              textShadow,
-            }}
-          >
-            {textBox.text}
-          </div>
-        )}
+            }
+          }}
+          onBlur={isEditing ? onBlur : undefined}
+          onKeyDown={(e) => {
+            if (isEditing && e.key === 'Escape') {
+              e.currentTarget.blur();
+            }
+          }}
+        >
+          {!isEditing && textBox.text}
+        </div>
       </div>
 
       {/* Selection Indicators and Handles */}
