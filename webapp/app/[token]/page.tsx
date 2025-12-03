@@ -24,6 +24,7 @@ import { useTheme } from '@/lib/useTheme';
 import { fetchAllPoolsData, fetchTokenStats, fetchWalletBalance, fetchTokenBalance } from '@/lib/api';
 import { PoolData, Timeframe, ProjectConfig } from '@/lib/types';
 import { SafeStorage } from '@/lib/localStorage';
+import { DonationPopup } from '@/components/DonationPopup';
 
 function HomeContent() {
   const { currentProject, isLoading: projectLoading, isSwitching, error: projectError } = useTokenContext();
@@ -705,6 +706,9 @@ function HomeContent() {
 
   return (
     <main data-chart-page className="w-screen h-screen overflow-hidden grid grid-rows-[auto_1fr]" style={themeStyles}>
+      {/* Donation Popup */}
+      <DonationPopup />
+
       {/* Donation Banner */}
       <motion.div
         className="relative bg-gradient-to-r from-black via-[var(--primary-darker)]/30 to-black border-b-2 border-[var(--primary-color)]/50 backdrop-blur-sm"
