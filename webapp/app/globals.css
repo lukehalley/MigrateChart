@@ -357,6 +357,31 @@ a {
   background: var(--primary-30);
 }
 
+/* Smooth scrolling for floating icons on mobile */
+.floating-icons-container {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(82, 201, 125, 0.3) transparent;
+  padding-bottom: 1rem;
+}
+
+.floating-icons-container::-webkit-scrollbar {
+  width: 4px;
+}
+
+.floating-icons-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.floating-icons-container::-webkit-scrollbar-thumb {
+  background: rgba(82, 201, 125, 0.3);
+  border-radius: 2px;
+}
+
+.floating-icons-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(82, 201, 125, 0.5);
+}
+
 /* Drawing tools animations */
 @keyframes slideInFromLeft {
   from {

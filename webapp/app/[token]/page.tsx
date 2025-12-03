@@ -27,7 +27,7 @@ import { SafeStorage } from '@/lib/localStorage';
 import { DonationPopup } from '@/components/DonationPopup';
 
 function HomeContent() {
-  const { currentProject, isLoading: projectLoading, isSwitching, error: projectError } = useTokenContext();
+  const { currentProject, allProjects, isLoading: projectLoading, isSwitching, switchingToSlug, error: projectError } = useTokenContext();
 
   // Debug: Log loading states
   console.log('[PAGE] Loading states:', {
@@ -455,18 +455,32 @@ function HomeContent() {
   const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false);
   const loaderStartTimeRef = useRef<number | null>(null);
   const switchStartTimeRef = useRef<number | null>(null); // Track when switch started
-  const switchingFromProjectRef = useRef<ProjectConfig | null>(null); // Store the project we're switching FROM
+  const switchingFromProjectRef = useRef<ProjectConfig | null>(null); // Store the project we're switching TO (for loader display)
   const MINIMUM_LOADER_DURATION = 800; // Minimum time to show loader (ms)
 
   // Dedicated effect for handling token switching loader
   useEffect(() => {
-    if (isSwitching) {
-      // Token switch started - capture current project and record time
-      switchingFromProjectRef.current = currentProject;
+    if (isSwitching && switchingToSlug) {
+      // Token switch started - find destination project from allProjects
+      const destinationProject = allProjects.find(p => p.slug === switchingToSlug);
+
+      // Store destination project info for loader (convert to partial ProjectConfig shape)
+      if (destinationProject) {
+        switchingFromProjectRef.current = {
+          slug: destinationProject.slug,
+          name: destinationProject.name,
+          primaryColor: destinationProject.primaryColor,
+          loaderUrl: destinationProject.loaderUrl,
+        } as ProjectConfig;
+      } else {
+        // Fallback to current project if destination not found
+        switchingFromProjectRef.current = currentProject;
+      }
+
       switchStartTimeRef.current = Date.now();
       loaderStartTimeRef.current = Date.now();
       setShowLoader(true);
-      console.log('[PAGE] Token switch detected - capturing project and forcing loader to show');
+      console.log('[PAGE] Token switch detected - showing destination project loader:', destinationProject?.name || 'fallback');
     } else if (switchStartTimeRef.current !== null) {
       // Token switch completed - ensure minimum display time before hiding
       const elapsed = Date.now() - switchStartTimeRef.current;
@@ -492,7 +506,7 @@ function HomeContent() {
         loaderStartTimeRef.current = null;
       }
     }
-  }, [isSwitching, currentProject]);
+  }, [isSwitching, switchingToSlug, allProjects, currentProject]);
 
   useEffect(() => {
     // On initial load, keep loader visible until we have ALL data
