@@ -2032,7 +2032,12 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       </div>
 
       {/* Mobile and Tablet: Indicators and Drawing Tools Buttons */}
-      <div className="lg:hidden absolute top-4 left-4 z-30 max-h-[calc(100svh-2rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] overflow-y-auto floating-icons-container">
+      <div
+        className="lg:hidden absolute top-4 left-4 z-30 overflow-y-auto floating-icons-container bottom-4"
+        style={{
+          paddingBottom: 'env(safe-area-inset-bottom)',
+        }}
+      >
         <div className="relative flex flex-col gap-2.5">
           {/* Indicators Button */}
           <div className="relative">
