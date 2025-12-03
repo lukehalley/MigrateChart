@@ -2409,7 +2409,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
         return (
           <TextBoxEditor
-            key={`${drawing.id}-${textBoxUpdateCounter}`}
+            key={drawing.id}
             textBox={textBoxData}
             isSelected={true}
             isEditing={editingTextBoxId === drawing.id}
