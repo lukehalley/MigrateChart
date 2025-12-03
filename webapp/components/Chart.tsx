@@ -113,6 +113,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
   const [isHoveringTextBox, setIsHoveringTextBox] = useState(false);
   const [textBoxUpdateCounter, setTextBoxUpdateCounter] = useState(0);
   const justStartedTextBoxDragRef = useRef(false);
+  const justDeselectedTextBoxRef = useRef(false);
 
   // Store migration lines cleanup function
   const migrationLinesCleanupRef = useRef<(() => void) | null>(null);
@@ -687,6 +688,11 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
           return; // Don't start new text box drawing
         }
 
+        // Check if we just deselected a text box
+        if (justDeselectedTextBoxRef.current) {
+          return; // Don't start new text box drawing
+        }
+
         // Check if clicking on an existing text box (safety check - should be caught by handleNativeMouseDown)
         const clickedTextBox = drawingPrimitive.findTextBoxAtCoordinates(param.point.x, param.point.y);
         if (clickedTextBox) {
@@ -696,16 +702,6 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         const tempPoint = drawingStateRef.current.getTempPoint();
 
         if (!tempPoint) {
-          // If a text box is currently selected or being edited, clicking empty space should deselect it
-          if (selectedTextBoxId || editingTextBoxId) {
-            setSelectedTextBoxId(null);
-            setEditingTextBoxId(null);
-            setShowQuickToolbar(false);
-            setShowContextMenu(false);
-            setShowSettingsPanel(false);
-            return; // Don't start new text box drawing
-          }
-
           // First click - create a ruler preview rectangle (like ruler tool)
           drawingStateRef.current.setTempPoint({ logical, price });
           drawingStateRef.current.setIsDrawing(true);
@@ -1665,6 +1661,12 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         setShowQuickToolbar(false);
         setShowSettingsPanel(false);
         setShowContextMenu(false);
+
+        // Set flag to prevent starting new text box drawing immediately after deselecting
+        justDeselectedTextBoxRef.current = true;
+        setTimeout(() => {
+          justDeselectedTextBoxRef.current = false;
+        }, 100);
       }
     };
 
@@ -2502,6 +2504,12 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
             }}
             onBlur={() => {
               setEditingTextBoxId(null);
+
+              // Set flag to prevent starting new text box when clicking away from edit
+              justDeselectedTextBoxRef.current = true;
+              setTimeout(() => {
+                justDeselectedTextBoxRef.current = false;
+              }, 100);
             }}
             onRightClick={(e) => {
               setShowContextMenu(true);
