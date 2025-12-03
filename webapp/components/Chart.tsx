@@ -1281,8 +1281,8 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
   useEffect(() => {
     if (!chartRef.current) return;
 
-    // Hide crosshair when in text-box mode, editing, or hovering over text box
-    const hideCrosshair = activeDrawingTool === 'text-box' || editingTextBoxId !== null || isHoveringTextBox;
+    // Hide crosshair when in text-box mode, eraser mode, editing, or hovering over text box
+    const hideCrosshair = activeDrawingTool === 'text-box' || activeDrawingTool === 'eraser' || editingTextBoxId !== null || isHoveringTextBox;
 
     // Disable chart interactions when in drawing mode OR actively dragging/resizing text boxes
     const disableChartInteractions = isDrawingMode || isDraggingTextBox || isResizingTextBox;
@@ -1908,9 +1908,12 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
                 {/* Eraser Tool */}
                 <motion.button
-                  onClick={() => selectDrawingTool('eraser')}
+                  onClick={drawingCount > 0 ? () => selectDrawingTool('eraser') : undefined}
+                  disabled={drawingCount === 0}
                   className={`w-9 h-9 md:w-10 md:h-10 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
-                    activeDrawingTool === 'eraser'
+                    drawingCount === 0
+                      ? 'border-red-500/20 opacity-30 cursor-not-allowed'
+                      : activeDrawingTool === 'eraser'
                       ? 'bg-red-500/30 border-red-500 shadow-[0_0_12px_rgba(239,68,68,0.5)]'
                       : 'border-red-500/50 hover:bg-red-500/5 hover:border-red-500'
                   }`}
@@ -1919,9 +1922,9 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   exit={{ x: 20, opacity: 0 }}
                   transition={{ duration: 0.2, delay: 0.25, ease: 'easeOut' }}
                   aria-label="Eraser tool"
-                  title="Eraser (Click to Delete)"
+                  title={drawingCount === 0 ? "No drawings to erase" : "Eraser (Click to Delete)"}
                 >
-                  <Eraser className="w-5 h-5 text-red-500" strokeWidth={2} />
+                  <Eraser className={`w-5 h-5 ${drawingCount === 0 ? 'text-red-500/30' : 'text-red-500'}`} strokeWidth={2} />
                 </motion.button>
 
                 {/* Undo Last Drawing Button */}
@@ -2200,9 +2203,12 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
                 {/* Eraser Tool */}
                 <motion.button
-                  onClick={() => selectDrawingTool('eraser')}
+                  onClick={drawingCount > 0 ? () => selectDrawingTool('eraser') : undefined}
+                  disabled={drawingCount === 0}
                   className={`w-11 h-11 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
-                    activeDrawingTool === 'eraser'
+                    drawingCount === 0
+                      ? 'border-red-500/20 opacity-30 cursor-not-allowed shadow-none'
+                      : activeDrawingTool === 'eraser'
                       ? 'bg-red-500/30 border-red-500 shadow-[0_0_12px_rgba(239,68,68,0.5)]'
                       : 'border-red-500/50 hover:bg-red-500/5 hover:border-red-500 shadow-[0_0_12px_rgba(239,68,68,0.3)]'
                   }`}
@@ -2211,9 +2217,9 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   exit={{ y: -20, opacity: 0 }}
                   transition={{ duration: 0.2, delay: 0.25, ease: 'easeOut' }}
                   aria-label="Eraser tool"
-                  title="Eraser (Click to Delete)"
+                  title={drawingCount === 0 ? "No drawings to erase" : "Eraser (Click to Delete)"}
                 >
-                  <Eraser className="w-5 h-5 text-red-500" strokeWidth={2} />
+                  <Eraser className={`w-5 h-5 ${drawingCount === 0 ? 'text-red-500/30' : 'text-red-500'}`} strokeWidth={2} />
                 </motion.button>
 
                 {/* Undo Last Drawing Button */}

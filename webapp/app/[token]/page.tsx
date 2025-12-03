@@ -2297,14 +2297,6 @@ function HomeContent() {
 
           {/* Scrollable Content */}
           <div className="flex-1 overflow-y-auto overflow-x-hidden px-2.5 py-2 space-y-0 min-h-0">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentProject.slug}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.25, ease: [0.4, 0.0, 0.2, 1] }}
-              >
             {/* Main Info Block */}
             <div className="stat-card-highlight">
               <div className="flex items-center gap-2.5 mb-2">
@@ -2528,8 +2520,6 @@ function HomeContent() {
                 <div className="h-1"></div>
               </>
             )}
-              </motion.div>
-            </AnimatePresence>
           </div>
 
           {/* Sticky Bottom Section */}

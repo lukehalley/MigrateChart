@@ -26,15 +26,9 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D', display
 
     const updated = new Set<string>();
 
+    // Only track price and priceChange for flash animation
     if (stats.price !== prevStats.current.price) updated.add('price');
     if (stats.priceChange24h !== prevStats.current.priceChange24h) updated.add('priceChange');
-    if (stats.liquidity !== prevStats.current.liquidity) updated.add('liquidity');
-    if (stats.marketCap !== prevStats.current.marketCap) updated.add('marketCap');
-    if (stats.volume24h !== prevStats.current.volume24h) updated.add('volume');
-    if (stats.fees24h !== prevStats.current.fees24h) updated.add('fees');
-    if (stats.holders !== prevStats.current.holders) updated.add('holders');
-    if (stats.buyCount24h !== prevStats.current.buyCount24h) updated.add('buys');
-    if (stats.sellCount24h !== prevStats.current.sellCount24h) updated.add('sells');
 
     if (updated.size > 0) {
       setFlashingFields(updated);
@@ -88,23 +82,103 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D', display
   if (isLoading || !stats) {
     return (
       <div className="animate-pulse space-y-0">
-        {/* Price Card Skeleton */}
+        {/* Price Card Skeleton - matches loaded state exactly */}
         <div className="stat-card">
-          <div className="h-3 bg-gray-700/50 mb-2 w-20"></div>
-          <div className="flex items-center gap-2 mb-1">
-            <div className="h-6 bg-gray-700/50 w-24"></div>
-            <div className="h-3 bg-gray-700/50 w-10"></div>
+          <div className="flex items-start gap-3">
+            <div className="flex-1">
+              <div className="h-[9px] bg-gray-700/50 mb-1.5 w-[55px] rounded"></div>
+              <div className="h-[24px] bg-gray-700/50 mb-1 w-[90px] rounded"></div>
+              <div className="h-[14px] bg-gray-700/50 w-[50px] rounded"></div>
+            </div>
+            <div className="flex-1 text-right">
+              <div className="h-[9px] bg-gray-700/50 mb-1.5 w-[60px] ml-auto rounded"></div>
+              <div className="h-[16px] bg-gray-700/50 w-[70px] ml-auto rounded"></div>
+            </div>
           </div>
-          <div className="h-4 bg-gray-700/50 w-16"></div>
         </div>
 
         {/* Divider */}
         <div className="dashed-divider opacity-30"></div>
 
-        {/* Additional skeletons... */}
+        {/* Liquidity and Market Cap Skeleton */}
         <div className="stat-card">
-          <div className="h-3 bg-gray-700/50 mb-2 w-16"></div>
-          <div className="h-5 bg-gray-700/50 w-20"></div>
+          <div className="flex items-start gap-3">
+            <div className="flex-1">
+              <div className="h-[9px] bg-gray-700/50 mb-1.5 w-[55px] rounded"></div>
+              <div className="h-[16px] bg-gray-700/50 w-[75px] rounded"></div>
+            </div>
+            <div className="flex-1 text-right">
+              <div className="h-[9px] bg-gray-700/50 mb-1.5 w-[50px] ml-auto rounded"></div>
+              <div className="h-[16px] bg-gray-700/50 w-[80px] ml-auto rounded"></div>
+            </div>
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div className="dashed-divider opacity-30"></div>
+
+        {/* Volume Skeleton */}
+        <div className="stat-card">
+          <div className="flex items-start gap-3">
+            <div className="flex-1">
+              <div className="h-[9px] bg-gray-700/50 mb-1.5 w-[45px] rounded"></div>
+              <div className="h-[16px] bg-gray-700/50 w-[70px] rounded"></div>
+            </div>
+            <div className="flex-1 text-right">
+              <div className="h-[9px] bg-gray-700/50 mb-1.5 w-[50px] ml-auto rounded"></div>
+              <div className="h-[16px] bg-gray-700/50 w-[75px] ml-auto rounded"></div>
+            </div>
+          </div>
+        </div>
+
+        {/* Fees Skeleton - always show placeholder since fees often exists */}
+        <div className="stat-card">
+          <div className="flex items-start gap-3">
+            <div className="flex-1">
+              <div className="h-[9px] bg-gray-700/50 mb-1.5 w-[35px] rounded"></div>
+              <div className="h-[16px] bg-gray-700/50 w-[65px] rounded"></div>
+            </div>
+            <div className="flex-1 text-right">
+              <div className="h-[9px] bg-gray-700/50 mb-1.5 w-[55px] ml-auto rounded"></div>
+              <div className="h-[16px] bg-gray-700/50 w-[75px] ml-auto rounded"></div>
+            </div>
+          </div>
+        </div>
+
+        {/* Avg Daily Fees Skeleton - if avgDailyFees prop suggests it will be shown */}
+        {avgDailyFees !== undefined && (
+          <div className="stat-card">
+            <div className="h-[9px] bg-gray-700/50 mb-1.5 w-[90px] rounded"></div>
+            <div className="h-[16px] bg-gray-700/50 w-[70px] rounded"></div>
+          </div>
+        )}
+
+        {/* Divider */}
+        <div className="dashed-divider opacity-30"></div>
+
+        {/* Holders Skeleton */}
+        <div className="stat-card">
+          <div className="h-[9px] bg-gray-700/50 mb-1.5 w-[50px] rounded"></div>
+          <div className="h-[16px] bg-gray-700/50 w-[55px] rounded"></div>
+        </div>
+
+        {/* Divider */}
+        <div className="dashed-divider opacity-30"></div>
+
+        {/* Transactions Skeleton */}
+        <div className="stat-card">
+          <div className="h-[9px] bg-gray-700/50 mb-2 w-[110px] mx-auto rounded"></div>
+          <div className="flex items-center justify-center gap-6">
+            <div className="text-center">
+              <div className="h-[8px] bg-gray-700/50 mb-1 w-[28px] mx-auto rounded"></div>
+              <div className="h-[16px] bg-gray-700/50 w-[35px] mx-auto rounded"></div>
+            </div>
+            <div className="w-px h-8 bg-white/20"></div>
+            <div className="text-center">
+              <div className="h-[8px] bg-gray-700/50 mb-1 w-[32px] mx-auto rounded"></div>
+              <div className="h-[16px] bg-gray-700/50 w-[35px] mx-auto rounded"></div>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -115,14 +189,14 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D', display
       {/* Price Card - Enhanced Typography */}
       <motion.div
         className="stat-card"
-        initial={{ opacity: 0, x: -10 }}
-        animate={{ opacity: 1, x: 0 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
         transition={{ duration: 0.3 }}
       >
         <div className="flex items-start gap-3">
           {/* Current price */}
           <div className="flex-1">
-            <p className="text-white/60 text-[9px] tracking-wider mb-1.5">PRICE USD</p>
+            <p className="text-white text-[9px] tracking-wider mb-1.5">PRICE USD</p>
             <p className={`text-white text-xl font-bold select-text mb-1 ${flashingFields.has('price') ? 'flash-update' : ''}`}>
               {formatPrice(stats.price)}
             </p>
@@ -144,15 +218,15 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D', display
             <div className="flex-1 text-right">
               {displayMode === 'price' ? (
                 <>
-                  <p className="text-white/60 text-[9px] tracking-wider mb-1.5">ATH PRICE</p>
-                  <p className="text-white/80 text-base select-text">
+                  <p className="text-white text-[9px] tracking-wider mb-1.5">ATH PRICE</p>
+                  <p className="text-white text-base select-text">
                     {formatPrice(stats.allTimeHighMarketCap / 1_000_000_000)}
                   </p>
                 </>
               ) : (
                 <>
-                  <p className="text-white/60 text-[9px] tracking-wider mb-1.5">ATH MCAP</p>
-                  <p className="text-white/80 text-base select-text">
+                  <p className="text-white text-[9px] tracking-wider mb-1.5">ATH MCAP</p>
+                  <p className="text-white text-base select-text">
                     {formatNumber(stats.allTimeHighMarketCap)}
                   </p>
                 </>
@@ -168,20 +242,20 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D', display
       {/* Liquidity and Market Cap */}
       <motion.div
         className="stat-card"
-        initial={{ opacity: 0, x: -10 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.3, delay: 0.05 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
       >
         <div className="flex items-start gap-3">
           <div className="flex-1">
-            <p className="text-white/60 text-[9px]  tracking-wider mb-1.5">LIQUIDITY</p>
-            <p className={`text-white text-base  font-bold select-text ${flashingFields.has('liquidity') ? 'flash-update' : ''}`}>
+            <p className="text-white text-[9px]  tracking-wider mb-1.5">LIQUIDITY</p>
+            <p className="text-white text-base  font-bold select-text">
               {formatNumber(stats.liquidity)}
             </p>
           </div>
           <div className="flex-1 text-right">
-            <p className="text-white/60 text-[9px]  tracking-wider mb-1.5">MKT CAP</p>
-            <p className={`text-white text-base  font-bold select-text ${flashingFields.has('marketCap') ? 'flash-update' : ''}`}>
+            <p className="text-white text-[9px]  tracking-wider mb-1.5">MKT CAP</p>
+            <p className="text-white text-base  font-bold select-text">
               {formatNumber(stats.marketCap)}
             </p>
           </div>
@@ -194,21 +268,21 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D', display
       {/* Volume */}
       <motion.div
         className="stat-card"
-        initial={{ opacity: 0, x: -10 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.3, delay: 0.1 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
       >
         <div className="flex items-start gap-3">
           <div className="flex-1">
-            <p className="text-white/60 text-[9px]  tracking-wider mb-1.5">VOLUME</p>
-            <p className={`text-white text-base  font-bold select-text ${flashingFields.has('volume') ? 'flash-update' : ''}`}>
+            <p className="text-white text-[9px]  tracking-wider mb-1.5">VOLUME</p>
+            <p className="text-white text-base  font-bold select-text">
               {formatNumber(stats.volume24h)}
             </p>
           </div>
           {stats.allTimeVolume !== undefined && timeframeLabel !== 'ALL TIME' && (
             <div className="flex-1 text-right">
-              <p className="text-white/60 text-[9px]  tracking-wider mb-1.5">VOL ATH</p>
-              <p className="text-white/80 text-base  select-text">
+              <p className="text-white text-[9px]  tracking-wider mb-1.5">VOL ATH</p>
+              <p className="text-white text-base  select-text">
                 {formatNumber(stats.allTimeVolume)}
               </p>
             </div>
@@ -221,21 +295,21 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D', display
         <>
         <motion.div
           className="stat-card"
-          initial={{ opacity: 0, x: -10 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.3, delay: 0.15 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
         >
           <div className="flex items-start gap-3">
             <div className="flex-1">
-              <p className="text-white/60 text-[9px]  tracking-wider mb-1.5">FEES</p>
-              <p className={`text-white text-base  font-bold select-text ${flashingFields.has('fees') ? 'flash-update' : ''}`}>
+              <p className="text-white text-[9px]  tracking-wider mb-1.5">FEES</p>
+              <p className="text-white text-base  font-bold select-text">
                 {formatNumber(stats.fees24h)}
               </p>
             </div>
             {stats.allTimeFees !== undefined && timeframeLabel !== 'ALL TIME' && (
               <div className="flex-1 text-right">
-                <p className="text-white/60 text-[9px]  tracking-wider mb-1.5">FEES ATH</p>
-                <p className="text-white/80 text-base  select-text">
+                <p className="text-white text-[9px]  tracking-wider mb-1.5">FEES ATH</p>
+                <p className="text-white text-base  select-text">
                   {formatNumber(stats.allTimeFees)}
                 </p>
               </div>
@@ -246,11 +320,11 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D', display
         {avgDailyFees !== undefined && (
           <motion.div
             className="stat-card"
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.3, delay: 0.2 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
           >
-            <p className="text-white/60 text-[9px]  tracking-wider mb-1.5">AVG DAILY FEES</p>
+            <p className="text-white text-[9px]  tracking-wider mb-1.5">AVG DAILY FEES</p>
             <p className="text-white text-base  font-bold select-text">
               {formatNumber(avgDailyFees)}
             </p>
@@ -266,12 +340,12 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D', display
         <>
         <motion.div
           className="stat-card"
-          initial={{ opacity: 0, x: -10 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.3, delay: 0.25 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
         >
-          <p className="text-white/60 text-[9px]  tracking-wider mb-1.5">HOLDERS</p>
-          <p className={`text-white text-base  font-bold select-text ${flashingFields.has('holders') ? 'flash-update' : ''}`}>
+          <p className="text-white text-[9px]  tracking-wider mb-1.5">HOLDERS</p>
+          <p className="text-white text-base  font-bold select-text">
             {formatCount(stats.holders)}
           </p>
         </motion.div>
@@ -284,22 +358,22 @@ export default function TokenStats({ stats, isLoading, timeframe = '1D', display
       {(stats.buyCount24h || stats.sellCount24h) && (
         <motion.div
           className="stat-card"
-          initial={{ opacity: 0, x: -10 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.3, delay: 0.3 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
         >
-          <p className="text-white/60 text-[9px]  tracking-wider mb-2 text-center">TRANSACTIONS 24H</p>
+          <p className="text-white text-[9px]  tracking-wider mb-2 text-center">TRANSACTIONS 24H</p>
           <div className="flex items-center justify-center gap-6">
             <div className="text-center">
-              <p className="text-white/60 text-[8px]  tracking-wider mb-1">BUYS</p>
-              <p className={`text-[#52C97D] text-base  font-bold select-text ${flashingFields.has('buys') ? 'flash-update' : ''}`}>
+              <p className="text-white text-[8px]  tracking-wider mb-1">BUYS</p>
+              <p className="text-[#52C97D] text-base  font-bold select-text">
                 {stats.buyCount24h || 0}
               </p>
             </div>
             <div className="w-px h-8 bg-white/20"></div>
             <div className="text-center">
-              <p className="text-white/60 text-[8px]  tracking-wider mb-1">SELLS</p>
-              <p className={`text-[#ef5350] text-base  font-bold select-text ${flashingFields.has('sells') ? 'flash-update' : ''}`}>
+              <p className="text-white text-[8px]  tracking-wider mb-1">SELLS</p>
+              <p className="text-[#ef5350] text-base  font-bold select-text">
                 {stats.sellCount24h || 0}
               </p>
             </div>
