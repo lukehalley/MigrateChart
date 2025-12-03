@@ -40,7 +40,6 @@ interface TextBoxEditorProps {
   onStartDrag: (e: React.MouseEvent, handle?: string) => void;
   onDoubleClick: () => void;
   onBlur: () => void;
-  onRightClick?: (e: React.MouseEvent) => void;
   onHoverChange?: (isHovering: boolean) => void;
   primaryColor: string;
 }
@@ -56,7 +55,6 @@ export default function TextBoxEditor({
   onStartDrag,
   onDoubleClick,
   onBlur,
-  onRightClick,
   onHoverChange,
   primaryColor,
 }: TextBoxEditorProps) {
@@ -65,9 +63,9 @@ export default function TextBoxEditor({
   const [isHovered, setIsHovered] = useState(false);
   const hasSelectedInitialTextRef = useRef(false);
 
-  const fontSize = textBox.fontSize || 16;
+  const fontSize = textBox.fontSize || 18;
   const fontFamily = textBox.fontFamily || 'Inter, system-ui, -apple-system, sans-serif';
-  const fontWeight = textBox.fontWeight || '400';
+  const fontWeight = textBox.fontWeight || '500';
   const fontStyle = textBox.fontStyle || 'normal';
   const textDecoration = textBox.textDecoration || 'none';
   const backgroundColor = textBox.backgroundColor || '#FFFFFF';
@@ -162,13 +160,6 @@ export default function TextBoxEditor({
         zIndex: isSelected ? 100 : 50,
       }}
       onDoubleClick={onDoubleClick}
-      onContextMenu={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (onRightClick && !isEditing) {
-          onRightClick(e);
-        }
-      }}
       onMouseEnter={() => {
         setIsHovered(true);
         onHoverChange?.(true);

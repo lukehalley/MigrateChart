@@ -20,9 +20,6 @@ import {
   OHLCData
 } from '@/lib/indicators';
 import TextBoxEditor, { TextBoxData } from '@/components/TextBoxEditor';
-import TextBoxQuickToolbar from '@/components/TextBoxQuickToolbar';
-import TextBoxSettingsPanel from '@/components/TextBoxSettingsPanel';
-import TextBoxContextMenu, { TextBoxAction } from '@/components/TextBoxContextMenu';
 
 interface ChartProps {
   poolsData: PoolData[];
@@ -105,11 +102,6 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
   const isClosingEditorRef = useRef(false);
 
   // New text box UI state
-  const [showQuickToolbar, setShowQuickToolbar] = useState(false);
-  const [showSettingsPanel, setShowSettingsPanel] = useState(false);
-  const [showContextMenu, setShowContextMenu] = useState(false);
-  const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 });
-  const [copiedStyle, setCopiedStyle] = useState<any>(null);
   const [isHoveringTextBox, setIsHoveringTextBox] = useState(false);
   const [textBoxUpdateCounter, setTextBoxUpdateCounter] = useState(0);
   const justStartedTextBoxDragRef = useRef(false);
@@ -957,8 +949,6 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
           // Select the text box
           setSelectedTextBoxId(clickedTextBox.id);
-          setShowQuickToolbar(false);
-          setShowContextMenu(false);
 
           // Immediately start dragging
           const textBoxData = getTextBoxData(clickedTextBox);
@@ -1376,9 +1366,9 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       width: textBox.width || 224,
       height: textBox.height || 100,
       text: textBox.text,
-      fontSize: textBox.fontSize || 20,
-      fontFamily: textBox.fontFamily || '"JetBrains Mono", "Courier New", monospace',
-      fontWeight: textBox.fontWeight || '600',
+      fontSize: textBox.fontSize || 18,
+      fontFamily: textBox.fontFamily || 'Inter, system-ui, -apple-system, sans-serif',
+      fontWeight: textBox.fontWeight || '500',
       fontStyle: textBox.fontStyle || 'normal',
       textDecoration: textBox.textDecoration || 'none',
       color: textBox.color || primaryColor,
@@ -1426,55 +1416,16 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
     setTextBoxUpdateCounter(prev => prev + 1);
   };
 
-  // Handle text box actions from context menu
-  const handleTextBoxAction = (action: TextBoxAction) => {
+  // Handle text box delete (simplified - no other actions)
+  const handleTextBoxDelete = () => {
     if (!selectedTextBoxId || !drawingPrimitiveRef.current) return;
 
     const primitive = drawingPrimitiveRef.current;
-
-    switch (action) {
-      case 'edit':
-        setShowSettingsPanel(true);
-        break;
-
-      case 'duplicate':
-        const newId = primitive.duplicateTextBox(selectedTextBoxId);
-        if (newId) {
-          setSelectedTextBoxId(newId);
-          const updatedDrawings = primitive.getDrawings();
-          SafeStorage.setJSON(`drawings_${timeframe}`, updatedDrawings);
-          setDrawingCount(updatedDrawings.length);
-        }
-        break;
-
-      case 'delete':
-        primitive.removeDrawing(selectedTextBoxId);
-        setSelectedTextBoxId(null);
-        const updatedDrawings = primitive.getDrawings();
-        SafeStorage.setJSON(`drawings_${timeframe}`, updatedDrawings);
-        setDrawingCount(updatedDrawings.length);
-        break;
-
-      case 'bringToFront':
-        primitive.moveTextBoxToFront(selectedTextBoxId);
-        primitive.getDrawings(); // Trigger update
-        const frontDrawings = primitive.getDrawings();
-        SafeStorage.setJSON(`drawings_${timeframe}`, frontDrawings);
-        break;
-
-      case 'sendToBack':
-        primitive.moveTextBoxToBack(selectedTextBoxId);
-        const backDrawings = primitive.getDrawings();
-        SafeStorage.setJSON(`drawings_${timeframe}`, backDrawings);
-        break;
-
-      case 'cloneStyle':
-        const style = primitive.getTextBoxStyle(selectedTextBoxId);
-        if (style) {
-          setCopiedStyle(style);
-        }
-        break;
-    }
+    primitive.removeDrawing(selectedTextBoxId);
+    setSelectedTextBoxId(null);
+    const updatedDrawings = primitive.getDrawings();
+    SafeStorage.setJSON(`drawings_${timeframe}`, updatedDrawings);
+    setDrawingCount(updatedDrawings.length);
   };
 
   // Handle keyboard shortcuts
@@ -1485,13 +1436,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       // Delete
       if (e.key === 'Delete' || e.key === 'Backspace') {
         e.preventDefault();
-        handleTextBoxAction('delete');
-      }
-
-      // Duplicate (Cmd/Ctrl + D)
-      if ((e.metaKey || e.ctrlKey) && e.key === 'd') {
-        e.preventDefault();
-        handleTextBoxAction('duplicate');
+        handleTextBoxDelete();
       }
     };
 
@@ -1642,25 +1587,17 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       // Don't deselect if currently editing, dragging, or resizing
       if (editingTextBoxId || isDraggingTextBox || isResizingTextBox) return;
 
-      // Check if click is on any textbox or UI element
+      // Check if click is on any textbox element
       const target = e.target as HTMLElement;
 
-      // Check if clicking on a textbox editor element, toolbar, settings panel, or context menu
-      if (
-        target.closest('[data-textbox-editor]') ||
-        target.closest('[data-textbox-toolbar]') ||
-        target.closest('[data-textbox-settings]') ||
-        target.closest('[data-textbox-context]')
-      ) {
+      // Check if clicking on a textbox editor element
+      if (target.closest('[data-textbox-editor]')) {
         return;
       }
 
       // Close all text box UI
       if (selectedTextBoxId) {
         setSelectedTextBoxId(null);
-        setShowQuickToolbar(false);
-        setShowSettingsPanel(false);
-        setShowContextMenu(false);
 
         // Set flag to prevent starting new text box drawing immediately after deselecting
         justDeselectedTextBoxRef.current = true;
@@ -1686,18 +1623,6 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
     drawingPrimitiveRef.current.setHiddenTextBoxIds(hiddenIds);
   }, [selectedTextBoxId, isDraggingTextBox, isResizingTextBox]);
 
-  // Show quick toolbar when text box is selected
-  useEffect(() => {
-    if (selectedTextBoxId && !editingTextBoxId) {
-      // Small delay to show toolbar after selection
-      const timeoutId = setTimeout(() => {
-        setShowQuickToolbar(true);
-      }, 100);
-      return () => clearTimeout(timeoutId);
-    } else {
-      setShowQuickToolbar(false);
-    }
-  }, [selectedTextBoxId, editingTextBoxId]);
 
   return (
     <div className="w-full h-full relative">
@@ -2383,7 +2308,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                           <svg style={{ marginTop: '2px' }} className="w-4 h-4 text-[var(--primary-color)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                           </svg>
-                          <span style={{ lineHeight: '1.4', margin: 0 }} className="text-white text-xs"><strong>Anchored Text:</strong> Rich annotations (right-click for options)</span>
+                          <span style={{ lineHeight: '1.4', margin: 0 }} className="text-white text-xs"><strong>Anchored Text:</strong> Drag area, type text, drag to move (Del to delete)</span>
                         </div>
                       </div>
                     </div>
@@ -2485,15 +2410,11 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
             onUpdate={(updates) => handleTextBoxUpdate(drawing.id, updates)}
             onStartDrag={(e, handle) => {
               e.stopPropagation();
-              setShowQuickToolbar(false);
-              setShowContextMenu(false);
               setIsHoveringTextBox(false);
               handleTextBoxDragStart(drawing.id, e, handle);
             }}
             onDoubleClick={() => {
               setEditingTextBoxId(drawing.id);
-              setShowQuickToolbar(false);
-              setShowContextMenu(false);
               setIsHoveringTextBox(false);
 
               // Set flag to prevent new text box creation
@@ -2511,84 +2432,12 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                 justDeselectedTextBoxRef.current = false;
               }, 100);
             }}
-            onRightClick={(e) => {
-              setShowContextMenu(true);
-              setContextMenuPosition({ x: e.clientX, y: e.clientY });
-              setShowQuickToolbar(false);
-
-              // Set flag to prevent new text box creation
-              justStartedTextBoxDragRef.current = true;
-              setTimeout(() => {
-                justStartedTextBoxDragRef.current = false;
-              }, 50);
-            }}
             onHoverChange={setIsHoveringTextBox}
             primaryColor={primaryColor}
           />
         );
       })()}
 
-      {/* Quick Toolbar - shown when text box is selected but not editing */}
-      <AnimatePresence>
-        {selectedTextBoxId && !editingTextBoxId && showQuickToolbar && (() => {
-          const textBox = drawingPrimitiveRef.current?.getTextBox(selectedTextBoxId);
-          if (!textBox) return null;
-          const textBoxData = getTextBoxData(textBox);
-          if (!textBoxData) return null;
-
-          return (
-            <TextBoxQuickToolbar
-              key={`toolbar-${selectedTextBoxId}`}
-              textBox={textBox}
-              position={{
-                x: textBoxData.x,
-                y: textBoxData.y - 60,
-              }}
-              onUpdate={(updates) => handleTextBoxUpdate(selectedTextBoxId, updates)}
-              onOpenSettings={() => {
-                setShowSettingsPanel(true);
-                setShowQuickToolbar(false);
-              }}
-              primaryColor={primaryColor}
-            />
-          );
-        })()}
-      </AnimatePresence>
-
-      {/* Settings Panel */}
-      <AnimatePresence>
-        {selectedTextBoxId && showSettingsPanel && (() => {
-          const textBox = drawingPrimitiveRef.current?.getTextBox(selectedTextBoxId);
-          if (!textBox) return null;
-
-          return (
-            <TextBoxSettingsPanel
-              key={`settings-${selectedTextBoxId}`}
-              textBox={textBox}
-              isOpen={showSettingsPanel}
-              onClose={() => setShowSettingsPanel(false)}
-              onUpdate={(updates) => handleTextBoxUpdate(selectedTextBoxId, updates)}
-              onApply={() => {
-                setShowSettingsPanel(false);
-              }}
-              primaryColor={primaryColor}
-            />
-          );
-        })()}
-      </AnimatePresence>
-
-      {/* Context Menu */}
-      <AnimatePresence>
-        {selectedTextBoxId && showContextMenu && (
-          <TextBoxContextMenu
-            key={`context-${selectedTextBoxId}`}
-            position={contextMenuPosition}
-            onAction={handleTextBoxAction}
-            onClose={() => setShowContextMenu(false)}
-            primaryColor={primaryColor}
-          />
-        )}
-      </AnimatePresence>
 
       <div
         ref={chartContainerRef}

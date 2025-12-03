@@ -333,9 +333,9 @@ class DrawingPaneView implements ISeriesPrimitivePaneView {
 
     if (y === null || x === null) return;
 
-    const fontSize = textBox.fontSize || 20;
+    const fontSize = textBox.fontSize || 18;
     const fontFamily = textBox.fontFamily || 'Inter, system-ui, -apple-system, sans-serif';
-    const fontWeight = textBox.fontWeight || '600';
+    const fontWeight = textBox.fontWeight || '500';
     const fontStyle = textBox.fontStyle || 'normal';
     const textDecoration = textBox.textDecoration || 'none';
     const textAlign = textBox.textAlign || 'left';
@@ -687,9 +687,9 @@ export class DrawingToolsPrimitive implements ISeriesPrimitive<Time> {
       borderEnabled: false,
       borderColor: color,
       borderWidth: 2,
-      fontSize: fontSize || 20,
-      fontFamily: '"JetBrains Mono", "Courier New", monospace',
-      fontWeight: '600',
+      fontSize: fontSize || 18,
+      fontFamily: 'Inter, system-ui, -apple-system, sans-serif', // Site default font
+      fontWeight: '500',
       fontStyle: 'normal',
       textDecoration: 'none',
       textAlign: 'center',
