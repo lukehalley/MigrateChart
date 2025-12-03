@@ -1626,9 +1626,9 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
     drawingPrimitiveRef.current.setHiddenTextBoxIds(hiddenIds);
   }, [selectedTextBoxId, isDraggingTextBox, isResizingTextBox]);
 
-  // Show size control when text box is selected (but not editing or dragging)
+  // Show size control when text box is selected (including when editing, but not when dragging)
   useEffect(() => {
-    if (selectedTextBoxId && !editingTextBoxId && !isDraggingTextBox && !isResizingTextBox) {
+    if (selectedTextBoxId && !isDraggingTextBox && !isResizingTextBox) {
       const timeoutId = setTimeout(() => {
         setShowSizeControl(true);
       }, 100);
@@ -2455,9 +2455,9 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         );
       })()}
 
-      {/* Font Size Control - shown when text box is selected but not editing */}
+      {/* Font Size Control - shown when text box is selected (including during editing) */}
       <AnimatePresence>
-        {selectedTextBoxId && !editingTextBoxId && showSizeControl && (() => {
+        {selectedTextBoxId && showSizeControl && (() => {
           const textBox = drawingPrimitiveRef.current?.getTextBox(selectedTextBoxId);
           if (!textBox) return null;
           const textBoxData = getTextBoxData(textBox);

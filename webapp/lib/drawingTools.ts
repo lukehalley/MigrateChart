@@ -475,19 +475,15 @@ class DrawingPaneView implements ISeriesPrimitivePaneView {
         textX = bitmapX + boxWidth - bitmapPadding;
       }
 
-      // Subtle glow effect - refined and understated
+      // Very subtle glow effect - barely there
       // Layer 1: Soft outer glow
       ctx.shadowColor = textColor;
-      ctx.shadowBlur = 8 * scope.horizontalPixelRatio;
+      ctx.shadowBlur = 4 * scope.horizontalPixelRatio;
       ctx.shadowOffsetX = 0;
       ctx.shadowOffsetY = 0;
       ctx.fillText(line, textX, textY);
 
-      // Layer 2: Tight inner glow
-      ctx.shadowBlur = 3 * scope.horizontalPixelRatio;
-      ctx.fillText(line, textX, textY);
-
-      // Layer 3: Solid text on top (no shadow)
+      // Layer 2: Solid text on top (no shadow)
       ctx.shadowColor = 'transparent';
       ctx.shadowBlur = 0;
       ctx.fillText(line, textX, textY);
@@ -509,9 +505,9 @@ class DrawingPaneView implements ISeriesPrimitivePaneView {
         ctx.strokeStyle = textColor;
         ctx.lineWidth = Math.max(1, bitmapFontSize * 0.05);
 
-        // Subtle underline glow
+        // Very subtle underline glow
         ctx.shadowColor = textColor;
-        ctx.shadowBlur = 4 * scope.horizontalPixelRatio;
+        ctx.shadowBlur = 2 * scope.horizontalPixelRatio;
         ctx.beginPath();
         ctx.moveTo(underlineX, underlineY);
         ctx.lineTo(underlineX + underlineWidth, underlineY);
