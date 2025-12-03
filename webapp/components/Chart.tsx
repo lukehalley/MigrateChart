@@ -112,6 +112,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
   const [copiedStyle, setCopiedStyle] = useState<any>(null);
   const [isHoveringTextBox, setIsHoveringTextBox] = useState(false);
   const [textBoxUpdateCounter, setTextBoxUpdateCounter] = useState(0);
+  const justStartedTextBoxDragRef = useRef(false);
 
   // Store migration lines cleanup function
   const migrationLinesCleanupRef = useRef<(() => void) | null>(null);
@@ -681,9 +682,30 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
           setDrawingCount(updatedDrawings.length);
         }
       } else if (activeToolType === 'text-box') {
+        // Check if we just started dragging an existing text box
+        if (justStartedTextBoxDragRef.current) {
+          return; // Don't start new text box drawing
+        }
+
+        // Check if clicking on an existing text box (safety check - should be caught by handleNativeMouseDown)
+        const clickedTextBox = drawingPrimitive.findTextBoxAtCoordinates(param.point.x, param.point.y);
+        if (clickedTextBox) {
+          return; // Don't start new text box drawing, let drag handle it
+        }
+
         const tempPoint = drawingStateRef.current.getTempPoint();
 
         if (!tempPoint) {
+          // If a text box is currently selected or being edited, clicking empty space should deselect it
+          if (selectedTextBoxId || editingTextBoxId) {
+            setSelectedTextBoxId(null);
+            setEditingTextBoxId(null);
+            setShowQuickToolbar(false);
+            setShowContextMenu(false);
+            setShowSettingsPanel(false);
+            return; // Don't start new text box drawing
+          }
+
           // First click - create a ruler preview rectangle (like ruler tool)
           drawingStateRef.current.setTempPoint({ logical, price });
           drawingStateRef.current.setIsDrawing(true);
@@ -950,6 +972,12 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
               x: e.clientX - textBoxData.x,
               y: e.clientY - textBoxData.y,
             });
+
+            // Set flag to prevent handleChartClick from starting new text box
+            justStartedTextBoxDragRef.current = true;
+            setTimeout(() => {
+              justStartedTextBoxDragRef.current = false;
+            }, 50);
           }
           return; // Don't process as regular mouse down
         }
@@ -1494,6 +1522,12 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         startY: data.y + data.height / 2,
         startRotation: data.rotation,
       });
+
+      // Set flag to prevent new text box creation
+      justStartedTextBoxDragRef.current = true;
+      setTimeout(() => {
+        justStartedTextBoxDragRef.current = false;
+      }, 50);
     } else if (handle) {
       // Resize mode
       setIsResizingTextBox(true);
@@ -1506,6 +1540,12 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         startWidth: data.width,
         startHeight: data.height,
       });
+
+      // Set flag to prevent new text box creation
+      justStartedTextBoxDragRef.current = true;
+      setTimeout(() => {
+        justStartedTextBoxDragRef.current = false;
+      }, 50);
     } else {
       // Drag mode
       setIsDraggingTextBox(true);
@@ -1513,6 +1553,12 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         x: e.clientX - data.x,
         y: e.clientY - data.y,
       });
+
+      // Set flag to prevent new text box creation
+      justStartedTextBoxDragRef.current = true;
+      setTimeout(() => {
+        justStartedTextBoxDragRef.current = false;
+      }, 50);
     }
   };
 
@@ -2447,6 +2493,12 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
               setShowQuickToolbar(false);
               setShowContextMenu(false);
               setIsHoveringTextBox(false);
+
+              // Set flag to prevent new text box creation
+              justStartedTextBoxDragRef.current = true;
+              setTimeout(() => {
+                justStartedTextBoxDragRef.current = false;
+              }, 50);
             }}
             onBlur={() => {
               setEditingTextBoxId(null);
@@ -2455,6 +2507,12 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
               setShowContextMenu(true);
               setContextMenuPosition({ x: e.clientX, y: e.clientY });
               setShowQuickToolbar(false);
+
+              // Set flag to prevent new text box creation
+              justStartedTextBoxDragRef.current = true;
+              setTimeout(() => {
+                justStartedTextBoxDragRef.current = false;
+              }, 50);
             }}
             onHoverChange={setIsHoveringTextBox}
             primaryColor={primaryColor}
