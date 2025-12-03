@@ -789,9 +789,15 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       const activeToolType = drawingStateRef.current.getActiveToolType();
 
       // Check if hovering over any text box (for cursor and crosshair management)
-      if (!drawingStateRef.current.isDrawingMode() && !editingTextBoxId && param.point) {
+      // Allow this even in text-box mode so you can see hover state on existing text
+      const isTextBoxMode = drawingStateRef.current.isDrawingMode() && activeToolType === 'text-box';
+      const allowTextBoxHover = !drawingStateRef.current.isDrawingMode() || isTextBoxMode;
+
+      if (allowTextBoxHover && !editingTextBoxId && param.point) {
         const hoveredTextBox = drawingPrimitiveRef.current?.findTextBoxAtCoordinates(param.point.x, param.point.y);
         setIsHoveringTextBox(!!hoveredTextBox);
+      } else {
+        setIsHoveringTextBox(false);
       }
 
       // Update preview for trend line while drawing
@@ -915,10 +921,22 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       const y = e.clientY - rect.top;
 
       // Check if clicking on a text box (even if not selected) - immediate drag
+      // Allow this even in text-box drawing mode so you can move existing text
       const drawingPrimitive = drawingPrimitiveRef.current;
-      if (!drawingStateRef.current.isDrawingMode() && !editingTextBoxId && drawingPrimitive) {
+      const activeToolType = drawingStateRef.current.getActiveToolType();
+      const isTextBoxMode = drawingStateRef.current.isDrawingMode() && activeToolType === 'text-box';
+      const allowTextBoxInteraction = !drawingStateRef.current.isDrawingMode() || isTextBoxMode;
+
+      if (allowTextBoxInteraction && !editingTextBoxId && drawingPrimitive) {
         const clickedTextBox = drawingPrimitive.findTextBoxAtCoordinates(x, y);
         if (clickedTextBox) {
+          // If we're in the middle of drawing a text box (tempPoint exists), cancel it first
+          if (drawingStateRef.current.isDrawing() && drawingStateRef.current.getTempPoint()) {
+            drawingPrimitive.removeLastDrawing();
+            drawingStateRef.current.setTempPoint(null);
+            drawingStateRef.current.setIsDrawing(false);
+          }
+
           // Select the text box
           setSelectedTextBoxId(clickedTextBox.id);
           setShowQuickToolbar(false);
