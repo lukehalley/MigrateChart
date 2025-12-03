@@ -110,6 +110,8 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
   const [showContextMenu, setShowContextMenu] = useState(false);
   const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 });
   const [copiedStyle, setCopiedStyle] = useState<any>(null);
+  const [isHoveringTextBox, setIsHoveringTextBox] = useState(false);
+  const [textBoxUpdateCounter, setTextBoxUpdateCounter] = useState(0);
 
   // Store migration lines cleanup function
   const migrationLinesCleanupRef = useRef<(() => void) | null>(null);
@@ -163,6 +165,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
     // Close indicator menu when opening drawing mode
     if (newMode) {
       setShowIndicatorMenu(false);
+      setIsHoveringTextBox(false); // Clear hover state
     } else {
       // Clean up when closing drawing mode
       setActiveDrawingTool(null);
@@ -793,6 +796,12 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
     const handleCrosshairMove = (param: MouseEventParams) => {
       const activeToolType = drawingStateRef.current.getActiveToolType();
 
+      // Check if hovering over any text box (for cursor and crosshair management)
+      if (!drawingStateRef.current.isDrawingMode() && !editingTextBoxId && param.point) {
+        const hoveredTextBox = drawingPrimitiveRef.current?.findTextBoxAtCoordinates(param.point.x, param.point.y);
+        setIsHoveringTextBox(!!hoveredTextBox);
+      }
+
       // Update preview for trend line while drawing
       if (
         drawingStateRef.current.isDrawingMode() &&
@@ -1204,8 +1213,8 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
   useEffect(() => {
     if (!chartRef.current) return;
 
-    // Hide crosshair completely when in text-box mode
-    const hideCrosshair = activeDrawingTool === 'text-box' || editingTextBoxId !== null;
+    // Hide crosshair when in text-box mode, editing, or hovering over text box
+    const hideCrosshair = activeDrawingTool === 'text-box' || editingTextBoxId !== null || isHoveringTextBox;
 
     chartRef.current.applyOptions({
       crosshair: {
@@ -1239,7 +1248,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         mouse: false,
       },
     });
-  }, [isDrawingMode, chartVersion, activeDrawingTool, editingTextBoxId]);
+  }, [isDrawingMode, chartVersion, activeDrawingTool, editingTextBoxId, isHoveringTextBox]);
 
   // Handle ESC key to cancel trend line drawing
   useEffect(() => {
@@ -1352,6 +1361,9 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
     // Save to storage
     const updatedDrawings = primitive.getDrawings();
     SafeStorage.setJSON(`drawings_${timeframe}`, updatedDrawings);
+
+    // Force re-render of text box editor for real-time drag updates
+    setTextBoxUpdateCounter(prev => prev + 1);
   };
 
   // Handle text box actions from context menu
@@ -1480,7 +1492,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       if (!data) return;
 
       if (resizeHandle === 'rotate') {
-        // Handle rotation
+        // Handle rotation - real-time update
         const centerX = dragStart.startX!;
         const centerY = dragStart.startY!;
         const angle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI);
@@ -1488,7 +1500,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
         handleTextBoxUpdate(selectedTextBoxId, { rotation: newRotation });
       } else if (isResizingTextBox && resizeHandle) {
-        // Handle resize
+        // Handle resize - real-time update
         const deltaX = e.clientX - dragStart.x;
         const deltaY = e.clientY - dragStart.y;
 
@@ -1520,7 +1532,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
           height: newHeight,
         });
       } else if (isDraggingTextBox) {
-        // Handle drag
+        // Handle drag - real-time update with smooth movement
         const newX = e.clientX - dragStart.x;
         const newY = e.clientY - dragStart.y;
 
@@ -2382,7 +2394,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
         return (
           <TextBoxEditor
-            key={drawing.id}
+            key={`${drawing.id}-${textBoxUpdateCounter}`}
             textBox={textBoxData}
             isSelected={true}
             isEditing={editingTextBoxId === drawing.id}
@@ -2390,12 +2402,14 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
             onStartDrag={(e, handle) => {
               setShowQuickToolbar(false);
               setShowContextMenu(false);
+              setIsHoveringTextBox(false);
               handleTextBoxDragStart(drawing.id, e, handle);
             }}
             onDoubleClick={() => {
               setEditingTextBoxId(drawing.id);
               setShowQuickToolbar(false);
               setShowContextMenu(false);
+              setIsHoveringTextBox(false);
             }}
             onBlur={() => {
               setEditingTextBoxId(null);
@@ -2405,6 +2419,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
               setContextMenuPosition({ x: e.clientX, y: e.clientY });
               setShowQuickToolbar(false);
             }}
+            onHoverChange={setIsHoveringTextBox}
             primaryColor={primaryColor}
           />
         );
@@ -2477,7 +2492,12 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         className="w-full h-full"
         style={{
           touchAction: 'manipulation',
-          cursor: isDrawingMode && activeDrawingTool !== 'text-box' && !editingTextBoxId ? 'crosshair' : 'default'
+          cursor: isHoveringTextBox && !editingTextBoxId
+            ? 'move'
+            : isDrawingMode && activeDrawingTool !== 'text-box' && !editingTextBoxId
+            ? 'crosshair'
+            : 'default',
+          transition: 'cursor 0.1s ease',
         }}
       />
     </div>

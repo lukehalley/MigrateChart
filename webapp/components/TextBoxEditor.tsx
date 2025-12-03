@@ -41,6 +41,7 @@ interface TextBoxEditorProps {
   onDoubleClick: () => void;
   onBlur: () => void;
   onRightClick?: (e: React.MouseEvent) => void;
+  onHoverChange?: (isHovering: boolean) => void;
   primaryColor: string;
 }
 
@@ -56,6 +57,7 @@ export default function TextBoxEditor({
   onDoubleClick,
   onBlur,
   onRightClick,
+  onHoverChange,
   primaryColor,
 }: TextBoxEditorProps) {
   const textAreaRef = useRef<HTMLDivElement>(null);
@@ -162,13 +164,19 @@ export default function TextBoxEditor({
           onRightClick(e);
         }
       }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      onMouseEnter={() => {
+        setIsHovered(true);
+        onHoverChange?.(true);
+      }}
+      onMouseLeave={() => {
+        setIsHovered(false);
+        onHoverChange?.(false);
+      }}
     >
       {/* TextBox Content */}
       <div
         className={`w-full h-full rounded-lg flex items-center justify-center overflow-hidden transition-all ${
-          !isEditing ? 'cursor-move' : ''
+          !isEditing ? 'cursor-move' : 'cursor-text'
         }`}
         style={{
           backgroundColor: backgroundEnabled ? hexToRgba(backgroundColor, backgroundOpacity) : 'transparent',
