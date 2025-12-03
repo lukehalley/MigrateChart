@@ -59,7 +59,7 @@ body {
 
 /* Chart pages need overflow hidden */
 body:has([data-chart-page]) {
-  height: 100vh;
+  height: 100svh; /* Use small viewport height for iOS Safari */
   overflow: hidden;
   -webkit-user-select: none;
   -webkit-touch-callout: none;

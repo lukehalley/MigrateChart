@@ -704,7 +704,7 @@ function HomeContent() {
   // Show project error state (only show error, not loading - let the UI render with loading in chart area)
   if (projectError) {
     return (
-      <main className="w-screen h-screen overflow-hidden flex items-center justify-center bg-black">
+      <main className="w-screen h-svh overflow-hidden flex items-center justify-center bg-black">
         <div className="text-red-500 text-center">
           <p className="text-xl font-bold mb-2">Error Loading Project</p>
           <p>{projectError}</p>
@@ -719,7 +719,7 @@ function HomeContent() {
   }
 
   return (
-    <main data-chart-page className="w-screen h-screen overflow-hidden grid grid-rows-[auto_1fr]" style={themeStyles}>
+    <main data-chart-page className="w-screen h-svh overflow-hidden grid grid-rows-[auto_1fr]" style={themeStyles}>
       {/* Donation Popup */}
       <DonationPopup />
 
