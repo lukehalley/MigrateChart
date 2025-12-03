@@ -37,15 +37,16 @@ interface TextBoxEditorProps {
   isSelected: boolean;
   isEditing: boolean;
   onUpdate: (updates: Partial<TextBoxData>) => void;
-  onStartDrag: (e: React.MouseEvent, handle?: string) => void;
+  onStartDrag: (e: React.MouseEvent | React.TouchEvent, handle?: string) => void;
   onDoubleClick: () => void;
   onBlur: () => void;
   onHoverChange?: (isHovering: boolean) => void;
   primaryColor: string;
 }
 
-const HANDLE_SIZE = 6;
-const ROTATION_HANDLE_OFFSET = 25;
+// Larger handles for better touch interaction (especially on mobile)
+const HANDLE_SIZE = 12;
+const ROTATION_HANDLE_OFFSET = 30;
 
 export default function TextBoxEditor({
   textBox,
@@ -62,6 +63,10 @@ export default function TextBoxEditor({
   const [localText, setLocalText] = useState(textBox.text);
   const [isHovered, setIsHovered] = useState(false);
   const hasSelectedInitialTextRef = useRef(false);
+
+  // Double-tap detection for touch devices
+  const lastTapTimeRef = useRef<number>(0);
+  const DOUBLE_TAP_DELAY = 300; // 300ms window for double-tap
 
   const fontSize = textBox.fontSize || 18;
   const fontFamily = textBox.fontFamily || 'Inter, system-ui, -apple-system, sans-serif';
@@ -157,6 +162,21 @@ export default function TextBoxEditor({
         zIndex: isSelected ? 100 : 50,
       }}
       onDoubleClick={onDoubleClick}
+      onTouchEnd={(e) => {
+        // Double-tap detection for touch devices to enter edit mode
+        const now = Date.now();
+        const timeSinceLastTap = now - lastTapTimeRef.current;
+
+        if (timeSinceLastTap < DOUBLE_TAP_DELAY && timeSinceLastTap > 0) {
+          // Double-tap detected
+          e.preventDefault();
+          onDoubleClick();
+          lastTapTimeRef.current = 0; // Reset
+        } else {
+          // Single tap - record time
+          lastTapTimeRef.current = now;
+        }
+      }}
       onMouseEnter={() => {
         setIsHovered(true);
         onHoverChange?.(true);
@@ -183,10 +203,32 @@ export default function TextBoxEditor({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
+          touchAction: 'none', // Prevent scroll/zoom while dragging
+          WebkitUserSelect: isEditing ? 'text' : 'none',
+          userSelect: isEditing ? 'text' : 'none',
         }}
         onMouseDown={(e) => {
           // Start drag when clicking on the text content (when already selected)
           if (!isEditing) {
+            e.stopPropagation();
+            onStartDrag(e);
+          }
+        }}
+        onTouchStart={(e) => {
+          // Handle touch for dragging (when not editing)
+          if (!isEditing) {
+            const now = Date.now();
+            const timeSinceLastTap = now - lastTapTimeRef.current;
+
+            // Check if this might be a double-tap
+            if (timeSinceLastTap < DOUBLE_TAP_DELAY && timeSinceLastTap > 0) {
+              // Don't start dragging - wait for onTouchEnd to confirm double-tap
+              e.stopPropagation();
+              e.preventDefault();
+              return;
+            }
+
+            // Single tap - start drag immediately for responsive feel
             e.stopPropagation();
             onStartDrag(e);
           }
@@ -281,6 +323,7 @@ export default function TextBoxEditor({
                     ? `0 0 4px ${hexToRgba(primaryColor, 0.3)}`
                     : `0 0 8px ${primaryColor}, 0 0 4px ${primaryColor}`,
                   pointerEvents: 'auto', // Ensure handles capture events
+                  touchAction: 'none', // Prevent scroll/zoom during handle interaction
                 }}
                 whileHover={{
                   scale: 1.5,
@@ -288,9 +331,17 @@ export default function TextBoxEditor({
                     ? `0 0 12px ${hexToRgba(primaryColor, 0.6)}`
                     : `0 0 16px ${primaryColor}, 0 0 8px ${primaryColor}`,
                 }}
+                whileTap={{
+                  scale: 1.3,
+                }}
                 transition={{ type: 'spring', stiffness: 400, damping: 17 }}
                 onMouseDown={(e) => {
                   e.stopPropagation();
+                  onStartDrag(e, handle.id);
+                }}
+                onTouchStart={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault(); // Prevent scrolling during resize
                   onStartDrag(e, handle.id);
                 }}
               />
@@ -321,34 +372,43 @@ export default function TextBoxEditor({
                   animate={{ scaleY: 1 }}
                   transition={{ duration: 0.2, delay: 0.1 }}
                 />
-                {/* Rotation Handle - glowing for text, subtle for boxes */}
+                {/* Rotation Handle - glowing for text, subtle for boxes - Larger for touch */}
                 <motion.div
                   className="rounded-full shadow-lg cursor-grab active:cursor-grabbing flex items-center justify-center"
                   style={{
-                    width: backgroundEnabled ? '20px' : '16px',
-                    height: backgroundEnabled ? '20px' : '16px',
+                    width: backgroundEnabled ? '28px' : '24px',
+                    height: backgroundEnabled ? '28px' : '24px',
                     backgroundColor: backgroundEnabled ? '#ffffff' : primaryColor,
                     border: backgroundEnabled ? `2px solid ${primaryColor}` : 'none',
                     boxShadow: backgroundEnabled
                       ? `0 0 8px ${hexToRgba(primaryColor, 0.3)}`
                       : `0 0 12px ${primaryColor}, 0 0 6px ${primaryColor}`,
                     pointerEvents: 'auto', // Ensure rotation handle captures events
+                    touchAction: 'none', // Prevent scroll/zoom during rotation
                   }}
                   whileHover={{
-                    scale: 1.3,
+                    scale: 1.2,
                     boxShadow: backgroundEnabled
                       ? `0 0 16px ${hexToRgba(primaryColor, 0.6)}`
                       : `0 0 20px ${primaryColor}, 0 0 10px ${primaryColor}`,
+                  }}
+                  whileTap={{
+                    scale: 1.1,
                   }}
                   transition={{ type: 'spring', stiffness: 400, damping: 17 }}
                   onMouseDown={(e) => {
                     e.stopPropagation();
                     onStartDrag(e, 'rotate');
                   }}
+                  onTouchStart={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault(); // Prevent scrolling during rotation
+                    onStartDrag(e, 'rotate');
+                  }}
                 >
                   {backgroundEnabled && (
                     <svg
-                      className="w-3 h-3"
+                      className="w-4 h-4"
                       viewBox="0 0 16 16"
                       fill="none"
                       stroke={primaryColor}

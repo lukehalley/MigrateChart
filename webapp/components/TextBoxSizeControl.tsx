@@ -29,7 +29,7 @@ export default function TextBoxSizeControl({
   return (
     <motion.div
       data-textbox-editor="true"
-      className="fixed flex items-center gap-1 bg-black/90 backdrop-blur-sm rounded-lg px-2 py-1.5 z-[150]"
+      className="fixed flex items-center gap-2 bg-black/90 backdrop-blur-sm rounded-lg px-3 py-2 z-[150]"
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
@@ -41,11 +41,11 @@ export default function TextBoxSizeControl({
       exit={{ opacity: 0, y: 5 }}
       transition={{ duration: 0.15, ease: [0.22, 1, 0.36, 1] }}
     >
-      {/* Decrease */}
+      {/* Decrease - Larger for touch */}
       <button
         onClick={handleDecrease}
         disabled={fontSize <= 12}
-        className="w-6 h-6 flex items-center justify-center rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+        className="min-w-[44px] min-h-[44px] w-9 h-9 flex items-center justify-center rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
         style={{
           color: primaryColor,
           backgroundColor: 'transparent',
@@ -59,22 +59,22 @@ export default function TextBoxSizeControl({
           e.currentTarget.style.backgroundColor = 'transparent';
         }}
       >
-        <Minus className="w-3.5 h-3.5" />
+        <Minus className="w-5 h-5" />
       </button>
 
       {/* Font Size Display */}
       <div
-        className="px-2 text-xs font-mono font-medium"
+        className="px-3 text-sm font-mono font-medium"
         style={{ color: primaryColor }}
       >
         {fontSize}px
       </div>
 
-      {/* Increase */}
+      {/* Increase - Larger for touch */}
       <button
         onClick={handleIncrease}
         disabled={fontSize >= 48}
-        className="w-6 h-6 flex items-center justify-center rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+        className="min-w-[44px] min-h-[44px] w-9 h-9 flex items-center justify-center rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
         style={{
           color: primaryColor,
           backgroundColor: 'transparent',
@@ -88,7 +88,7 @@ export default function TextBoxSizeControl({
           e.currentTarget.style.backgroundColor = 'transparent';
         }}
       >
-        <Plus className="w-3.5 h-3.5" />
+        <Plus className="w-5 h-5" />
       </button>
     </motion.div>
   );

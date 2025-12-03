@@ -1005,21 +1005,63 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
     // Touch event handlers for mobile/tablet support
     const handleNativeTouchStart = (e: TouchEvent) => {
-      if (!drawingStateRef.current.isDrawingMode()) return;
-
       const chartContainer = chartContainerRef.current;
       if (!chartContainer) return;
 
-      // Only handle single touch for drawing
+      // Only handle single touch
       if (e.touches.length !== 1) return;
-
-      // Prevent default to avoid scrolling while drawing
-      e.preventDefault();
 
       const touch = e.touches[0];
       const rect = chartContainer.getBoundingClientRect();
       const x = touch.clientX - rect.left;
       const y = touch.clientY - rect.top;
+
+      // Check if touching an existing text box (even if not in drawing mode) - immediate drag
+      const drawingPrimitive = drawingPrimitiveRef.current;
+      const activeToolType = drawingStateRef.current.getActiveToolType();
+      const isTextBoxMode = drawingStateRef.current.isDrawingMode() && activeToolType === 'text-box';
+      const allowTextBoxInteraction = !drawingStateRef.current.isDrawingMode() || isTextBoxMode;
+
+      if (allowTextBoxInteraction && !editingTextBoxId && drawingPrimitive) {
+        const clickedTextBox = drawingPrimitive.findTextBoxAtCoordinates(x, y);
+        if (clickedTextBox) {
+          // Prevent scrolling when interacting with text boxes
+          e.preventDefault();
+
+          // If we're in the middle of drawing a text box (tempPoint exists), cancel it first
+          if (drawingStateRef.current.isDrawing() && drawingStateRef.current.getTempPoint()) {
+            drawingPrimitive.removeLastDrawing();
+            drawingStateRef.current.setTempPoint(null);
+            drawingStateRef.current.setIsDrawing(false);
+          }
+
+          // Select the text box
+          setSelectedTextBoxId(clickedTextBox.id);
+
+          // Immediately start dragging
+          const textBoxData = getTextBoxData(clickedTextBox);
+          if (textBoxData) {
+            setIsDraggingTextBox(true);
+            setDragStart({
+              x: touch.clientX - textBoxData.x,
+              y: touch.clientY - textBoxData.y,
+            });
+
+            // Set flag to prevent handleChartClick from starting new text box
+            justStartedTextBoxDragRef.current = true;
+            setTimeout(() => {
+              justStartedTextBoxDragRef.current = false;
+            }, 50);
+          }
+          return; // Don't process as regular touch
+        }
+      }
+
+      // Only proceed with drawing mode operations if in drawing mode
+      if (!drawingStateRef.current.isDrawingMode()) return;
+
+      // Prevent default to avoid scrolling while drawing
+      e.preventDefault();
 
       const series = candlestickSeriesRef.current;
       if (!series) return;
@@ -1030,7 +1072,6 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       const time = chart.timeScale().coordinateToTime(x);
 
       // For trend lines, rulers, horizontal lines, and text boxes, use click handler
-      const activeToolType = drawingStateRef.current.getActiveToolType();
       if (activeToolType === 'trend-line' || activeToolType === 'horizontal-line' || activeToolType === 'ruler' || activeToolType === 'text-box') {
         handleChartClick({ point: { x, y }, time } as MouseEventParams);
       } else if (activeToolType === 'freehand') {
@@ -1467,19 +1508,23 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
     };
   }, [selectedTextBoxId, editingTextBoxId, timeframe]);
 
-  const handleTextBoxDragStart = (id: string, e: React.MouseEvent, handle?: string) => {
+  const handleTextBoxDragStart = (id: string, e: React.MouseEvent | React.TouchEvent, handle?: string) => {
     const textBox = drawingPrimitiveRef.current?.getTextBox(id);
     if (!textBox) return;
 
     const data = getTextBoxData(textBox);
     if (!data) return;
 
+    // Get clientX and clientY from either mouse or touch event
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+
     if (handle === 'rotate') {
       // Rotation mode
       setResizeHandle('rotate');
       setDragStart({
-        x: e.clientX,
-        y: e.clientY,
+        x: clientX,
+        y: clientY,
         startX: data.x + data.width / 2,
         startY: data.y + data.height / 2,
         startRotation: data.rotation,
@@ -1495,8 +1540,8 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       setIsResizingTextBox(true);
       setResizeHandle(handle);
       setDragStart({
-        x: e.clientX,
-        y: e.clientY,
+        x: clientX,
+        y: clientY,
         startX: data.x,
         startY: data.y,
         startWidth: data.width,
@@ -1512,8 +1557,8 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       // Drag mode
       setIsDraggingTextBox(true);
       setDragStart({
-        x: e.clientX - data.x,
-        y: e.clientY - data.y,
+        x: clientX - data.x,
+        y: clientY - data.y,
       });
 
       // Set flag to prevent new text box creation
@@ -1524,9 +1569,9 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
     }
   };
 
-  // Global mouse move/up handlers for text box interactions
+  // Global mouse/touch move/up handlers for text box interactions
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
+    const handleMove = (e: MouseEvent | TouchEvent) => {
       if (!selectedTextBoxId || !dragStart) return;
 
       const textBox = drawingPrimitiveRef.current?.getTextBox(selectedTextBoxId);
@@ -1535,18 +1580,22 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       const data = getTextBoxData(textBox);
       if (!data) return;
 
+      // Get clientX and clientY from either mouse or touch event
+      const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+      const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+
       if (resizeHandle === 'rotate') {
         // Handle rotation - real-time update
         const centerX = dragStart.startX!;
         const centerY = dragStart.startY!;
-        const angle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI);
+        const angle = Math.atan2(clientY - centerY, clientX - centerX) * (180 / Math.PI);
         const newRotation = angle + 90; // Offset by 90 degrees to start from top
 
         handleTextBoxUpdate(selectedTextBoxId, { rotation: newRotation });
       } else if (isResizingTextBox && resizeHandle) {
         // Handle resize - real-time update
-        const deltaX = e.clientX - dragStart.x;
-        const deltaY = e.clientY - dragStart.y;
+        const deltaX = clientX - dragStart.x;
+        const deltaY = clientY - dragStart.y;
 
         let newX = dragStart.startX!;
         let newY = dragStart.startY!;
@@ -1577,14 +1626,14 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
         });
       } else if (isDraggingTextBox) {
         // Handle drag - real-time update with smooth movement
-        const newX = e.clientX - dragStart.x;
-        const newY = e.clientY - dragStart.y;
+        const newX = clientX - dragStart.x;
+        const newY = clientY - dragStart.y;
 
         handleTextBoxUpdate(selectedTextBoxId, { x: newX, y: newY });
       }
     };
 
-    const handleMouseUp = () => {
+    const handleEnd = () => {
       setIsDraggingTextBox(false);
       setIsResizingTextBox(false);
       setResizeHandle(null);
@@ -1592,12 +1641,16 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
     };
 
     if (isDraggingTextBox || isResizingTextBox || resizeHandle) {
-      window.addEventListener('mousemove', handleMouseMove);
-      window.addEventListener('mouseup', handleMouseUp);
+      window.addEventListener('mousemove', handleMove);
+      window.addEventListener('mouseup', handleEnd);
+      window.addEventListener('touchmove', handleMove);
+      window.addEventListener('touchend', handleEnd);
 
       return () => {
-        window.removeEventListener('mousemove', handleMouseMove);
-        window.removeEventListener('mouseup', handleMouseUp);
+        window.removeEventListener('mousemove', handleMove);
+        window.removeEventListener('mouseup', handleEnd);
+        window.removeEventListener('touchmove', handleMove);
+        window.removeEventListener('touchend', handleEnd);
       };
     }
   }, [isDraggingTextBox, isResizingTextBox, resizeHandle, selectedTextBoxId, dragStart, timeframe]);
@@ -1980,7 +2033,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
       {/* Mobile and Tablet: Indicators and Drawing Tools Buttons */}
       <div className="lg:hidden absolute top-3 left-3 z-30">
-        <div className="relative flex flex-col gap-2">
+        <div className="relative flex flex-col gap-3">
           {/* Indicators Button */}
           <div className="relative">
             <button
@@ -1995,7 +2048,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   drawingStateRef.current.setActiveToolType(null);
                 }
               }}
-              className={`w-11 h-11 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-all ${
+              className={`w-14 h-14 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-all ${
                 showIndicatorMenu || enabledIndicators.size > 0
                   ? 'bg-[var(--primary-color)]/30 border-[var(--primary-color)] shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)]'
                   : 'border-[var(--primary-color)] hover:bg-[var(--primary-color)]/5 shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)] hover:shadow-[0_0_16px_rgba(var(--primary-rgb),0.5)]'
@@ -2003,11 +2056,11 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
               aria-label="Technical indicators"
               title="Technical Indicators"
             >
-              <svg className="w-5 h-5 text-[var(--primary-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-6 h-6 text-[var(--primary-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
               </svg>
               {enabledIndicators.size > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-[var(--primary-color)] text-xs font-bold rounded-full flex items-center justify-center" style={{ color: secondaryColor }}>
+                <span className="absolute -top-1 -right-1 w-6 h-6 bg-[var(--primary-color)] text-xs font-bold rounded-full flex items-center justify-center" style={{ color: secondaryColor }}>
                   {enabledIndicators.size}
                 </span>
               )}
@@ -2082,7 +2135,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
           {/* Toggle Drawing Mode Button */}
           <button
             onClick={toggleDrawingMode}
-            className={`w-11 h-11 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-all ${
+            className={`w-14 h-14 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-all ${
               isDrawingMode
                 ? 'bg-[var(--primary-color)]/30 border-[var(--primary-color)] shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)]'
                 : 'border-[var(--primary-color)] hover:bg-[var(--primary-color)]/5 shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)] hover:shadow-[0_0_16px_rgba(var(--primary-rgb),0.5)]'
@@ -2090,14 +2143,14 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
             aria-label="Toggle drawing mode"
             title="Toggle Drawing Mode"
           >
-            <ChartNetwork className="w-5 h-5 text-[var(--primary-color)]" strokeWidth={2} />
+            <ChartNetwork className="w-6 h-6 text-[var(--primary-color)]" strokeWidth={2} />
           </button>
 
           {/* Drawing Tool Buttons - Slide down from toggle button */}
           <AnimatePresence>
             {isDrawingMode && (
               <motion.div
-                className="flex flex-col gap-2 overflow-hidden"
+                className="flex flex-col gap-3 overflow-hidden"
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
@@ -2106,7 +2159,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                 {/* Horizontal Line Tool */}
                 <motion.button
                   onClick={() => selectDrawingTool('horizontal-line')}
-                  className={`w-11 h-11 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
+                  className={`w-14 h-14 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
                     activeDrawingTool === 'horizontal-line'
                       ? 'bg-[var(--primary-color)]/30 border-[var(--primary-color)] shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)]'
                       : 'border-[var(--primary-color)] hover:bg-[var(--primary-color)]/5 shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)]'
@@ -2118,7 +2171,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   aria-label="Horizontal line tool"
                   title="Horizontal Line"
                 >
-                  <svg className="w-5 h-5 text-[var(--primary-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-6 h-6 text-[var(--primary-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12h18" strokeDasharray="4 2" />
                   </svg>
                 </motion.button>
@@ -2126,7 +2179,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                 {/* Trend Line Tool */}
                 <motion.button
                   onClick={() => selectDrawingTool('trend-line')}
-                  className={`w-11 h-11 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
+                  className={`w-14 h-14 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
                     activeDrawingTool === 'trend-line'
                       ? 'bg-[var(--primary-color)]/30 border-[var(--primary-color)] shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)]'
                       : 'border-[var(--primary-color)] hover:bg-[var(--primary-color)]/5 shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)]'
@@ -2138,7 +2191,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   aria-label="Trend line tool"
                   title="Trend Line"
                 >
-                  <svg className="w-5 h-5 text-[var(--primary-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-6 h-6 text-[var(--primary-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 19l14-14" />
                   </svg>
                 </motion.button>
@@ -2146,7 +2199,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                 {/* Freehand Pencil Tool */}
                 <motion.button
                   onClick={() => selectDrawingTool('freehand')}
-                  className={`w-11 h-11 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
+                  className={`w-14 h-14 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
                     activeDrawingTool === 'freehand'
                       ? 'bg-[var(--primary-color)]/30 border-[var(--primary-color)] shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)]'
                       : 'border-[var(--primary-color)] hover:bg-[var(--primary-color)]/5 shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)]'
@@ -2158,7 +2211,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   aria-label="Freehand pencil tool"
                   title="Freehand Draw"
                 >
-                  <svg className="w-5 h-5 text-[var(--primary-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-6 h-6 text-[var(--primary-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                   </svg>
                 </motion.button>
@@ -2166,7 +2219,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                 {/* Ruler/Measure Tool */}
                 <motion.button
                   onClick={() => selectDrawingTool('ruler')}
-                  className={`w-11 h-11 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
+                  className={`w-14 h-14 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
                     activeDrawingTool === 'ruler'
                       ? 'bg-[var(--primary-color)]/30 border-[var(--primary-color)] shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)]'
                       : 'border-[var(--primary-color)] hover:bg-[var(--primary-color)]/5 shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)]'
@@ -2178,13 +2231,13 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   aria-label="Ruler measurement tool"
                   title="Ruler/Measure"
                 >
-                  <Ruler className="w-5 h-5 text-[var(--primary-color)]" strokeWidth={2} />
+                  <Ruler className="w-6 h-6 text-[var(--primary-color)]" strokeWidth={2} />
                 </motion.button>
 
                 {/* Text Box Tool */}
                 <motion.button
                   onClick={() => selectDrawingTool('text-box')}
-                  className={`w-11 h-11 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
+                  className={`w-14 h-14 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
                     activeDrawingTool === 'text-box'
                       ? 'bg-[var(--primary-color)]/30 border-[var(--primary-color)] shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)]'
                       : 'border-[var(--primary-color)] hover:bg-[var(--primary-color)]/5 shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)]'
@@ -2196,7 +2249,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   aria-label="Anchored text tool"
                   title="Anchored Text"
                 >
-                  <svg className="w-5 h-5 text-[var(--primary-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-6 h-6 text-[var(--primary-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                 </motion.button>
@@ -2205,7 +2258,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                 <motion.button
                   onClick={drawingCount > 0 ? () => selectDrawingTool('eraser') : undefined}
                   disabled={drawingCount === 0}
-                  className={`w-11 h-11 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
+                  className={`w-14 h-14 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-colors ${
                     drawingCount === 0
                       ? 'border-red-500/20 opacity-30 cursor-not-allowed shadow-none'
                       : activeDrawingTool === 'eraser'
@@ -2219,7 +2272,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   aria-label="Eraser tool"
                   title={drawingCount === 0 ? "No drawings to erase" : "Eraser (Click to Delete)"}
                 >
-                  <Eraser className={`w-5 h-5 ${drawingCount === 0 ? 'text-red-500/30' : 'text-red-500'}`} strokeWidth={2} />
+                  <Eraser className={`w-6 h-6 ${drawingCount === 0 ? 'text-red-500/30' : 'text-red-500'}`} strokeWidth={2} />
                 </motion.button>
 
                 {/* Undo Last Drawing Button */}
@@ -2227,7 +2280,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   key="undo-button-mobile"
                   onClick={drawingCount > 0 ? undoLastDrawing : undefined}
                   disabled={drawingCount === 0}
-                  className={`w-11 h-11 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-all ${
+                  className={`w-14 h-14 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-all ${
                     drawingCount === 0
                       ? 'border-yellow-500/20 opacity-30 cursor-not-allowed shadow-none'
                       : 'border-yellow-500 hover:bg-white/90 cursor-pointer shadow-[0_0_12px_rgba(234,179,8,0.3)]'
@@ -2240,7 +2293,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   aria-label="Undo last drawing"
                   title={drawingCount === 0 ? "No drawings to undo" : "Undo Last Drawing"}
                 >
-                  <svg className={`w-5 h-5 ${drawingCount === 0 ? 'text-yellow-500/30' : 'text-yellow-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className={`w-6 h-6 ${drawingCount === 0 ? 'text-yellow-500/30' : 'text-yellow-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
                   </svg>
                 </motion.button>
@@ -2250,7 +2303,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   key="clear-button-mobile"
                   onClick={drawingCount > 0 ? clearAllDrawings : undefined}
                   disabled={drawingCount === 0}
-                  className={`w-11 h-11 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-all ${
+                  className={`w-14 h-14 flex items-center justify-center backdrop-blur-sm border-2 rounded-full transition-all ${
                     drawingCount === 0
                       ? 'border-red-500/20 opacity-30 cursor-not-allowed shadow-none'
                       : 'border-red-500 hover:bg-white/90 cursor-pointer shadow-[0_0_12px_rgba(239,68,68,0.3)]'
@@ -2263,7 +2316,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
                   aria-label="Clear all drawings"
                   title={drawingCount === 0 ? "No drawings to clear" : "Clear All Drawings"}
                 >
-                  <svg className={`w-5 h-5 ${drawingCount === 0 ? 'text-red-500/30' : 'text-red-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className={`w-6 h-6 ${drawingCount === 0 ? 'text-red-500/30' : 'text-red-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                   </svg>
                 </motion.button>

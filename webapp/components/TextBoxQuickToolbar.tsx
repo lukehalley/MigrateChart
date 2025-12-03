@@ -51,14 +51,14 @@ export default function TextBoxQuickToolbar({
       exit={{ opacity: 0, y: 10 }}
       transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
     >
-      <div className="flex items-center gap-2 p-2">
-        {/* Font Size */}
+      <div className="flex items-center gap-2 p-3">
+        {/* Font Size - Larger touch target */}
         <div className="relative">
           <select
             value={fontSize}
             onChange={(e) => onUpdate({ fontSize: parseInt(e.target.value) })}
-            className="appearance-none pl-3 pr-7 py-1.5 bg-white border border-[#8B4545]/20 rounded-md text-sm font-medium text-[#1a1a1a] hover:border-[#8B4545]/40 focus:outline-none focus:border-[#8B4545] transition-colors cursor-pointer"
-            style={{ minWidth: '70px' }}
+            className="appearance-none pl-3 pr-8 py-2.5 bg-white border border-[#8B4545]/20 rounded-md text-sm font-medium text-[#1a1a1a] hover:border-[#8B4545]/40 focus:outline-none focus:border-[#8B4545] transition-colors cursor-pointer"
+            style={{ minWidth: '80px', minHeight: '44px' }}
           >
             {FONT_SIZES.map((size) => (
               <option key={size} value={size}>
@@ -67,7 +67,7 @@ export default function TextBoxQuickToolbar({
             ))}
           </select>
           <svg
-            className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 pointer-events-none text-[#8B4545]/60"
+            className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-[#8B4545]/60"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -76,13 +76,13 @@ export default function TextBoxQuickToolbar({
           </svg>
         </div>
 
-        {/* Font Family */}
+        {/* Font Family - Larger touch target */}
         <div className="relative">
           <select
             value={fontFamily}
             onChange={(e) => onUpdate({ fontFamily: e.target.value })}
-            className="appearance-none pl-3 pr-7 py-1.5 bg-white border border-[#8B4545]/20 rounded-md text-sm font-medium text-[#1a1a1a] hover:border-[#8B4545]/40 focus:outline-none focus:border-[#8B4545] transition-colors cursor-pointer"
-            style={{ minWidth: '110px' }}
+            className="appearance-none pl-3 pr-8 py-2.5 bg-white border border-[#8B4545]/20 rounded-md text-sm font-medium text-[#1a1a1a] hover:border-[#8B4545]/40 focus:outline-none focus:border-[#8B4545] transition-colors cursor-pointer"
+            style={{ minWidth: '120px', minHeight: '44px' }}
           >
             {FONT_FAMILIES.map((font) => (
               <option key={font.value} value={font.value}>
@@ -91,7 +91,7 @@ export default function TextBoxQuickToolbar({
             ))}
           </select>
           <svg
-            className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 pointer-events-none text-[#8B4545]/60"
+            className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-[#8B4545]/60"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -100,69 +100,69 @@ export default function TextBoxQuickToolbar({
           </svg>
         </div>
 
-        <div className="w-px h-6 bg-[#8B4545]/20" />
+        <div className="w-px h-8 bg-[#8B4545]/20" />
 
-        {/* Bold */}
+        {/* Bold - Larger touch target */}
         <button
           onClick={() => onUpdate({ fontWeight: fontWeight === '700' ? '400' : '700' })}
-          className={`w-8 h-8 flex items-center justify-center rounded-md border transition-all ${
+          className={`min-w-[44px] min-h-[44px] w-11 h-11 flex items-center justify-center rounded-md border transition-all ${
             fontWeight === '700'
               ? 'bg-[#8B4545]/15 border-[#8B4545]/40 text-[#8B4545]'
               : 'border-[#8B4545]/20 text-[#1a1a1a]/70 hover:border-[#8B4545]/40 hover:bg-[#8B4545]/5'
           }`}
           title="Bold"
         >
-          <span className="text-sm font-bold">B</span>
+          <span className="text-base font-bold">B</span>
         </button>
 
-        {/* Italic */}
+        {/* Italic - Larger touch target */}
         <button
           onClick={() => onUpdate({ fontStyle: fontStyle === 'italic' ? 'normal' : 'italic' })}
-          className={`w-8 h-8 flex items-center justify-center rounded-md border transition-all ${
+          className={`min-w-[44px] min-h-[44px] w-11 h-11 flex items-center justify-center rounded-md border transition-all ${
             fontStyle === 'italic'
               ? 'bg-[#8B4545]/15 border-[#8B4545]/40 text-[#8B4545]'
               : 'border-[#8B4545]/20 text-[#1a1a1a]/70 hover:border-[#8B4545]/40 hover:bg-[#8B4545]/5'
           }`}
           title="Italic"
         >
-          <span className="text-sm italic font-serif">I</span>
+          <span className="text-base italic font-serif">I</span>
         </button>
 
-        {/* Underline */}
+        {/* Underline - Larger touch target */}
         <button
           onClick={() => onUpdate({ textDecoration: textDecoration === 'underline' ? 'none' : 'underline' })}
-          className={`w-8 h-8 flex items-center justify-center rounded-md border transition-all ${
+          className={`min-w-[44px] min-h-[44px] w-11 h-11 flex items-center justify-center rounded-md border transition-all ${
             textDecoration === 'underline'
               ? 'bg-[#8B4545]/15 border-[#8B4545]/40 text-[#8B4545]'
               : 'border-[#8B4545]/20 text-[#1a1a1a]/70 hover:border-[#8B4545]/40 hover:bg-[#8B4545]/5'
           }`}
           title="Underline"
         >
-          <span className="text-sm underline">U</span>
+          <span className="text-base underline">U</span>
         </button>
 
-        <div className="w-px h-6 bg-[#8B4545]/20" />
+        <div className="w-px h-8 bg-[#8B4545]/20" />
 
-        {/* Text Color */}
+        {/* Text Color - Larger touch target */}
         <div className="relative">
           <input
             type="color"
             value={color}
             onChange={(e) => onUpdate({ color: e.target.value })}
-            className="w-8 h-8 rounded-md cursor-pointer border border-[#8B4545]/20 hover:border-[#8B4545]/40 transition-colors"
+            className="min-w-[44px] min-h-[44px] w-11 h-11 rounded-md cursor-pointer border border-[#8B4545]/20 hover:border-[#8B4545]/40 transition-colors"
             title="Text Color"
           />
         </div>
 
-        <div className="w-px h-6 bg-[#8B4545]/20" />
+        <div className="w-px h-8 bg-[#8B4545]/20" />
 
-        {/* Settings Button */}
+        {/* Settings Button - Larger touch target */}
         <button
           onClick={onOpenSettings}
-          className="w-8 h-8 flex items-center justify-center rounded-md border border-[#8B4545]/30 text-[#8B4545] hover:bg-[#8B4545]/10 hover:border-[#8B4545]/50 transition-all"
+          className="min-w-[44px] min-h-[44px] w-11 h-11 flex items-center justify-center rounded-md border border-[#8B4545]/30 text-[#8B4545] hover:bg-[#8B4545]/10 hover:border-[#8B4545]/50 transition-all"
           title="More Settings"
         >
-          <Settings className="w-4 h-4" />
+          <Settings className="w-5 h-5" />
         </button>
       </div>
     </motion.div>
