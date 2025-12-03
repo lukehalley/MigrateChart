@@ -156,7 +156,6 @@ export default function TextBoxEditor({
         zIndex: isSelected ? 100 : 50,
       }}
       onDoubleClick={onDoubleClick}
-      onMouseDown={(e) => !isEditing && onStartDrag(e)}
       onContextMenu={(e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -187,6 +186,13 @@ export default function TextBoxEditor({
                 ? `0 4px 12px rgba(0, 0, 0, 0.15), 0 0 0 ${isSelected ? 2 : 1}px ${hexToRgba(primaryColor, isSelected ? 0.4 : 0.2)}`
                 : '0 2px 8px rgba(0, 0, 0, 0.1)')
             : 'none',
+        }}
+        onMouseDown={(e) => {
+          // Start drag when clicking on the text content (when already selected)
+          if (!isEditing) {
+            e.stopPropagation();
+            onStartDrag(e);
+          }
         }}
       >
         {isEditing ? (
@@ -293,6 +299,7 @@ export default function TextBoxEditor({
                   boxShadow: backgroundEnabled
                     ? `0 0 4px ${hexToRgba(primaryColor, 0.3)}`
                     : `0 0 8px ${primaryColor}, 0 0 4px ${primaryColor}`,
+                  pointerEvents: 'auto', // Ensure handles capture events
                 }}
                 whileHover={{
                   scale: 1.5,
@@ -315,6 +322,7 @@ export default function TextBoxEditor({
                 left: `${textBox.width / 2}px`,
                 top: `-${ROTATION_HANDLE_OFFSET}px`,
                 transform: `rotate(-${textBox.rotation}deg)`,
+                pointerEvents: 'auto', // Ensure rotation handle captures events
               }}
             >
               <div className="relative flex flex-col items-center">
@@ -343,6 +351,7 @@ export default function TextBoxEditor({
                     boxShadow: backgroundEnabled
                       ? `0 0 8px ${hexToRgba(primaryColor, 0.3)}`
                       : `0 0 12px ${primaryColor}, 0 0 6px ${primaryColor}`,
+                    pointerEvents: 'auto', // Ensure rotation handle captures events
                   }}
                   whileHover={{
                     scale: 1.3,

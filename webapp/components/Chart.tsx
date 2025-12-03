@@ -630,17 +630,9 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       const drawingPrimitive = drawingPrimitiveRef.current;
       if (!series || !drawingPrimitive) return;
 
-      // Check if clicking on a text box (when not in drawing mode)
+      // Text box clicks are now handled in handleNativeMouseDown for immediate drag
+      // This handler is only for drawing mode operations
       if (!drawingStateRef.current.isDrawingMode()) {
-        const clickedTextBox = drawingPrimitive.findTextBoxAtCoordinates(param.point.x, param.point.y);
-        if (clickedTextBox) {
-          setSelectedTextBoxId(clickedTextBox.id);
-          setShowQuickToolbar(false); // Will show after delay via useEffect
-          setShowContextMenu(false);
-          setShowSettingsPanel(false);
-          return;
-        }
-        // If not clicking on a text box, ignore
         return;
       }
 
@@ -911,7 +903,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
     chart.subscribeClick(handleChartClick);
     chart.subscribeCrosshairMove(handleCrosshairMove);
 
-    // Subscribe to mouse events for freehand drawing
+    // Subscribe to mouse events for freehand drawing and text box immediate drag
     // We need to use the chart container's native mouse events
     // Define named handler for proper cleanup
     const handleNativeMouseDown = (e: MouseEvent) => {
@@ -921,6 +913,29 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       const rect = chartContainer.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
+
+      // Check if clicking on a text box (even if not selected) - immediate drag
+      const drawingPrimitive = drawingPrimitiveRef.current;
+      if (!drawingStateRef.current.isDrawingMode() && !editingTextBoxId && drawingPrimitive) {
+        const clickedTextBox = drawingPrimitive.findTextBoxAtCoordinates(x, y);
+        if (clickedTextBox) {
+          // Select the text box
+          setSelectedTextBoxId(clickedTextBox.id);
+          setShowQuickToolbar(false);
+          setShowContextMenu(false);
+
+          // Immediately start dragging
+          const textBoxData = getTextBoxData(clickedTextBox);
+          if (textBoxData) {
+            setIsDraggingTextBox(true);
+            setDragStart({
+              x: e.clientX - textBoxData.x,
+              y: e.clientY - textBoxData.y,
+            });
+          }
+          return; // Don't process as regular mouse down
+        }
+      }
 
       // Convert to chart coordinates
       const series = candlestickSeriesRef.current;
@@ -2400,6 +2415,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
             isEditing={editingTextBoxId === drawing.id}
             onUpdate={(updates) => handleTextBoxUpdate(drawing.id, updates)}
             onStartDrag={(e, handle) => {
+              e.stopPropagation();
               setShowQuickToolbar(false);
               setShowContextMenu(false);
               setIsHoveringTextBox(false);
