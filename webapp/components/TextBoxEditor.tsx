@@ -88,10 +88,8 @@ export default function TextBoxEditor({
 
   const textColor = textBox.color || (backgroundEnabled ? getTextColor(backgroundColor) : primaryColor);
 
-  // Create very subtle glow text-shadow effect - matches canvas rendering
-  const textShadow = `
-    0 0 4px ${textColor}
-  `;
+  // No glow - matches canvas rendering (solid text)
+  const textShadow = 'none';
 
   // Focus text area when editing starts and set initial content
   useEffect(() => {
