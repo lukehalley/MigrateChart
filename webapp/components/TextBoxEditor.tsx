@@ -63,6 +63,7 @@ export default function TextBoxEditor({
   const textAreaRef = useRef<HTMLDivElement>(null);
   const [localText, setLocalText] = useState(textBox.text);
   const [isHovered, setIsHovered] = useState(false);
+  const hasSelectedInitialTextRef = useRef(false);
 
   const fontSize = textBox.fontSize || 16;
   const fontFamily = textBox.fontFamily || 'Inter, system-ui, -apple-system, sans-serif';
@@ -106,14 +107,21 @@ export default function TextBoxEditor({
       }
 
       textAreaRef.current.focus();
-      // Select all text
-      const range = document.createRange();
-      range.selectNodeContents(textAreaRef.current);
-      const selection = window.getSelection();
-      selection?.removeAllRanges();
-      selection?.addRange(range);
+
+      // Only select all text on initial edit, not on every render
+      if (!hasSelectedInitialTextRef.current) {
+        const range = document.createRange();
+        range.selectNodeContents(textAreaRef.current);
+        const selection = window.getSelection();
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+        hasSelectedInitialTextRef.current = true;
+      }
+    } else {
+      // Reset the flag when not editing
+      hasSelectedInitialTextRef.current = false;
     }
-  }, [isEditing]);
+  }, [isEditing, textBox.text]);
 
   // Update local text when textBox changes (only when not editing)
   useEffect(() => {
