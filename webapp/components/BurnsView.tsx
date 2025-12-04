@@ -46,8 +46,8 @@ const getChartConfig = (primaryColor: string): ChartConfig => ({
 interface BurnsViewProps {
   projectSlug: string;
   primaryColor: string;
-  timeframe?: '7D' | '30D' | '90D' | 'ALL';
-  onTimeframeChange?: (timeframe: '7D' | '30D' | '90D' | 'ALL') => void;
+  timeframe?: '1D' | '7D' | '30D' | '90D' | 'ALL';
+  onTimeframeChange?: (timeframe: '1D' | '7D' | '30D' | '90D' | 'ALL') => void;
   onOpenMobileMenu?: () => void;
 }
 
@@ -94,6 +94,24 @@ export function BurnsView({ projectSlug, primaryColor, timeframe = 'ALL', onTime
       fullDate: day.date,
     }));
   }, [burnsData]);
+
+  // Determine if we should use logarithmic scale based on data variance
+  const useLogScale = useMemo(() => {
+    if (!chartData || chartData.length === 0) return false;
+
+    const amounts = chartData.map(d => d.amount).filter(a => a > 0);
+    if (amounts.length === 0) return false;
+
+    const max = Math.max(...amounts);
+    const min = Math.min(...amounts);
+
+    // Use log scale if variance is high (max is 100x or more than min)
+    // and there are no zero values
+    const hasZeros = chartData.some(d => d.amount === 0);
+    const variance = max / (min || 1);
+
+    return !hasZeros && variance > 100;
+  }, [chartData]);
 
   const chartConfig = useMemo(() => getChartConfig(primaryColor), [primaryColor]);
 
@@ -209,10 +227,12 @@ export function BurnsView({ projectSlug, primaryColor, timeframe = 'ALL', onTime
                     height={70}
                   />
                   <YAxis
-                    domain={[0, (dataMax: number) => dataMax + 50]}
+                    scale={useLogScale ? 'log' : 'auto'}
+                    domain={useLogScale ? ['auto', 'auto'] : [0, (dataMax: number) => dataMax + 50]}
                     stroke="rgba(255,255,255,0.5)"
                     tick={{ fill: 'rgba(255,255,255,0.7)', fontSize: 11 }}
                     tickFormatter={formatNumber}
+                    allowDataOverflow={false}
                   />
                   <ChartTooltip
                     content={({ active, payload }) => {

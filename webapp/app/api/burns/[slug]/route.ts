@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 60; // Cache for 60 seconds
 
 /**
- * GET /api/burns/[slug]?timeframe=7D|30D|90D|ALL
+ * GET /api/burns/[slug]?timeframe=1D|7D|30D|90D|ALL
  * Fetches burn statistics and history for the project
  */
 export async function GET(
@@ -30,6 +30,9 @@ export async function GET(
     // Convert timeframe to days (undefined for ALL means "from first burn")
     let days: number | undefined;
     switch (timeframe) {
+      case '1D':
+        days = 1;
+        break;
       case '7D':
         days = 7;
         break;

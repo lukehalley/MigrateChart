@@ -58,12 +58,12 @@ function HomeContent() {
   const urlView = searchParams.get('view') as 'chart' | 'fees' | 'holders' | 'burns' | null;
   const urlFeesTimeframe = searchParams.get('feesTimeframe') as '7D' | '30D' | '90D' | 'ALL' | null;
   const urlHoldersTimeframe = searchParams.get('holdersTimeframe') as '1D' | '7D' | '30D' | '90D' | 'ALL' | null;
-  const urlBurnsTimeframe = searchParams.get('burnsTimeframe') as '7D' | '30D' | '90D' | 'ALL' | null;
+  const urlBurnsTimeframe = searchParams.get('burnsTimeframe') as '1D' | '7D' | '30D' | '90D' | 'ALL' | null;
 
   const validTimeframes: Timeframe[] = ['1H', '4H', '8H', '1D', 'MAX'];
   const validFeesTimeframes = ['7D', '30D', '90D', 'ALL'];
   const validHoldersTimeframes = ['1D', '7D', '30D', '90D', 'ALL'];
-  const validBurnsTimeframes = ['7D', '30D', '90D', 'ALL'];
+  const validBurnsTimeframes = ['1D', '7D', '30D', '90D', 'ALL'];
 
   const initialTimeframe = urlChartTimeframe && validTimeframes.includes(urlChartTimeframe) ? urlChartTimeframe : '1D';
   const initialViewMode = urlView && ['chart', 'fees', 'holders', 'burns'].includes(urlView) ? urlView : 'chart';
@@ -79,7 +79,7 @@ function HomeContent() {
   const [viewMode, setViewModeState] = useState<'chart' | 'fees' | 'holders' | 'burns'>(initialViewMode);
   const [feesTimeframe, setFeesTimeframeState] = useState<'7D' | '30D' | '90D' | 'ALL'>(initialFeesTimeframe);
   const [holdersTimeframe, setHoldersTimeframeState] = useState<'1D' | '7D' | '30D' | '90D' | 'ALL'>(initialHoldersTimeframe);
-  const [burnsTimeframe, setBurnsTimeframeState] = useState<'7D' | '30D' | '90D' | 'ALL'>(initialBurnsTimeframe);
+  const [burnsTimeframe, setBurnsTimeframeState] = useState<'1D' | '7D' | '30D' | '90D' | 'ALL'>(initialBurnsTimeframe);
 
   // Reset chart position function
   const handleResetChartPosition = () => {
@@ -137,7 +137,7 @@ function HomeContent() {
     const urlView = searchParams.get('view') as 'chart' | 'fees' | 'holders' | 'burns' | null;
     const urlFeesTimeframe = searchParams.get('feesTimeframe') as '7D' | '30D' | '90D' | 'ALL' | null;
     const urlHoldersTimeframe = searchParams.get('holdersTimeframe') as '1D' | '7D' | '30D' | '90D' | 'ALL' | null;
-    const urlBurnsTimeframe = searchParams.get('burnsTimeframe') as '7D' | '30D' | '90D' | 'ALL' | null;
+    const urlBurnsTimeframe = searchParams.get('burnsTimeframe') as '1D' | '7D' | '30D' | '90D' | 'ALL' | null;
 
     if (urlChartTimeframe && validTimeframes.includes(urlChartTimeframe)) {
       setTimeframeState(urlChartTimeframe);
@@ -297,7 +297,7 @@ function HomeContent() {
   };
 
   // Update URL when burns timeframe changes
-  const setBurnsTimeframe = (newBurnsTimeframe: '7D' | '30D' | '90D' | 'ALL') => {
+  const setBurnsTimeframe = (newBurnsTimeframe: '1D' | '7D' | '30D' | '90D' | 'ALL') => {
     setBurnsTimeframeState(newBurnsTimeframe);
     const params = new URLSearchParams(searchParams.toString());
     params.set('burnsTimeframe', newBurnsTimeframe);
@@ -2056,7 +2056,7 @@ function HomeContent() {
                           </>
                         ) : (
                           <>
-                            {(['7D', '30D', '90D', 'ALL'] as const).map((tf) => (
+                            {(['1D', '7D', '30D', '90D', 'ALL'] as const).map((tf) => (
                               <button
                                 key={tf}
                                 onClick={() => {
