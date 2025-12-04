@@ -49,9 +49,8 @@ export async function POST(request: NextRequest) {
     // Get projects with burns enabled
     let query = supabase!
       .from('projects')
-      .select('id, slug, burn_program_address, token_decimals')
-      .eq('burns_enabled', true)
-      .not('burn_program_address', 'is', null);
+      .select('id, slug, burn_program_address, burn_program_addresses, token_decimals')
+      .eq('burns_enabled', true);
 
     if (projectSlug) {
       query = query.eq('slug', projectSlug);
@@ -77,8 +76,23 @@ export async function POST(request: NextRequest) {
     for (const project of projects) {
       console.log(`[BACKFILL-BURNS] Backfilling burns for ${project.slug}...`);
 
+      // Get burn program addresses (support both new array format and legacy single address)
+      const burnAddresses = project.burn_program_addresses ||
+                            (project.burn_program_address ? [project.burn_program_address] : []);
+
+      if (burnAddresses.length === 0) {
+        console.log(`[BACKFILL-BURNS] No burn addresses configured for ${project.slug}, skipping`);
+        continue;
+      }
+
+      console.log(`[BACKFILL-BURNS] Processing ${burnAddresses.length} burn address(es) for ${project.slug}`);
+
       const connection = new Connection(HELIUS_RPC, 'confirmed');
-      const programPubkey = new PublicKey(project.burn_program_address);
+
+      // Process each burn program address
+      for (const burnAddress of burnAddresses) {
+        console.log(`[BACKFILL-BURNS] Processing address ${burnAddress}...`);
+        const programPubkey = new PublicKey(burnAddress);
 
       // Fetch all signatures (paginate if needed)
       let allSignatures: any[] = [];
@@ -196,16 +210,18 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      console.log(`[BACKFILL-BURNS] Inserted ${inserted} new burns for ${project.slug} (skipped ${skipped} duplicates)`);
+        console.log(`[BACKFILL-BURNS] Inserted ${inserted} new burns for ${project.slug} from address ${burnAddress} (skipped ${skipped} duplicates)`);
 
-      results.push({
-        project: project.slug,
-        scanned: allSignatures.length,
-        found: burns.length,
-        inserted,
-        skipped,
-      });
-    }
+        results.push({
+          project: project.slug,
+          burnAddress,
+          scanned: allSignatures.length,
+          found: burns.length,
+          inserted,
+          skipped,
+        });
+      } // End burn address loop
+    } // End project loop
 
     return NextResponse.json({
       success: true,

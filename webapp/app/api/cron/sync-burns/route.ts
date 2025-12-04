@@ -37,12 +37,11 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get projects with burns enabled and program address
+    // Get projects with burns enabled and program address(es)
     const { data: projects, error: projectError } = await supabase!
       .from('projects')
-      .select('id, slug, burn_program_address, token_decimals')
-      .eq('burns_enabled', true)
-      .not('burn_program_address', 'is', null);
+      .select('id, slug, burn_program_address, burn_program_addresses, token_decimals')
+      .eq('burns_enabled', true);
 
     if (projectError) {
       throw new Error(`Failed to fetch projects: ${projectError.message}`);
@@ -63,20 +62,35 @@ export async function GET(request: NextRequest) {
     for (const project of projects) {
       console.log(`[SYNC-BURNS] Processing ${project.slug}...`);
 
-      // Get the most recent burn signature from our database
-      const { data: latestBurn } = await supabase!
-        .from('burn_transactions')
-        .select('signature, timestamp')
-        .eq('project_id', project.id)
-        .order('timestamp', { ascending: false })
-        .limit(1)
-        .single();
+      // Get burn program addresses (support both new array format and legacy single address)
+      const burnAddresses = project.burn_program_addresses ||
+                            (project.burn_program_address ? [project.burn_program_address] : []);
 
-      console.log(`[SYNC-BURNS] Latest burn in DB for ${project.slug}:`, latestBurn?.signature || 'none');
+      if (burnAddresses.length === 0) {
+        console.log(`[SYNC-BURNS] No burn addresses configured for ${project.slug}, skipping`);
+        continue;
+      }
 
-      // Fetch recent transactions from the program
-      const connection = new Connection(HELIUS_RPC, 'confirmed');
-      const programPubkey = new PublicKey(project.burn_program_address);
+      console.log(`[SYNC-BURNS] Checking ${burnAddresses.length} burn address(es) for ${project.slug}`);
+
+      // Process each burn program address
+      for (const burnAddress of burnAddresses) {
+        console.log(`[SYNC-BURNS] Processing address ${burnAddress} for ${project.slug}...`);
+
+        // Get the most recent burn signature from our database
+        const { data: latestBurn } = await supabase!
+          .from('burn_transactions')
+          .select('signature, timestamp')
+          .eq('project_id', project.id)
+          .order('timestamp', { ascending: false })
+          .limit(1)
+          .single();
+
+        console.log(`[SYNC-BURNS] Latest burn in DB for ${project.slug}:`, latestBurn?.signature || 'none');
+
+        // Fetch recent transactions from the program
+        const connection = new Connection(HELIUS_RPC, 'confirmed');
+        const programPubkey = new PublicKey(burnAddress);
 
       // Get recent signatures (limit to 100 to avoid rate limits in hourly sync)
       const signatures = await connection.getSignaturesForAddress(programPubkey, {
@@ -165,34 +179,35 @@ export async function GET(request: NextRequest) {
         console.log(`[SYNC-BURNS] Processed ${Math.min(i + batchSize, newSignatures.length)}/${newSignatures.length} transactions for ${project.slug}`);
       }
 
-      console.log(`[SYNC-BURNS] Found ${newBurns.length} new burns for ${project.slug}`);
+        console.log(`[SYNC-BURNS] Found ${newBurns.length} new burns for ${project.slug} from ${burnAddress}`);
 
-      // Insert new burns
-      let inserted = 0;
-      for (const burn of newBurns) {
-        const { error } = await supabase!
-          .from('burn_transactions')
-          .insert({
-            project_id: project.id,
-            signature: burn.signature,
-            timestamp: burn.timestamp,
-            amount: burn.amount,
-            from_account: burn.from,
-          });
+        // Insert new burns
+        let inserted = 0;
+        for (const burn of newBurns) {
+          const { error } = await supabase!
+            .from('burn_transactions')
+            .insert({
+              project_id: project.id,
+              signature: burn.signature,
+              timestamp: burn.timestamp,
+              amount: burn.amount,
+              from_account: burn.from,
+            });
 
-        if (error) {
-          if (error.code !== '23505') {
-            // Not a duplicate error
-            console.error(`[SYNC-BURNS] Error inserting burn:`, error);
+          if (error) {
+            if (error.code !== '23505') {
+              // Not a duplicate error
+              console.error(`[SYNC-BURNS] Error inserting burn:`, error);
+            }
+          } else {
+            inserted++;
           }
-        } else {
-          inserted++;
         }
-      }
 
-      console.log(`[SYNC-BURNS] Inserted ${inserted} new burns for ${project.slug}`);
-      totalSynced += inserted;
-    }
+        console.log(`[SYNC-BURNS] Inserted ${inserted} new burns for ${project.slug} from address ${burnAddress}`);
+        totalSynced += inserted;
+      } // End burn address loop
+    } // End project loop
 
     return NextResponse.json({
       success: true,
