@@ -11,7 +11,50 @@ import useSWR from 'swr';
 
 const POPUP_DELAY = 10000;
 const ONE_DAY_MS = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
-const LAST_SHOWN_KEY = 'donationPopupLastShown';
+// Use obfuscated key to avoid ad blocker detection
+const LAST_SHOWN_KEY = 'app_pls'; // "popup last shown" - avoid trigger words
+const COOKIE_NAME = 'app_pls';
+
+// Cookie utilities (ad blockers don't typically block cookies)
+const getCookie = (name: string): string | null => {
+  if (typeof document === 'undefined') return null;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+  return null;
+};
+
+const setCookie = (name: string, value: string, days: number): void => {
+  if (typeof document === 'undefined') return;
+  const expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
+  document.cookie = `${name}=${value}; expires=${expires}; path=/; SameSite=Lax`;
+};
+
+// Get last shown timestamp from either localStorage or cookie
+const getLastShownTime = (): number | null => {
+  // Try localStorage first
+  const localStorageValue = SafeStorage.getItem(LAST_SHOWN_KEY);
+  if (localStorageValue) {
+    return parseInt(localStorageValue, 10);
+  }
+
+  // Fallback to cookie
+  const cookieValue = getCookie(COOKIE_NAME);
+  if (cookieValue) {
+    return parseInt(cookieValue, 10);
+  }
+
+  return null;
+};
+
+// Set last shown timestamp in both localStorage and cookie
+const setLastShownTime = (timestamp: number): void => {
+  const timestampStr = timestamp.toString();
+  // Try localStorage
+  SafeStorage.setItem(LAST_SHOWN_KEY, timestampStr);
+  // Always set cookie as fallback
+  setCookie(COOKIE_NAME, timestampStr, 1); // 1 day expiry
+};
 
 export function DonationPopup() {
   const [isVisible, setIsVisible] = useState(false);
@@ -84,10 +127,9 @@ export function DonationPopup() {
 
   useEffect(() => {
     // Check if popup was shown within the last 24 hours
-    const lastShown = SafeStorage.getItem(LAST_SHOWN_KEY);
+    const lastShownTime = getLastShownTime();
 
-    if (lastShown) {
-      const lastShownTime = parseInt(lastShown, 10);
+    if (lastShownTime) {
       const timeSinceLastShown = Date.now() - lastShownTime;
 
       // If less than 24 hours have passed, don't show the popup
@@ -99,8 +141,8 @@ export function DonationPopup() {
     // Show popup after delay
     const timer = setTimeout(() => {
       setIsVisible(true);
-      // Save the current timestamp to localStorage
-      SafeStorage.setItem(LAST_SHOWN_KEY, Date.now().toString());
+      // Save the current timestamp to both localStorage and cookie
+      setLastShownTime(Date.now());
     }, POPUP_DELAY);
 
     return () => clearTimeout(timer);
