@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState } from 'react';
 import useSWR from 'swr';
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, AreaChart, Area } from 'recharts';
 import { Flame, TrendingDown, Activity, ExternalLink, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from '@/components/ui/chart';
@@ -94,6 +94,21 @@ export function BurnsView({ projectSlug, primaryColor, timeframe = 'ALL', onTime
       fullDate: day.date,
     }));
   }, [burnsData]);
+
+  // Calculate cumulative burn data
+  const cumulativeChartData = useMemo(() => {
+    if (!chartData || chartData.length === 0) return [];
+
+    let cumulative = 0;
+    return chartData.map((day) => {
+      cumulative += day.amount;
+      return {
+        date: day.date,
+        cumulative,
+        fullDate: day.fullDate,
+      };
+    });
+  }, [chartData]);
 
   // Determine if we should use logarithmic scale based on data variance
   const useLogScale = useMemo(() => {
@@ -196,68 +211,145 @@ export function BurnsView({ projectSlug, primaryColor, timeframe = 'ALL', onTime
           </div>
         </div>
 
-        {/* Chart - Individual Burns */}
-        <Card className="bg-black/50 border" style={{ borderColor: `${primaryColor}40` }}>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2" style={{ color: primaryColor }}>
-              <Flame className="w-5 h-5" />
-              Daily Burn History
-            </CardTitle>
-            <CardDescription>Each Bar Represents Daily Burn Activity</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {burnsData.recentBurns.length === 0 ? (
-              <div className="h-[300px] flex items-center justify-center">
-                <div className="text-center">
-                  <Flame className="w-12 h-12 mx-auto mb-2 opacity-20" style={{ color: primaryColor }} />
-                  <p className="text-white/50">No Burn History Yet</p>
-                  <p className="text-white/30 text-sm">Burns Will Appear Here Once They Occur</p>
+        {/* Charts Grid - Daily and Cumulative Burns */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Chart - Daily Burns */}
+          <Card className="bg-black/50 border" style={{ borderColor: `${primaryColor}40` }}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2" style={{ color: primaryColor }}>
+                <Flame className="w-5 h-5" />
+                Daily Burn History
+              </CardTitle>
+              <CardDescription>Each Bar Represents Daily Burn Activity</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {burnsData.recentBurns.length === 0 ? (
+                <div className="h-[300px] flex items-center justify-center">
+                  <div className="text-center">
+                    <Flame className="w-12 h-12 mx-auto mb-2 opacity-20" style={{ color: primaryColor }} />
+                    <p className="text-white/50">No Burn History Yet</p>
+                    <p className="text-white/30 text-sm">Burns Will Appear Here Once They Occur</p>
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <ChartContainer config={chartConfig} className="h-[350px] w-full">
-                <BarChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 60 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                  <XAxis
-                    dataKey="date"
-                    stroke="rgba(255,255,255,0.5)"
-                    tick={{ fill: 'rgba(255,255,255,0.7)', fontSize: 11 }}
-                    angle={-45}
-                    textAnchor="end"
-                    height={70}
-                  />
-                  <YAxis
-                    scale={useLogScale ? 'log' : 'auto'}
-                    domain={useLogScale ? ['auto', 'auto'] : [0, (dataMax: number) => dataMax + 50]}
-                    stroke="rgba(255,255,255,0.5)"
-                    tick={{ fill: 'rgba(255,255,255,0.7)', fontSize: 11 }}
-                    tickFormatter={formatNumber}
-                    allowDataOverflow={false}
-                  />
-                  <ChartTooltip
-                    content={({ active, payload }) => {
-                      if (!active || !payload || !payload.length) return null;
+              ) : (
+                <ChartContainer config={chartConfig} className="h-[350px] w-full">
+                  <BarChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 60 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                    <XAxis
+                      dataKey="date"
+                      stroke="rgba(255,255,255,0.5)"
+                      tick={{ fill: 'rgba(255,255,255,0.7)', fontSize: 11 }}
+                      angle={-45}
+                      textAnchor="end"
+                      height={70}
+                    />
+                    <YAxis
+                      scale={useLogScale ? 'log' : 'auto'}
+                      domain={useLogScale ? ['auto', 'auto'] : [0, (dataMax: number) => dataMax + 50]}
+                      stroke="rgba(255,255,255,0.5)"
+                      tick={{ fill: 'rgba(255,255,255,0.7)', fontSize: 11 }}
+                      tickFormatter={formatNumber}
+                      allowDataOverflow={false}
+                    />
+                    <ChartTooltip
+                      content={({ active, payload }) => {
+                        if (!active || !payload || !payload.length) return null;
 
-                      const data = payload[0].payload;
-                      return (
-                        <div
-                          className="bg-black/95 border-2 px-4 py-3 rounded-lg backdrop-blur-sm"
-                          style={{ borderColor: primaryColor }}
-                        >
-                          <p className="text-lg font-bold mb-1" style={{ color: primaryColor }}>
-                            {formatNumber(data.amount)} ZERA
-                          </p>
-                          <p className="text-white/70 text-xs">{data.fullDate}</p>
-                        </div>
-                      );
-                    }}
-                  />
-                  <Bar dataKey="amount" fill={primaryColor} radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ChartContainer>
-            )}
-          </CardContent>
-        </Card>
+                        const data = payload[0].payload;
+                        return (
+                          <div
+                            className="bg-black/95 border-2 px-4 py-3 rounded-lg backdrop-blur-sm"
+                            style={{ borderColor: primaryColor }}
+                          >
+                            <p className="text-lg font-bold mb-1" style={{ color: primaryColor }}>
+                              {formatNumber(data.amount)} ZERA
+                            </p>
+                            <p className="text-white/70 text-xs">{data.fullDate}</p>
+                          </div>
+                        );
+                      }}
+                    />
+                    <Bar dataKey="amount" fill={primaryColor} radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ChartContainer>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Chart - Cumulative Burns */}
+          <Card className="bg-black/50 border" style={{ borderColor: `${primaryColor}40` }}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2" style={{ color: primaryColor }}>
+                <TrendingDown className="w-5 h-5" />
+                Cumulative Burns
+              </CardTitle>
+              <CardDescription>Total Tokens Burned Over Time</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {burnsData.recentBurns.length === 0 ? (
+                <div className="h-[300px] flex items-center justify-center">
+                  <div className="text-center">
+                    <TrendingDown className="w-12 h-12 mx-auto mb-2 opacity-20" style={{ color: primaryColor }} />
+                    <p className="text-white/50">No Burn History Yet</p>
+                    <p className="text-white/30 text-sm">Cumulative Burns Will Appear Here</p>
+                  </div>
+                </div>
+              ) : (
+                <ChartContainer config={chartConfig} className="h-[350px] w-full">
+                  <AreaChart data={cumulativeChartData} margin={{ top: 10, right: 10, left: 10, bottom: 60 }}>
+                    <defs>
+                      <linearGradient id="cumulativeBurnGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={primaryColor} stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor={primaryColor} stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                    <XAxis
+                      dataKey="date"
+                      stroke="rgba(255,255,255,0.5)"
+                      tick={{ fill: 'rgba(255,255,255,0.7)', fontSize: 11 }}
+                      angle={-45}
+                      textAnchor="end"
+                      height={70}
+                    />
+                    <YAxis
+                      stroke="rgba(255,255,255,0.5)"
+                      tick={{ fill: 'rgba(255,255,255,0.7)', fontSize: 11 }}
+                      tickFormatter={formatNumber}
+                    />
+                    <ChartTooltip
+                      content={({ active, payload }) => {
+                        if (!active || !payload || !payload.length) return null;
+
+                        const data = payload[0].payload;
+                        return (
+                          <div
+                            className="bg-black/95 border-2 px-4 py-3 rounded-lg backdrop-blur-sm"
+                            style={{ borderColor: primaryColor }}
+                          >
+                            <p className="text-lg font-bold mb-1" style={{ color: primaryColor }}>
+                              {formatNumber(data.cumulative)} ZERA
+                            </p>
+                            <p className="text-white/70 text-xs">{data.fullDate}</p>
+                            <p className="text-white/50 text-xs mt-1">Total Burned</p>
+                          </div>
+                        );
+                      }}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="cumulative"
+                      stroke={primaryColor}
+                      strokeWidth={2}
+                      fillOpacity={1}
+                      fill="url(#cumulativeBurnGradient)"
+                    />
+                  </AreaChart>
+                </ChartContainer>
+              )}
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Recent Burns Table */}
         <Card className="bg-black/50 border" style={{ borderColor: `${primaryColor}40` }}>
