@@ -40,6 +40,17 @@ export async function GET(
       );
     }
 
+    // Fetch global donation address from site_config
+    const { data: donationConfig, error: donationError } = await supabase
+      .from('site_config')
+      .select('value')
+      .eq('key', 'donation_address')
+      .single();
+
+    if (donationError) {
+      console.error('Error fetching donation address:', donationError);
+    }
+
     // Fetch pools for this project
     const { data: pools, error: poolsError } = await supabase
       .from('pools')
@@ -103,7 +114,7 @@ export async function GET(
       secondaryColor: project.secondaryColor || '#000000',
       logoUrl: project.logo_url,
       loaderUrl: project.loader_url,
-      donationAddress: project.donation_address,
+      donationAddress: donationConfig?.value || project.donation_address, // Use global config, fallback to project-specific
       isDefault: project.is_default,
       isActive: project.is_active,
       burnsEnabled: project.burns_enabled || false,

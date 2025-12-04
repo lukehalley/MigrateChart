@@ -10,10 +10,8 @@ import { SafeStorage } from '@/lib/localStorage';
 import useSWR from 'swr';
 
 const POPUP_DELAY = 10000;
-
-// Module-level variable to track if popup has been shown this session
-// Resets on page refresh but persists during client-side navigation
-let hasShownPopupThisSession = false;
+const ONE_DAY_MS = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+const LAST_SHOWN_KEY = 'donationPopupLastShown';
 
 export function DonationPopup() {
   const [isVisible, setIsVisible] = useState(false);
@@ -85,15 +83,24 @@ export function DonationPopup() {
   );
 
   useEffect(() => {
-    // Only show if we haven't shown it yet during this session
-    if (hasShownPopupThisSession) {
-      return;
+    // Check if popup was shown within the last 24 hours
+    const lastShown = SafeStorage.getItem(LAST_SHOWN_KEY);
+
+    if (lastShown) {
+      const lastShownTime = parseInt(lastShown, 10);
+      const timeSinceLastShown = Date.now() - lastShownTime;
+
+      // If less than 24 hours have passed, don't show the popup
+      if (timeSinceLastShown < ONE_DAY_MS) {
+        return;
+      }
     }
 
     // Show popup after delay
     const timer = setTimeout(() => {
       setIsVisible(true);
-      hasShownPopupThisSession = true;
+      // Save the current timestamp to localStorage
+      SafeStorage.setItem(LAST_SHOWN_KEY, Date.now().toString());
     }, POPUP_DELAY);
 
     return () => clearTimeout(timer);
