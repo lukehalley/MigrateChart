@@ -56,13 +56,14 @@ export default function LandingPageNew() {
   }, []);
 
   return (
-    <div className="landing">
+    <div className="landing" suppressHydrationWarning>
       {/* Particles Background - Fixed throughout scroll */}
       {mounted && (
-        <Particles
-          id="tsparticles"
-          init={particlesInit}
-          options={{
+        <div suppressHydrationWarning>
+          <Particles
+            id="tsparticles"
+            init={particlesInit}
+            options={{
             background: {
               color: {
                 value: "transparent",
@@ -145,7 +146,8 @@ export default function LandingPageNew() {
             height: "100%",
             zIndex: 1,
           }}
-        />
+          />
+        </div>
       )}
 
       <style>{`

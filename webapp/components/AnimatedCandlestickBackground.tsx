@@ -16,33 +16,37 @@ interface Candle {
 function generateBullishCandles(count: number): Candle[] {
   const candles: Candle[] = [];
   let basePrice = 100;
-  const candleWidth = 1000 / count;
+
+  // Spread across full viewport with margins
+  const margin = 30;
+  const usableWidth = 1000 - (margin * 2);
+  const candleWidth = usableWidth / count;
 
   for (let i = 0; i < count; i++) {
     // Add volatility but bias upward (70% chance of green candle)
     const isGreen = Math.random() > 0.3;
-    const volatility = Math.random() * 20 + 5; // 5-25 points range
+    const volatility = Math.random() * 80 + 60; // 60-140 points range (MUCH larger bodies)
 
     const open = basePrice;
     const close = isGreen
       ? open + Math.random() * volatility
-      : open - Math.random() * (volatility * 0.6); // Red candles smaller
+      : open - Math.random() * (volatility * 0.7); // Red candles still decent size
 
-    const high = Math.max(open, close) + Math.random() * 8;
-    const low = Math.min(open, close) - Math.random() * 8;
+    const high = Math.max(open, close) + Math.random() * 25; // Longer wicks
+    const low = Math.min(open, close) - Math.random() * 25;
 
     candles.push({
-      x: i * candleWidth + candleWidth / 2,
+      x: margin + i * candleWidth + candleWidth / 2,
       open,
       high,
       low,
       close,
       isGreen: close > open,
-      fillFromBottom: Math.random() > 0.5, // 50% chance each direction
+      fillFromBottom: Math.random() > 0.5,
     });
 
     // Drift price upward for next candle (bullish bias)
-    basePrice = close + (isGreen ? Math.random() * 3 : -Math.random() * 1.5);
+    basePrice = close + (isGreen ? Math.random() * 5 : -Math.random() * 2);
   }
 
   return candles;
@@ -55,9 +59,9 @@ function normalizeCandlesToViewport(candles: Candle[], viewportHeight: number) {
   const maxPrice = Math.max(...allPrices);
   const priceRange = maxPrice - minPrice;
 
-  // Map to viewport (bottom 10% to top 30%)
-  const viewportTop = viewportHeight * 0.3;
-  const viewportBottom = viewportHeight * 0.9;
+  // Map to viewport - use more vertical space (bottom 5% to top 15%)
+  const viewportTop = viewportHeight * 0.15;
+  const viewportBottom = viewportHeight * 0.95;
   const viewportRange = viewportBottom - viewportTop;
 
   return candles.map(candle => ({
@@ -137,49 +141,52 @@ export function AnimatedCandlestickBackground() {
             const bodyHeight = Math.abs(candle.close - candle.open);
             const color = candle.isGreen ? '#52C97D' : '#ef4444';
             const glowFilter = candle.isGreen ? 'url(#greenGlow)' : 'url(#redGlow)';
-            const wickLength = candle.high - candle.low;
-
-            // Determine clip reveal direction
-            const clipStartY = candle.fillFromBottom ? bodyBottom : bodyTop;
-            const clipHeight = Math.max(bodyHeight, 3);
 
             return (
               <g key={i}>
-                {/* Wick - draws the full range line from low to high */}
+                {/* Wick - full range from LOW to HIGH */}
                 <motion.line
                   x1={candle.x}
                   x2={candle.x}
-                  y1={candle.low}
-                  y2={candle.low}
+                  y1={candle.open}
+                  y2={candle.open}
                   stroke={color}
-                  strokeWidth="1.5"
+                  strokeWidth="2"
                   strokeOpacity="0.7"
                   strokeLinecap="round"
-                  animate={{ y2: candle.high }}
+                  animate={{
+                    y1: candle.low,
+                    y2: candle.high,
+                  }}
                   transition={{
-                    duration: 0.3,
-                    delay: i * 1.0, // 1 SECOND delay between each candle
+                    duration: 0.4,
+                    delay: i * 1.0,
                     ease: 'linear',
                   }}
                 />
 
-                {/* Candle body - fills from OPEN to CLOSE always */}
+                {/* Body - fills between OPEN and CLOSE prices */}
+                {/* For green: fills from bodyBottom (open) upward to bodyTop (close) */}
+                {/* For red: fills from bodyTop (open) downward to bodyBottom (close) */}
                 <motion.rect
                   key={`body-${key}-${i}`}
-                  x={candle.x - 8}
-                  width="16"
+                  x={candle.x - 12}
+                  width="24"
                   fill={color}
                   fillOpacity="0.95"
                   filter={glowFilter}
-                  rx="1"
-                  // Always start at open price, fill to close price
+                  rx="2"
+                  // Start at the OPEN edge of the body (bottom for green, top for red)
+                  y={candle.isGreen ? bodyBottom : bodyTop}
+                  height={0}
                   animate={{
-                    y: [candle.open, bodyTop],
-                    height: [0, clipHeight],
+                    // Always animate to bodyTop position
+                    y: bodyTop,
+                    height: bodyHeight,
                   }}
                   transition={{
-                    duration: 0.5,
-                    delay: i * 1.0 + 0.15,
+                    duration: 0.6,
+                    delay: i * 1.0 + 0.4,
                     ease: 'linear',
                   }}
                 />
