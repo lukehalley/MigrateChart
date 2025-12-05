@@ -15,12 +15,6 @@ let supabaseAdminInstance: SupabaseClient | null = null;
 export const isSupabaseConfigured = () => {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY_FT;
-
-  // For server-side operations, check service role key
-  if (typeof window === 'undefined') {
-    return Boolean(supabaseUrl && serviceRoleKey);
-  }
 
   return Boolean(supabaseUrl && supabaseAnonKey);
 };
@@ -48,11 +42,6 @@ function getSupabaseAdminClient(): SupabaseClient {
 
 // Get or create Supabase client (lazy initialization)
 function getSupabaseClient(): SupabaseClient {
-  // For server-side, use admin client
-  if (typeof window === 'undefined') {
-    return getSupabaseAdminClient();
-  }
-
   if (!supabaseInstance) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
@@ -71,6 +60,14 @@ function getSupabaseClient(): SupabaseClient {
 export const supabase = new Proxy({} as SupabaseClient, {
   get(target, prop) {
     const client = getSupabaseClient();
+    return (client as any)[prop];
+  }
+});
+
+// Export admin client for server-side operations that bypass RLS
+export const supabaseAdmin = new Proxy({} as SupabaseClient, {
+  get(target, prop) {
+    const client = getSupabaseAdminClient();
     return (client as any)[prop];
   }
 });

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Connection, PublicKey } from '@solana/web3.js';
-import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { supabaseAdmin, isSupabaseConfigured } from '@/lib/supabase';
 
 // Force dynamic rendering to prevent build-time execution
 export const dynamic = 'force-dynamic';
@@ -13,12 +13,15 @@ const HELIUS_RPC = HELIUS_API_KEY
 
 /**
  * Admin endpoint to backfill historical burn transactions
- * This scans all transactions from the burn program and stores burns in the database
+ *
+ * NEW APPROACH: Scans the TOKEN MINT address to find ALL burn transactions
+ * regardless of which wallet performed the burn (fixes issue where burns from
+ * depositor addresses were being missed)
  *
  * Authentication: Uses CRON_SECRET for security
  *
  * Query params:
- * - limit: Max transactions to fetch per batch (default: 1000)
+ * - limit: Max transactions to fetch per batch (default: 5000)
  * - projectSlug: Specific project slug (defaults to all projects with burns enabled)
  */
 export async function POST(request: NextRequest) {
@@ -43,13 +46,13 @@ export async function POST(request: NextRequest) {
 
     // Get query params
     const { searchParams } = new URL(request.url);
-    const limit = parseInt(searchParams.get('limit') || '1000');
+    const limit = parseInt(searchParams.get('limit') || '5000');
     const projectSlug = searchParams.get('projectSlug');
 
-    // Get projects with burns enabled
-    let query = supabase!
+    // Get projects with burns enabled - now using token_mint_address
+    let query = supabaseAdmin
       .from('projects')
-      .select('id, slug, burn_program_address, burn_program_addresses, token_decimals')
+      .select('id, slug, token_mint_address, token_decimals')
       .eq('burns_enabled', true);
 
     if (projectSlug) {
@@ -76,23 +79,18 @@ export async function POST(request: NextRequest) {
     for (const project of projects) {
       console.log(`[BACKFILL-BURNS] Backfilling burns for ${project.slug}...`);
 
-      // Get burn program addresses (support both new array format and legacy single address)
-      const burnAddresses = project.burn_program_addresses ||
-                            (project.burn_program_address ? [project.burn_program_address] : []);
+      // Use token mint address to track ALL burns for this token
+      const tokenMintAddress = project.token_mint_address;
 
-      if (burnAddresses.length === 0) {
-        console.log(`[BACKFILL-BURNS] No burn addresses configured for ${project.slug}, skipping`);
+      if (!tokenMintAddress) {
+        console.log(`[BACKFILL-BURNS] No token_mint_address configured for ${project.slug}, skipping`);
         continue;
       }
 
-      console.log(`[BACKFILL-BURNS] Processing ${burnAddresses.length} burn address(es) for ${project.slug}`);
+      console.log(`[BACKFILL-BURNS] Tracking burns for token mint: ${tokenMintAddress}`);
 
       const connection = new Connection(HELIUS_RPC, 'confirmed');
-
-      // Process each burn program address
-      for (const burnAddress of burnAddresses) {
-        console.log(`[BACKFILL-BURNS] Processing address ${burnAddress}...`);
-        const programPubkey = new PublicKey(burnAddress);
+      const mintPubkey = new PublicKey(tokenMintAddress);
 
       // Fetch all signatures (paginate if needed)
       let allSignatures: any[] = [];
@@ -101,7 +99,7 @@ export async function POST(request: NextRequest) {
       const maxFetches = Math.ceil(limit / 1000); // Max 1000 per request
 
       while (fetchCount < maxFetches) {
-        const signatures = await connection.getSignaturesForAddress(programPubkey, {
+        const signatures = await connection.getSignaturesForAddress(mintPubkey, {
           limit: 1000,
           before: beforeSignature,
         });
@@ -144,39 +142,59 @@ export async function POST(request: NextRequest) {
 
           if (!tx || !tx.meta || !tx.transaction) continue;
 
-          // Check inner instructions for burns
+          // Skip failed transactions
+          if (tx.meta.err !== null) continue;
+
+          // Check ALL instructions (both top-level and inner) for burns
+          const allInstructions: any[] = [];
+
+          // Add top-level instructions
+          if (tx.transaction.message.instructions) {
+            allInstructions.push(...tx.transaction.message.instructions);
+          }
+
+          // Add inner instructions
           if (tx.meta.innerInstructions) {
             for (const innerIxGroup of tx.meta.innerInstructions) {
-              for (const ix of innerIxGroup.instructions) {
-                if ('parsed' in ix) {
-                  const parsed = ix.parsed;
+              allInstructions.push(...innerIxGroup.instructions);
+            }
+          }
 
-                  // Check for token burn instruction
-                  if (parsed.type === 'burn' || parsed.type === 'burnChecked') {
-                    const amount = parsed.info.amount;
-                    const authority = parsed.info.authority;
+          // Look for burn instructions targeting our token mint
+          for (const ix of allInstructions) {
+            if ('parsed' in ix) {
+              const parsed = ix.parsed;
 
-                    // Convert raw amount to human-readable by dividing by 10^decimals
-                    const rawAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
-                    const humanReadableAmount = rawAmount / Math.pow(10, project.token_decimals);
-
-                    burns.push({
-                      signature: sig.signature,
-                      timestamp: sig.blockTime || Math.floor(Date.now() / 1000),
-                      amount: humanReadableAmount,
-                      from: authority,
-                    });
-
-                    // Only count first burn per transaction
-                    break;
-                  }
+              // Check for token burn instruction
+              if (parsed.type === 'burn' || parsed.type === 'burnChecked') {
+                // Verify this burn is for our token mint
+                const burnMint = parsed.info.mint;
+                if (burnMint && burnMint !== tokenMintAddress) {
+                  continue; // Skip burns for other tokens
                 }
+
+                const amount = parsed.info.amount;
+                const authority = parsed.info.authority;
+
+                // Convert raw amount to human-readable by dividing by 10^decimals
+                const rawAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+                const humanReadableAmount = rawAmount / Math.pow(10, project.token_decimals);
+
+                burns.push({
+                  signature: sig.signature,
+                  timestamp: sig.blockTime || Math.floor(Date.now() / 1000),
+                  amount: humanReadableAmount,
+                  from: authority,
+                });
+
+                // Only count first burn per transaction
+                break;
               }
             }
           }
         }
 
-        if ((i + batchSize) % 100 === 0) {
+        if ((i + batchSize) % 100 === 0 || i + batchSize >= allSignatures.length) {
           console.log(`[BACKFILL-BURNS] Processed ${Math.min(i + batchSize, allSignatures.length)}/${allSignatures.length} transactions for ${project.slug}`);
         }
       }
@@ -188,7 +206,7 @@ export async function POST(request: NextRequest) {
       let skipped = 0;
 
       for (const burn of burns) {
-        const { error } = await supabase!
+        const { error } = await supabaseAdmin
           .from('burn_transactions')
           .insert({
             project_id: project.id,
@@ -210,17 +228,16 @@ export async function POST(request: NextRequest) {
         }
       }
 
-        console.log(`[BACKFILL-BURNS] Inserted ${inserted} new burns for ${project.slug} from address ${burnAddress} (skipped ${skipped} duplicates)`);
+      console.log(`[BACKFILL-BURNS] Inserted ${inserted} new burns for ${project.slug} (skipped ${skipped} duplicates)`);
 
-        results.push({
-          project: project.slug,
-          burnAddress,
-          scanned: allSignatures.length,
-          found: burns.length,
-          inserted,
-          skipped,
-        });
-      } // End burn address loop
+      results.push({
+        project: project.slug,
+        tokenMint: tokenMintAddress,
+        scanned: allSignatures.length,
+        found: burns.length,
+        inserted,
+        skipped,
+      });
     } // End project loop
 
     return NextResponse.json({

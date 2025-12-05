@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Connection, PublicKey } from '@solana/web3.js';
-import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { supabaseAdmin, isSupabaseConfigured } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60; // 60 seconds max execution
@@ -14,8 +14,9 @@ const HELIUS_RPC = HELIUS_API_KEY
  * Cron job endpoint to sync new burn transactions
  * This should be triggered by Vercel Cron every hour
  *
- * Fetches transactions from the burn program address and detects burns in inner instructions
- * No longer relies on Bitquery or specific wallet tracking
+ * NEW APPROACH: Queries the TOKEN MINT address to find ALL burn transactions
+ * regardless of which wallet performed the burn (fixes issue where burns from
+ * depositor addresses were being missed)
  */
 export async function GET(request: NextRequest) {
   try {
@@ -37,10 +38,10 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get projects with burns enabled and program address(es)
-    const { data: projects, error: projectError } = await supabase!
+    // Get projects with burns enabled - now using token_mint_address
+    const { data: projects, error: projectError } = await supabaseAdmin
       .from('projects')
-      .select('id, slug, burn_program_address, burn_program_addresses, token_decimals')
+      .select('id, slug, token_mint_address, token_decimals')
       .eq('burns_enabled', true);
 
     if (projectError) {
@@ -62,42 +63,37 @@ export async function GET(request: NextRequest) {
     for (const project of projects) {
       console.log(`[SYNC-BURNS] Processing ${project.slug}...`);
 
-      // Get burn program addresses (support both new array format and legacy single address)
-      const burnAddresses = project.burn_program_addresses ||
-                            (project.burn_program_address ? [project.burn_program_address] : []);
+      // Use token mint address to track ALL burns for this token
+      const tokenMintAddress = project.token_mint_address;
 
-      if (burnAddresses.length === 0) {
-        console.log(`[SYNC-BURNS] No burn addresses configured for ${project.slug}, skipping`);
+      if (!tokenMintAddress) {
+        console.log(`[SYNC-BURNS] No token_mint_address configured for ${project.slug}, skipping`);
         continue;
       }
 
-      console.log(`[SYNC-BURNS] Checking ${burnAddresses.length} burn address(es) for ${project.slug}`);
+      console.log(`[SYNC-BURNS] Tracking burns for token mint: ${tokenMintAddress}`);
 
-      // Process each burn program address
-      for (const burnAddress of burnAddresses) {
-        console.log(`[SYNC-BURNS] Processing address ${burnAddress} for ${project.slug}...`);
+      // Get the most recent burn timestamp from our database
+      const { data: latestBurn } = await supabaseAdmin
+        .from('burn_transactions')
+        .select('signature, timestamp')
+        .eq('project_id', project.id)
+        .order('timestamp', { ascending: false })
+        .limit(1)
+        .single();
 
-        // Get the most recent burn signature from our database
-        const { data: latestBurn } = await supabase!
-          .from('burn_transactions')
-          .select('signature, timestamp')
-          .eq('project_id', project.id)
-          .order('timestamp', { ascending: false })
-          .limit(1)
-          .single();
+      console.log(`[SYNC-BURNS] Latest burn in DB for ${project.slug}:`, latestBurn?.signature || 'none');
 
-        console.log(`[SYNC-BURNS] Latest burn in DB for ${project.slug}:`, latestBurn?.signature || 'none');
+      // Fetch recent transactions involving the token mint
+      const connection = new Connection(HELIUS_RPC, 'confirmed');
+      const mintPubkey = new PublicKey(tokenMintAddress);
 
-        // Fetch recent transactions from the program
-        const connection = new Connection(HELIUS_RPC, 'confirmed');
-        const programPubkey = new PublicKey(burnAddress);
-
-      // Get recent signatures (limit to 100 to avoid rate limits in hourly sync)
-      const signatures = await connection.getSignaturesForAddress(programPubkey, {
-        limit: 100,
+      // Get recent signatures for the token mint (limit to 200 for hourly sync)
+      const signatures = await connection.getSignaturesForAddress(mintPubkey, {
+        limit: 200,
       });
 
-      console.log(`[SYNC-BURNS] Found ${signatures.length} signatures for ${project.slug}`);
+      console.log(`[SYNC-BURNS] Found ${signatures.length} signatures for token mint ${project.slug}`);
 
       // Stop at the latest burn we already have
       let newSignatures = signatures;
@@ -113,7 +109,7 @@ export async function GET(request: NextRequest) {
 
       console.log(`[SYNC-BURNS] Processing ${newSignatures.length} new signatures for ${project.slug}`);
 
-      // Fetch full transaction details in batches
+      // Fetch full transaction details in batches and look for burns
       const batchSize = 10;
       const newBurns: Array<{
         signature: string;
@@ -140,73 +136,90 @@ export async function GET(request: NextRequest) {
 
           // Skip failed transactions - only process successful ones
           if (tx.meta.err !== null) {
-            console.log(`[SYNC-BURNS] Skipping failed transaction: ${sig.signature}`);
             continue;
           }
 
-          // Check inner instructions for burns
+          // Check ALL instructions (both top-level and inner) for burns
+          const allInstructions: any[] = [];
+
+          // Add top-level instructions
+          if (tx.transaction.message.instructions) {
+            allInstructions.push(...tx.transaction.message.instructions);
+          }
+
+          // Add inner instructions
           if (tx.meta.innerInstructions) {
             for (const innerIxGroup of tx.meta.innerInstructions) {
-              for (const ix of innerIxGroup.instructions) {
-                if ('parsed' in ix) {
-                  const parsed = ix.parsed;
+              allInstructions.push(...innerIxGroup.instructions);
+            }
+          }
 
-                  // Check for token burn instruction
-                  if (parsed.type === 'burn' || parsed.type === 'burnChecked') {
-                    const amount = parsed.info.amount;
-                    const authority = parsed.info.authority;
+          // Look for burn instructions targeting our token mint
+          for (const ix of allInstructions) {
+            if ('parsed' in ix) {
+              const parsed = ix.parsed;
 
-                    // Convert raw amount to human-readable by dividing by 10^decimals
-                    const rawAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
-                    const humanReadableAmount = rawAmount / Math.pow(10, project.token_decimals);
-
-                    newBurns.push({
-                      signature: sig.signature,
-                      timestamp: sig.blockTime || Math.floor(Date.now() / 1000),
-                      amount: humanReadableAmount,
-                      from: authority,
-                    });
-
-                    // Only count first burn per transaction
-                    break;
-                  }
+              // Check for token burn instruction
+              if (parsed.type === 'burn' || parsed.type === 'burnChecked') {
+                // Verify this burn is for our token mint
+                const burnMint = parsed.info.mint;
+                if (burnMint && burnMint !== tokenMintAddress) {
+                  continue; // Skip burns for other tokens
                 }
+
+                const amount = parsed.info.amount;
+                const authority = parsed.info.authority;
+
+                // Convert raw amount to human-readable by dividing by 10^decimals
+                const rawAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+                const humanReadableAmount = rawAmount / Math.pow(10, project.token_decimals);
+
+                newBurns.push({
+                  signature: sig.signature,
+                  timestamp: sig.blockTime || Math.floor(Date.now() / 1000),
+                  amount: humanReadableAmount,
+                  from: authority,
+                });
+
+                // Only count first burn per transaction
+                break;
               }
             }
           }
         }
 
-        console.log(`[SYNC-BURNS] Processed ${Math.min(i + batchSize, newSignatures.length)}/${newSignatures.length} transactions for ${project.slug}`);
+        if ((i + batchSize) % 50 === 0 || i + batchSize >= newSignatures.length) {
+          console.log(`[SYNC-BURNS] Processed ${Math.min(i + batchSize, newSignatures.length)}/${newSignatures.length} transactions for ${project.slug}`);
+        }
       }
 
-        console.log(`[SYNC-BURNS] Found ${newBurns.length} new burns for ${project.slug} from ${burnAddress}`);
+      console.log(`[SYNC-BURNS] Found ${newBurns.length} burns for ${project.slug}`);
 
-        // Insert new burns
-        let inserted = 0;
-        for (const burn of newBurns) {
-          const { error } = await supabase!
-            .from('burn_transactions')
-            .insert({
-              project_id: project.id,
-              signature: burn.signature,
-              timestamp: burn.timestamp,
-              amount: burn.amount,
-              from_account: burn.from,
-            });
+      // Insert new burns
+      let inserted = 0;
+      for (const burn of newBurns) {
+        const { error } = await supabaseAdmin
+          .from('burn_transactions')
+          .insert({
+            project_id: project.id,
+            signature: burn.signature,
+            timestamp: burn.timestamp,
+            amount: burn.amount,
+            from_account: burn.from,
+          });
 
-          if (error) {
-            if (error.code !== '23505') {
-              // Not a duplicate error
-              console.error(`[SYNC-BURNS] Error inserting burn:`, error);
-            }
-          } else {
-            inserted++;
+        if (error) {
+          if (error.code !== '23505') {
+            // Not a duplicate error
+            console.error(`[SYNC-BURNS] Error inserting burn:`, error);
           }
+        } else {
+          inserted++;
         }
+      }
 
-        console.log(`[SYNC-BURNS] Inserted ${inserted} new burns for ${project.slug} from address ${burnAddress}`);
-        totalSynced += inserted;
-      } // End burn address loop
+      console.log(`[SYNC-BURNS] Inserted ${inserted} new burns for ${project.slug}`);
+      totalSynced += inserted;
     } // End project loop
 
     return NextResponse.json({
