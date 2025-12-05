@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { createClient, getUser } from '@/lib/supabase-server';
 import type { ProjectConfig, PoolConfig, MigrationConfig } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
@@ -8,6 +8,7 @@ export const revalidate = 300; // Cache for 5 minutes
 /**
  * GET /api/projects/[slug]
  * Fetches complete project configuration including pools and migrations
+ * Supports ?preview=true for admin preview of inactive projects
  */
 export async function GET(
   request: Request,
@@ -15,6 +16,11 @@ export async function GET(
 ) {
   try {
     const { slug } = await params;
+    const { searchParams } = new URL(request.url);
+    const isPreview = searchParams.get('preview') === 'true';
+
+    // Create SSR-aware Supabase client
+    const supabase = await createClient();
 
     if (!supabase) {
       return NextResponse.json(
@@ -23,17 +29,39 @@ export async function GET(
       );
     }
 
-    // Fetch project
-    const { data: project, error: projectError } = await supabase
+    // Check admin auth for preview mode
+    let isAdmin = false;
+    if (isPreview) {
+      const user = await getUser();
+      isAdmin = !!user;
+      if (!isAdmin) {
+        return NextResponse.json(
+          { error: 'Unauthorized - admin access required for preview' },
+          { status: 401 }
+        );
+      }
+    }
+
+    // Fetch project - skip active/enabled checks if admin preview
+    let query = supabase
       .from('projects')
       .select('*')
-      .eq('slug', slug)
-      .eq('is_active', true)
-      .eq('enabled', true) // Only allow enabled projects
-      .single();
+      .eq('slug', slug);
+
+    if (!isAdmin) {
+      query = query.eq('is_active', true).eq('enabled', true);
+    }
+
+    const { data: project, error: projectError } = await query.single();
 
     if (projectError || !project) {
-      console.error('Error fetching project:', projectError);
+      console.error(`Error fetching project '${slug}' (isPreview: ${isPreview}, isAdmin: ${isAdmin}):`, projectError);
+
+      // If preview mode and project not found, provide more details
+      if (isPreview) {
+        console.error(`Project '${slug}' not found in database for preview. Check if project exists.`);
+      }
+
       return NextResponse.json(
         { error: 'Project not found' },
         { status: 404 }
@@ -117,6 +145,7 @@ export async function GET(
       donationAddress: donationConfig?.value || project.donation_address, // Use global config, fallback to project-specific
       isDefault: project.is_default,
       isActive: project.is_active,
+      isPreview: isAdmin && !project.is_active, // Flag for preview mode
       burnsEnabled: project.burns_enabled || false,
       pools: poolConfigs,
       migrations: migrationConfigs,
@@ -124,10 +153,13 @@ export async function GET(
       updatedAt: project.updated_at,
     };
 
+    // Don't cache preview requests
+    const cacheHeaders = isAdmin
+      ? { 'Cache-Control': 'no-store' }
+      : { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' };
+
     return NextResponse.json(projectConfig, {
-      headers: {
-        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
-      },
+      headers: cacheHeaders,
     });
   } catch (error) {
     console.error('Unexpected error in GET /api/projects/[slug]:', error);

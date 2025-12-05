@@ -25,6 +25,7 @@ import { fetchAllPoolsData, fetchTokenStats, fetchWalletBalance, fetchTokenBalan
 import { PoolData, Timeframe, ProjectConfig } from '@/lib/types';
 import { SafeStorage } from '@/lib/localStorage';
 import { DonationPopup } from '@/components/DonationPopup';
+import { LoginButton } from '@/components/LoginButton';
 
 function HomeContent() {
   const { currentProject, allProjects, isLoading: projectLoading, isSwitching, switchingToSlug, error: projectError } = useTokenContext();
@@ -699,7 +700,7 @@ function HomeContent() {
       priceChange24h: priceChangePercent,
       fees24h: feesForTimeframe,
     };
-  }, [poolsData, tokenStats, timeframe]);
+  }, [poolsData, tokenStats, timeframe, currentProject]);
 
   // Show project error state (only show error, not loading - let the UI render with loading in chart area)
   if (projectError) {
@@ -720,6 +721,20 @@ function HomeContent() {
 
   return (
     <main data-chart-page className="w-screen h-svh overflow-hidden grid grid-rows-[auto_1fr]" style={themeStyles}>
+      {/* Preview Mode Banner */}
+      {currentProject?.isPreview && (
+        <div className="fixed top-0 left-0 right-0 z-[100] bg-amber-500/95 backdrop-blur-sm border-b-2 border-amber-600">
+          <div className="flex items-center justify-center gap-3 py-2 px-4">
+            <svg className="w-5 h-5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+            <span className="text-black font-bold text-sm tracking-wide">PREVIEW MODE</span>
+            <span className="text-black/80 text-xs">This project is not yet visible to the public</span>
+          </div>
+        </div>
+      )}
+
       {/* Donation Popup */}
       <DonationPopup />
 
@@ -783,6 +798,11 @@ function HomeContent() {
                 <path fill="currentColor" d="M445.290466,302.007385 C445.290466,323.963470 445.290466,345.421448 445.290466,367.245850 C419.480499,367.245850 393.966675,367.245850 368.177490,367.245850 C368.177490,341.667480 368.177490,316.112549 368.177490,290.260376 C393.644684,290.260376 419.183838,290.260376 445.290466,290.260376 C445.290466,293.993011 445.290466,297.751160 445.290466,302.007385z"/>
               </svg>
             </motion.button>
+
+            {/* Login Button - Far Right */}
+            <div className="absolute right-6">
+              <LoginButton primaryColor={primaryColor} secondaryColor={secondaryColor} />
+            </div>
 
             {/* Column 1: Address Bar + Copy Button */}
             <div className="flex items-center justify-center gap-2">
@@ -924,8 +944,8 @@ function HomeContent() {
 
           {/* Mobile and Tablet: Stacked layout (< 1024px) */}
           <div className="flex lg:hidden flex-col items-center gap-2 py-3 w-full relative">
-            {/* Logo and Call to Action Row */}
-            <div className="flex items-center justify-between w-full px-3">
+            {/* Logo, Login, and Menu Row */}
+            <div className="flex items-center justify-between w-full px-3 gap-2">
               {/* Logo - Far Left */}
               <motion.button
                 onClick={() => router.push('/')}
@@ -953,6 +973,11 @@ function HomeContent() {
                 </svg>
               </motion.button>
 
+              {/* Login Button - Center Right */}
+              <div className="flex-shrink-0">
+                <LoginButton primaryColor={primaryColor} secondaryColor={secondaryColor} />
+              </div>
+
               {/* Menu Button - Far Right - Larger for touch */}
               <motion.button
                 onClick={() => setShowMobileMenu(true)}
@@ -970,28 +995,29 @@ function HomeContent() {
                 </svg>
               </motion.button>
 
-              {/* Call to Action - Centered */}
-              <div className="flex items-center gap-2 absolute left-1/2 -translate-x-1/2">
-                <motion.div
-                  animate={{
-                    scale: [1, 1.15, 1],
-                  }}
-                  transition={{
-                    duration: 1.5,
-                    repeat: Infinity,
-                    ease: 'easeInOut'
-                  }}
-                >
-                  <Heart className="w-4 h-4 text-[var(--primary-color)] fill-[var(--primary-color)]" />
-                </motion.div>
-                <div className="text-center">
-                  <p className="text-white font-bold text-xs leading-tight">
-                    Support This Free Tool
-                  </p>
-                  <p className="text-white/70 text-[10px] leading-tight">
-                    Donate via Solana Network
-                  </p>
-                </div>
+            </div>
+
+            {/* Call to Action - Centered */}
+            <div className="flex items-center gap-2 justify-center">
+              <motion.div
+                animate={{
+                  scale: [1, 1.15, 1],
+                }}
+                transition={{
+                  duration: 1.5,
+                  repeat: Infinity,
+                  ease: 'easeInOut'
+                }}
+              >
+                <Heart className="w-4 h-4 text-[var(--primary-color)] fill-[var(--primary-color)]" />
+              </motion.div>
+              <div className="text-center">
+                <p className="text-white font-bold text-xs leading-tight">
+                  Support This Free Tool
+                </p>
+                <p className="text-white/70 text-[10px] leading-tight">
+                  Donate via Solana Network
+                </p>
               </div>
             </div>
 

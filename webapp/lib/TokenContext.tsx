@@ -28,8 +28,11 @@ export function TokenContextProvider({ children }: { children: ReactNode }) {
   const [switchingToSlug, setSwitchingToSlug] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Get token slug from URL path (e.g., /zera -> 'zera')
-  const tokenSlug = pathname.split('/')[1] || 'zera';
+  // Get token slug from URL path
+  // Handle both /zera and /preview/zera
+  const pathParts = pathname.split('/').filter(Boolean);
+  const isPreviewRoute = pathParts[0] === 'preview';
+  const tokenSlug = isPreviewRoute ? pathParts[1] : pathParts[0] || 'zera';
 
   // Fetch all projects for dropdown
   useEffect(() => {
@@ -47,6 +50,9 @@ export function TokenContextProvider({ children }: { children: ReactNode }) {
     fetchProjects();
   }, []);
 
+  // Check for preview mode from URL path or query param
+  const isPreview = isPreviewRoute || searchParams.get('preview') === 'true';
+
   // Fetch current project configuration
   useEffect(() => {
     async function fetchProjectConfig() {
@@ -54,14 +60,19 @@ export function TokenContextProvider({ children }: { children: ReactNode }) {
       setError(null);
 
       try {
-        const response = await fetch(`/api/projects/${tokenSlug}`);
+        // Pass preview param to API if set
+        const url = isPreview
+          ? `/api/projects/${tokenSlug}?preview=true`
+          : `/api/projects/${tokenSlug}`;
+        const response = await fetch(url);
         if (!response.ok) {
           // Project not found, redirect to first available project
           if (allProjects.length > 0) {
             const firstProject = allProjects[0].slug;
             const params = new URLSearchParams(searchParams.toString());
             const queryString = params.toString();
-            router.replace(`/${firstProject}${queryString ? `?${queryString}` : ''}`);
+            const basePath = isPreviewRoute ? `/preview/${firstProject}` : `/${firstProject}`;
+            router.replace(`${basePath}${queryString ? `?${queryString}` : ''}`);
             return;
           } else {
             // If projects list not loaded yet, fetch it and redirect
@@ -73,7 +84,8 @@ export function TokenContextProvider({ children }: { children: ReactNode }) {
                   const firstProject = projects[0].slug;
                   const params = new URLSearchParams(searchParams.toString());
                   const queryString = params.toString();
-                  router.replace(`/${firstProject}${queryString ? `?${queryString}` : ''}`);
+                  const basePath = isPreviewRoute ? `/preview/${firstProject}` : `/${firstProject}`;
+                  router.replace(`${basePath}${queryString ? `?${queryString}` : ''}`);
                   return;
                 }
               }
@@ -100,9 +112,10 @@ export function TokenContextProvider({ children }: { children: ReactNode }) {
     if (tokenSlug) {
       fetchProjectConfig();
     }
-    // Note: searchParams intentionally excluded to prevent refetching on timeframe changes
+    // Note: most searchParams intentionally excluded to prevent refetching on timeframe changes
+    // isPreview is included because it affects data fetching
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tokenSlug, allProjects]);
+  }, [tokenSlug, allProjects, isPreview]);
 
   // Switch to different project
   const switchProject = (slug: string) => {
@@ -111,7 +124,10 @@ export function TokenContextProvider({ children }: { children: ReactNode }) {
     setSwitchingToSlug(slug);
     const params = new URLSearchParams(searchParams.toString());
     const queryString = params.toString();
-    router.push(`/${slug}${queryString ? `?${queryString}` : ''}`, { scroll: false });
+
+    // Maintain preview route if currently in preview mode
+    const basePath = isPreviewRoute ? `/preview/${slug}` : `/${slug}`;
+    router.push(`${basePath}${queryString ? `?${queryString}` : ''}`, { scroll: false });
   };
 
   return (

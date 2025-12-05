@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getHolderSnapshots } from '@/lib/holderSnapshotService';
+import { getUser, createClient } from '@/lib/supabase-server';
 import type { ProjectConfig } from '@/lib/types';
 
 /**
@@ -52,19 +53,40 @@ export async function GET(
     const searchParams = request.nextUrl.searchParams;
     const timeframe = (searchParams.get('timeframe') || '30D') as HolderTimeframe;
 
-    // Fetch project config
-    const projectResponse = await fetch(`${request.url.split('/api')[0]}/api/projects/${slug}`, {
-      next: { revalidate: 300 },
-    });
+    // Check if user is admin for preview mode
+    const user = await getUser();
+    const isAdmin = !!user;
 
-    if (!projectResponse.ok) {
+    // Fetch project directly from database with proper auth context
+    const supabase = await createClient();
+    let query = supabase
+      .from('projects')
+      .select(`
+        *,
+        pools:pools(*)
+      `)
+      .eq('slug', slug);
+
+    // Skip active check if admin
+    if (!isAdmin) {
+      query = query.eq('is_active', true).eq('enabled', true);
+    }
+
+    const { data: projectData, error: projectError } = await query.single();
+
+    if (projectError || !projectData) {
       return NextResponse.json(
         { error: 'Project not found' },
         { status: 404 }
       );
     }
 
-    const project: ProjectConfig = await projectResponse.json();
+    // Map to ProjectConfig format
+    const project: ProjectConfig = {
+      ...projectData,
+      pools: projectData.pools || [],
+      migrations: [], // Not needed for holders
+    };
 
     // Get current token address
     const currentPool = project.pools[project.pools.length - 1];
