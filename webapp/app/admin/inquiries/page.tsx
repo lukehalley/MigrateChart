@@ -22,9 +22,30 @@ export default async function InquiriesPage() {
   return (
     <div className="inquiries-page">
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
         .inquiries-page {
-          padding: 3rem;
+          --bg: #0a0a0a;
+          --surface: transparent;
+          --surface-elevated: rgba(0, 0, 0, 0.3);
+          --border: rgba(82, 201, 125, 0.15);
+          --border-subtle: rgba(82, 201, 125, 0.05);
+          --text: #ffffff;
+          --text-secondary: rgba(255, 255, 255, 0.7);
+          --text-muted: rgba(255, 255, 255, 0.4);
+          --primary: #52C97D;
+          --green: #52C97D;
+          --green-dim: rgba(82, 201, 125, 0.12);
+          --green-glow: rgba(82, 201, 125, 0.2);
+          --orange: #D4A853;
+          --orange-dim: rgba(212, 168, 83, 0.12);
+          --red: #ef5350;
+          --blue: #5B9BD5;
+
+          padding: 2.5rem 3rem;
           max-width: 1400px;
+          font-family: 'JetBrains Mono', monospace;
+          -webkit-font-smoothing: antialiased;
         }
 
         .page-header {
@@ -32,26 +53,32 @@ export default async function InquiriesPage() {
         }
 
         .page-title {
-          font-family: 'Fraunces', serif;
-          font-size: 2.5rem;
-          font-weight: 400;
-          color: var(--text-primary);
-          margin-bottom: 0.5rem;
+          font-family: 'Syne', sans-serif;
+          font-size: 1.75rem;
+          font-weight: 600;
+          color: var(--text);
+          letter-spacing: -0.02em;
+          margin-bottom: 0.35rem;
         }
 
         .page-subtitle {
-          font-size: 0.75rem;
+          font-size: 0.8rem;
           color: var(--text-muted);
-          letter-spacing: 0.05em;
         }
 
         .page-subtitle .highlight {
-          color: var(--accent);
+          color: var(--green);
         }
 
         .inquiries-list {
-          background: var(--bg-secondary);
+          background: transparent;
           border: 1px solid var(--border);
+          transition: all 0.2s ease;
+        }
+
+        .inquiries-list:hover {
+          box-shadow: 0 0 20px var(--green-glow);
+          border-color: rgba(82, 201, 125, 0.3);
         }
 
         .list-header {
@@ -64,6 +91,7 @@ export default async function InquiriesPage() {
         }
 
         .list-header-cell {
+          font-family: 'JetBrains Mono', monospace;
           font-size: 0.6rem;
           color: var(--text-muted);
           letter-spacing: 0.15em;
@@ -85,7 +113,7 @@ export default async function InquiriesPage() {
         }
 
         .inquiry-row:hover {
-          background: rgba(255, 255, 255, 0.02);
+          background: rgba(255, 255, 255, 0.015);
         }
 
         .inquiry-project {
@@ -95,9 +123,10 @@ export default async function InquiriesPage() {
         }
 
         .project-name {
-          font-size: 0.95rem;
-          color: var(--text-primary);
+          font-family: 'Syne', sans-serif;
+          font-size: 0.85rem;
           font-weight: 500;
+          color: var(--text);
         }
 
         .project-tokens {
@@ -114,6 +143,7 @@ export default async function InquiriesPage() {
         }
 
         .token-label {
+          font-family: 'JetBrains Mono', monospace;
           color: var(--text-muted);
           width: 28px;
         }
@@ -132,45 +162,38 @@ export default async function InquiriesPage() {
         }
 
         .contact-name {
-          font-size: 0.85rem;
-          color: var(--text-primary);
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 0.75rem;
+          color: var(--text);
         }
 
         .contact-email {
-          font-size: 0.7rem;
-          color: var(--accent);
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 0.65rem;
+          color: var(--green);
         }
 
         .contact-telegram {
-          font-size: 0.7rem;
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 0.65rem;
           color: var(--text-muted);
-        }
-
-        .inquiry-message {
-          font-size: 0.7rem;
-          color: var(--text-muted);
-          line-height: 1.5;
-          max-width: 250px;
-        }
-
-        .inquiry-message.empty {
-          font-style: italic;
-          opacity: 0.5;
         }
 
         .migrate-link {
-          font-size: 0.7rem;
-          color: var(--accent);
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 0.65rem;
+          color: var(--green);
           text-decoration: none;
-          transition: opacity 0.15s;
+          transition: all 0.15s ease;
         }
 
         .migrate-link:hover {
-          opacity: 0.7;
+          text-shadow: 0 0 8px var(--green-glow);
         }
 
         .cell-value {
-          font-size: 0.75rem;
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 0.7rem;
           color: var(--text-secondary);
         }
 
@@ -179,57 +202,55 @@ export default async function InquiriesPage() {
           align-items: center;
           gap: 0.4rem;
           padding: 0.3rem 0.6rem;
+          font-family: 'JetBrains Mono', monospace;
           font-size: 0.6rem;
-          letter-spacing: 0.08em;
+          font-weight: 500;
+          letter-spacing: 0.03em;
           text-transform: uppercase;
-          border: 1px solid;
+          border-radius: 3px;
         }
 
-        .status-pending {
-          color: var(--warning);
-          border-color: rgba(212, 168, 83, 0.3);
-          background: rgba(212, 168, 83, 0.1);
+        .status-badge.status-pending {
+          background: var(--orange-dim);
+          color: var(--orange);
         }
 
-        .status-contacted {
-          color: #6ba3d4;
-          border-color: rgba(107, 163, 212, 0.3);
-          background: rgba(107, 163, 212, 0.1);
+        .status-badge.status-contacted {
+          background: rgba(91, 155, 213, 0.12);
+          color: var(--blue);
         }
 
-        .status-approved {
-          color: var(--success);
-          border-color: rgba(124, 182, 135, 0.3);
-          background: rgba(124, 182, 135, 0.1);
+        .status-badge.status-approved {
+          background: var(--green-dim);
+          color: var(--green);
         }
 
-        .status-rejected {
-          color: var(--error);
-          border-color: rgba(196, 92, 92, 0.3);
-          background: rgba(196, 92, 92, 0.1);
+        .status-badge.status-rejected {
+          background: rgba(239, 83, 80, 0.12);
+          color: var(--red);
         }
 
         .empty-state {
-          padding: 4rem 2rem;
+          padding: 3rem 1.5rem;
           text-align: center;
         }
 
         .empty-icon {
-          font-size: 3rem;
+          width: 48px;
+          height: 48px;
+          margin: 0 auto 1rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: var(--border);
+          border-radius: 50%;
+          font-size: 1.25rem;
           color: var(--text-muted);
-          opacity: 0.3;
-          margin-bottom: 1rem;
-        }
-
-        .empty-title {
-          font-family: 'Fraunces', serif;
-          font-size: 1.5rem;
-          color: var(--text-primary);
-          margin-bottom: 0.5rem;
         }
 
         .empty-text {
-          font-size: 0.75rem;
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 0.8rem;
           color: var(--text-muted);
         }
 
@@ -328,10 +349,7 @@ export default async function InquiriesPage() {
         ) : (
           <div className="empty-state">
             <div className="empty-icon">◎</div>
-            <h3 className="empty-title">No Inquiries Yet</h3>
-            <p className="empty-text">
-              When projects submit listing requests, they'll appear here.
-            </p>
+            <p className="empty-text">No inquiries yet</p>
           </div>
         )}
       </div>

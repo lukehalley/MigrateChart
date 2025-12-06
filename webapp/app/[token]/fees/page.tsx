@@ -125,7 +125,7 @@ function FeesPageContent() {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="sticky top-0 z-50 backdrop-blur-xl bg-black/80"
+        className="sticky top-0 z-50 backdrop-blur-xl bg-black/30"
         style={{
           borderBottom: `1px solid ${primaryColor}40`,
           boxShadow: `0 4px 24px -8px ${primaryColor}40`
@@ -362,7 +362,7 @@ function FeesPageContent() {
                             content={
                               <ChartTooltipContent
                                 className="terminal-card  text-xs"
-                                style={{ borderColor: primaryColor, backgroundColor: '#000' }}
+                                style={{ borderColor: primaryColor, backgroundColor: 'rgba(0, 0, 0, 0.8)' }}
                                 labelFormatter={(value) => `${value}`}
                                 formatter={(value) => formatNumber(Number(value))}
                               />
@@ -409,7 +409,7 @@ function FeesPageContent() {
                             content={
                               <ChartTooltipContent
                                 className="terminal-card  text-xs"
-                                style={{ borderColor: primaryColor, backgroundColor: '#000' }}
+                                style={{ borderColor: primaryColor, backgroundColor: 'rgba(0, 0, 0, 0.8)' }}
                                 labelFormatter={(value) => `${value}`}
                                 formatter={(value) => formatNumber(Number(value))}
                               />

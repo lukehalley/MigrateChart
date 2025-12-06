@@ -396,9 +396,10 @@ export function migrationToPoolConfigs(migration: MigrationProject) {
     // Old token pool (legacy)
     {
       token_address: migration.oldToken.address,
+      pool_address: migration.oldToken.address, // Legacy pool uses token address
       token_symbol: migration.oldToken.symbol,
       pool_name: `${migration.oldToken.name} (Legacy)`, // Use full token name, not symbol
-      dex_type: 'unknown', // Would need to detect from pool
+      dex_type: 'unknown' as const, // Would need to detect from pool
       fee_rate: 0,
       order_index: 0,
       is_legacy: true,
@@ -407,9 +408,10 @@ export function migrationToPoolConfigs(migration: MigrationProject) {
     // New token pool
     {
       token_address: migration.newToken.address,
+      pool_address: migration.newToken.address, // Will be updated with discovered pool
       token_symbol: migration.newToken.symbol,
       pool_name: migration.newToken.name, // Use full token name
-      dex_type: 'raydium', // Most migrate.fun projects use Raydium
+      dex_type: 'raydium' as string, // Most migrate.fun projects use Raydium
       fee_rate: 0.008, // 0.8% typical
       order_index: 1,
       is_legacy: false

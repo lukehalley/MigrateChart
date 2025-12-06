@@ -71,14 +71,15 @@ export default async function ProjectsPage() {
         }
 
         .page-title {
-          font-family: 'Fraunces', serif;
+          font-family: 'Syne', sans-serif;
           font-size: 2.5rem;
-          font-weight: 400;
+          font-weight: 600;
           color: var(--text-primary);
           margin-bottom: 0.5rem;
         }
 
         .page-subtitle {
+          font-family: 'JetBrains Mono', monospace;
           font-size: 0.75rem;
           color: var(--text-muted);
           letter-spacing: 0.05em;
@@ -100,30 +101,32 @@ export default async function ProjectsPage() {
         }
 
         .btn-primary {
-          background: var(--accent);
-          border-color: var(--accent);
-          color: var(--bg-primary);
+          background: #52C97D;
+          border-color: #52C97D;
+          color: #0A0A0A;
         }
 
         .btn-primary:hover {
-          background: #e5b964;
-          border-color: #e5b964;
+          background: #6DD490;
+          border-color: #6DD490;
+          box-shadow: 0 0 20px rgba(82, 201, 125, 0.2);
         }
 
         .btn-secondary {
           background: transparent;
-          border-color: var(--border);
+          border-color: rgba(82, 201, 125, 0.15);
           color: var(--text-secondary);
         }
 
         .btn-secondary:hover {
-          border-color: var(--text-muted);
+          border-color: rgba(82, 201, 125, 0.3);
           color: var(--text-primary);
+          box-shadow: 0 0 20px rgba(82, 201, 125, 0.2);
         }
 
         .projects-table {
-          background: var(--bg-secondary);
-          border: 1px solid var(--border);
+          background: rgba(255, 255, 255, 0.02);
+          border: 1px solid rgba(82, 201, 125, 0.15);
         }
 
         .table-header {
@@ -131,12 +134,14 @@ export default async function ProjectsPage() {
           grid-template-columns: 2fr 1fr 140px 1fr 1fr 120px;
           gap: 1rem;
           padding: 1rem 1.5rem;
-          border-bottom: 1px solid var(--border);
+          border-bottom: 1px solid rgba(82, 201, 125, 0.15);
           background: rgba(0, 0, 0, 0.2);
         }
 
         .table-header-cell {
+          font-family: 'Syne', sans-serif;
           font-size: 0.6rem;
+          font-weight: 600;
           color: var(--text-muted);
           letter-spacing: 0.15em;
           text-transform: uppercase;
@@ -147,9 +152,9 @@ export default async function ProjectsPage() {
           grid-template-columns: 2fr 1fr 140px 1fr 1fr 120px;
           gap: 1rem;
           padding: 1.25rem 1.5rem;
-          border-bottom: 1px solid var(--border-subtle);
+          border-bottom: 1px solid rgba(82, 201, 125, 0.08);
           align-items: center;
-          transition: background 0.1s;
+          transition: all 0.15s;
         }
 
         .table-row:last-child {
@@ -157,7 +162,8 @@ export default async function ProjectsPage() {
         }
 
         .table-row:hover {
-          background: rgba(255, 255, 255, 0.02);
+          background: rgba(82, 201, 125, 0.05);
+          box-shadow: 0 0 20px rgba(82, 201, 125, 0.2);
         }
 
         .project-info {
@@ -171,7 +177,7 @@ export default async function ProjectsPage() {
           height: 40px;
           border-radius: 50%;
           background: var(--bg-elevated);
-          border: 1px solid var(--border);
+          border: 1px solid rgba(82, 201, 125, 0.15);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -192,17 +198,20 @@ export default async function ProjectsPage() {
         }
 
         .project-name {
+          font-family: 'Syne', sans-serif;
           font-size: 0.9rem;
           color: var(--text-primary);
-          font-weight: 500;
+          font-weight: 600;
         }
 
         .project-slug {
+          font-family: 'JetBrains Mono', monospace;
           font-size: 0.7rem;
           color: var(--text-muted);
         }
 
         .cell-value {
+          font-family: 'JetBrains Mono', monospace;
           font-size: 0.8rem;
           color: var(--text-secondary);
         }
@@ -212,6 +221,7 @@ export default async function ProjectsPage() {
           align-items: center;
           gap: 0.4rem;
           padding: 0.3rem 0.6rem;
+          font-family: 'JetBrains Mono', monospace;
           font-size: 0.6rem;
           letter-spacing: 0.08em;
           text-transform: uppercase;
@@ -232,16 +242,17 @@ export default async function ProjectsPage() {
 
         .status-enabled .status-dot {
           background: #52C97D;
+          box-shadow: 0 0 4px rgba(82, 201, 125, 0.5);
         }
 
         .status-disabled {
-          color: #D4A853;
-          border-color: rgba(212, 168, 83, 0.3);
-          background: rgba(212, 168, 83, 0.1);
+          color: #888;
+          border-color: rgba(136, 136, 136, 0.3);
+          background: rgba(136, 136, 136, 0.1);
         }
 
         .status-disabled .status-dot {
-          background: #D4A853;
+          background: #888;
         }
 
         .data-status {
@@ -254,6 +265,7 @@ export default async function ProjectsPage() {
           display: flex;
           align-items: center;
           gap: 0.25rem;
+          font-family: 'JetBrains Mono', monospace;
           font-size: 0.65rem;
           color: var(--text-muted);
         }
@@ -286,13 +298,15 @@ export default async function ProjectsPage() {
         }
 
         .empty-title {
-          font-family: 'Fraunces', serif;
+          font-family: 'Syne', sans-serif;
           font-size: 1.5rem;
+          font-weight: 600;
           color: var(--text-primary);
           margin-bottom: 0.5rem;
         }
 
         .empty-text {
+          font-family: 'JetBrains Mono', monospace;
           font-size: 0.75rem;
           color: var(--text-muted);
           margin-bottom: 1.5rem;

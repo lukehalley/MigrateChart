@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import {
   ArrowRight,
   BarChart3,
@@ -10,9 +10,6 @@ import {
   Zap,
   ChevronRight,
 } from "lucide-react";
-import Particles from "@tsparticles/react";
-import { loadSlim } from "@tsparticles/slim";
-import type { Engine } from "@tsparticles/engine";
 import { AnimatedCandlestickBackground } from "./AnimatedCandlestickBackground";
 
 interface ProjectListItem {
@@ -29,10 +26,6 @@ export default function LandingPageNew() {
   const { scrollY } = useScroll();
   const heroOpacity = useTransform(scrollY, [0, 300], [1, 0]);
   const heroScale = useTransform(scrollY, [0, 300], [1, 0.95]);
-
-  const particlesInit = useCallback(async (engine: Engine) => {
-    await loadSlim(engine);
-  }, []);
 
   useEffect(() => {
     setMounted(true);
@@ -56,100 +49,7 @@ export default function LandingPageNew() {
   }, []);
 
   return (
-    <div className="landing" suppressHydrationWarning>
-      {/* Particles Background - Fixed throughout scroll */}
-      {mounted && (
-        <div suppressHydrationWarning>
-          <Particles
-            id="tsparticles"
-            init={particlesInit}
-            options={{
-            background: {
-              color: {
-                value: "transparent",
-              },
-            },
-            fpsLimit: 60,
-            particles: {
-              number: {
-                value: 60,
-                density: {
-                  enable: true,
-                  width: 1920,
-                  height: 1080,
-                },
-              },
-              color: {
-                value: ["#52C97D", "#3FAA66", "#2D7A4A"],
-              },
-              shape: {
-                type: "circle",
-              },
-              opacity: {
-                value: { min: 0.1, max: 0.4 },
-                animation: {
-                  enable: true,
-                  speed: 0.5,
-                  sync: false,
-                },
-              },
-              size: {
-                value: { min: 1, max: 3 },
-              },
-              links: {
-                enable: true,
-                distance: 150,
-                color: "#52C97D",
-                opacity: 0.15,
-                width: 1,
-              },
-              move: {
-                enable: true,
-                speed: 0.5,
-                direction: "top",
-                random: true,
-                straight: false,
-                outModes: {
-                  default: "out",
-                },
-              },
-            },
-            interactivity: {
-              detectsOn: "window",
-              events: {
-                onHover: {
-                  enable: true,
-                  mode: "grab",
-                },
-                resize: {
-                  enable: true,
-                  delay: 0.5,
-                },
-              },
-              modes: {
-                grab: {
-                  distance: 200,
-                  links: {
-                    opacity: 0.5,
-                    color: "#52C97D",
-                  },
-                },
-              },
-            },
-            detectRetina: true,
-          }}
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            zIndex: 1,
-          }}
-          />
-        </div>
-      )}
-
+    <div className={`landing ${mounted ? 'mounted' : ''}`} suppressHydrationWarning>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&display=swap');
 
@@ -158,39 +58,145 @@ export default function LandingPageNew() {
           --primary-dark: #3FAA66;
           --primary-darker: #2D7A4A;
           --accent: #D4A853;
+          --accent-dark: #B8913D;
           --bg: #000000;
-          --surface: #0a0a0a;
-          --surface-elevated: #111111;
+          --bg-subtle: #030303;
+          --surface: #060606;
+          --surface-elevated: #0a0a0a;
           --text: #ffffff;
           --text-secondary: rgba(255, 255, 255, 0.7);
           --text-muted: rgba(255, 255, 255, 0.4);
           --border: rgba(82, 201, 125, 0.15);
+          --border-accent: rgba(212, 168, 83, 0.15);
 
           min-height: 100vh;
-          background: var(--bg);
+          background:
+            /* Terminal character grid - more visible */
+            repeating-linear-gradient(
+              0deg,
+              transparent,
+              transparent 2px,
+              rgba(82, 201, 125, 0.06) 2px,
+              rgba(82, 201, 125, 0.06) 3px
+            ),
+            repeating-linear-gradient(
+              90deg,
+              transparent,
+              transparent 2px,
+              rgba(82, 201, 125, 0.04) 2px,
+              rgba(82, 201, 125, 0.04) 3px
+            ),
+            /* Radial accent gradients */
+            radial-gradient(
+              ellipse 120% 80% at 50% 20%,
+              rgba(82, 201, 125, 0.08) 0%,
+              transparent 50%
+            ),
+            radial-gradient(
+              ellipse 100% 70% at 80% 80%,
+              rgba(212, 168, 83, 0.05) 0%,
+              transparent 50%
+            ),
+            /* Noise texture for terminal feel */
+            url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E"),
+            /* Base color */
+            #000000;
+          background-size: 3px 3px, 3px 3px, 100% 100%, 100% 100%, 200px 200px, 100% 100%;
+          background-attachment: fixed;
           color: var(--text);
           font-family: 'JetBrains Mono', monospace;
           overflow-x: hidden;
           position: relative;
         }
 
-        /* Animated Grid Background */
-        .landing::before {
+        /* CRT scanline effect - more visible */
+        .landing.mounted::before {
           content: '';
           position: fixed;
           inset: 0;
-          background-image:
-            linear-gradient(rgba(82, 201, 125, 0.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(82, 201, 125, 0.03) 1px, transparent 1px);
-          background-size: 60px 60px;
-          mask-image: radial-gradient(ellipse 100% 100% at 50% 50%, black 0%, transparent 70%);
+          background:
+            repeating-linear-gradient(
+              0deg,
+              rgba(0, 0, 0, 0.3),
+              rgba(0, 0, 0, 0.3) 1px,
+              transparent 1px,
+              transparent 3px
+            ),
+            repeating-linear-gradient(
+              0deg,
+              transparent,
+              transparent 6px,
+              rgba(82, 201, 125, 0.03) 6px,
+              rgba(82, 201, 125, 0.03) 7px
+            );
+          background-size: 100% 3px, 100% 7px;
           pointer-events: none;
-          animation: gridScroll 40s linear infinite;
+          z-index: 1;
+          opacity: 1;
+          animation: scanline 12s linear infinite;
         }
 
-        @keyframes gridScroll {
-          0% { transform: translate(0, 0); }
-          100% { transform: translate(60px, 60px); }
+        @keyframes scanline {
+          0% { transform: translateY(0); }
+          100% { transform: translateY(7px); }
+        }
+
+        /* Film grain overlay */
+        .landing::after {
+          content: '';
+          position: fixed;
+          inset: 0;
+          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+          opacity: 0.06;
+          pointer-events: none;
+          z-index: 9999;
+        }
+
+        /* Header */
+        .header {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          padding: 2rem;
+          z-index: 100;
+          display: flex;
+          justify-content: flex-start;
+        }
+
+        .logo-link {
+          display: inline-block;
+          text-decoration: none;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .logo-link:hover {
+          transform: translateY(-2px);
+        }
+
+        .logo-svg {
+          width: 60px;
+          height: 60px;
+          color: var(--primary);
+          filter: drop-shadow(0 0 12px rgba(82, 201, 125, 0.6))
+                  drop-shadow(0 0 6px rgba(82, 201, 125, 0.4));
+          transition: all 0.3s ease;
+        }
+
+        .logo-link:hover .logo-svg {
+          filter: drop-shadow(0 0 20px rgba(82, 201, 125, 0.8))
+                  drop-shadow(0 0 10px rgba(82, 201, 125, 0.6));
+        }
+
+        @media (max-width: 768px) {
+          .header {
+            padding: 1.5rem;
+          }
+
+          .logo-svg {
+            width: 48px;
+            height: 48px;
+          }
         }
 
         /* Hero Section */
@@ -202,12 +208,14 @@ export default function LandingPageNew() {
           justify-content: center;
           padding: 2rem;
           position: relative;
-          z-index: 1;
+          z-index: 2;
         }
 
         .hero-content {
           max-width: 1000px;
           text-align: center;
+          position: relative;
+          z-index: 3;
         }
 
         .hero-title {
@@ -302,7 +310,7 @@ export default function LandingPageNew() {
         .features {
           padding: 8rem 2rem;
           position: relative;
-          z-index: 1;
+          background: transparent;
         }
 
         .features-container {
@@ -352,35 +360,17 @@ export default function LandingPageNew() {
         }
 
         .feature-card {
-          background: var(--surface);
+          background: transparent;
           border: 1px solid var(--border);
           padding: 2rem;
-          border-radius: 8px;
-          transition: all 0.3s ease;
-          position: relative;
-        }
-
-        .feature-card::before {
-          content: '';
-          position: absolute;
-          inset: 0;
-          border-radius: 8px;
-          padding: 1px;
-          background: linear-gradient(135deg, var(--primary), transparent);
-          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-          -webkit-mask-composite: xor;
-          mask-composite: exclude;
-          opacity: 0;
-          transition: opacity 0.3s ease;
-        }
-
-        .feature-card:hover::before {
-          opacity: 1;
+          border-radius: 12px;
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .feature-card:hover {
-          transform: translateY(-4px);
+          transform: translateY(-8px);
           box-shadow: 0 20px 40px rgba(82, 201, 125, 0.15);
+          border-color: rgba(82, 201, 125, 0.3);
         }
 
         .feature-icon {
@@ -412,9 +402,8 @@ export default function LandingPageNew() {
         /* Projects Showcase */
         .projects {
           padding: 8rem 2rem;
-          background: var(--surface);
+          background: transparent;
           position: relative;
-          z-index: 1;
         }
 
         .projects-container {
@@ -434,32 +423,17 @@ export default function LandingPageNew() {
           align-items: center;
           gap: 1rem;
           padding: 2rem;
-          background: var(--surface-elevated);
+          background: transparent;
           border: 1px solid var(--border);
-          border-radius: 8px;
+          border-radius: 16px;
           text-decoration: none;
-          transition: all 0.3s ease;
-          position: relative;
-        }
-
-        .project-card::before {
-          content: '';
-          position: absolute;
-          inset: -1px;
-          background: linear-gradient(135deg, var(--primary), transparent);
-          border-radius: 8px;
-          opacity: 0;
-          transition: opacity 0.3s ease;
-          z-index: -1;
-        }
-
-        .project-card:hover::before {
-          opacity: 1;
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .project-card:hover {
-          transform: translateY(-8px);
-          box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+          transform: translateY(-12px) scale(1.02);
+          box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4), 0 0 40px rgba(82, 201, 125, 0.15);
+          border-color: rgba(82, 201, 125, 0.4);
         }
 
         .project-logo {
@@ -485,19 +459,19 @@ export default function LandingPageNew() {
 
         /* CTA Section */
         .cta-section {
-          padding: 8rem 2rem;
+          padding: 10rem 2rem;
           text-align: center;
           position: relative;
-          z-index: 1;
+          background: transparent;
         }
 
         .cta-content {
           max-width: 800px;
           margin: 0 auto;
           padding: 4rem;
-          background: var(--surface);
-          border: 2px solid var(--border);
-          border-radius: 12px;
+          background: transparent;
+          border: 1px solid var(--border);
+          border-radius: 16px;
           box-shadow: 0 0 80px rgba(82, 201, 125, 0.1);
         }
 
@@ -522,10 +496,8 @@ export default function LandingPageNew() {
         /* Footer */
         .footer {
           padding: 4rem 2rem;
-          border-top: 1px solid var(--border);
           text-align: center;
-          position: relative;
-          z-index: 1;
+          background: transparent;
         }
 
         .footer-content {
@@ -538,11 +510,26 @@ export default function LandingPageNew() {
           gap: 2rem;
         }
 
-        .footer-logo {
-          font-family: 'Syne', sans-serif;
-          font-size: 1.25rem;
-          font-weight: 700;
+        .footer-logo-link {
+          display: inline-block;
+          text-decoration: none;
+          transition: all 0.3s ease;
+        }
+
+        .footer-logo-link:hover {
+          transform: translateY(-2px);
+        }
+
+        .footer-logo-svg {
+          width: 40px;
+          height: 40px;
           color: var(--primary);
+          filter: drop-shadow(0 0 8px rgba(82, 201, 125, 0.5));
+          transition: all 0.3s ease;
+        }
+
+        .footer-logo-link:hover .footer-logo-svg {
+          filter: drop-shadow(0 0 15px rgba(82, 201, 125, 0.7));
         }
 
         .footer-links {
@@ -587,6 +574,30 @@ export default function LandingPageNew() {
           }
         }
       `}</style>
+
+      {/* Header with Logo */}
+      <motion.header
+        className="header"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, delay: 0.1 }}
+      >
+        <Link href="/" className="logo-link">
+          <svg
+            className="logo-svg"
+            viewBox="57 135 388 232"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-label="Migrate Chart"
+          >
+            <path fill="currentColor" d="M135.423309,290.383972 C135.222244,292.157013 134.849457,293.929749 134.846222,295.703156 C134.806274,317.680511 134.820129,339.657990 134.820129,361.635437 C134.820129,363.432007 134.820129,365.228577 134.820129,367.319092 C108.857216,367.319092 83.287056,367.319092 57.352207,367.319092 C57.352207,341.704376 57.352207,316.037659 57.352207,289.918823 C83.140572,289.918823 108.899254,289.918823 135.063660,290.174957 C135.469360,290.431091 135.423309,290.383972 135.423309,290.383972z"/>
+            <path fill="currentColor" d="M290.364258,290.336945 C290.217560,292.805908 289.947449,295.274719 289.943604,297.743896 C289.910065,319.238007 289.924225,340.732239 289.924225,362.226410 C289.924225,363.852112 289.924225,365.477844 289.924225,367.357361 C263.907196,367.357361 238.310226,367.357361 211.965073,367.357361 C211.965073,341.967926 211.965073,316.566803 211.812134,290.761261 C211.659195,290.356812 211.589157,290.420380 211.589157,290.420380 C213.204071,290.267975 214.818726,289.985748 216.433914,289.982635 C240.827682,289.935608 265.221497,289.925293 290.014832,290.152710 C290.414307,290.399109 290.364258,290.336945 290.364258,290.336945z"/>
+            <path fill="currentColor" d="M445.290466,169.000153 C445.290466,183.634445 445.290466,197.768707 445.290466,212.257187 C419.463715,212.257187 393.941895,212.257187 368.161346,212.257187 C368.161346,186.667191 368.161346,161.109375 368.161346,135.257370 C393.655151,135.257370 419.195465,135.257370 445.290466,135.257370 C445.290466,146.339661 445.290466,157.419907 445.290466,169.000153z"/>
+            <path fill="currentColor" d="M135.497192,290.448730 C135.251816,289.392853 134.742188,288.319763 134.740173,287.245728 C134.695267,263.252930 134.703552,239.260025 134.718506,215.267151 C134.719009,214.463577 134.893936,213.660110 135.013840,212.631134 C160.586761,212.631134 186.014481,212.631134 212.069183,212.631134 C212.069183,238.286774 212.069183,263.867767 211.829163,289.934570 C211.589157,290.420380 211.659195,290.356812 211.677277,290.329926 C186.528381,290.218719 161.361404,290.134399 135.808868,290.217041 C135.423309,290.383972 135.469360,290.431091 135.497192,290.448730z"/>
+            <path fill="currentColor" d="M290.446106,290.423218 C290.253357,289.345978 289.834564,288.244904 289.832825,287.143219 C289.795258,263.321381 289.801147,239.499527 289.815552,215.677673 C289.816132,214.720184 289.982727,213.762787 290.090454,212.607132 C315.730774,212.607132 341.153046,212.607132 366.859802,212.607132 C366.859802,238.324921 366.859802,263.892670 366.859802,290.047455 C341.672607,290.047455 316.414978,290.047455 290.760803,290.192200 C290.364258,290.336945 290.414307,290.399109 290.446106,290.423218z"/>
+            <path fill="currentColor" d="M445.290466,302.007385 C445.290466,323.963470 445.290466,345.421448 445.290466,367.245850 C419.480499,367.245850 393.966675,367.245850 368.177490,367.245850 C368.177490,341.667480 368.177490,316.112549 368.177490,290.260376 C393.644684,290.260376 419.183838,290.260376 445.290466,290.260376 C445.290466,293.993011 445.290466,297.751160 445.290466,302.007385z"/>
+          </svg>
+        </Link>
+      </motion.header>
 
       {/* Hero Section */}
       <motion.section
@@ -633,8 +644,8 @@ export default function LandingPageNew() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
           >
-            Track Every <span className="hero-highlight">Migration</span> With
-            Precision
+            Your Complete Price History.{" "}
+            <span className="hero-highlight">Before & After</span> Migration.
           </motion.h1>
 
           <motion.p
@@ -643,9 +654,7 @@ export default function LandingPageNew() {
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 0.4 }}
           >
-            Complete price history, holder analytics, and fee tracking for
-            migrated Solana tokens. Trusted by projects launching through
-            migrate.fun.
+            When You Migrate Pools, Your Price History Doesn't Disappear. We Stitch Together Every Pool Transition Into One Continuous Chart. Show Your Community The Full Journey.
           </motion.p>
 
           <motion.div
@@ -655,11 +664,11 @@ export default function LandingPageNew() {
             transition={{ duration: 1, delay: 0.6 }}
           >
             <Link href="/zera" className="btn btn-primary">
-              Explore Live Projects
+              See An Example
               <ArrowRight size={20} strokeWidth={2.5} />
             </Link>
             <Link href="/contact" className="btn btn-secondary">
-              List Your Project
+              Add Your Token
             </Link>
           </motion.div>
         </motion.div>
@@ -693,18 +702,17 @@ export default function LandingPageNew() {
         <div className="features-container">
           <div className="section-header">
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              style={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
+              viewport={{ once: true, margin: "-100px" }}
               transition={{ duration: 0.8 }}
             >
-              <div className="section-label">Premium Analytics</div>
+              <div className="section-label">THE PROBLEM WE SOLVE</div>
               <h2 className="section-title">
-                Built for Migration Transparency
+                Migrations Break Your Price History
               </h2>
               <p className="section-description">
-                We stitch together complete price history across pool
-                migrations, giving your community the full story.
+                After Migrating To A New Pool, Your Chart Starts From Zero. Old Price Data Disappears. Your Community Loses Context. We Fix That.
               </p>
             </motion.div>
           </div>
@@ -713,35 +721,28 @@ export default function LandingPageNew() {
             {[
               {
                 icon: <BarChart3 size={24} />,
-                title: "Complete History",
+                title: "Unified Timeline",
                 description:
-                  "Seamlessly merged charts across pump.fun, Raydium, Meteora, and more.",
+                  "One continuous price chart from your first pool to your current pool. Every candle, every migration, one story.",
               },
               {
                 icon: <Database size={24} />,
-                title: "Holder Tracking",
+                title: "Pre-Migration Data",
                 description:
-                  "Time-series snapshots showing holder growth and retention over time.",
+                  "See price action before the migration. Show investors what happened during the transition. No more missing context.",
               },
               {
                 icon: <Zap size={24} />,
-                title: "Fee Analytics",
+                title: "Migration Markers",
                 description:
-                  "Real-time fee accumulation tracking with historical breakdowns.",
+                  "Visual indicators showing exactly when you migrated. Track fees collected and holder changes across each pool phase.",
               },
             ].map((feature, index) => (
-              <motion.div
-                key={index}
-                className="feature-card"
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-              >
+              <div key={index} className="feature-card">
                 <div className="feature-icon">{feature.icon}</div>
                 <h3 className="feature-title">{feature.title}</h3>
                 <p className="feature-description">{feature.description}</p>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -753,15 +754,15 @@ export default function LandingPageNew() {
           <div className="projects-container">
             <div className="section-header">
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                style={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
+                viewport={{ once: true, margin: "-100px" }}
                 transition={{ duration: 0.8 }}
               >
-                <div className="section-label">Featured Projects</div>
-                <h2 className="section-title">Live on Platform</h2>
+                <div className="section-label">LIVE PROJECTS</div>
+                <h2 className="section-title">Tokens With Complete Histories</h2>
                 <p className="section-description">
-                  Explore migration analytics for these Solana tokens
+                  These Projects Migrated Pools. See Their Full Price Journey From Launch To Today.
                 </p>
               </motion.div>
             </div>
@@ -770,9 +771,9 @@ export default function LandingPageNew() {
               {projects.map((project, index) => (
                 <motion.div
                   key={project.slug}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
+                  style={{ opacity: 0, scale: 0.9, y: 20 }}
+                  whileInView={{ opacity: 1, scale: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-50px" }}
                   transition={{ duration: 0.5, delay: index * 0.05 }}
                 >
                   <Link href={`/${project.slug}`} className="project-card">
@@ -797,18 +798,17 @@ export default function LandingPageNew() {
       <section className="cta-section">
         <motion.div
           className="cta-content"
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
+          style={{ opacity: 0, y: 40, scale: 0.95 }}
+          whileInView={{ opacity: 1, y: 0, scale: 1 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
         >
-          <h2 className="cta-title">Ready to Launch?</h2>
+          <h2 className="cta-title">Already Migrated?</h2>
           <p className="cta-description">
-            Partner with migrate.fun and get comprehensive analytics for your
-            migrated token. Transparent data your community deserves.
+            Show Your Community The Complete Story. Import Your Token From migrate.fun And Get A Unified Price Chart In Minutes. Free For All Projects.
           </p>
           <Link href="/contact" className="btn btn-primary">
-            Get Started
+            Add Your Token
             <ArrowRight size={20} strokeWidth={2.5} />
           </Link>
         </motion.div>
@@ -817,7 +817,21 @@ export default function LandingPageNew() {
       {/* Footer */}
       <footer className="footer">
         <div className="footer-content">
-          <div className="footer-logo">migrate-chart.fun</div>
+          <Link href="/" className="footer-logo-link">
+            <svg
+              className="footer-logo-svg"
+              viewBox="57 135 388 232"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-label="Migrate Chart"
+            >
+              <path fill="currentColor" d="M135.423309,290.383972 C135.222244,292.157013 134.849457,293.929749 134.846222,295.703156 C134.806274,317.680511 134.820129,339.657990 134.820129,361.635437 C134.820129,363.432007 134.820129,365.228577 134.820129,367.319092 C108.857216,367.319092 83.287056,367.319092 57.352207,367.319092 C57.352207,341.704376 57.352207,316.037659 57.352207,289.918823 C83.140572,289.918823 108.899254,289.918823 135.063660,290.174957 C135.469360,290.431091 135.423309,290.383972 135.423309,290.383972z"/>
+              <path fill="currentColor" d="M290.364258,290.336945 C290.217560,292.805908 289.947449,295.274719 289.943604,297.743896 C289.910065,319.238007 289.924225,340.732239 289.924225,362.226410 C289.924225,363.852112 289.924225,365.477844 289.924225,367.357361 C263.907196,367.357361 238.310226,367.357361 211.965073,367.357361 C211.965073,341.967926 211.965073,316.566803 211.812134,290.761261 C211.659195,290.356812 211.589157,290.420380 211.589157,290.420380 C213.204071,290.267975 214.818726,289.985748 216.433914,289.982635 C240.827682,289.935608 265.221497,289.925293 290.014832,290.152710 C290.414307,290.399109 290.364258,290.336945 290.364258,290.336945z"/>
+              <path fill="currentColor" d="M445.290466,169.000153 C445.290466,183.634445 445.290466,197.768707 445.290466,212.257187 C419.463715,212.257187 393.941895,212.257187 368.161346,212.257187 C368.161346,186.667191 368.161346,161.109375 368.161346,135.257370 C393.655151,135.257370 419.195465,135.257370 445.290466,135.257370 C445.290466,146.339661 445.290466,157.419907 445.290466,169.000153z"/>
+              <path fill="currentColor" d="M135.497192,290.448730 C135.251816,289.392853 134.742188,288.319763 134.740173,287.245728 C134.695267,263.252930 134.703552,239.260025 134.718506,215.267151 C134.719009,214.463577 134.893936,213.660110 135.013840,212.631134 C160.586761,212.631134 186.014481,212.631134 212.069183,212.631134 C212.069183,238.286774 212.069183,263.867767 211.829163,289.934570 C211.589157,290.420380 211.659195,290.356812 211.677277,290.329926 C186.528381,290.218719 161.361404,290.134399 135.808868,290.217041 C135.423309,290.383972 135.469360,290.431091 135.497192,290.448730z"/>
+              <path fill="currentColor" d="M290.446106,290.423218 C290.253357,289.345978 289.834564,288.244904 289.832825,287.143219 C289.795258,263.321381 289.801147,239.499527 289.815552,215.677673 C289.816132,214.720184 289.982727,213.762787 290.090454,212.607132 C315.730774,212.607132 341.153046,212.607132 366.859802,212.607132 C366.859802,238.324921 366.859802,263.892670 366.859802,290.047455 C341.672607,290.047455 316.414978,290.047455 290.760803,290.192200 C290.364258,290.336945 290.414307,290.399109 290.446106,290.423218z"/>
+              <path fill="currentColor" d="M445.290466,302.007385 C445.290466,323.963470 445.290466,345.421448 445.290466,367.245850 C419.480499,367.245850 393.966675,367.245850 368.177490,367.245850 C368.177490,341.667480 368.177490,316.112549 368.177490,290.260376 C393.644684,290.260376 419.183838,290.260376 445.290466,290.260376 C445.290466,293.993011 445.290466,297.751160 445.290466,302.007385z"/>
+            </svg>
+          </Link>
           <div className="footer-links">
             <Link href="/" className="footer-link">
               Home

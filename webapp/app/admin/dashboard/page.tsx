@@ -57,19 +57,21 @@ export default async function AdminDashboardPage() {
   return (
     <div className="dashboard">
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
         .dashboard {
           --bg: #0a0a0a;
-          --surface: #111111;
-          --surface-elevated: #161616;
-          --border: rgba(255, 255, 255, 0.06);
-          --border-subtle: rgba(255, 255, 255, 0.03);
+          --surface: transparent;
+          --surface-elevated: rgba(0, 0, 0, 0.3);
+          --border: rgba(82, 201, 125, 0.15);
+          --border-subtle: rgba(82, 201, 125, 0.05);
           --text: #ffffff;
           --text-secondary: rgba(255, 255, 255, 0.7);
           --text-muted: rgba(255, 255, 255, 0.4);
+          --primary: #52C97D;
           --green: #52C97D;
           --green-dim: rgba(82, 201, 125, 0.12);
+          --green-glow: rgba(82, 201, 125, 0.2);
           --orange: #D4A853;
           --orange-dim: rgba(212, 168, 83, 0.12);
           --red: #ef5350;
@@ -77,7 +79,7 @@ export default async function AdminDashboardPage() {
 
           padding: 2.5rem 3rem;
           max-width: 1400px;
-          font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+          font-family: 'JetBrains Mono', monospace;
           -webkit-font-smoothing: antialiased;
         }
 
@@ -90,6 +92,7 @@ export default async function AdminDashboardPage() {
         }
 
         .header-content h1 {
+          font-family: 'Syne', sans-serif;
           font-size: 1.75rem;
           font-weight: 600;
           color: var(--text);
@@ -134,9 +137,7 @@ export default async function AdminDashboardPage() {
         .stats-grid {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
-          gap: 1px;
-          background: var(--border);
-          border: 1px solid var(--border);
+          gap: 1.5rem;
           margin-bottom: 2rem;
         }
 
@@ -149,17 +150,20 @@ export default async function AdminDashboardPage() {
         }
 
         .stat-card {
-          background: var(--surface);
+          background: transparent;
+          border: 1px solid var(--border);
           padding: 1.5rem;
           display: flex;
           flex-direction: column;
           gap: 0.75rem;
           position: relative;
-          transition: background 0.15s ease;
+          transition: all 0.2s ease;
         }
 
         .stat-card:hover {
           background: var(--surface-elevated);
+          box-shadow: 0 0 20px var(--green-glow);
+          border-color: rgba(82, 201, 125, 0.3);
         }
 
         .stat-header {
@@ -219,9 +223,15 @@ export default async function AdminDashboardPage() {
 
         /* Section Card */
         .section-card {
-          background: var(--surface);
+          background: transparent;
           border: 1px solid var(--border);
           overflow: hidden;
+          transition: all 0.2s ease;
+        }
+
+        .section-card:hover {
+          box-shadow: 0 0 20px var(--green-glow);
+          border-color: rgba(82, 201, 125, 0.3);
         }
 
         .section-header {
@@ -237,6 +247,7 @@ export default async function AdminDashboardPage() {
           display: flex;
           align-items: center;
           gap: 0.6rem;
+          font-family: 'Syne', sans-serif;
           font-size: 0.75rem;
           font-weight: 600;
           color: var(--text);
@@ -261,6 +272,7 @@ export default async function AdminDashboardPage() {
 
         .section-link:hover {
           color: var(--green);
+          text-shadow: 0 0 8px var(--green-glow);
         }
 
         /* List Items */
@@ -289,6 +301,7 @@ export default async function AdminDashboardPage() {
         }
 
         .list-item-title {
+          font-family: 'Syne', sans-serif;
           font-size: 0.85rem;
           font-weight: 500;
           color: var(--text);

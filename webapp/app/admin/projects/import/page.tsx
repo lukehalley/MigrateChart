@@ -110,24 +110,26 @@ export default function ImportProjectPage() {
           .success-icon {
             width: 64px;
             height: 64px;
-            border: 2px solid var(--success);
+            border: 2px solid #52C97D;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 0 auto 1.5rem;
             font-size: 2rem;
-            color: var(--success);
+            color: #52C97D;
+            box-shadow: 0 0 20px rgba(82, 201, 125, 0.3);
           }
 
           .success-title {
-            font-family: 'Fraunces', serif;
+            font-family: 'Syne', sans-serif;
             font-size: 1.75rem;
             color: var(--text-primary);
             margin-bottom: 0.5rem;
           }
 
           .success-text {
+            font-family: 'JetBrains Mono', monospace;
             font-size: 0.8rem;
             color: var(--text-muted);
           }
@@ -155,22 +157,23 @@ export default function ImportProjectPage() {
         }
 
         .page-title {
-          font-family: 'Fraunces', serif;
+          font-family: 'Syne', sans-serif;
           font-size: 2.5rem;
-          font-weight: 400;
+          font-weight: 700;
           color: var(--text-primary);
           margin-bottom: 0.5rem;
         }
 
         .page-subtitle {
+          font-family: 'JetBrains Mono', monospace;
           font-size: 0.75rem;
           color: var(--text-muted);
           letter-spacing: 0.05em;
         }
 
         .import-section {
-          background: var(--bg-secondary);
-          border: 1px solid var(--border);
+          background: transparent;
+          border: 1px solid #52C97D;
           margin-bottom: 1.5rem;
         }
 
@@ -179,7 +182,7 @@ export default function ImportProjectPage() {
           align-items: center;
           gap: 1rem;
           padding: 1.25rem 1.5rem;
-          border-bottom: 1px solid var(--border);
+          border-bottom: 1px solid #52C97D;
         }
 
         .step-number {
@@ -188,13 +191,15 @@ export default function ImportProjectPage() {
           display: flex;
           align-items: center;
           justify-content: center;
-          background: var(--accent-dim);
-          border: 1px solid rgba(212, 168, 83, 0.3);
+          background: transparent;
+          border: 1px solid #52C97D;
+          font-family: 'JetBrains Mono', monospace;
           font-size: 0.7rem;
-          color: var(--accent);
+          color: #52C97D;
         }
 
         .section-title {
+          font-family: 'JetBrains Mono', monospace;
           font-size: 0.8rem;
           color: var(--text-primary);
           letter-spacing: 0.03em;
@@ -211,18 +216,19 @@ export default function ImportProjectPage() {
 
         .url-input {
           flex: 1;
-          background: var(--bg-primary);
-          border: 1px solid var(--border);
+          background: transparent;
+          border: 1px solid #52C97D;
           padding: 0.875rem 1rem;
           font-family: 'JetBrains Mono', monospace;
           font-size: 0.8rem;
           color: var(--text-primary);
-          transition: border-color 0.15s;
+          transition: all 0.15s;
         }
 
         .url-input:focus {
           outline: none;
-          border-color: var(--accent);
+          border-color: #52C97D;
+          box-shadow: 0 0 15px rgba(82, 201, 125, 0.3);
         }
 
         .url-input::placeholder {
@@ -245,25 +251,24 @@ export default function ImportProjectPage() {
         }
 
         .btn-primary {
-          background: var(--accent);
-          border-color: var(--accent);
-          color: var(--bg-primary);
+          background: transparent;
+          border-color: #52C97D;
+          color: #52C97D;
         }
 
         .btn-primary:hover:not(:disabled) {
-          background: #e5b964;
-          border-color: #e5b964;
+          background: rgba(82, 201, 125, 0.1);
+          box-shadow: 0 0 20px rgba(82, 201, 125, 0.4);
         }
 
         .btn-success {
-          background: var(--success);
-          border-color: var(--success);
-          color: var(--bg-primary);
+          background: #52C97D;
+          border-color: #52C97D;
+          color: #000;
         }
 
         .btn-success:hover:not(:disabled) {
-          background: #8dc798;
-          border-color: #8dc798;
+          box-shadow: 0 0 25px rgba(82, 201, 125, 0.5);
         }
 
         .btn:disabled {
@@ -286,13 +291,14 @@ export default function ImportProjectPage() {
 
         .input-hint {
           margin-top: 0.75rem;
+          font-family: 'JetBrains Mono', monospace;
           font-size: 0.65rem;
           color: var(--text-muted);
         }
 
         .error-box {
-          background: rgba(196, 92, 92, 0.1);
-          border: 1px solid rgba(196, 92, 92, 0.3);
+          background: transparent;
+          border: 1px solid #ff4444;
           padding: 1rem 1.25rem;
           margin-bottom: 1.5rem;
           display: flex;
@@ -301,14 +307,15 @@ export default function ImportProjectPage() {
         }
 
         .error-icon {
-          color: var(--error);
+          color: #ff4444;
           font-size: 1.25rem;
           line-height: 1;
         }
 
         .error-text {
+          font-family: 'JetBrains Mono', monospace;
           font-size: 0.75rem;
-          color: var(--error);
+          color: #ff4444;
           line-height: 1.5;
         }
 
@@ -334,6 +341,7 @@ export default function ImportProjectPage() {
         }
 
         .preview-label {
+          font-family: 'JetBrains Mono', monospace;
           font-size: 0.6rem;
           color: var(--text-muted);
           letter-spacing: 0.12em;
@@ -341,6 +349,7 @@ export default function ImportProjectPage() {
         }
 
         .preview-value {
+          font-family: 'JetBrains Mono', monospace;
           font-size: 0.9rem;
           color: var(--text-primary);
         }
@@ -348,14 +357,15 @@ export default function ImportProjectPage() {
         .preview-value.mono {
           font-family: 'JetBrains Mono', monospace;
           font-size: 0.75rem;
-          background: rgba(0, 0, 0, 0.3);
+          background: transparent;
+          border: 1px solid rgba(82, 201, 125, 0.3);
           padding: 0.4rem 0.6rem;
           word-break: break-all;
         }
 
         .token-card {
-          background: var(--bg-primary);
-          border: 1px solid var(--border);
+          background: transparent;
+          border: 1px solid #52C97D;
           padding: 1.25rem;
         }
 
@@ -367,6 +377,7 @@ export default function ImportProjectPage() {
         }
 
         .token-type {
+          font-family: 'JetBrains Mono', monospace;
           font-size: 0.6rem;
           letter-spacing: 0.12em;
           text-transform: uppercase;
@@ -376,18 +387,20 @@ export default function ImportProjectPage() {
 
         .token-type.old {
           color: var(--text-muted);
-          border-color: var(--border);
+          border-color: rgba(82, 201, 125, 0.3);
+          background: transparent;
         }
 
         .token-type.new {
-          color: var(--success);
-          border-color: rgba(124, 182, 135, 0.3);
-          background: rgba(124, 182, 135, 0.1);
+          color: #52C97D;
+          border-color: #52C97D;
+          background: rgba(82, 201, 125, 0.1);
         }
 
         .token-symbol {
-          font-family: 'Fraunces', serif;
+          font-family: 'Syne', sans-serif;
           font-size: 1.5rem;
+          font-weight: 700;
           color: var(--text-primary);
         }
 
@@ -404,9 +417,9 @@ export default function ImportProjectPage() {
           display: flex;
           align-items: center;
           justify-content: center;
-          background: var(--accent-dim);
-          border: 1px solid rgba(212, 168, 83, 0.3);
-          color: var(--accent);
+          background: transparent;
+          border: 1px solid #52C97D;
+          color: #52C97D;
           font-size: 1.25rem;
         }
 
@@ -423,6 +436,7 @@ export default function ImportProjectPage() {
         .import-note {
           margin-top: 1rem;
           text-align: center;
+          font-family: 'JetBrains Mono', monospace;
           font-size: 0.65rem;
           color: var(--text-muted);
         }

@@ -82,7 +82,7 @@ async function fetchFromDexScreener(tokenAddress: string): Promise<DiscoveredPoo
         priceUsd: parseFloat(pair.priceUsd || '0')
       }))
       .filter((pool: DiscoveredPool) => pool.liquidity > 0) // Only pools with liquidity
-      .sort((a, b) => b.liquidity - a.liquidity); // Sort by liquidity descending
+      .sort((a: DiscoveredPool, b: DiscoveredPool) => b.liquidity - a.liquidity); // Sort by liquidity descending
   } catch (error) {
     console.error('DexScreener fetch error:', error);
     return [];
