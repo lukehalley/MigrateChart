@@ -644,8 +644,8 @@ export default function LandingPageNew() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
           >
-            Your Complete Price History.{" "}
-            <span className="hero-highlight">Before & After</span> Migration.
+            Complete Price History.{" "}
+            <span className="hero-highlight">Every Migration</span>.
           </motion.h1>
 
           <motion.p
@@ -709,10 +709,10 @@ export default function LandingPageNew() {
             >
               <div className="section-label">THE PROBLEM</div>
               <h2 className="section-title">
-                Migrations Erase Your History
+                Migrations Erase History
               </h2>
               <p className="section-description">
-                Your Chart Resets. Old Data Vanishes. We Reconnect It All.
+                Charts Reset. Data Vanishes. We Reconnect Everything.
               </p>
             </motion.div>
           </div>
@@ -723,19 +723,19 @@ export default function LandingPageNew() {
                 icon: <BarChart3 size={24} />,
                 title: "Unified Timeline",
                 description:
-                  "One chart from first pool to current. Every migration connected.",
+                  "One Chart From First Pool To Current. Every Migration Connected.",
               },
               {
                 icon: <Database size={24} />,
                 title: "Pre-Migration Data",
                 description:
-                  "See price action before the move. Show investors the full story.",
+                  "See Price Action Before The Move. Show Investors The Full Story.",
               },
               {
                 icon: <Zap size={24} />,
                 title: "Migration Markers",
                 description:
-                  "Visual indicators for each transition. Track fees and holders per phase.",
+                  "Visual Indicators For Each Transition. Track Fees And Holders Per Phase.",
               },
             ].map((feature, index) => (
               <div key={index} className="feature-card">
