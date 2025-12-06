@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getUser, createClient } from '@/lib/supabase-server';
 import Link from 'next/link';
+import { toTitleCase } from '@/lib/utils';
 
 async function getStats() {
   const supabase = await createClient();
@@ -487,14 +488,14 @@ export default async function AdminDashboardPage() {
                   </div>
                 </div>
                 <span className={`status-badge badge-${inquiry.status}`}>
-                  {inquiry.status}
+                  {toTitleCase(inquiry.status)}
                 </span>
               </div>
             ))
           ) : (
             <div className="empty-state">
               <div className="empty-icon">◎</div>
-              <p className="empty-text">No inquiries yet</p>
+              <p className="empty-text">No Inquiries Yet</p>
             </div>
           )}
         </div>
@@ -530,7 +531,7 @@ export default async function AdminDashboardPage() {
           ) : (
             <div className="empty-state">
               <div className="empty-icon">◇</div>
-              <p className="empty-text">No projects yet</p>
+              <p className="empty-text">No Projects Yet</p>
             </div>
           )}
         </div>

@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getUser, createClient } from '@/lib/supabase-server';
 import InquiryActions from '@/components/admin/InquiryActions';
+import { toTitleCase } from '@/lib/utils';
 
 async function getInquiries() {
   const supabase = await createClient();
@@ -336,7 +337,7 @@ export default async function InquiriesPage() {
 
                 <div>
                   <span className={`status-badge status-${inquiry.status}`}>
-                    {inquiry.status}
+                    {toTitleCase(inquiry.status)}
                   </span>
                 </div>
 
@@ -349,7 +350,7 @@ export default async function InquiriesPage() {
         ) : (
           <div className="empty-state">
             <div className="empty-icon">◎</div>
-            <p className="empty-text">No inquiries yet</p>
+            <p className="empty-text">No Inquiries Yet</p>
           </div>
         )}
       </div>
