@@ -92,12 +92,9 @@ export function LoginModal({ isOpen, onClose, primaryColor, secondaryColor }: Lo
               </button>
 
               {/* Title */}
-              <h2 className="text-2xl font-bold mb-2" style={{ color: primaryColor }}>
+              <h2 className="text-2xl font-bold mb-6" style={{ color: primaryColor }}>
                 Sign In
               </h2>
-              <p className="text-white/60 text-sm mb-6">
-                Access your account
-              </p>
 
               {/* Error Message */}
               {error && (

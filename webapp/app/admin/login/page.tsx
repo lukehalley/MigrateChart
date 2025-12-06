@@ -239,8 +239,7 @@ function LoginForm() {
           </div>
 
           <div className="login-header">
-            <h2>Admin Console</h2>
-            <p>Access The Administration Panel</p>
+            <h2>Sign In</h2>
           </div>
 
           <form onSubmit={handleSubmit} className="login-form">

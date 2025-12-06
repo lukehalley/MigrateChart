@@ -72,7 +72,7 @@ export function LoginButton({ primaryColor, secondaryColor }: LoginButtonProps) 
           backgroundColor: `${primaryColor}25`,
         }}
         whileTap={{ scale: 0.95 }}
-        title={user ? 'Dashboard' : 'Sign in'}
+        title={user ? 'Dashboard' : 'Login'}
       >
         {/* Icon */}
         <motion.div
