@@ -597,34 +597,36 @@ export default function LandingPageNew() {
       </motion.header>
 
       {/* Hero Section */}
-      <section className="hero">
+      <section className="hero" suppressHydrationWarning>
         {/* Animated Candlestick Chart Background */}
-        <AnimatedCandlestickBackground />
+        {mounted && <AnimatedCandlestickBackground />}
 
         {/* Glowing Orb Effect */}
-        <motion.div
-          style={{
-            position: "absolute",
-            top: "30%",
-            right: "10%",
-            width: "400px",
-            height: "400px",
-            background:
-              "radial-gradient(circle, rgba(82, 201, 125, 0.1) 0%, transparent 70%)",
-            borderRadius: "50%",
-            filter: "blur(60px)",
-            pointerEvents: "none",
-          }}
-          animate={{
-            scale: [1, 1.3, 1],
-            opacity: [0.3, 0.6, 0.3],
-          }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
+        {mounted && (
+          <motion.div
+            style={{
+              position: "absolute",
+              top: "30%",
+              right: "10%",
+              width: "400px",
+              height: "400px",
+              background:
+                "radial-gradient(circle, rgba(82, 201, 125, 0.1) 0%, transparent 70%)",
+              borderRadius: "50%",
+              filter: "blur(60px)",
+              pointerEvents: "none",
+            }}
+            animate={{
+              scale: [1, 1.3, 1],
+              opacity: [0.3, 0.6, 0.3],
+            }}
+            transition={{
+              duration: 10,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+        )}
 
         <motion.div
           className="hero-content"
