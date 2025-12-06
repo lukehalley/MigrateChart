@@ -1,0 +1,87 @@
+import { Skeleton } from '@/components/ui/skeleton';
+
+export default function InquiriesLoading() {
+  return (
+    <div className="inquiries-loading">
+      <style>{`
+        .inquiries-loading {
+          padding: 3rem;
+          max-width: 1400px;
+        }
+
+        .header-skeleton {
+          margin-bottom: 2.5rem;
+        }
+
+        .table-skeleton {
+          border: 1px solid rgba(82, 201, 125, 0.15);
+          overflow: hidden;
+        }
+
+        .table-header-skeleton {
+          display: grid;
+          grid-template-columns: 2fr 1.5fr 1fr 1fr 80px;
+          gap: 1rem;
+          padding: 1rem 1.5rem;
+          background: rgba(0, 0, 0, 0.2);
+          border-bottom: 1px solid rgba(82, 201, 125, 0.15);
+        }
+
+        .table-row-skeleton {
+          display: grid;
+          grid-template-columns: 2fr 1.5fr 1fr 1fr 80px;
+          gap: 1rem;
+          padding: 1.25rem 1.5rem;
+          border-bottom: 1px solid rgba(82, 201, 125, 0.05);
+          align-items: center;
+        }
+
+        .table-row-skeleton:last-child {
+          border-bottom: none;
+        }
+
+        @media (max-width: 900px) {
+          .table-header-skeleton,
+          .table-row-skeleton {
+            grid-template-columns: 1fr;
+          }
+        }
+      `}</style>
+
+      {/* Header */}
+      <div className="header-skeleton">
+        <Skeleton className="h-10 w-48 mb-2 bg-primary/10" />
+        <Skeleton className="h-4 w-72 bg-primary/10" />
+      </div>
+
+      {/* Table */}
+      <div className="table-skeleton">
+        {/* Table Header */}
+        <div className="table-header-skeleton">
+          <Skeleton className="h-4 w-24 bg-primary/10" />
+          <Skeleton className="h-4 w-28 bg-primary/10" />
+          <Skeleton className="h-4 w-32 bg-primary/10" />
+          <Skeleton className="h-4 w-16 bg-primary/10" />
+          <Skeleton className="h-4 w-16 bg-primary/10" />
+        </div>
+
+        {/* Table Rows */}
+        {[1, 2, 3, 4, 5, 6].map((i) => (
+          <div key={i} className="table-row-skeleton">
+            <div className="flex flex-col gap-1">
+              <Skeleton className="h-4 w-40 bg-primary/10" />
+              <Skeleton className="h-3 w-56 bg-primary/10" />
+            </div>
+            <div className="flex flex-col gap-1">
+              <Skeleton className="h-3 w-32 bg-primary/10" />
+              <Skeleton className="h-3 w-28 bg-primary/10" />
+            </div>
+            <Skeleton className="h-4 w-48 bg-primary/10" />
+            <Skeleton className="h-6 w-20 bg-primary/10" />
+            <Skeleton className="h-8 w-8 rounded bg-primary/10" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}

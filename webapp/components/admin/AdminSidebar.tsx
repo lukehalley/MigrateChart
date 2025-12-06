@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase-browser';
@@ -12,6 +13,7 @@ const navItems = [
 ];
 
 export default function AdminSidebar() {
+  const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
@@ -22,8 +24,38 @@ export default function AdminSidebar() {
     router.refresh();
   };
 
+  const closeSidebar = () => setIsOpen(false);
+
+  const handleNavClick = () => {
+    // Close sidebar on mobile after navigation
+    if (window.innerWidth <= 1024) {
+      closeSidebar();
+    }
+  };
+
   return (
-    <aside className="admin-sidebar">
+    <>
+      {/* Mobile Hamburger Button */}
+      <button
+        onClick={() => setIsOpen(true)}
+        className="mobile-menu-btn"
+        aria-label="Open menu"
+      >
+        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+
+      {/* Mobile Backdrop */}
+      {isOpen && (
+        <div
+          className="mobile-backdrop"
+          onClick={closeSidebar}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside className={`admin-sidebar ${isOpen ? 'sidebar-open' : ''}`}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&display=swap');
 
@@ -54,6 +86,7 @@ export default function AdminSidebar() {
         .sidebar-header {
           padding: 2rem 1.5rem;
           border-bottom: 1px solid var(--border);
+          position: relative;
         }
 
         .sidebar-brand {
@@ -239,7 +272,114 @@ export default function AdminSidebar() {
           border-color: rgba(239, 68, 68, 0.3);
           color: var(--error);
         }
+
+        /* Mobile Menu Button */
+        .mobile-menu-btn {
+          display: none;
+          position: fixed;
+          top: 1rem;
+          left: 1rem;
+          z-index: 60;
+          width: 48px;
+          height: 48px;
+          background: rgba(6, 6, 6, 0.95);
+          border: 2px solid var(--border);
+          border-radius: 8px;
+          color: var(--primary);
+          cursor: pointer;
+          backdrop-filter: blur(10px);
+          transition: all 0.3s ease;
+        }
+
+        .mobile-menu-btn:hover {
+          border-color: var(--primary);
+          box-shadow: 0 0 20px rgba(82, 201, 125, 0.3);
+        }
+
+        /* Mobile Backdrop */
+        .mobile-backdrop {
+          display: none;
+          position: fixed;
+          inset: 0;
+          background: rgba(0, 0, 0, 0.8);
+          backdrop-filter: blur(4px);
+          z-index: 45;
+          animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+
+        /* Close Button for Mobile Sidebar */
+        .sidebar-close-btn {
+          display: none;
+          position: absolute;
+          top: 1rem;
+          right: 1rem;
+          width: 36px;
+          height: 36px;
+          background: rgba(239, 68, 68, 0.1);
+          border: 1px solid rgba(239, 68, 68, 0.3);
+          border-radius: 6px;
+          color: var(--error);
+          cursor: pointer;
+          transition: all 0.2s ease;
+          align-items: center;
+          justify-content: center;
+          z-index: 51;
+        }
+
+        .sidebar-close-btn:hover {
+          background: rgba(239, 68, 68, 0.2);
+          border-color: var(--error);
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 1024px) {
+          .mobile-menu-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+
+          .mobile-backdrop {
+            display: block;
+          }
+
+          .sidebar-close-btn {
+            display: flex;
+          }
+
+          .admin-sidebar {
+            transform: translateX(-100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+
+          .admin-sidebar.sidebar-open {
+            transform: translateX(0);
+          }
+        }
+
+        @media (max-width: 640px) {
+          .admin-sidebar {
+            width: 85vw;
+            max-width: 320px;
+          }
+        }
       `}</style>
+
+      {/* Close Button - Mobile Only */}
+      <button
+        onClick={closeSidebar}
+        className="sidebar-close-btn"
+        aria-label="Close menu"
+      >
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
 
       <div className="sidebar-header">
         <Link href="/admin/dashboard" className="sidebar-brand">
@@ -268,6 +408,7 @@ export default function AdminSidebar() {
             <Link
               key={item.href}
               href={item.href}
+              onClick={handleNavClick}
               className={`nav-item ${pathname === item.href ? 'active' : ''}`}
             >
               <span className="nav-icon">{item.icon}</span>
@@ -304,5 +445,6 @@ export default function AdminSidebar() {
         </button>
       </div>
     </aside>
+    </>
   );
 }

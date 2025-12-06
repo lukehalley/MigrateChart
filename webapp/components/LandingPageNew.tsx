@@ -641,7 +641,6 @@ export default function LandingPageNew() {
             transition={{ duration: 1, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
           >
             Complete Price History.{" "}
-            <span className="hero-highlight">Every Migration</span>
           </motion.h1>
 
           <motion.p
@@ -660,7 +659,7 @@ export default function LandingPageNew() {
             transition={{ duration: 1, delay: 0.6 }}
           >
             <Link href="/zera" className="btn btn-primary">
-              See An Example
+              Enter App
               <ArrowRight size={20} strokeWidth={2.5} />
             </Link>
             <Link href="/contact" className="btn btn-secondary">
@@ -801,7 +800,7 @@ export default function LandingPageNew() {
         >
           <h2 className="cta-title">Already Migrated?</h2>
           <p className="cta-description">
-            Import From migrate.fun. Get Your Unified Chart In Minutes. Free.
+            Get In Touch.
           </p>
           <Link href="/contact" className="btn btn-primary">
             Add Your Token
