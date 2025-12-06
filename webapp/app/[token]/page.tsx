@@ -4,7 +4,7 @@ import React, { Suspense, useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, Copy, Check, ChevronLeft, ChevronRight, Flame } from 'lucide-react';
+import { Heart, Copy, Check, ChevronLeft, ChevronRight, Flame, MessageSquare } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import Chart from '@/components/Chart';
@@ -29,6 +29,13 @@ import { LoginButton } from '@/components/LoginButton';
 
 function HomeContent() {
   const { currentProject, allProjects, isLoading: projectLoading, isSwitching, switchingToSlug, error: projectError } = useTokenContext();
+
+  // Mounted state for scanline animation
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Debug: Log loading states
   console.log('[PAGE] Loading states:', {
@@ -720,7 +727,27 @@ function HomeContent() {
   }
 
   return (
-    <main data-chart-page className="w-screen h-svh overflow-hidden grid grid-rows-[auto_1fr]" style={themeStyles}>
+    <main data-chart-page className={`token-view w-screen h-svh overflow-hidden grid grid-rows-[auto_1fr] ${mounted ? 'mounted' : ''}`} style={themeStyles}>
+      {/* CRT Scanline Effect */}
+      <style>{`
+        .token-view.mounted::before {
+          content: '';
+          position: fixed;
+          inset: 0;
+          background:
+            repeating-linear-gradient(0deg, rgba(0,0,0,0.3), rgba(0,0,0,0.3) 1px, transparent 1px, transparent 3px),
+            repeating-linear-gradient(0deg, transparent, transparent 6px, ${hexToRgba(primaryColor, 0.03)} 6px, ${hexToRgba(primaryColor, 0.03)} 7px);
+          background-size: 100% 3px, 100% 7px;
+          pointer-events: none;
+          z-index: 1;
+          opacity: 1;
+          animation: tokenScanline 12s linear infinite;
+        }
+        @keyframes tokenScanline {
+          0% { transform: translateY(0); }
+          100% { transform: translateY(7px); }
+        }
+      `}</style>
       {/* Preview Mode Banner */}
       {currentProject?.isPreview && (
         <div className="fixed top-0 left-0 right-0 z-[100] bg-amber-500/95 backdrop-blur-sm border-b-2 border-amber-600">
