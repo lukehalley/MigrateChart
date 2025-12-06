@@ -198,12 +198,12 @@ export function DonationPopup() {
               backdropFilter: 'blur(12px)',
               WebkitBackdropFilter: 'blur(12px)',
             }}
-            className="fixed inset-0 z-50 bg-black/70"
+            className="fixed inset-0 z-[200] bg-black/70"
             onClick={handleClose}
           />
 
           {/* Popup Container */}
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-5 sm:p-6 md:p-8 pointer-events-none">
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-5 sm:p-6 md:p-8 pointer-events-none">
             <motion.div
               initial={{ opacity: 0, scale: 0.92, y: 30 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
