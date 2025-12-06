@@ -654,7 +654,7 @@ export default function LandingPageNew() {
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 0.4 }}
           >
-            When You Migrate Pools, Your Price History Doesn't Disappear. We Stitch Together Every Pool Transition Into One Continuous Chart. Show Your Community The Full Journey.
+            One Continuous Chart Across All Pool Migrations. No More Missing Price Data.
           </motion.p>
 
           <motion.div
@@ -707,12 +707,12 @@ export default function LandingPageNew() {
               viewport={{ once: true, margin: "-100px" }}
               transition={{ duration: 0.8 }}
             >
-              <div className="section-label">THE PROBLEM WE SOLVE</div>
+              <div className="section-label">THE PROBLEM</div>
               <h2 className="section-title">
-                Migrations Break Your Price History
+                Migrations Erase Your History
               </h2>
               <p className="section-description">
-                After Migrating To A New Pool, Your Chart Starts From Zero. Old Price Data Disappears. Your Community Loses Context. We Fix That.
+                Your Chart Resets. Old Data Vanishes. We Reconnect It All.
               </p>
             </motion.div>
           </div>
@@ -723,19 +723,19 @@ export default function LandingPageNew() {
                 icon: <BarChart3 size={24} />,
                 title: "Unified Timeline",
                 description:
-                  "One continuous price chart from your first pool to your current pool. Every candle, every migration, one story.",
+                  "One chart from first pool to current. Every migration connected.",
               },
               {
                 icon: <Database size={24} />,
                 title: "Pre-Migration Data",
                 description:
-                  "See price action before the migration. Show investors what happened during the transition. No more missing context.",
+                  "See price action before the move. Show investors the full story.",
               },
               {
                 icon: <Zap size={24} />,
                 title: "Migration Markers",
                 description:
-                  "Visual indicators showing exactly when you migrated. Track fees collected and holder changes across each pool phase.",
+                  "Visual indicators for each transition. Track fees and holders per phase.",
               },
             ].map((feature, index) => (
               <div key={index} className="feature-card">
@@ -760,9 +760,9 @@ export default function LandingPageNew() {
                 transition={{ duration: 0.8 }}
               >
                 <div className="section-label">LIVE PROJECTS</div>
-                <h2 className="section-title">Tokens With Complete Histories</h2>
+                <h2 className="section-title">Complete Histories</h2>
                 <p className="section-description">
-                  These Projects Migrated Pools. See Their Full Price Journey From Launch To Today.
+                  Projects That Migrated. Full Price Journey, Launch To Today.
                 </p>
               </motion.div>
             </div>
@@ -805,7 +805,7 @@ export default function LandingPageNew() {
         >
           <h2 className="cta-title">Already Migrated?</h2>
           <p className="cta-description">
-            Show Your Community The Complete Story. Import Your Token From migrate.fun And Get A Unified Price Chart In Minutes. Free For All Projects.
+            Import From migrate.fun. Get Your Unified Chart In Minutes. Free.
           </p>
           <Link href="/contact" className="btn btn-primary">
             Add Your Token
