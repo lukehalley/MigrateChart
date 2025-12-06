@@ -51,7 +51,8 @@ export function LoginModal({ isOpen, onClose, primaryColor, secondaryColor }: Lo
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[200]"
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm"
+            style={{ zIndex: 9999 }}
           />
 
           {/* Modal */}
@@ -60,7 +61,8 @@ export function LoginModal({ isOpen, onClose, primaryColor, secondaryColor }: Lo
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.3, ease: [0.4, 0.0, 0.2, 1] }}
-            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[201] w-full max-w-md mx-4"
+            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md mx-4"
+            style={{ zIndex: 10000 }}
           >
             <div
               className="relative bg-black border-2 rounded-lg p-8"
