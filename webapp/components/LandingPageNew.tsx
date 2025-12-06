@@ -23,9 +23,6 @@ export default function LandingPageNew() {
   const [projects, setProjects] = useState<ProjectListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
-  const { scrollY } = useScroll();
-  const heroOpacity = useTransform(scrollY, [0, 300], [1, 0]);
-  const heroScale = useTransform(scrollY, [0, 300], [1, 0.95]);
 
   useEffect(() => {
     setMounted(true);
@@ -600,10 +597,7 @@ export default function LandingPageNew() {
       </motion.header>
 
       {/* Hero Section */}
-      <motion.section
-        className="hero"
-        style={{ opacity: heroOpacity, scale: heroScale }}
-      >
+      <section className="hero">
         {/* Animated Candlestick Chart Background */}
         <AnimatedCandlestickBackground />
 
