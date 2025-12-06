@@ -641,7 +641,7 @@ export default function LandingPageNew() {
             transition={{ duration: 1, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
           >
             Complete Price History.{" "}
-            <span className="hero-highlight">Every Migration.</span>
+            <span className="hero-highlight">Every Migration</span>
           </motion.h1>
 
           <motion.p
