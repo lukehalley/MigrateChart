@@ -826,8 +826,25 @@ function HomeContent() {
               </svg>
             </motion.button>
 
-            {/* Login Button - Far Right */}
-            <div className="absolute right-6">
+            {/* Contact & Login Buttons - Far Right */}
+            <div className="absolute right-6 flex items-center gap-2">
+              <motion.button
+                onClick={() => router.push('/contact')}
+                className="flex items-center justify-center w-10 h-10 rounded-lg border transition-all bg-black/60"
+                style={{
+                  borderColor: `${primaryColor}40`,
+                  color: primaryColor
+                }}
+                whileHover={{
+                  scale: 1.05,
+                  borderColor: hexToRgba(primaryColor, 0.7),
+                  boxShadow: `0 0 12px ${hexToRgba(primaryColor, 0.3)}`
+                }}
+                whileTap={{ scale: 0.95 }}
+                title="Contact Us"
+              >
+                <MessageSquare className="w-5 h-5" />
+              </motion.button>
               <LoginButton primaryColor={primaryColor} secondaryColor={secondaryColor} />
             </div>
 
@@ -1000,8 +1017,25 @@ function HomeContent() {
                 </svg>
               </motion.button>
 
-              {/* Login Button - Center Right */}
-              <div className="flex-shrink-0">
+              {/* Contact & Login Buttons - Center Right */}
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <motion.button
+                  onClick={() => router.push('/contact')}
+                  className="flex items-center justify-center w-10 h-10 rounded-lg border transition-all bg-black/60"
+                  style={{
+                    borderColor: `${primaryColor}40`,
+                    color: primaryColor
+                  }}
+                  whileHover={{
+                    scale: 1.05,
+                    borderColor: hexToRgba(primaryColor, 0.7),
+                    boxShadow: `0 0 12px ${hexToRgba(primaryColor, 0.3)}`
+                  }}
+                  whileTap={{ scale: 0.95 }}
+                  title="Contact Us"
+                >
+                  <MessageSquare className="w-5 h-5" />
+                </motion.button>
                 <LoginButton primaryColor={primaryColor} secondaryColor={secondaryColor} />
               </div>
 
