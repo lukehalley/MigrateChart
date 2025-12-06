@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User } from 'lucide-react';
 import { createClient } from '@/lib/supabase-browser';
@@ -17,7 +18,12 @@ export function LoginButton({ primaryColor, secondaryColor }: LoginButtonProps) 
   const [user, setUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const supabase = createClient();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     async function checkAuth() {
@@ -98,12 +104,15 @@ export function LoginButton({ primaryColor, secondaryColor }: LoginButtonProps) 
         )}
       </motion.button>
 
-      <LoginModal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        primaryColor={primaryColor}
-        secondaryColor={secondaryColor}
-      />
+      {mounted && createPortal(
+        <LoginModal
+          isOpen={showModal}
+          onClose={() => setShowModal(false)}
+          primaryColor={primaryColor}
+          secondaryColor={secondaryColor}
+        />,
+        document.body
+      )}
     </>
   );
 }
