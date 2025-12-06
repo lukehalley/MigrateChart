@@ -689,7 +689,7 @@ export default function LandingPageNew() {
             style={{ transform: "rotate(90deg)", color: "var(--text-muted)" }}
           />
         </motion.div>
-      </motion.section>
+      </section>
 
       {/* Features Section */}
       <section className="features">
