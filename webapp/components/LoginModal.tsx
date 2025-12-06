@@ -134,7 +134,7 @@ export function LoginModal({ isOpen, onClose, primaryColor, secondaryColor }: Lo
                       e.currentTarget.style.borderColor = `${primaryColor}40`;
                       e.currentTarget.style.boxShadow = 'none';
                     }}
-                    placeholder="admin@migrate-chart.com"
+                    placeholder="email@example.com"
                   />
                 </div>
 

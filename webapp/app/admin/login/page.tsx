@@ -251,7 +251,7 @@ function LoginForm() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@migrate-chart.fun"
+                placeholder="email@example.com"
                 required
               />
             </div>
