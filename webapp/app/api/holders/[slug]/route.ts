@@ -84,13 +84,32 @@ export async function GET(
     // Map to ProjectConfig format
     const project: ProjectConfig = {
       ...projectData,
-      pools: projectData.pools || [],
+      pools: (projectData.pools || []).map((pool: any) => ({
+        id: pool.id,
+        projectId: pool.project_id,
+        poolAddress: pool.pool_address,
+        tokenAddress: pool.token_address,
+        tokenSymbol: pool.token_symbol,
+        poolName: pool.pool_name,
+        dexType: pool.dex_type,
+        color: pool.color,
+        orderIndex: pool.order_index,
+        feeRate: pool.fee_rate,
+        createdAt: pool.created_at,
+      })),
       migrations: [], // Not needed for holders
     };
 
     // Get current token address
     const currentPool = project.pools[project.pools.length - 1];
-    const tokenAddress = currentPool.tokenAddress;
+    const tokenAddress = currentPool?.tokenAddress;
+
+    if (!tokenAddress) {
+      return NextResponse.json(
+        { error: 'No token address found for project' },
+        { status: 404 }
+      );
+    }
 
     // Calculate time range based on timeframe
     const startTimestamp = getTimeframeStart(timeframe);
