@@ -5,6 +5,7 @@ import Link from "next/link";
 
 export default function LandingNav() {
   const [scrolled, setScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -14,6 +15,15 @@ export default function LandingNav() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    // Lock/unlock body scroll when mobile menu opens/closes
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+  }, [mobileMenuOpen]);
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -374,32 +384,32 @@ export default function LandingNav() {
           {/* CTA - Right aligned */}
           <div className="nav-cta-wrapper">
             <Link href="/contact" className="nav-link primary">
-              Get Started
+              Launch App
             </Link>
           </div>
 
           {/* Mobile Menu Button */}
-          <MobileMenuButton />
+          <MobileMenuButton isOpen={mobileMenuOpen} setIsOpen={setMobileMenuOpen} />
         </div>
       </nav>
 
       {/* Mobile Navigation Menu */}
-      <MobileNav scrollToSection={scrollToSection} />
+      <MobileNav
+        isOpen={mobileMenuOpen}
+        setIsOpen={setMobileMenuOpen}
+        scrollToSection={scrollToSection}
+      />
     </>
   );
 }
 
-function MobileMenuButton() {
-  const [isOpen, setIsOpen] = useState(false);
-
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
-  }, [isOpen]);
-
+function MobileMenuButton({
+  isOpen,
+  setIsOpen,
+}: {
+  isOpen: boolean;
+  setIsOpen: (open: boolean) => void;
+}) {
   return (
     <button
       className={`mobile-menu-button ${isOpen ? "open" : ""}`}
@@ -413,31 +423,18 @@ function MobileMenuButton() {
   );
 }
 
-function MobileNav({ scrollToSection }: { scrollToSection: (id: string) => void }) {
-  const [isOpen, setIsOpen] = useState(false);
-
-  useEffect(() => {
-    const button = document.querySelector(".mobile-menu-button");
-    if (button) {
-      const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-          if (mutation.attributeName === "class") {
-            const isOpen = button.classList.contains("open");
-            setIsOpen(isOpen);
-          }
-        });
-      });
-      observer.observe(button, { attributes: true });
-      return () => observer.disconnect();
-    }
-  }, []);
-
+function MobileNav({
+  isOpen,
+  setIsOpen,
+  scrollToSection,
+}: {
+  isOpen: boolean;
+  setIsOpen: (open: boolean) => void;
+  scrollToSection: (id: string) => void;
+}) {
   const handleClick = (sectionId: string) => {
     scrollToSection(sectionId);
-    const button = document.querySelector(".mobile-menu-button");
-    if (button) {
-      button.classList.remove("open");
-    }
+    setIsOpen(false);
   };
 
   return (
@@ -458,8 +455,12 @@ function MobileNav({ scrollToSection }: { scrollToSection: (id: string) => void 
         <button onClick={() => handleClick("pricing")} className="nav-link">
           Pricing
         </button>
-        <Link href="/contact" className="nav-link primary">
-          Get Started
+        <Link
+          href="/contact"
+          className="nav-link primary"
+          onClick={() => setIsOpen(false)}
+        >
+          Contact
         </Link>
       </div>
     </div>

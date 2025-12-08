@@ -43,6 +43,20 @@ export default function LandingPageNew() {
     setMounted(true);
   }, []);
 
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      const offset = 80; // Account for nav height
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.scrollY - offset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth",
+      });
+    }
+  };
+
   useEffect(() => {
     async function fetchProjects() {
       try {
@@ -82,6 +96,7 @@ export default function LandingPageNew() {
           --border-accent: rgba(212, 168, 83, 0.15);
 
           min-height: 100vh;
+          scroll-behavior: smooth;
           background:
             /* Terminal character grid - more visible */
             repeating-linear-gradient(
@@ -229,6 +244,14 @@ export default function LandingPageNew() {
           gap: 1rem;
           justify-content: center;
           flex-wrap: wrap;
+        }
+
+        .hero-cta .btn-primary {
+          display: none;
+        }
+
+        .hero-cta-desktop {
+          display: inline-flex;
         }
 
         .btn {
@@ -565,9 +588,40 @@ export default function LandingPageNew() {
 
         /* Responsive */
         @media (max-width: 768px) {
+          .hero-cta .btn-primary {
+            display: inline-flex;
+          }
+
+          .hero-cta-desktop {
+            display: none;
+          }
+
           .hero {
-            padding: 4rem 1.5rem;
-            min-height: 80vh;
+            /* Use dynamic viewport height for better mobile support */
+            min-height: 100dvh;
+            /* Fallback for browsers that don't support dvh */
+            min-height: 100vh;
+            /* Account for fixed navbar height (~72px) */
+            padding-top: 80px;
+            padding-bottom: 4rem;
+            padding-left: 1.5rem;
+            padding-right: 1.5rem;
+            /* Ensure content is centered in the remaining space */
+            justify-content: center;
+          }
+
+          /* Alternative approach using small viewport height for more predictable behavior */
+          @supports (min-height: 100svh) {
+            .hero {
+              min-height: 100svh;
+            }
+          }
+
+          /* Override with dynamic viewport if supported and preferred */
+          @supports (min-height: 100dvh) {
+            .hero {
+              min-height: 100dvh;
+            }
           }
 
           .features, .projects, .cta-section {
@@ -655,12 +709,13 @@ export default function LandingPageNew() {
             transition={{ duration: 1, delay: 0.6 }}
           >
             <Link href="/zera" prefetch={true} className="btn btn-primary">
-              View Live Charts
+              Launch App
               <ArrowRight size={20} strokeWidth={2.5} />
             </Link>
-            <Link href="/contact" className="btn btn-secondary">
-              Get Your Complete Chart
-            </Link>
+            <button onClick={() => scrollToSection("problem")} className="btn btn-secondary hero-cta-desktop">
+              Learn More
+              <ChevronRight size={20} strokeWidth={2.5} style={{ transform: "rotate(90deg)" }} />
+            </button>
           </motion.div>
         </motion.div>
 
@@ -968,7 +1023,7 @@ export default function LandingPageNew() {
           <p className="cta-description">
             Your community deserves to see the full story. Every day with a reset chart is another day potential investors question your legitimacy. Show them the complete journey—from launch to today—and prove your project's staying power.
           </p>
-          <Link href="/contact" className="btn btn-primary">
+          <Link href="/zera" className="btn btn-primary">
             Restore Your Full History
             <ArrowRight size={20} strokeWidth={2.5} />
           </Link>
