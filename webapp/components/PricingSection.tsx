@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Check, TrendingUp } from "lucide-react";
+import { TrendingUp } from "lucide-react";
 
 interface PricingTier {
   name: string;
@@ -63,17 +63,9 @@ const pricingTiers: PricingTier[] = [
   },
 ];
 
-const allFeatures = [
-  "Price History",
-  "Fee Tracking",
-  "Holder Tracking",
-  "Burn Tracking",
-  "Email & Telegram Support",
-];
-
 export default function PricingSection() {
   return (
-    <section className="pricing-section">
+    <section id="pricing" className="pricing-section">
       <style>{`
         .pricing-section {
           padding: 8rem 2rem;
@@ -258,57 +250,6 @@ export default function PricingSection() {
           font-weight: 600;
         }
 
-
-        .all-features-section {
-          max-width: 1200px;
-          margin: 4rem auto 0;
-          text-align: center;
-        }
-
-        .all-features-title {
-          font-family: 'Syne', sans-serif;
-          font-size: 1.5rem;
-          font-weight: 700;
-          color: #fff;
-          margin-bottom: 2rem;
-        }
-
-        .all-features-grid {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          flex-wrap: wrap;
-          gap: 1rem;
-          max-width: 800px;
-          margin: 0 auto;
-        }
-
-        .feature-item {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 0.75rem;
-          padding: 1rem 1.5rem;
-          background: rgba(10, 10, 10, 0.5);
-          border: 1px solid rgba(82, 201, 125, 0.15);
-          border-radius: 8px;
-          font-size: 0.85rem;
-          color: rgba(255, 255, 255, 0.7);
-        }
-
-        .feature-item:hover {
-          border-color: rgba(82, 201, 125, 0.3);
-          transform: translateX(4px);
-          transition: border-color 0.3s ease, transform 0.3s ease;
-        }
-
-        .feature-icon {
-          flex-shrink: 0;
-          width: 20px;
-          height: 20px;
-          color: #52C97D;
-        }
-
         @media (max-width: 768px) {
           .pricing-section {
             padding: 4rem 1.5rem;
@@ -378,25 +319,6 @@ export default function PricingSection() {
           ))}
         </div>
 
-        {/* All Features Section */}
-        <div className="all-features-section">
-          <h3 className="all-features-title">All Tiers Include</h3>
-          <div className="all-features-grid">
-            {allFeatures.map((feature, index) => (
-              <motion.div
-                key={index}
-                className="feature-item"
-                style={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.05 }}
-              >
-                <Check className="feature-icon" size={20} strokeWidth={3} />
-                <span>{feature}</span>
-              </motion.div>
-            ))}
-          </div>
-        </div>
       </div>
     </section>
   );
