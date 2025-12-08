@@ -249,29 +249,29 @@ function MigrationLine({ marker, index }: MigrationLineProps) {
       >
         {/* Background box for label */}
         <rect
-          x={marker.x - 35}
+          x={marker.x - 50}
           y={labelY}
-          width={70}
-          height={26}
+          width={100}
+          height={32}
           fill="#000000"
-          fillOpacity={0.85}
+          fillOpacity={0.9}
           stroke={lineColor}
-          strokeWidth={1.5}
-          strokeOpacity={0.6}
-          rx={3}
+          strokeWidth={2}
+          strokeOpacity={0.7}
+          rx={4}
           filter="url(#labelGlow)"
         />
         {/* Label text */}
         <text
           x={marker.x}
-          y={labelY + 17}
+          y={labelY + 21}
           fill={lineColor}
-          fillOpacity={0.9}
-          fontSize={10}
-          fontWeight="600"
+          fillOpacity={0.95}
+          fontSize={13}
+          fontWeight="700"
           fontFamily="JetBrains Mono, monospace"
           textAnchor="middle"
-          letterSpacing="0.5"
+          letterSpacing="0.8"
         >
           {marker.label}
         </text>
@@ -508,20 +508,20 @@ export function AnimatedCandlestickBackground() {
               ease: [0.4, 0, 0.2, 1] // Smooth ease out
             }}
           >
-            {/* Render migration lines first (behind candlesticks) */}
-            {migrations.map((marker, index) => (
-              <MigrationLine
-                key={`${cycleKey}-migration-${index}`}
-                marker={marker}
-                index={index}
-              />
-            ))}
-
-            {/* Render candlesticks on top */}
+            {/* Render candlesticks first (behind migration labels) */}
             {candles.map((candle, index) => (
               <Candlestick
                 key={`${cycleKey}-${candle.id}`}
                 candle={candle}
+                index={index}
+              />
+            ))}
+
+            {/* Render migration lines and labels on top */}
+            {migrations.map((marker, index) => (
+              <MigrationLine
+                key={`${cycleKey}-migration-${index}`}
+                marker={marker}
                 index={index}
               />
             ))}
