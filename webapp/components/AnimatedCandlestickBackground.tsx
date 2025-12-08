@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 /**
@@ -33,7 +33,7 @@ interface CandleData {
   isGreen: boolean;
 }
 
-const CANDLE_COUNT = 4;
+const CANDLE_COUNT = 30;
 const SVG_WIDTH = 1000;
 const SVG_HEIGHT = 600;
 const MARGIN = 30;
@@ -196,93 +196,108 @@ interface MigrationLineProps {
   index: number;
 }
 
+/**
+ * Migration line rendered inside SVG (can stretch without legibility issues)
+ */
 function MigrationLine({ marker, index }: MigrationLineProps) {
   const lineColor = '#52C97D';
-  const baseDelay = 1.5 + (index * 0.4); // Start after first few candles appear
-
-  // Line spans the entire height of the hero
+  const baseDelay = 1.5 + (index * 0.4);
   const lineTop = 0;
   const lineBottom = SVG_HEIGHT;
 
-  // Label positioned at original location (near top of viewport area)
-  const labelY = SVG_HEIGHT * VIEWPORT_TOP_PERCENT + 20;
+  return (
+    <motion.line
+      x1={marker.x}
+      x2={marker.x}
+      y1={lineTop}
+      y2={lineBottom}
+      stroke={lineColor}
+      strokeWidth={2}
+      strokeDasharray="8 4"
+      strokeOpacity={0.6}
+      strokeLinecap="square"
+      initial={{ opacity: 0, pathLength: 0 }}
+      animate={{ opacity: 1, pathLength: 1 }}
+      transition={{
+        opacity: {
+          duration: 0.4,
+          delay: baseDelay,
+          ease: 'easeOut',
+        },
+        pathLength: {
+          duration: 0.8,
+          delay: baseDelay,
+          ease: [0.22, 1, 0.36, 1],
+        },
+      }}
+      filter="url(#migrationGlow)"
+    />
+  );
+}
+
+interface MigrationLabelProps {
+  marker: MigrationMarker;
+  index: number;
+  isVisible: boolean;
+}
+
+/**
+ * Migration label rendered OUTSIDE SVG as HTML element
+ * This prevents the preserveAspectRatio="none" distortion from affecting text
+ */
+function MigrationLabel({ marker, index }: Omit<MigrationLabelProps, 'isVisible'>) {
+  const lineColor = '#52C97D';
+  const baseDelay = 1.5 + (index * 0.4);
+
+  // Convert SVG coordinates to percentage for CSS positioning
+  // marker.x is in SVG coords (0-1000), convert to percentage
+  const leftPercent = (marker.x / SVG_WIDTH) * 100;
+  // Position label at ~18% from top (similar to original labelY calculation)
+  const topPercent = (VIEWPORT_TOP_PERCENT * 100) + 3;
 
   return (
-    <g>
-      {/* Vertical dashed line */}
-      <motion.line
-        x1={marker.x}
-        x2={marker.x}
-        y1={lineTop}
-        y2={lineBottom}
-        stroke={lineColor}
-        strokeWidth={3}
-        strokeDasharray="10 8"
-        strokeOpacity={0.7}
-        strokeLinecap="round"
-        initial={{ opacity: 0, pathLength: 0 }}
-        animate={{ opacity: 1, pathLength: 1 }}
-        transition={{
-          opacity: {
-            duration: 0.4,
-            delay: baseDelay,
-            ease: 'easeOut',
-          },
-          pathLength: {
-            duration: 0.8,
-            delay: baseDelay,
-            ease: [0.22, 1, 0.36, 1],
-          },
-        }}
-        filter="url(#migrationGlow)"
-      />
-
-      {/* Label using foreignObject to prevent text squishing */}
-      <motion.g
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{
-          duration: 0.5,
-          delay: baseDelay + 0.6,
-          ease: [0.22, 1, 0.36, 1],
+    <motion.div
+      // Use Framer's x for centering to avoid transform conflicts with y animation
+      initial={{ opacity: 0, y: -10, x: '-50%' }}
+      animate={{ opacity: 1, y: 0, x: '-50%' }}
+      exit={{ opacity: 0, x: '-50%' }}
+      transition={{
+        // Label appears at the same time as the line
+        opacity: { duration: 0.4, delay: baseDelay, ease: 'easeOut' },
+        y: { duration: 0.4, delay: baseDelay, ease: [0.22, 1, 0.36, 1] },
+        x: { duration: 0 }, // Instant - just for centering, no animation
+      }}
+      style={{
+        position: 'absolute',
+        left: `${leftPercent}%`,
+        top: `${topPercent}%`,
+        zIndex: 10,
+        pointerEvents: 'none',
+      }}
+    >
+      <div
+        style={{
+          padding: '7px 12px',
+          background: '#000000',
+          border: `2px solid ${lineColor}`,
+          borderRadius: '4px',
+          boxShadow: `0 0 15px ${lineColor}80, inset 0 0 10px ${lineColor}20`,
+          whiteSpace: 'nowrap',
         }}
       >
-        <foreignObject
-          x={marker.x - 50}
-          y={labelY}
-          width={100}
-          height={32}
-          style={{ overflow: 'visible' }}
+        <span
+          style={{
+            color: lineColor,
+            fontSize: '12px',
+            fontWeight: '600',
+            fontFamily: 'JetBrains Mono, monospace',
+            letterSpacing: '0.5px',
+          }}
         >
-          <div
-            style={{
-              width: '100px',
-              height: '32px',
-              background: '#000000',
-              border: `2px solid ${lineColor}`,
-              borderRadius: '4px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: `0 0 12px ${lineColor}40`,
-            }}
-          >
-            <span
-              style={{
-                color: lineColor,
-                fontSize: '13px',
-                fontWeight: '700',
-                fontFamily: 'JetBrains Mono, monospace',
-                letterSpacing: '0.8px',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {marker.label}
-            </span>
-          </div>
-        </foreignObject>
-      </motion.g>
-    </g>
+          {marker.label}
+        </span>
+      </div>
+    </motion.div>
   );
 }
 
@@ -458,82 +473,110 @@ export function AnimatedCandlestickBackground() {
   }
 
   return (
-    <svg
-      style={{
-        position: 'absolute',
-        inset: 0,
-        width: '100%',
-        height: '100%',
-        pointerEvents: 'none',
-        opacity: 0.25,
-      }}
-      viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}
-      preserveAspectRatio="none"
-    >
-      <defs>
-        <filter id="greenGlow" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="3" result="coloredBlur" />
-          <feMerge>
-            <feMergeNode in="coloredBlur" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-        <filter id="redGlow" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="3" result="coloredBlur" />
-          <feMerge>
-            <feMergeNode in="coloredBlur" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-        <filter id="migrationGlow" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="6" result="coloredBlur" />
-          <feMerge>
-            <feMergeNode in="coloredBlur" />
-            <feMergeNode in="coloredBlur" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-        <filter id="labelGlow" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="3" result="coloredBlur" />
-          <feMerge>
-            <feMergeNode in="coloredBlur" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-      </defs>
-
+    <>
+      {/* Container for labels - positioned outside SVG to avoid distortion */}
       <AnimatePresence mode="wait">
         {isVisible && (
-          <motion.g
-            key={cycleKey}
+          <motion.div
+            key={`${cycleKey}-labels`}
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            animate={{ opacity: 0.6 }}
             exit={{ opacity: 0 }}
             transition={{
               duration: EXIT_DURATION,
-              ease: [0.4, 0, 0.2, 1] // Smooth ease out
+              ease: [0.4, 0, 0.2, 1]
+            }}
+            style={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              height: '100%',
+              pointerEvents: 'none',
+              zIndex: 1,
             }}
           >
-            {/* Render candlesticks first (behind migration labels) */}
-            {candles.map((candle, index) => (
-              <Candlestick
-                key={`${cycleKey}-${candle.id}`}
-                candle={candle}
-                index={index}
-              />
-            ))}
-
-            {/* Render migration lines and labels on top */}
             {migrations.map((marker, index) => (
-              <MigrationLine
-                key={`${cycleKey}-migration-${index}`}
+              <MigrationLabel
+                key={`${cycleKey}-label-${index}`}
                 marker={marker}
                 index={index}
               />
             ))}
-          </motion.g>
+          </motion.div>
         )}
       </AnimatePresence>
-    </svg>
+
+      {/* SVG for candlesticks and migration lines (these can stretch) */}
+      <svg
+        style={{
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          pointerEvents: 'none',
+          opacity: 0.25,
+        }}
+        viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}
+        preserveAspectRatio="none"
+      >
+        <defs>
+          <filter id="greenGlow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+            <feMerge>
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+          <filter id="redGlow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+            <feMerge>
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+          <filter id="migrationGlow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="6" result="coloredBlur" />
+            <feMerge>
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+
+        <AnimatePresence mode="wait">
+          {isVisible && (
+            <motion.g
+              key={cycleKey}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{
+                duration: EXIT_DURATION,
+                ease: [0.4, 0, 0.2, 1]
+              }}
+            >
+              {/* Render candlesticks */}
+              {candles.map((candle, index) => (
+                <Candlestick
+                  key={`${cycleKey}-${candle.id}`}
+                  candle={candle}
+                  index={index}
+                />
+              ))}
+
+              {/* Render migration lines (inside SVG - lines can stretch) */}
+              {migrations.map((marker, index) => (
+                <MigrationLine
+                  key={`${cycleKey}-migration-${index}`}
+                  marker={marker}
+                  index={index}
+                />
+              ))}
+            </motion.g>
+          )}
+        </AnimatePresence>
+      </svg>
+    </>
   );
 }
