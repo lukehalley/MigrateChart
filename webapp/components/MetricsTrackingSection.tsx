@@ -36,13 +36,13 @@ export default function MetricsTrackingSection() {
       icon: <Users size={24} />,
       title: "Holder Tracking",
       description: "Monitor holder count evolution. See how community growth correlates with migrations.",
-      badge: "Core",
+      badge: "Advanced",
     },
     {
       icon: <DollarSign size={24} />,
       title: "Fee Analytics",
       description: "Track fees collected per pool. Compare fee tiers and optimize liquidity strategy.",
-      badge: "Core",
+      badge: "Advanced",
     },
     {
       icon: <Flame size={24} />,
@@ -52,14 +52,14 @@ export default function MetricsTrackingSection() {
     },
     {
       icon: <Cog size={24} />,
-      title: "Custom Mechanics",
+      title: "Project Mechanics",
       description: "Large projects can track custom tokenomics. Rebases, reflections, unique distributions.",
-      badge: "Enterprise",
+      badge: "Custom",
     },
   ];
 
   return (
-    <section className="metrics-section">
+    <section id="metrics" className="metrics-section">
       <style>{`
         .metrics-section {
           padding: 8rem 2rem;
@@ -183,6 +183,12 @@ export default function MetricsTrackingSection() {
         }
 
         .metric-badge.enterprise {
+          background: rgba(147, 112, 219, 0.15);
+          color: #9370DB;
+          border: 1px solid rgba(147, 112, 219, 0.3);
+        }
+
+        .metric-badge.custom {
           background: rgba(147, 112, 219, 0.15);
           color: #9370DB;
           border: 1px solid rgba(147, 112, 219, 0.3);
