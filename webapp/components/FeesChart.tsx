@@ -21,7 +21,6 @@ interface FeesChartProps {
 export default function FeesChart({ dailyFees, primaryColor }: FeesChartProps) {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
 
   // Helper to get RGB values from hex color
   const getRgbFromHex = (hex: string) => {
@@ -205,8 +204,6 @@ export default function FeesChart({ dailyFees, primaryColor }: FeesChartProps) {
     // Fit content
     chart.timeScale().fitContent();
 
-    setIsLoading(false);
-
     // Handle resize
     const handleResize = () => {
       if (chartContainerRef.current && chartRef.current) {
@@ -231,11 +228,6 @@ export default function FeesChart({ dailyFees, primaryColor }: FeesChartProps) {
 
   return (
     <div className="relative w-full h-full">
-      {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-10">
-          <div className="text-white/70">Loading chart...</div>
-        </div>
-      )}
       <div ref={chartContainerRef} className="w-full h-full" />
     </div>
   );

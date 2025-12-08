@@ -572,146 +572,8 @@ function HomeContent() {
     }
   }, [currentProject, tokenStats]);
 
-  // Stable loading state to prevent flash during transitions
-  const [showLoader, setShowLoader] = useState(true); // Start with true to show loader immediately
-  const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false);
-  const loaderStartTimeRef = useRef<number | null>(null);
-  const switchStartTimeRef = useRef<number | null>(null); // Track when switch started
-  const switchingFromProjectRef = useRef<ProjectConfig | null>(null); // Store the project we're switching TO (for loader display)
-  const MINIMUM_LOADER_DURATION = 300; // Minimum time to show loader (ms) - reduced for faster perceived loading
-
-  // Dedicated effect for handling token switching loader
-  useEffect(() => {
-    if (isSwitching && switchingToSlug) {
-      // Token switch started - find destination project from allProjects
-      const destinationProject = allProjects.find(p => p.slug === switchingToSlug);
-
-      // Store destination project info for loader (convert to partial ProjectConfig shape)
-      if (destinationProject) {
-        switchingFromProjectRef.current = {
-          slug: destinationProject.slug,
-          name: destinationProject.name,
-          primaryColor: destinationProject.primaryColor,
-          loaderUrl: destinationProject.loaderUrl,
-        } as ProjectConfig;
-      } else {
-        // Fallback to current project if destination not found
-        switchingFromProjectRef.current = currentProject;
-      }
-
-      switchStartTimeRef.current = Date.now();
-      loaderStartTimeRef.current = Date.now();
-      setShowLoader(true);
-      console.log('[PAGE] Token switch detected - showing destination project loader:', destinationProject?.name || 'fallback');
-    } else if (switchStartTimeRef.current !== null) {
-      // Token switch completed - ensure minimum display time before hiding
-      const elapsed = Date.now() - switchStartTimeRef.current;
-      const remaining = MINIMUM_LOADER_DURATION - elapsed;
-
-      console.log(`[PAGE] Token switch complete. Elapsed: ${elapsed}ms, Remaining: ${remaining}ms`);
-
-      if (remaining > 0) {
-        // Still need to wait - schedule hide after remaining time
-        const timer = setTimeout(() => {
-          console.log('[PAGE] Minimum duration elapsed - clearing switch refs');
-          switchStartTimeRef.current = null;
-          switchingFromProjectRef.current = null;
-          loaderStartTimeRef.current = null;
-          // Let the main loading effect handle hiding the loader
-        }, remaining);
-        return () => clearTimeout(timer);
-      } else {
-        // Minimum duration already passed
-        console.log('[PAGE] Minimum duration already elapsed - clearing switch refs');
-        switchStartTimeRef.current = null;
-        switchingFromProjectRef.current = null;
-        loaderStartTimeRef.current = null;
-      }
-    }
-  }, [isSwitching, switchingToSlug, allProjects, currentProject]);
-
-  useEffect(() => {
-    // On initial load, keep loader visible until we have ALL data
-    if (!hasInitiallyLoaded) {
-      // Record start time on first render
-      if (!loaderStartTimeRef.current) {
-        loaderStartTimeRef.current = Date.now();
-      }
-
-      // Debug: Log readiness status
-      console.log('[PAGE] Initial load readiness:', {
-        hasProject: !!currentProject,
-        hasPoolsData: !!poolsData,
-        hasTokenStats: !!tokenStats,
-        isLoading,
-        projectLoading,
-        isStatsLoading,
-        isSwitching
-      });
-
-      // Hide loader when we have all data (project, pools, stats) AND not switching
-      if (currentProject && poolsData && tokenStats && !isLoading && !projectLoading && !isStatsLoading && !isSwitching) {
-        console.log('[PAGE] All data ready! Hiding loader...');
-        const hideLoader = () => {
-          console.log('[PAGE] Loader hidden, initial load complete');
-          setHasInitiallyLoaded(true);
-          setShowLoader(false);
-          loaderStartTimeRef.current = null;
-        };
-
-        const elapsed = Date.now() - (loaderStartTimeRef.current || 0);
-        const remaining = MINIMUM_LOADER_DURATION - elapsed;
-
-        if (remaining > 0) {
-          // Wait for remaining time to ensure smooth animation
-          const timer = setTimeout(hideLoader, remaining);
-          return () => clearTimeout(timer);
-        } else {
-          hideLoader();
-        }
-      }
-    } else {
-      // After initial load, show loader during switching or when loading data
-      const shouldShowLoader = isLoading || projectLoading || isSwitching;
-
-      if (shouldShowLoader && !showLoader) {
-        // Starting to show loader - record start time (if not already set by switch effect)
-        if (!loaderStartTimeRef.current) {
-          loaderStartTimeRef.current = Date.now();
-        }
-        setShowLoader(true);
-        console.log('[PAGE] Showing loader for data update');
-      } else if (!shouldShowLoader && showLoader) {
-        // Data is ready and not switching
-        // IMPORTANT: Don't hide if we're still in the minimum switch duration window
-        if (switchStartTimeRef.current !== null) {
-          console.log('[PAGE] Data ready but still in switch minimum duration - keeping loader visible');
-          return; // Keep showing loader until switch duration completes
-        }
-
-        // Hide loader with minimum duration check (for non-switch loading)
-        if (loaderStartTimeRef.current) {
-          const elapsed = Date.now() - loaderStartTimeRef.current;
-          const remaining = MINIMUM_LOADER_DURATION - elapsed;
-
-          if (remaining > 0) {
-            console.log(`[PAGE] Waiting ${remaining}ms more before hiding loader (minimum duration)`);
-            const timer = setTimeout(() => {
-              setShowLoader(false);
-              loaderStartTimeRef.current = null;
-              console.log('[PAGE] Loader hidden after data update');
-            }, remaining);
-            return () => clearTimeout(timer);
-          }
-        }
-
-        // Hide immediately if no timing constraints
-        setShowLoader(false);
-        loaderStartTimeRef.current = null;
-        console.log('[PAGE] Loader hidden after data update');
-      }
-    }
-  }, [isLoading, projectLoading, isStatsLoading, isSwitching, hasInitiallyLoaded, currentProject, poolsData, tokenStats, showLoader]);
+  // Show loader during initial load or when switching projects
+  const showLoader = !currentProject || !poolsData || !tokenStats || isSwitching;
 
   // Auto-scale goals when met
   useEffect(() => {
@@ -1767,34 +1629,19 @@ function HomeContent() {
         )}
 
         {/* Mobile Chart */}
-        <div className="w-full h-full">
+        <div className="w-full h-full relative">
           {error && (
             <div className="flex items-center justify-center h-full">
               <div className="text-red">Error loading chart data</div>
             </div>
           )}
 
-          <AnimatePresence>
-            {showLoader && (
-              <motion.div
-                key="loading"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.4, ease: [0.4, 0.0, 0.2, 1] }}
-                className="flex items-center justify-center h-full backdrop-blur-xl"
-              >
-                <TokenLoadingLogo
-                  key={switchingFromProjectRef.current?.slug || currentProject?.slug}
-                  svgUrl={switchingFromProjectRef.current?.loaderUrl || currentProject?.loaderUrl}
-                  isLoading={projectLoading || isSwitching}
-                  color={switchingFromProjectRef.current?.primaryColor || currentProject?.primaryColor || '#52C97D'}
-                  slug={switchingFromProjectRef.current?.slug || currentProject?.slug}
-                />
-              </motion.div>
-            )}
+          {/* Skeleton placeholder during loading */}
+          {!error && showLoader && (
+            <div className="w-full h-full bg-black" />
+          )}
 
-            {!showLoader && !error && poolsData && tokenStats && (
+          {!error && poolsData && tokenStats && currentProject && (
               <AnimatePresence mode="wait">
                 {viewMode === 'chart' ? (
                   <motion.div
@@ -1876,6 +1723,27 @@ function HomeContent() {
                   </motion.div>
                 ) : null}
               </AnimatePresence>
+            )}
+
+          {/* Loader Overlay */}
+          <AnimatePresence>
+            {showLoader && currentProject && (
+              <motion.div
+                key="loading-mobile"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2, ease: [0.4, 0.0, 0.2, 1] }}
+                className="absolute inset-0 flex items-center justify-center backdrop-blur-xl z-50"
+              >
+                <TokenLoadingLogo
+                  key={currentProject.slug}
+                  svgUrl={currentProject.loaderUrl}
+                  isLoading={true}
+                  color={currentProject.primaryColor || '#52C97D'}
+                  slug={currentProject.slug}
+                />
+              </motion.div>
             )}
           </AnimatePresence>
         </div>
@@ -1898,27 +1766,12 @@ function HomeContent() {
             </div>
           )}
 
-          <AnimatePresence>
-            {showLoader && (
-              <motion.div
-                key="loading"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.4, ease: [0.4, 0.0, 0.2, 1] }}
-                className="flex items-center justify-center h-full backdrop-blur-xl"
-              >
-                <TokenLoadingLogo
-                  key={switchingFromProjectRef.current?.slug || currentProject?.slug}
-                  svgUrl={switchingFromProjectRef.current?.loaderUrl || currentProject?.loaderUrl}
-                  isLoading={projectLoading || isSwitching}
-                  color={switchingFromProjectRef.current?.primaryColor || currentProject?.primaryColor || '#52C97D'}
-                  slug={switchingFromProjectRef.current?.slug || currentProject?.slug}
-                />
-              </motion.div>
-            )}
+          {/* Skeleton placeholder during loading */}
+          {!error && showLoader && (
+            <div className="w-full h-full bg-black" />
+          )}
 
-            {!showLoader && !error && poolsData && tokenStats && (
+          {!error && poolsData && tokenStats && currentProject && (
               <AnimatePresence mode="wait">
                 {viewMode === 'chart' ? (
                   <motion.div
@@ -2000,6 +1853,27 @@ function HomeContent() {
                   </motion.div>
                 ) : null}
               </AnimatePresence>
+            )}
+
+          {/* Loader Overlay */}
+          <AnimatePresence>
+            {showLoader && currentProject && (
+              <motion.div
+                key="loading-desktop"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2, ease: [0.4, 0.0, 0.2, 1] }}
+                className="absolute inset-0 flex items-center justify-center backdrop-blur-xl z-50"
+              >
+                <TokenLoadingLogo
+                  key={currentProject.slug}
+                  svgUrl={currentProject.loaderUrl}
+                  isLoading={true}
+                  color={currentProject.primaryColor || '#52C97D'}
+                  slug={currentProject.slug}
+                />
+              </motion.div>
             )}
           </AnimatePresence>
         </motion.div>

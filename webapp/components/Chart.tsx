@@ -44,7 +44,6 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const modalContentRef = useRef<HTMLDivElement>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [showAbout, setShowAbout] = useState(false);
   const [isAboutClosing, setIsAboutClosing] = useState(false);
   const [resetTrigger, setResetTrigger] = useState(0);
@@ -245,8 +244,6 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
     // Apply canvas polyfills for older browsers
     polyfillCanvasRoundRect();
-
-    setIsLoading(false);
 
     // Detect mobile device (includes tablets and fold phones)
     const isMobile = window.innerWidth < 1024;
@@ -1718,11 +1715,6 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
           filter: drop-shadow(0 0 6px ${hexToRgba(primaryColor, 0.5)}) drop-shadow(0 0 3px ${hexToRgba(primaryColor, 0.3)});
         }
       `}</style>
-      {isLoading && (
-        <div className="flex items-center justify-center h-full">
-          <div className="text-textMuted">Loading chart...</div>
-        </div>
-      )}
 
       {/* Desktop: Top Left Buttons - Info, Indicators and Drawing Tools */}
       <div className="hidden lg:flex absolute top-6 left-6 md:top-8 md:left-8 z-10 gap-2">
