@@ -48,10 +48,10 @@ const EXIT_DURATION = 0.8; // Smooth fade out
 
 // Cycle timing
 // Last candle starts at (29 * 0.15) = 4.35s, finishes at 4.35 + 0.3 + 0.6 = 5.25s
-// Hold for 0.5s, then exit animation takes 0.8s
+// Hold for 2s, then exit animation takes 0.8s
 const ANIMATION_COMPLETE = 5250; // When animation finishes
-const HOLD_DURATION = 500; // Pause before exit
-const CYCLE_DURATION = ANIMATION_COMPLETE + HOLD_DURATION + (EXIT_DURATION * 1000) + 300; // ~6.85s total
+const HOLD_DURATION = 2000; // Pause before exit (2 seconds)
+const CYCLE_DURATION = ANIMATION_COMPLETE + HOLD_DURATION + (EXIT_DURATION * 1000) + 300; // ~8.35s total
 
 function generateCandleData(): Omit<CandleData, 'x' | 'open' | 'high' | 'low' | 'close' | 'id'>[] {
   const candles: Omit<CandleData, 'x' | 'open' | 'high' | 'low' | 'close' | 'id'>[] = [];
@@ -181,9 +181,103 @@ function normalizeCandles(rawCandles: Omit<CandleData, 'x' | 'open' | 'high' | '
   });
 }
 
+interface MigrationMarker {
+  x: number; // Position in SVG coordinates
+  label: string;
+}
+
 interface CandlestickProps {
   candle: CandleData;
   index: number;
+}
+
+interface MigrationLineProps {
+  marker: MigrationMarker;
+  index: number;
+}
+
+function MigrationLine({ marker, index }: MigrationLineProps) {
+  const lineColor = '#52C97D';
+  const baseDelay = 1.5 + (index * 0.4); // Start after first few candles appear
+
+  // Line spans the entire height of the hero
+  const lineTop = 0;
+  const lineBottom = SVG_HEIGHT;
+
+  // Label positioned at original location (near top of viewport area)
+  const labelY = SVG_HEIGHT * VIEWPORT_TOP_PERCENT + 20;
+
+  return (
+    <g>
+      {/* Vertical dashed line */}
+      <motion.line
+        x1={marker.x}
+        x2={marker.x}
+        y1={lineTop}
+        y2={lineBottom}
+        stroke={lineColor}
+        strokeWidth={3}
+        strokeDasharray="10 8"
+        strokeOpacity={0.7}
+        strokeLinecap="round"
+        initial={{ opacity: 0, pathLength: 0 }}
+        animate={{ opacity: 1, pathLength: 1 }}
+        transition={{
+          opacity: {
+            duration: 0.4,
+            delay: baseDelay,
+            ease: 'easeOut',
+          },
+          pathLength: {
+            duration: 0.8,
+            delay: baseDelay,
+            ease: [0.22, 1, 0.36, 1],
+          },
+        }}
+        filter="url(#migrationGlow)"
+      />
+
+      {/* Label - appears after line */}
+      <motion.g
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{
+          duration: 0.5,
+          delay: baseDelay + 0.6,
+          ease: [0.22, 1, 0.36, 1],
+        }}
+      >
+        {/* Background box for label */}
+        <rect
+          x={marker.x - 35}
+          y={labelY}
+          width={70}
+          height={26}
+          fill="#000000"
+          fillOpacity={0.85}
+          stroke={lineColor}
+          strokeWidth={1.5}
+          strokeOpacity={0.6}
+          rx={3}
+          filter="url(#labelGlow)"
+        />
+        {/* Label text */}
+        <text
+          x={marker.x}
+          y={labelY + 17}
+          fill={lineColor}
+          fillOpacity={0.9}
+          fontSize={10}
+          fontWeight="600"
+          fontFamily="JetBrains Mono, monospace"
+          textAnchor="middle"
+          letterSpacing="0.5"
+        >
+          {marker.label}
+        </text>
+      </motion.g>
+    </g>
+  );
 }
 
 function Candlestick({ candle, index }: CandlestickProps) {
@@ -297,8 +391,22 @@ function Candlestick({ candle, index }: CandlestickProps) {
   );
 }
 
+function generateMigrationMarkers(): MigrationMarker[] {
+  // Place migration marker at dead center of the timeline
+  // Represents a key pool migration event in the project's history
+  const markers: MigrationMarker[] = [
+    {
+      x: SVG_WIDTH * 0.5, // Dead center
+      label: 'MIGRATION',
+    },
+  ];
+
+  return markers;
+}
+
 export function AnimatedCandlestickBackground() {
   const [candles, setCandles] = useState<CandleData[]>([]);
+  const [migrations, setMigrations] = useState<MigrationMarker[]>([]);
   const [cycleKey, setCycleKey] = useState(0);
   const [mounted, setMounted] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
@@ -306,10 +414,11 @@ export function AnimatedCandlestickBackground() {
   useEffect(() => {
     setMounted(true);
 
-    // Generate initial candles
+    // Generate initial candles and migrations
     const rawCandles = generateCandleData();
     const normalized = normalizeCandles(rawCandles);
     setCandles(normalized);
+    setMigrations(generateMigrationMarkers());
     setIsVisible(true);
   }, []);
 
@@ -327,6 +436,7 @@ export function AnimatedCandlestickBackground() {
       const rawCandles = generateCandleData();
       const normalized = normalizeCandles(rawCandles);
       setCandles(normalized);
+      setMigrations(generateMigrationMarkers());
       setCycleKey(prev => prev + 1);
       setIsVisible(true);
     }, CYCLE_DURATION);
@@ -369,6 +479,21 @@ export function AnimatedCandlestickBackground() {
             <feMergeNode in="SourceGraphic" />
           </feMerge>
         </filter>
+        <filter id="migrationGlow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="6" result="coloredBlur" />
+          <feMerge>
+            <feMergeNode in="coloredBlur" />
+            <feMergeNode in="coloredBlur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+        <filter id="labelGlow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+          <feMerge>
+            <feMergeNode in="coloredBlur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
       </defs>
 
       <AnimatePresence mode="wait">
@@ -383,6 +508,16 @@ export function AnimatedCandlestickBackground() {
               ease: [0.4, 0, 0.2, 1] // Smooth ease out
             }}
           >
+            {/* Render migration lines first (behind candlesticks) */}
+            {migrations.map((marker, index) => (
+              <MigrationLine
+                key={`${cycleKey}-migration-${index}`}
+                marker={marker}
+                index={index}
+              />
+            ))}
+
+            {/* Render candlesticks on top */}
             {candles.map((candle, index) => (
               <Candlestick
                 key={`${cycleKey}-${candle.id}`}
