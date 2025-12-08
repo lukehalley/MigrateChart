@@ -253,6 +253,10 @@ export default function LandingPageNew() {
           display: inline-flex;
         }
 
+        .hero-cta-mobile {
+          display: none;
+        }
+
         .btn {
           display: inline-flex;
           align-items: center;
@@ -601,6 +605,10 @@ export default function LandingPageNew() {
             display: none;
           }
 
+          .hero-cta-mobile {
+            display: inline-flex;
+          }
+
           .hero {
             /* Use dynamic viewport height for better mobile support */
             min-height: 100dvh;
@@ -724,10 +732,16 @@ export default function LandingPageNew() {
               <ArrowRight size={20} strokeWidth={2.5} />
             </Link>
             {mounted && (
-              <button onClick={() => scrollToSection("problem")} className="btn btn-secondary hero-cta-desktop">
-                Learn More
-                <ChevronRight size={20} strokeWidth={2.5} style={{ transform: "rotate(90deg)" }} />
-              </button>
+              <>
+                <button onClick={() => scrollToSection("problem")} className="btn btn-secondary hero-cta-desktop">
+                  Learn More
+                  <ChevronRight size={20} strokeWidth={2.5} style={{ transform: "rotate(90deg)" }} />
+                </button>
+                <Link href="/why" className="btn btn-secondary hero-cta-mobile">
+                  Learn More
+                  <ArrowRight size={20} strokeWidth={2.5} />
+                </Link>
+              </>
             )}
           </motion.div>
         </motion.div>
