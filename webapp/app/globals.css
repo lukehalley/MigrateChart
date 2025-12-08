@@ -269,7 +269,7 @@ a {
   height: 2px;
   background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
   opacity: 0.3;
-  animation: scan-line 3s linear infinite;
+  /* animation: scan-line 3s linear infinite; */
   pointer-events: none;
 }
 
