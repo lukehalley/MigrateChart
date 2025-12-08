@@ -167,13 +167,18 @@ export default function LandingNav() {
         .mobile-menu-button {
           display: none;
           flex-direction: column;
-          gap: 5px;
+          justify-content: center;
+          align-items: center;
+          gap: 6px;
           background: transparent;
           border: 1px solid rgba(82, 201, 125, 0.3);
           padding: 0.75rem;
           border-radius: 6px;
           cursor: pointer;
           transition: all 0.3s ease;
+          width: 44px;
+          height: 44px;
+          position: relative;
         }
 
         .mobile-menu-button:hover {
@@ -182,14 +187,29 @@ export default function LandingNav() {
         }
 
         .mobile-menu-button span {
-          width: 20px;
+          width: 22px;
           height: 2px;
           background: var(--primary);
-          transition: all 0.3s ease;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          position: absolute;
+          display: block;
+        }
+
+        .mobile-menu-button span:nth-child(1) {
+          top: 12px;
+        }
+
+        .mobile-menu-button span:nth-child(2) {
+          top: 20px;
+        }
+
+        .mobile-menu-button span:nth-child(3) {
+          top: 28px;
         }
 
         .mobile-menu-button.open span:nth-child(1) {
-          transform: rotate(45deg) translateY(7px);
+          top: 20px;
+          transform: rotate(45deg);
         }
 
         .mobile-menu-button.open span:nth-child(2) {
@@ -197,19 +217,23 @@ export default function LandingNav() {
         }
 
         .mobile-menu-button.open span:nth-child(3) {
-          transform: rotate(-45deg) translateY(-7px);
+          top: 20px;
+          transform: rotate(-45deg);
         }
 
         .mobile-nav {
           display: none;
           position: fixed;
-          top: 80px;
+          top: 72px;
           left: 0;
           right: 0;
+          bottom: 0;
           background: rgba(0, 0, 0, 0.98);
-          backdrop-filter: blur(10px);
-          border-bottom: 1px solid rgba(82, 201, 125, 0.15);
-          padding: 1.5rem;
+          backdrop-filter: blur(20px);
+          border-top: 1px solid rgba(82, 201, 125, 0.2);
+          padding: 2rem 1.5rem;
+          overflow-y: auto;
+          z-index: 999;
         }
 
         .mobile-nav.open {
@@ -219,7 +243,31 @@ export default function LandingNav() {
         .mobile-nav-links {
           display: flex;
           flex-direction: column;
-          gap: 0.5rem;
+          gap: 0.25rem;
+        }
+
+        .mobile-nav .nav-link {
+          padding: 1.25rem 1.5rem;
+          font-size: 1rem;
+          border: 1px solid rgba(82, 201, 125, 0.15);
+          border-radius: 8px;
+          text-align: left;
+          background: rgba(6, 6, 6, 0.6);
+        }
+
+        .mobile-nav .nav-link:hover {
+          background: rgba(82, 201, 125, 0.08);
+          border-color: rgba(82, 201, 125, 0.3);
+        }
+
+        .mobile-nav .nav-link.primary {
+          margin-top: 1rem;
+          background: var(--primary);
+          border-color: var(--primary);
+        }
+
+        .mobile-nav .nav-link.primary:hover {
+          background: var(--primary-dark);
         }
 
         @media (max-width: 768px) {
