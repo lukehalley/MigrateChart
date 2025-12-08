@@ -244,18 +244,6 @@ export default function LandingPageNew() {
           flex-wrap: wrap;
         }
 
-        .hero-cta .btn-primary {
-          display: none;
-        }
-
-        .hero-cta-desktop {
-          display: inline-flex;
-        }
-
-        .hero-cta-mobile {
-          display: none;
-        }
-
         .btn {
           display: inline-flex;
           align-items: center;
@@ -271,6 +259,18 @@ export default function LandingPageNew() {
           overflow: hidden;
           cursor: pointer;
           font-family: 'JetBrains Mono', monospace;
+        }
+
+        .hero-cta .btn-primary {
+          display: none;
+        }
+
+        .btn.hero-cta-desktop {
+          display: inline-flex;
+        }
+
+        .btn.hero-cta-mobile {
+          display: none;
         }
 
         .btn-primary {
@@ -600,11 +600,11 @@ export default function LandingPageNew() {
             display: inline-flex;
           }
 
-          .hero-cta-desktop {
+          .btn.hero-cta-desktop {
             display: none;
           }
 
-          .hero-cta-mobile {
+          .btn.hero-cta-mobile {
             display: inline-flex;
           }
 
