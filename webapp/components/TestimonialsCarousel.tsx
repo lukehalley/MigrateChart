@@ -138,7 +138,7 @@ function TweetCard({ tweet }: { tweet: Tweet }) {
         }} />
 
         {/* Header */}
-        <div className="flex items-center justify-center gap-3 mb-4 relative z-10">
+        <div className="flex items-start gap-3 mb-4 relative z-10">
           {/* Avatar with glow */}
           <div className="relative flex-shrink-0">
             <div className="w-12 h-12 rounded-full border-2 border-[var(--primary)]/30 overflow-hidden">
@@ -161,14 +161,14 @@ function TweetCard({ tweet }: { tweet: Tweet }) {
           </div>
 
           {/* Author info */}
-          <div className="flex-1 min-w-0 text-center">
-            <div className="flex items-center justify-center gap-1.5 flex-wrap">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5 flex-wrap">
               <span className="font-semibold text-[var(--text)] truncate" style={{ fontFamily: "'Syne', sans-serif" }}>{tweet.author}</span>
               {tweet.verified && (
                 <BadgeCheck className="w-4 h-4 text-[var(--accent)] fill-[var(--accent)]/20 flex-shrink-0" />
               )}
             </div>
-            <div className="flex items-center justify-center gap-2 text-[var(--text-muted)] text-sm font-mono">
+            <div className="flex items-center gap-2 text-[var(--text-muted)] text-sm font-mono">
               <span className="truncate">@{tweet.username}</span>
             </div>
           </div>
@@ -182,7 +182,7 @@ function TweetCard({ tweet }: { tweet: Tweet }) {
         </div>
 
         {/* Content */}
-        <div className="relative z-10 text-center">
+        <div className="relative z-10">
           <p className="text-[var(--text-secondary)] leading-relaxed whitespace-pre-wrap text-[15px] font-mono">
             {tweet.content}
           </p>
