@@ -61,7 +61,7 @@ export default function AdminLoading() {
           background-size: 100% 3px, 100% 7px;
           pointer-events: none;
           z-index: 1;
-          animation: scanline 12s linear infinite;
+          /* animation: scanline 12s linear infinite; */
         }
 
         @keyframes scanline {

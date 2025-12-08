@@ -56,7 +56,7 @@ export default function PreviewLoading() {
           background-size: 100% 3px;
           pointer-events: none;
           z-index: 1;
-          animation: scanline 12s linear infinite;
+          /* animation: scanline 12s linear infinite; */
         }
 
         @keyframes scanline {

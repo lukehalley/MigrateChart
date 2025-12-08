@@ -130,7 +130,7 @@ export default function LandingPageNew() {
           pointer-events: none;
           z-index: 1;
           opacity: 1;
-          animation: scanline 12s linear infinite;
+          /* animation: scanline 12s linear infinite; */
         }
 
         @keyframes scanline {

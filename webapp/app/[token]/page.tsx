@@ -741,7 +741,7 @@ function HomeContent() {
           pointer-events: none;
           z-index: 1;
           opacity: 1;
-          animation: tokenScanline 12s linear infinite;
+          /* animation: tokenScanline 12s linear infinite; */
         }
         @keyframes tokenScanline {
           0% { transform: translateY(0); }
