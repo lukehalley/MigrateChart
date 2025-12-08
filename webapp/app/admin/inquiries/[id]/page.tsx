@@ -16,11 +16,12 @@ async function getInquiry(id: string) {
   return data;
 }
 
-export default async function InquiryDetailPage({ params }: { params: { id: string } }) {
+export default async function InquiryDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const user = await getUser();
   if (!user) redirect('/admin/login');
 
-  const inquiry = await getInquiry(params.id);
+  const { id } = await params;
+  const inquiry = await getInquiry(id);
   if (!inquiry) notFound();
 
   return (
