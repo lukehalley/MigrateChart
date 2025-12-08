@@ -518,18 +518,11 @@ function MobileNav({
     <div className={`mobile-nav ${isOpen ? "open" : ""}`}>
       <div className="mobile-nav-links">
         <Link
-          href="/problem"
+          href="/why"
           className="nav-link"
           onClick={() => setIsOpen(false)}
         >
-          Problem
-        </Link>
-        <Link
-          href="/solution"
-          className="nav-link"
-          onClick={() => setIsOpen(false)}
-        >
-          Solution
+          Why Us
         </Link>
         <Link
           href="/features"

@@ -115,12 +115,9 @@ export default function SectionLayout({ children }: SectionLayoutProps) {
 
         .section-content {
           padding-top: 100px;
-          min-height: 100vh;
+          min-height: calc(100vh - 100px);
           position: relative;
           z-index: 2;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
         }
 
         /* Features Section */
@@ -128,6 +125,11 @@ export default function SectionLayout({ children }: SectionLayoutProps) {
           padding: 6rem 2rem;
           position: relative;
           background: transparent;
+        }
+
+        /* Reduce spacing between consecutive sections for narrative flow */
+        .features + .features {
+          padding-top: 2rem;
         }
 
         @media (min-width: 769px) {
@@ -138,6 +140,10 @@ export default function SectionLayout({ children }: SectionLayoutProps) {
 
           .features {
             padding: 8rem 2rem;
+          }
+
+          .features + .features {
+            padding-top: 4rem;
           }
         }
 
