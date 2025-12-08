@@ -169,10 +169,19 @@ a {
 @keyframes scan-line {
   0% {
     transform: translateY(-100%);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
   }
   100% {
-    transform: translateY(100%);
+    transform: translateY(300%);
+    opacity: 0;
   }
+}
+
+.animate-scan-line {
+  animation: scan-line 4s ease-in-out infinite;
 }
 
 @keyframes data-pulse {

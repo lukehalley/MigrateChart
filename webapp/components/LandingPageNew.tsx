@@ -9,14 +9,26 @@ import {
   Database,
   Zap,
   ChevronRight,
+  XCircle,
+  AlertCircle,
+  Clock,
+  GitMerge,
+  History,
+  MapPin,
 } from "lucide-react";
 import { AnimatedCandlestickBackground } from "./AnimatedCandlestickBackground";
+import PricingSection from "./PricingSection";
+import TestimonialsCarousel from "./TestimonialsCarousel";
 
 interface ProjectListItem {
   slug: string;
   name: string;
   primaryColor: string;
   logoUrl: string;
+  websiteUrl?: string;
+  marketCap?: number;
+  volume24h?: number;
+  holders?: number;
 }
 
 export default function LandingPageNew() {
@@ -410,8 +422,10 @@ export default function LandingPageNew() {
 
         .projects-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-          gap: 1.5rem;
+          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+          gap: 2rem;
+          max-width: 900px;
+          margin: 0 auto;
         }
 
         .project-card {
@@ -429,8 +443,8 @@ export default function LandingPageNew() {
 
         .project-card:hover {
           transform: translateY(-12px) scale(1.02);
-          box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4), 0 0 40px rgba(82, 201, 125, 0.15);
-          border-color: rgba(82, 201, 125, 0.4);
+          box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+          filter: brightness(1.1);
         }
 
         .project-logo {
@@ -449,9 +463,53 @@ export default function LandingPageNew() {
           text-align: center;
         }
 
+        .project-stats {
+          display: flex;
+          flex-direction: column;
+          gap: 0.75rem;
+          width: 100%;
+          margin-top: 1.5rem;
+          padding: 1rem 0;
+          border-top: 1px solid rgba(255, 255, 255, 0.08);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .stat-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        .stat-label {
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 0.7rem;
+          font-weight: 400;
+          color: var(--text-muted);
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+        }
+
+        .stat-value {
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 0.85rem;
+          font-weight: 700;
+          letter-spacing: 0.02em;
+        }
+
+        .project-url {
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 0.75rem;
+          font-weight: 500;
+          text-align: center;
+          margin-top: 0.75rem;
+          letter-spacing: 0.01em;
+        }
+
         .project-slug {
           font-size: 0.75rem;
           color: var(--text-muted);
+          margin-top: 0.75rem;
+          text-align: center;
         }
 
         /* CTA Section */
@@ -692,7 +750,7 @@ export default function LandingPageNew() {
         </motion.div>
       </section>
 
-      {/* Features Section */}
+      {/* Problem Section */}
       <section className="features">
         <div className="features-container">
           <div className="section-header">
@@ -707,7 +765,7 @@ export default function LandingPageNew() {
                 Migrations Erase History
               </h2>
               <p className="section-description">
-                Charts Reset. Data Vanishes. We Reconnect Everything.
+                When Tokens Migrate Pools, Charts Reset. Price History Disappears. Investors See Incomplete Data.
               </p>
             </motion.div>
           </div>
@@ -715,19 +773,70 @@ export default function LandingPageNew() {
           <div className="features-grid">
             {[
               {
-                icon: <BarChart3 size={24} />,
+                icon: <XCircle size={24} />,
+                title: "Charts Start Over",
+                description:
+                  "Projects Migrate For Better Fees. New Pool Creates Fresh Chart. Historical Performance Erased.",
+              },
+              {
+                icon: <AlertCircle size={24} />,
+                title: "Fee Tier Confusion",
+                description:
+                  "0.05% Pool. 0.30% Pool. 1.00% Pool. Volume Split Across Tiers. Impossible To Compare.",
+              },
+              {
+                icon: <Clock size={24} />,
+                title: "Trust Gap",
+                description:
+                  "Legitimate Projects Look Brand New. No Track Record Visible. Investors Can't Verify History.",
+              },
+            ].map((feature, index) => (
+              <div key={index} className="feature-card">
+                <div className="feature-icon">{feature.icon}</div>
+                <h3 className="feature-title">{feature.title}</h3>
+                <p className="feature-description">{feature.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Solution Section */}
+      <section className="features">
+        <div className="features-container">
+          <div className="section-header">
+            <motion.div
+              style={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.8 }}
+            >
+              <div className="section-label">THE SOLUTION</div>
+              <h2 className="section-title">
+                We Reconnect Everything
+              </h2>
+              <p className="section-description">
+                One Continuous Chart Across All Migrations. Complete Price History From Launch To Today.
+              </p>
+            </motion.div>
+          </div>
+
+          <div className="features-grid">
+            {[
+              {
+                icon: <GitMerge size={24} />,
                 title: "Unified Timeline",
                 description:
                   "One Chart From First Pool To Current. Every Migration Connected.",
               },
               {
-                icon: <Database size={24} />,
+                icon: <History size={24} />,
                 title: "Pre-Migration Data",
                 description:
                   "See Price Action Before The Move. Show Investors The Full Story.",
               },
               {
-                icon: <Zap size={24} />,
+                icon: <MapPin size={24} />,
                 title: "Migration Markers",
                 description:
                   "Visual Indicators For Each Transition. Track Fees And Holders Per Phase.",
@@ -754,7 +863,7 @@ export default function LandingPageNew() {
                 viewport={{ once: true, margin: "-100px" }}
                 transition={{ duration: 0.8 }}
               >
-                <div className="section-label">LIVE PROJECTS</div>
+                <div className="section-label">SEE IT IN ACTION</div>
                 <h2 className="section-title">Complete Histories</h2>
                 <p className="section-description">
                   Projects That Migrated. Full Price Journey, Launch To Today.
@@ -763,31 +872,147 @@ export default function LandingPageNew() {
             </div>
 
             <div className="projects-grid">
-              {projects.map((project, index) => (
-                <motion.div
-                  key={project.slug}
-                  style={{ opacity: 0, scale: 0.9, y: 20 }}
-                  whileInView={{ opacity: 1, scale: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-50px" }}
-                  transition={{ duration: 0.5, delay: index * 0.05 }}
-                >
-                  <Link href={`/${project.slug}`} prefetch={true} className="project-card">
-                    {project.logoUrl && (
-                      <img
-                        src={project.logoUrl}
-                        alt={project.name}
-                        className="project-logo"
-                      />
+              {projects.map((project, index) => {
+                const formatNumber = (num?: number) => {
+                  if (!num) return null;
+                  if (num >= 1_000_000_000) return `$${(num / 1_000_000_000).toFixed(2)}B`;
+                  if (num >= 1_000_000) return `$${(num / 1_000_000).toFixed(1)}M`;
+                  if (num >= 1_000) return `$${(num / 1_000).toFixed(0)}K`;
+                  return `$${num.toFixed(0)}`;
+                };
+
+                const formatCount = (num?: number) => {
+                  if (!num) return null;
+                  if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(1)}M`;
+                  if (num >= 1_000) return `${(num / 1_000).toFixed(1)}K`;
+                  return num.toString();
+                };
+
+                const cleanUrl = project.websiteUrl?.replace(/^https?:\/\//, '').replace(/\/$/, '');
+
+                return (
+                  <motion.div
+                    key={project.slug}
+                    style={{ opacity: 0, scale: 0.9, y: 20 }}
+                    whileInView={{ opacity: 1, scale: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-50px" }}
+                    transition={{ duration: 0.5, delay: index * 0.05 }}
+                  >
+                    {project.websiteUrl ? (
+                      <a
+                        href={project.websiteUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="project-card"
+                        style={{
+                          backgroundColor: `${project.primaryColor}15`,
+                          borderColor: `${project.primaryColor}40`,
+                        }}
+                      >
+                        {project.logoUrl && (
+                          <img
+                            src={project.logoUrl}
+                            alt={project.name}
+                            className="project-logo"
+                            style={{ borderColor: `${project.primaryColor}60` }}
+                          />
+                        )}
+                        <div className="project-name">{project.name}</div>
+
+                        <div className="project-stats">
+                          {project.marketCap && (
+                            <div className="stat-item">
+                              <span className="stat-label">MCap</span>
+                              <span className="stat-value" style={{ color: project.primaryColor }}>
+                                {formatNumber(project.marketCap)}
+                              </span>
+                            </div>
+                          )}
+                          {project.volume24h && (
+                            <div className="stat-item">
+                              <span className="stat-label">Volume</span>
+                              <span className="stat-value" style={{ color: project.primaryColor }}>
+                                {formatNumber(project.volume24h)}
+                              </span>
+                            </div>
+                          )}
+                          {project.holders && (
+                            <div className="stat-item">
+                              <span className="stat-label">Holders</span>
+                              <span className="stat-value" style={{ color: project.primaryColor }}>
+                                {formatCount(project.holders)}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="project-url" style={{ color: `${project.primaryColor}cc` }}>
+                          {cleanUrl}
+                        </div>
+                      </a>
+                    ) : (
+                      <Link
+                        href={`/${project.slug}`}
+                        prefetch={true}
+                        className="project-card"
+                        style={{
+                          backgroundColor: `${project.primaryColor}15`,
+                          borderColor: `${project.primaryColor}40`,
+                        }}
+                      >
+                        {project.logoUrl && (
+                          <img
+                            src={project.logoUrl}
+                            alt={project.name}
+                            className="project-logo"
+                            style={{ borderColor: `${project.primaryColor}60` }}
+                          />
+                        )}
+                        <div className="project-name">{project.name}</div>
+
+                        <div className="project-stats">
+                          {project.marketCap && (
+                            <div className="stat-item">
+                              <span className="stat-label">MCap</span>
+                              <span className="stat-value" style={{ color: project.primaryColor }}>
+                                {formatNumber(project.marketCap)}
+                              </span>
+                            </div>
+                          )}
+                          {project.volume24h && (
+                            <div className="stat-item">
+                              <span className="stat-label">Volume</span>
+                              <span className="stat-value" style={{ color: project.primaryColor }}>
+                                {formatNumber(project.volume24h)}
+                              </span>
+                            </div>
+                          )}
+                          {project.holders && (
+                            <div className="stat-item">
+                              <span className="stat-label">Holders</span>
+                              <span className="stat-value" style={{ color: project.primaryColor }}>
+                                {formatCount(project.holders)}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="project-slug">/{project.slug}</div>
+                      </Link>
                     )}
-                    <div className="project-name">{project.name}</div>
-                    <div className="project-slug">/{project.slug}</div>
-                  </Link>
-                </motion.div>
-              ))}
+                  </motion.div>
+                );
+              })}
             </div>
           </div>
         </section>
       )}
+
+      {/* Testimonials Section */}
+      <TestimonialsCarousel />
+
+      {/* Pricing Section */}
+      <PricingSection />
 
       {/* CTA Section */}
       <section className="cta-section">
@@ -830,6 +1055,9 @@ export default function LandingPageNew() {
           <div className="footer-links">
             <Link href="/" className="footer-link">
               Home
+            </Link>
+            <Link href="/pricing" className="footer-link">
+              Pricing
             </Link>
             <Link href="/contact" className="footer-link">
               Contact
