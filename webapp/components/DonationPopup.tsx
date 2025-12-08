@@ -313,7 +313,7 @@ export function DonationPopup() {
                     </h2>
 
                     <p className="text-white/70 text-center text-xs sm:text-sm md:text-base leading-relaxed max-w-xl px-2">
-                      Your support keeps this tool free and helps us build more features.
+                      Your support helps us build more features and improve the platform.
                       <br />
                       <span className="font-semibold" style={{ color: primaryColor }}>Every contribution matters.</span>
                     </p>

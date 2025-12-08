@@ -710,7 +710,7 @@ export default function ContactPage() {
               </div>
               <div className="feature-item">
                 <span className="feature-dot" />
-                Free listing for all tokens
+                Comprehensive token listing
               </div>
             </div>
           </motion.div>

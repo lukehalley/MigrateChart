@@ -18,7 +18,7 @@ Integrate migrate-chart.fun with migrate.fun to offer automated project listings
 
 1. **Admin Dashboard**: Easy UI for adding/managing projects
 2. **migrate.fun API Integration**: Auto-fetch migration data
-3. **Inquiry System**: Handle inbound requests (Resend or free alternative)
+3. **Inquiry System**: Handle inbound requests (email service integration)
 4. **Migration Stats Display**: Show migration progress on project pages
 5. **Authentication**: Secure admin access
 
@@ -226,12 +226,11 @@ interface InquiryForm {
 #### 4.2 Email Integration
 
 **Option A: Resend (Recommended)**
-- Free tier: 100 emails/day
+- 100 emails/day on starter tier
 - API key in env vars
 - Professional templates
 
 **Option B: Formspree**
-- Completely free
 - Form endpoint
 - Email notifications
 

@@ -917,7 +917,7 @@ function HomeContent() {
               </motion.div>
               <div className="flex flex-col gap-0.5 items-center justify-center">
                 <p className="text-white font-bold text-base leading-tight">
-                  Support This Free Tool
+                  Support This Tool
                 </p>
                 <p className="text-white/70 text-xs leading-tight">
                   Donate via Solana Network
@@ -1074,7 +1074,7 @@ function HomeContent() {
               </motion.div>
               <div className="text-center">
                 <p className="text-white font-bold text-xs leading-tight">
-                  Support This Free Tool
+                  Support This Tool
                 </p>
                 <p className="text-white/70 text-[10px] leading-tight">
                   Donate via Solana Network
