@@ -9,12 +9,13 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { migrateFunApi, MigrationProject } from '../migrateFunApi';
 
 // Lazy initialize Supabase client to avoid build-time errors
+// Using anon key with RLS policies for cron job operations
 let supabaseInstance: SupabaseClient | null = null;
 
 function getSupabaseClient(): SupabaseClient {
   if (!supabaseInstance) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
     if (!supabaseUrl || !supabaseKey) {
       throw new Error('Supabase credentials not configured');

@@ -4,7 +4,7 @@ import React, { Suspense, useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, Copy, Check, ChevronLeft, ChevronRight, Flame } from 'lucide-react';
+import { Heart, Copy, Check, ChevronLeft, ChevronRight, Flame, MessageSquare } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import Chart from '@/components/Chart';
@@ -25,9 +25,17 @@ import { fetchAllPoolsData, fetchTokenStats, fetchWalletBalance, fetchTokenBalan
 import { PoolData, Timeframe, ProjectConfig } from '@/lib/types';
 import { SafeStorage } from '@/lib/localStorage';
 import { DonationPopup } from '@/components/DonationPopup';
+import { LoginButton } from '@/components/LoginButton';
 
 function HomeContent() {
   const { currentProject, allProjects, isLoading: projectLoading, isSwitching, switchingToSlug, error: projectError } = useTokenContext();
+
+  // Mounted state for scanline animation
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Debug: Log loading states
   console.log('[PAGE] Loading states:', {
@@ -456,7 +464,7 @@ function HomeContent() {
   const loaderStartTimeRef = useRef<number | null>(null);
   const switchStartTimeRef = useRef<number | null>(null); // Track when switch started
   const switchingFromProjectRef = useRef<ProjectConfig | null>(null); // Store the project we're switching TO (for loader display)
-  const MINIMUM_LOADER_DURATION = 800; // Minimum time to show loader (ms)
+  const MINIMUM_LOADER_DURATION = 300; // Minimum time to show loader (ms) - reduced for faster perceived loading
 
   // Dedicated effect for handling token switching loader
   useEffect(() => {
@@ -699,7 +707,7 @@ function HomeContent() {
       priceChange24h: priceChangePercent,
       fees24h: feesForTimeframe,
     };
-  }, [poolsData, tokenStats, timeframe]);
+  }, [poolsData, tokenStats, timeframe, currentProject]);
 
   // Show project error state (only show error, not loading - let the UI render with loading in chart area)
   if (projectError) {
@@ -719,7 +727,41 @@ function HomeContent() {
   }
 
   return (
-    <main data-chart-page className="w-screen h-svh overflow-hidden grid grid-rows-[auto_1fr]" style={themeStyles}>
+    <main data-chart-page className={`token-view w-screen h-svh overflow-hidden grid grid-rows-[auto_1fr] ${mounted ? 'mounted' : ''}`} style={themeStyles}>
+      {/* CRT Scanline Effect */}
+      <style>{`
+        .token-view.mounted::before {
+          content: '';
+          position: fixed;
+          inset: 0;
+          background:
+            repeating-linear-gradient(0deg, rgba(0,0,0,0.3), rgba(0,0,0,0.3) 1px, transparent 1px, transparent 3px),
+            repeating-linear-gradient(0deg, transparent, transparent 6px, ${hexToRgba(primaryColor, 0.03)} 6px, ${hexToRgba(primaryColor, 0.03)} 7px);
+          background-size: 100% 3px, 100% 7px;
+          pointer-events: none;
+          z-index: 1;
+          opacity: 1;
+          animation: tokenScanline 12s linear infinite;
+        }
+        @keyframes tokenScanline {
+          0% { transform: translateY(0); }
+          100% { transform: translateY(7px); }
+        }
+      `}</style>
+      {/* Preview Mode Banner */}
+      {currentProject?.isPreview && (
+        <div className="fixed top-0 left-0 right-0 z-[100] bg-amber-500/95 backdrop-blur-sm border-b-2 border-amber-600">
+          <div className="flex items-center justify-center gap-3 py-2 px-4">
+            <svg className="w-5 h-5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+            <span className="text-black font-bold text-sm tracking-wide">PREVIEW MODE</span>
+            <span className="text-black/80 text-xs">This project is not yet visible to the public</span>
+          </div>
+        </div>
+      )}
+
       {/* Donation Popup */}
       <DonationPopup />
 
@@ -783,6 +825,28 @@ function HomeContent() {
                 <path fill="currentColor" d="M445.290466,302.007385 C445.290466,323.963470 445.290466,345.421448 445.290466,367.245850 C419.480499,367.245850 393.966675,367.245850 368.177490,367.245850 C368.177490,341.667480 368.177490,316.112549 368.177490,290.260376 C393.644684,290.260376 419.183838,290.260376 445.290466,290.260376 C445.290466,293.993011 445.290466,297.751160 445.290466,302.007385z"/>
               </svg>
             </motion.button>
+
+            {/* Contact & Login Buttons - Far Right */}
+            <div className="absolute right-6 flex items-center gap-2">
+              <motion.button
+                onClick={() => router.push('/contact')}
+                className="flex items-center justify-center w-10 h-10 rounded-lg border transition-all bg-black/60"
+                style={{
+                  borderColor: `${primaryColor}40`,
+                  color: primaryColor
+                }}
+                whileHover={{
+                  scale: 1.05,
+                  borderColor: hexToRgba(primaryColor, 0.7),
+                  boxShadow: `0 0 12px ${hexToRgba(primaryColor, 0.3)}`
+                }}
+                whileTap={{ scale: 0.95 }}
+                title="Contact Us"
+              >
+                <MessageSquare className="w-5 h-5" />
+              </motion.button>
+              <LoginButton primaryColor={primaryColor} secondaryColor={secondaryColor} />
+            </div>
 
             {/* Column 1: Address Bar + Copy Button */}
             <div className="flex items-center justify-center gap-2">
@@ -853,7 +917,7 @@ function HomeContent() {
               </motion.div>
               <div className="flex flex-col gap-0.5 items-center justify-center">
                 <p className="text-white font-bold text-base leading-tight">
-                  Support This Free Tool
+                  Support This Tool
                 </p>
                 <p className="text-white/70 text-xs leading-tight">
                   Donate via Solana Network
@@ -924,8 +988,8 @@ function HomeContent() {
 
           {/* Mobile and Tablet: Stacked layout (< 1024px) */}
           <div className="flex lg:hidden flex-col items-center gap-2 py-3 w-full relative">
-            {/* Logo and Call to Action Row */}
-            <div className="flex items-center justify-between w-full px-3">
+            {/* Logo, Login, and Menu Row */}
+            <div className="flex items-center justify-between w-full px-3 gap-2">
               {/* Logo - Far Left */}
               <motion.button
                 onClick={() => router.push('/')}
@@ -953,6 +1017,28 @@ function HomeContent() {
                 </svg>
               </motion.button>
 
+              {/* Contact & Login Buttons - Center Right */}
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <motion.button
+                  onClick={() => router.push('/contact')}
+                  className="flex items-center justify-center w-10 h-10 rounded-lg border transition-all bg-black/60"
+                  style={{
+                    borderColor: `${primaryColor}40`,
+                    color: primaryColor
+                  }}
+                  whileHover={{
+                    scale: 1.05,
+                    borderColor: hexToRgba(primaryColor, 0.7),
+                    boxShadow: `0 0 12px ${hexToRgba(primaryColor, 0.3)}`
+                  }}
+                  whileTap={{ scale: 0.95 }}
+                  title="Contact Us"
+                >
+                  <MessageSquare className="w-5 h-5" />
+                </motion.button>
+                <LoginButton primaryColor={primaryColor} secondaryColor={secondaryColor} />
+              </div>
+
               {/* Menu Button - Far Right - Larger for touch */}
               <motion.button
                 onClick={() => setShowMobileMenu(true)}
@@ -970,28 +1056,29 @@ function HomeContent() {
                 </svg>
               </motion.button>
 
-              {/* Call to Action - Centered */}
-              <div className="flex items-center gap-2 absolute left-1/2 -translate-x-1/2">
-                <motion.div
-                  animate={{
-                    scale: [1, 1.15, 1],
-                  }}
-                  transition={{
-                    duration: 1.5,
-                    repeat: Infinity,
-                    ease: 'easeInOut'
-                  }}
-                >
-                  <Heart className="w-4 h-4 text-[var(--primary-color)] fill-[var(--primary-color)]" />
-                </motion.div>
-                <div className="text-center">
-                  <p className="text-white font-bold text-xs leading-tight">
-                    Support This Free Tool
-                  </p>
-                  <p className="text-white/70 text-[10px] leading-tight">
-                    Donate via Solana Network
-                  </p>
-                </div>
+            </div>
+
+            {/* Call to Action - Centered */}
+            <div className="flex items-center gap-2 justify-center">
+              <motion.div
+                animate={{
+                  scale: [1, 1.15, 1],
+                }}
+                transition={{
+                  duration: 1.5,
+                  repeat: Infinity,
+                  ease: 'easeInOut'
+                }}
+              >
+                <Heart className="w-4 h-4 text-[var(--primary-color)] fill-[var(--primary-color)]" />
+              </motion.div>
+              <div className="text-center">
+                <p className="text-white font-bold text-xs leading-tight">
+                  Support This Tool
+                </p>
+                <p className="text-white/70 text-[10px] leading-tight">
+                  Donate via Solana Network
+                </p>
               </div>
             </div>
 

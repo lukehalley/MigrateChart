@@ -1,5 +1,5 @@
-import LandingPage from '@/components/LandingPage';
+import LandingPageNew from '@/components/LandingPageNew';
 
 export default function RootPage() {
-  return <LandingPage />;
+  return <LandingPageNew />;
 }
