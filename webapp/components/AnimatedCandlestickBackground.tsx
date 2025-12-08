@@ -33,7 +33,7 @@ interface CandleData {
   isGreen: boolean;
 }
 
-const CANDLE_COUNT = 30;
+const CANDLE_COUNT = 4;
 const SVG_WIDTH = 1000;
 const SVG_HEIGHT = 600;
 const MARGIN = 30;
