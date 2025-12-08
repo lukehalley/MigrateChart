@@ -718,9 +718,9 @@ export default function ContactPage() {
 
         <motion.div
           className="form-panel"
-          initial={{ opacity: 0, x: 30 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.3, duration: 0.6 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4 }}
         >
           <div className="form-container">
             <div className="form-header">

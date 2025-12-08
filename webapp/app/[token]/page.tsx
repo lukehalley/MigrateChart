@@ -464,7 +464,7 @@ function HomeContent() {
   const loaderStartTimeRef = useRef<number | null>(null);
   const switchStartTimeRef = useRef<number | null>(null); // Track when switch started
   const switchingFromProjectRef = useRef<ProjectConfig | null>(null); // Store the project we're switching TO (for loader display)
-  const MINIMUM_LOADER_DURATION = 800; // Minimum time to show loader (ms)
+  const MINIMUM_LOADER_DURATION = 300; // Minimum time to show loader (ms) - reduced for faster perceived loading
 
   // Dedicated effect for handling token switching loader
   useEffect(() => {

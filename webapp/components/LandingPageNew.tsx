@@ -658,7 +658,7 @@ export default function LandingPageNew() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.6 }}
           >
-            <Link href="/zera" className="btn btn-primary">
+            <Link href="/zera" prefetch={true} className="btn btn-primary">
               Enter App
               <ArrowRight size={20} strokeWidth={2.5} />
             </Link>
@@ -771,7 +771,7 @@ export default function LandingPageNew() {
                   viewport={{ once: true, margin: "-50px" }}
                   transition={{ duration: 0.5, delay: index * 0.05 }}
                 >
-                  <Link href={`/${project.slug}`} className="project-card">
+                  <Link href={`/${project.slug}`} prefetch={true} className="project-card">
                     {project.logoUrl && (
                       <img
                         src={project.logoUrl}
