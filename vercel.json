@@ -3,5 +3,9 @@
   "buildCommand": "cd webapp && npm run build",
   "devCommand": "cd webapp && npm run dev",
   "installCommand": "npm install --prefix webapp",
-  "outputDirectory": "webapp/.next"
+  "outputDirectory": "webapp/.next-build",
+  "git": {
+    "deploymentEnabled": true,
+    "submodules": false
+  }
 }
