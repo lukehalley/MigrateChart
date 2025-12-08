@@ -18,29 +18,49 @@ export default function LandingNav() {
   }, []);
 
   useEffect(() => {
-    const sections = ["problem", "solution", "metrics", "projects", "pricing", "contact"];
+    const sections = ["problem", "solution", "metrics", "projects", "community", "pricing", "contact"];
 
-    const observerOptions = {
-      rootMargin: "-20% 0px -60% 0px",
-      threshold: 0
-    };
+    const handleScroll = () => {
+      // Get current scroll position
+      const scrollPosition = window.scrollY + 100; // Offset for navbar height
 
-    const observerCallback = (entries: IntersectionObserverEntry[]) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          setActiveSection(entry.target.id);
+      // Check if we're at the very top (hero section)
+      if (window.scrollY < 200) {
+        setActiveSection("");
+        return;
+      }
+
+      // Find which section is currently in view
+      let currentSection = "";
+
+      for (const sectionId of sections) {
+        const element = document.getElementById(sectionId);
+        if (element) {
+          const rect = element.getBoundingClientRect();
+          const elementTop = rect.top + window.scrollY;
+          const elementBottom = elementTop + rect.height;
+
+          // Check if scroll position is within this section
+          // Use a generous range to catch the section
+          if (scrollPosition >= elementTop - 200 && scrollPosition < elementBottom - 200) {
+            currentSection = sectionId;
+            break;
+          }
         }
-      });
+      }
+
+      if (currentSection) {
+        setActiveSection(currentSection);
+      }
     };
 
-    const observer = new IntersectionObserver(observerCallback, observerOptions);
+    // Run on mount and on scroll
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
 
-    sections.forEach((sectionId) => {
-      const element = document.getElementById(sectionId);
-      if (element) observer.observe(element);
-    });
-
-    return () => observer.disconnect();
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, []);
 
   useEffect(() => {
@@ -154,7 +174,7 @@ export default function LandingNav() {
           text-decoration: none;
           padding: 0.75rem 1.25rem;
           border-radius: 6px;
-          transition: all 0.3s ease;
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
           cursor: pointer;
           letter-spacing: 0.02em;
           position: relative;
@@ -167,8 +187,21 @@ export default function LandingNav() {
           left: 0.5rem;
           opacity: 0;
           transform: translateX(-10px);
-          transition: all 0.3s ease;
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
           color: var(--primary);
+        }
+
+        .nav-link.active {
+          color: var(--primary);
+          background: rgba(82, 201, 125, 0.08);
+          border-color: rgba(82, 201, 125, 0.25);
+          padding-left: 1.75rem;
+          font-weight: 600;
+        }
+
+        .nav-link.active::before {
+          opacity: 1;
+          transform: translateX(0);
         }
 
         .nav-link:hover {
@@ -292,6 +325,13 @@ export default function LandingNav() {
           background: rgba(6, 6, 6, 0.6);
         }
 
+        .mobile-nav .nav-link.active {
+          background: rgba(82, 201, 125, 0.12);
+          border-color: rgba(82, 201, 125, 0.35);
+          color: var(--primary);
+          font-weight: 600;
+        }
+
         .mobile-nav .nav-link:hover {
           background: rgba(82, 201, 125, 0.08);
           border-color: rgba(82, 201, 125, 0.3);
@@ -377,37 +417,43 @@ export default function LandingNav() {
             <div className="nav-links">
               <button
                 onClick={() => scrollToSection("problem")}
-                className="nav-link"
+                className={`nav-link ${activeSection === "problem" ? "active" : ""}`}
               >
                 Problem
               </button>
               <button
                 onClick={() => scrollToSection("solution")}
-                className="nav-link"
+                className={`nav-link ${activeSection === "solution" ? "active" : ""}`}
               >
                 Solution
               </button>
               <button
                 onClick={() => scrollToSection("metrics")}
-                className="nav-link"
+                className={`nav-link ${activeSection === "metrics" ? "active" : ""}`}
               >
                 Features
               </button>
               <button
                 onClick={() => scrollToSection("projects")}
-                className="nav-link"
+                className={`nav-link ${activeSection === "projects" ? "active" : ""}`}
               >
                 Examples
               </button>
               <button
+                onClick={() => scrollToSection("community")}
+                className={`nav-link ${activeSection === "community" ? "active" : ""}`}
+              >
+                Community
+              </button>
+              <button
                 onClick={() => scrollToSection("pricing")}
-                className="nav-link"
+                className={`nav-link ${activeSection === "pricing" ? "active" : ""}`}
               >
                 Pricing
               </button>
               <button
                 onClick={() => scrollToSection("contact")}
-                className="nav-link"
+                className={`nav-link ${activeSection === "contact" ? "active" : ""}`}
               >
                 Contact
               </button>
@@ -431,6 +477,7 @@ export default function LandingNav() {
         isOpen={mobileMenuOpen}
         setIsOpen={setMobileMenuOpen}
         scrollToSection={scrollToSection}
+        activeSection={activeSection}
       />
     </>
   );
@@ -460,10 +507,12 @@ function MobileNav({
   isOpen,
   setIsOpen,
   scrollToSection,
+  activeSection,
 }: {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
   scrollToSection: (id: string) => void;
+  activeSection: string;
 }) {
   const handleClick = (sectionId: string) => {
     scrollToSection(sectionId);
@@ -473,22 +522,25 @@ function MobileNav({
   return (
     <div className={`mobile-nav ${isOpen ? "open" : ""}`}>
       <div className="mobile-nav-links">
-        <button onClick={() => handleClick("problem")} className="nav-link">
+        <button onClick={() => handleClick("problem")} className={`nav-link ${activeSection === "problem" ? "active" : ""}`}>
           Problem
         </button>
-        <button onClick={() => handleClick("solution")} className="nav-link">
+        <button onClick={() => handleClick("solution")} className={`nav-link ${activeSection === "solution" ? "active" : ""}`}>
           Solution
         </button>
-        <button onClick={() => handleClick("metrics")} className="nav-link">
+        <button onClick={() => handleClick("metrics")} className={`nav-link ${activeSection === "metrics" ? "active" : ""}`}>
           Features
         </button>
-        <button onClick={() => handleClick("projects")} className="nav-link">
+        <button onClick={() => handleClick("projects")} className={`nav-link ${activeSection === "projects" ? "active" : ""}`}>
           Examples
         </button>
-        <button onClick={() => handleClick("pricing")} className="nav-link">
+        <button onClick={() => handleClick("community")} className={`nav-link ${activeSection === "community" ? "active" : ""}`}>
+          Community
+        </button>
+        <button onClick={() => handleClick("pricing")} className={`nav-link ${activeSection === "pricing" ? "active" : ""}`}>
           Pricing
         </button>
-        <button onClick={() => handleClick("contact")} className="nav-link">
+        <button onClick={() => handleClick("contact")} className={`nav-link ${activeSection === "contact" ? "active" : ""}`}>
           Contact
         </button>
         <Link

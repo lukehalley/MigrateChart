@@ -203,7 +203,7 @@ export default function TestimonialsCarousel() {
   )
 
   return (
-    <section className="testimonials-section">
+    <section id="community" className="testimonials-section">
       <style>{`
         .testimonials-section {
           padding: 8rem 2rem;
