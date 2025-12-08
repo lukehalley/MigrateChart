@@ -588,6 +588,10 @@ export default function LandingPageNew() {
         }
 
         /* Responsive */
+        .desktop-sections {
+          display: block;
+        }
+
         @media (max-width: 768px) {
           .hero-cta .btn-primary {
             display: inline-flex;
@@ -609,6 +613,11 @@ export default function LandingPageNew() {
             padding-right: 1.5rem;
             /* Ensure content is centered in the remaining space */
             justify-content: center;
+          }
+
+          /* Hide sections on mobile - they're available as separate pages */
+          .desktop-sections {
+            display: none;
           }
 
           /* Alternative approach using small viewport height for more predictable behavior */
@@ -747,6 +756,8 @@ export default function LandingPageNew() {
         </motion.div>
       </section>
 
+      {/* Desktop-only sections - on mobile, these are separate pages */}
+      <div className="desktop-sections">
       {/* Problem Section */}
       <section id="problem" className="features">
         <div className="features-container">
@@ -1033,6 +1044,7 @@ export default function LandingPageNew() {
           </Link>
         </motion.div>
       </section>
+      </div>
 
       {/* Footer */}
       <footer className="footer">
@@ -1056,9 +1068,9 @@ export default function LandingPageNew() {
             <Link href="/" className="footer-link">
               Home
             </Link>
-            <a href="#pricing" className="footer-link">
+            <Link href="/pricing" className="footer-link">
               Pricing
-            </a>
+            </Link>
             <Link href="/contact" className="footer-link">
               Contact
             </Link>

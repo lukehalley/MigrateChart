@@ -514,35 +514,58 @@ function MobileNav({
   scrollToSection: (id: string) => void;
   activeSection: string;
 }) {
-  const handleClick = (sectionId: string) => {
-    scrollToSection(sectionId);
-    setIsOpen(false);
-  };
-
   return (
     <div className={`mobile-nav ${isOpen ? "open" : ""}`}>
       <div className="mobile-nav-links">
-        <button onClick={() => handleClick("problem")} className={`nav-link ${activeSection === "problem" ? "active" : ""}`}>
+        <Link
+          href="/problem"
+          className="nav-link"
+          onClick={() => setIsOpen(false)}
+        >
           Problem
-        </button>
-        <button onClick={() => handleClick("solution")} className={`nav-link ${activeSection === "solution" ? "active" : ""}`}>
+        </Link>
+        <Link
+          href="/solution"
+          className="nav-link"
+          onClick={() => setIsOpen(false)}
+        >
           Solution
-        </button>
-        <button onClick={() => handleClick("metrics")} className={`nav-link ${activeSection === "metrics" ? "active" : ""}`}>
+        </Link>
+        <Link
+          href="/features"
+          className="nav-link"
+          onClick={() => setIsOpen(false)}
+        >
           Features
-        </button>
-        <button onClick={() => handleClick("projects")} className={`nav-link ${activeSection === "projects" ? "active" : ""}`}>
+        </Link>
+        <Link
+          href="/examples"
+          className="nav-link"
+          onClick={() => setIsOpen(false)}
+        >
           Examples
-        </button>
-        <button onClick={() => handleClick("community")} className={`nav-link ${activeSection === "community" ? "active" : ""}`}>
+        </Link>
+        <Link
+          href="/community"
+          className="nav-link"
+          onClick={() => setIsOpen(false)}
+        >
           Community
-        </button>
-        <button onClick={() => handleClick("pricing")} className={`nav-link ${activeSection === "pricing" ? "active" : ""}`}>
+        </Link>
+        <Link
+          href="/pricing"
+          className="nav-link"
+          onClick={() => setIsOpen(false)}
+        >
           Pricing
-        </button>
-        <button onClick={() => handleClick("contact")} className={`nav-link ${activeSection === "contact" ? "active" : ""}`}>
+        </Link>
+        <Link
+          href="/contact"
+          className="nav-link"
+          onClick={() => setIsOpen(false)}
+        >
           Contact
-        </button>
+        </Link>
         <Link
           href="/zera"
           className="nav-link primary"
