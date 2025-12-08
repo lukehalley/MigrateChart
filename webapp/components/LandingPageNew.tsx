@@ -19,6 +19,7 @@ import {
 import { AnimatedCandlestickBackground } from "./AnimatedCandlestickBackground";
 import PricingSection from "./PricingSection";
 import TestimonialsCarousel from "./TestimonialsCarousel";
+import MetricsTrackingSection from "./MetricsTrackingSection";
 
 interface ProjectListItem {
   slug: string;
@@ -442,7 +443,7 @@ export default function LandingPageNew() {
         }
 
         .project-card:hover {
-          transform: translateY(-12px) scale(1.02);
+          transform: translateY(-12px);
           box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
           filter: brightness(1.1);
         }
@@ -851,6 +852,9 @@ export default function LandingPageNew() {
           </div>
         </div>
       </section>
+
+      {/* Metrics Tracking Section */}
+      <MetricsTrackingSection />
 
       {/* Projects Showcase */}
       {projects.length > 0 && (
