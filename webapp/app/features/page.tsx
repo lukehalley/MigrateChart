@@ -1,10 +1,10 @@
-import SectionLayout from "@/components/SectionLayout";
+import MobileSectionPage from "@/components/MobileSectionPage";
 import MetricsTrackingSection from "@/components/MetricsTrackingSection";
 
 export default function FeaturesPage() {
   return (
-    <SectionLayout>
+    <MobileSectionPage nextPage={{ href: "/examples", label: "Examples" }}>
       <MetricsTrackingSection />
-    </SectionLayout>
+    </MobileSectionPage>
   );
 }

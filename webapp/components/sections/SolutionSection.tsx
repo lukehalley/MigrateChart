@@ -9,7 +9,7 @@ export default function SolutionSection() {
       <div className="features-container">
         <div className="section-header">
           <motion.div
-            style={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.8 }}

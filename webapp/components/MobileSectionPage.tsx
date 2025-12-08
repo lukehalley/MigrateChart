@@ -2,14 +2,18 @@
 
 import { useState, useEffect, ReactNode } from "react";
 import LandingNav from "./LandingNav";
-import BackToTop from "./BackToTop";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 
-interface SectionLayoutProps {
+interface MobileSectionPageProps {
   children: ReactNode;
+  nextPage?: {
+    href: string;
+    label: string;
+  };
 }
 
-export default function SectionLayout({ children }: SectionLayoutProps) {
+export default function MobileSectionPage({ children, nextPage }: MobileSectionPageProps) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -39,7 +43,6 @@ export default function SectionLayout({ children }: SectionLayoutProps) {
 
           min-height: 100vh;
           background:
-            /* Terminal character grid */
             repeating-linear-gradient(
               0deg,
               transparent,
@@ -54,7 +57,6 @@ export default function SectionLayout({ children }: SectionLayoutProps) {
               rgba(82, 201, 125, 0.04) 2px,
               rgba(82, 201, 125, 0.04) 3px
             ),
-            /* Radial accent gradients */
             radial-gradient(
               ellipse 120% 80% at 50% 20%,
               rgba(82, 201, 125, 0.08) 0%,
@@ -65,7 +67,6 @@ export default function SectionLayout({ children }: SectionLayoutProps) {
               rgba(212, 168, 83, 0.05) 0%,
               transparent 50%
             ),
-            /* Noise texture */
             url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E"),
             #000000;
           background-size: 3px 3px, 3px 3px, 100% 100%, 100% 100%, 200px 200px, 100% 100%;
@@ -76,7 +77,6 @@ export default function SectionLayout({ children }: SectionLayoutProps) {
           position: relative;
         }
 
-        /* CRT scanline effect */
         .landing.mounted::before {
           content: '';
           position: fixed;
@@ -102,7 +102,6 @@ export default function SectionLayout({ children }: SectionLayoutProps) {
           opacity: 1;
         }
 
-        /* Film grain overlay */
         .landing::after {
           content: '';
           position: fixed;
@@ -120,31 +119,14 @@ export default function SectionLayout({ children }: SectionLayoutProps) {
           z-index: 2;
         }
 
-        /* Features Section */
         .features {
-          padding: 6rem 2rem;
+          padding: 4rem 2rem;
           position: relative;
           background: transparent;
         }
 
-        /* Reduce spacing between consecutive sections for narrative flow */
         .features + .features {
           padding-top: 2rem;
-        }
-
-        @media (min-width: 769px) {
-          .section-content {
-            padding-top: 120px;
-            padding-bottom: 2rem;
-          }
-
-          .features {
-            padding: 8rem 2rem;
-          }
-
-          .features + .features {
-            padding-top: 4rem;
-          }
         }
 
         .features-container {
@@ -243,7 +225,6 @@ export default function SectionLayout({ children }: SectionLayoutProps) {
           color: var(--text-secondary);
         }
 
-        /* Projects Showcase */
         .projects {
           padding: 4rem 2rem;
           background: transparent;
@@ -354,9 +335,8 @@ export default function SectionLayout({ children }: SectionLayoutProps) {
           text-align: center;
         }
 
-        /* CTA Section */
         .cta-section {
-          padding: 4rem 2rem;
+          padding: 3rem 2rem;
           text-align: center;
           position: relative;
           background: transparent;
@@ -365,7 +345,7 @@ export default function SectionLayout({ children }: SectionLayoutProps) {
         .cta-content {
           max-width: 800px;
           margin: 0 auto;
-          padding: 3rem 2rem;
+          padding: 2.5rem 2rem;
           background: transparent;
           border: 1px solid var(--border);
           border-radius: 16px;
@@ -374,7 +354,7 @@ export default function SectionLayout({ children }: SectionLayoutProps) {
 
         .cta-title {
           font-family: 'Syne', sans-serif;
-          font-size: clamp(1.5rem, 4vw, 3rem);
+          font-size: clamp(1.5rem, 4vw, 2.5rem);
           font-weight: 700;
           margin-bottom: 1.5rem;
           background: linear-gradient(135deg, var(--primary), var(--accent));
@@ -384,9 +364,9 @@ export default function SectionLayout({ children }: SectionLayoutProps) {
         }
 
         .cta-description {
-          font-size: 1rem;
+          font-size: 0.95rem;
           color: var(--text-secondary);
-          margin-bottom: 2.5rem;
+          margin-bottom: 2rem;
           line-height: 1.7;
         }
 
@@ -420,78 +400,79 @@ export default function SectionLayout({ children }: SectionLayoutProps) {
           transform: translateY(-2px);
         }
 
-        /* Footer */
-        .footer {
-          padding: 3rem 2rem;
+        .btn-secondary {
+          background: transparent;
+          color: var(--text);
+          border: 2px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+          border-color: var(--primary);
+          color: var(--primary);
+          box-shadow: 0 0 20px rgba(82, 201, 125, 0.2);
+        }
+
+        .next-page-nav {
+          padding: 2rem;
           text-align: center;
           background: transparent;
+          border-top: 1px solid var(--border);
         }
 
-        .footer-content {
-          max-width: 1200px;
-          margin: 0 auto;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          flex-wrap: wrap;
-          gap: 2rem;
-        }
-
-        .footer-logo-link {
-          display: inline-block;
-          text-decoration: none;
-          transition: all 0.3s ease;
-        }
-
-        .footer-logo-link:hover {
-          transform: translateY(-2px);
-        }
-
-        .footer-logo-svg {
-          width: 40px;
-          height: 40px;
-          color: var(--primary);
-          filter: drop-shadow(0 0 8px rgba(82, 201, 125, 0.5));
-          transition: all 0.3s ease;
-        }
-
-        .footer-logo-link:hover .footer-logo-svg {
-          filter: drop-shadow(0 0 15px rgba(82, 201, 125, 0.7));
-        }
-
-        .footer-links {
-          display: flex;
-          gap: 2rem;
-          flex-wrap: wrap;
-        }
-
-        .footer-link {
-          font-size: 0.85rem;
+        .next-page-label {
+          font-size: 0.7rem;
           color: var(--text-muted);
-          text-decoration: none;
-          transition: color 0.2s ease;
+          text-transform: uppercase;
+          letter-spacing: 0.15em;
+          margin-bottom: 0.75rem;
         }
 
-        .footer-link:hover {
-          color: var(--primary);
+        @media (min-width: 769px) {
+          .section-content {
+            padding-top: 120px;
+            padding-bottom: 2rem;
+          }
+
+          .features {
+            padding: 8rem 2rem;
+          }
+
+          .features + .features {
+            padding-top: 4rem;
+          }
+
+          .cta-section {
+            padding: 4rem 2rem;
+          }
+
+          .cta-content {
+            padding: 3rem 2.5rem;
+          }
         }
 
         @media (max-width: 768px) {
-          .section-content {
-            padding-top: 80px;
-          }
-
-          .features, .projects, .cta-section {
+          .features {
             padding: 3rem 1.5rem;
           }
 
-          .footer-content {
-            flex-direction: column;
-            text-align: center;
+          .features + .features {
+            padding-top: 1.5rem;
           }
 
-          .footer-links {
-            justify-content: center;
+          .section-header {
+            margin-bottom: 2rem;
+          }
+
+          .cta-section {
+            padding: 2.5rem 1.5rem;
+          }
+
+          .cta-content {
+            padding: 2rem 1.5rem;
+          }
+
+          .next-page-nav {
+            padding: 1.5rem;
           }
         }
       `}</style>
@@ -500,52 +481,34 @@ export default function SectionLayout({ children }: SectionLayoutProps) {
       {mounted && <LandingNav />}
 
       {/* Content */}
-      <div className="section-content">
+      <div className="section-content" style={{ paddingTop: '100px', position: 'relative', zIndex: 2 }}>
         {children}
-      </div>
 
-      {/* Footer */}
-      <footer className="footer">
-        <div className="footer-content">
-          <Link href="/" className="footer-logo-link">
-            <svg
-              className="footer-logo-svg"
-              viewBox="57 135 388 232"
-              xmlns="http://www.w3.org/2000/svg"
-              aria-label="Migrate Chart"
-            >
-              <path fill="currentColor" d="M135.423309,290.383972 C135.222244,292.157013 134.849457,293.929749 134.846222,295.703156 C134.806274,317.680511 134.820129,339.657990 134.820129,361.635437 C134.820129,363.432007 134.820129,365.228577 134.820129,367.319092 C108.857216,367.319092 83.287056,367.319092 57.352207,367.319092 C57.352207,341.704376 57.352207,316.037659 57.352207,289.918823 C83.140572,289.918823 108.899254,289.918823 135.063660,290.174957 C135.469360,290.431091 135.423309,290.383972 135.423309,290.383972z"/>
-              <path fill="currentColor" d="M290.364258,290.336945 C290.217560,292.805908 289.947449,295.274719 289.943604,297.743896 C289.910065,319.238007 289.924225,340.732239 289.924225,362.226410 C289.924225,363.852112 289.924225,365.477844 289.924225,367.357361 C263.907196,367.357361 238.310226,367.357361 211.965073,367.357361 C211.965073,341.967926 211.965073,316.566803 211.812134,290.761261 C211.659195,290.356812 211.589157,290.420380 211.589157,290.420380 C213.204071,290.267975 214.818726,289.985748 216.433914,289.982635 C240.827682,289.935608 265.221497,289.925293 290.014832,290.152710 C290.414307,290.399109 290.364258,290.336945 290.364258,290.336945z"/>
-              <path fill="currentColor" d="M445.290466,169.000153 C445.290466,183.634445 445.290466,197.768707 445.290466,212.257187 C419.463715,212.257187 393.941895,212.257187 368.161346,212.257187 C368.161346,186.667191 368.161346,161.109375 368.161346,135.257370 C393.655151,135.257370 419.195465,135.257370 445.290466,135.257370 C445.290466,146.339661 445.290466,157.419907 445.290466,169.000153z"/>
-              <path fill="currentColor" d="M135.497192,290.448730 C135.251816,289.392853 134.742188,288.319763 134.740173,287.245728 C134.695267,263.252930 134.703552,239.260025 134.718506,215.267151 C134.719009,214.463577 134.893936,213.660110 135.013840,212.631134 C160.586761,212.631134 186.014481,212.631134 212.069183,212.631134 C212.069183,238.286774 212.069183,263.867767 211.829163,289.934570 C211.589157,290.420380 211.659195,290.356812 211.677277,290.329926 C186.528381,290.218719 161.361404,290.134399 135.808868,290.217041 C135.423309,290.383972 135.469360,290.431091 135.497192,290.448730z"/>
-              <path fill="currentColor" d="M290.446106,290.423218 C290.253357,289.345978 289.834564,288.244904 289.832825,287.143219 C289.795258,263.321381 289.801147,239.499527 289.815552,215.677673 C289.816132,214.720184 289.982727,213.762787 290.090454,212.607132 C315.730774,212.607132 341.153046,212.607132 366.859802,212.607132 C366.859802,238.324921 366.859802,263.892670 366.859802,290.047455 C341.672607,290.047455 316.414978,290.047455 290.760803,290.192200 C290.364258,290.336945 290.414307,290.399109 290.446106,290.423218z"/>
-              <path fill="currentColor" d="M445.290466,302.007385 C445.290466,323.963470 445.290466,345.421448 445.290466,367.245850 C419.480499,367.245850 393.966675,367.245850 368.177490,367.245850 C368.177490,341.667480 368.177490,316.112549 368.177490,290.260376 C393.644684,290.260376 419.183838,290.260376 445.290466,290.260376 C445.290466,293.993011 445.290466,297.751160 445.290466,302.007385z"/>
-            </svg>
-          </Link>
-          <div className="footer-links">
-            <Link href="/" className="footer-link">
-              Home
+        {/* Mobile Contact CTA */}
+        <div className="cta-section">
+          <div className="cta-content">
+            <h3 className="cta-title">Ready to Show Your Complete Story?</h3>
+            <p className="cta-description">
+              Get your unified chart and prove your project's legitimacy.
+            </p>
+            <Link href="/contact" className="btn btn-primary">
+              Contact Us
+              <ArrowRight size={20} strokeWidth={2.5} />
             </Link>
-            <Link href="/pricing" className="footer-link">
-              Pricing
-            </Link>
-            <Link href="/contact" className="footer-link">
-              Contact
-            </Link>
-            <a
-              href="https://x.com/Trenchooooor"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="footer-link"
-            >
-              Twitter
-            </a>
           </div>
         </div>
-      </footer>
 
-      {/* Back to Top Button */}
-      <BackToTop />
+        {/* Next Page Navigation */}
+        {nextPage && (
+          <div className="next-page-nav">
+            <div className="next-page-label">Up Next</div>
+            <Link href={nextPage.href} className="btn btn-secondary">
+              {nextPage.label}
+              <ArrowRight size={20} strokeWidth={2.5} />
+            </Link>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

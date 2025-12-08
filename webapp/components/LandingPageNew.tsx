@@ -8,7 +8,6 @@ import {
   BarChart3,
   Database,
   Zap,
-  ChevronRight,
   XCircle,
   AlertCircle,
   Clock,
@@ -616,15 +615,19 @@ export default function LandingPageNew() {
             min-height: 100vh;
             /* Account for fixed navbar height (~72px) */
             padding-top: 80px;
-            padding-bottom: 4rem;
+            padding-bottom: 2rem;
             padding-left: 1.5rem;
             padding-right: 1.5rem;
             /* Ensure content is centered in the remaining space */
             justify-content: center;
           }
 
-          /* Hide sections on mobile - they're available as separate pages */
+          /* Hide sections and footer on mobile - they're available as separate pages */
           .desktop-sections {
+            display: none;
+          }
+
+          .footer {
             display: none;
           }
 
@@ -735,7 +738,6 @@ export default function LandingPageNew() {
               <>
                 <button onClick={() => scrollToSection("problem")} className="btn btn-secondary hero-cta-desktop">
                   Learn More
-                  <ChevronRight size={20} strokeWidth={2.5} style={{ transform: "rotate(90deg)" }} />
                 </button>
                 <Link href="/why" className="btn btn-secondary hero-cta-mobile">
                   Learn More
@@ -744,29 +746,6 @@ export default function LandingPageNew() {
               </>
             )}
           </motion.div>
-        </motion.div>
-
-        {/* Scroll Indicator */}
-        <motion.div
-          style={{
-            position: "absolute",
-            bottom: "3rem",
-            left: "50%",
-            transform: "translateX(-50%)",
-          }}
-          animate={{
-            y: [0, 10, 0],
-          }}
-          transition={{
-            duration: 2,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        >
-          <ChevronRight
-            size={24}
-            style={{ transform: "rotate(90deg)", color: "var(--text-muted)" }}
-          />
         </motion.div>
       </section>
 

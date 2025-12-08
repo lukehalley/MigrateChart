@@ -1,10 +1,10 @@
-import SectionLayout from "@/components/SectionLayout";
+import MobileSectionPage from "@/components/MobileSectionPage";
 import TestimonialsCarousel from "@/components/TestimonialsCarousel";
 
 export default function CommunityPage() {
   return (
-    <SectionLayout>
+    <MobileSectionPage nextPage={{ href: "/pricing", label: "Pricing" }}>
       <TestimonialsCarousel />
-    </SectionLayout>
+    </MobileSectionPage>
   );
 }

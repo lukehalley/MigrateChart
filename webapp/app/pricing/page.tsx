@@ -1,10 +1,10 @@
-import SectionLayout from "@/components/SectionLayout";
+import MobileSectionPage from "@/components/MobileSectionPage";
 import PricingSection from "@/components/PricingSection";
 
 export default function PricingPage() {
   return (
-    <SectionLayout>
+    <MobileSectionPage nextPage={{ href: "/contact", label: "Contact" }}>
       <PricingSection />
-    </SectionLayout>
+    </MobileSectionPage>
   );
 }

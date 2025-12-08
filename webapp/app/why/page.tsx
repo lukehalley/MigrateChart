@@ -1,12 +1,12 @@
-import SectionLayout from "@/components/SectionLayout";
+import MobileSectionPage from "@/components/MobileSectionPage";
 import ProblemSection from "@/components/sections/ProblemSection";
 import SolutionSection from "@/components/sections/SolutionSection";
 
 export default function WhyPage() {
   return (
-    <SectionLayout>
+    <MobileSectionPage nextPage={{ href: "/features", label: "Features" }}>
       <ProblemSection />
       <SolutionSection />
-    </SectionLayout>
+    </MobileSectionPage>
   );
 }
