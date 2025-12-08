@@ -47,7 +47,13 @@ export default function ProjectActions({ project }: { project: any }) {
   };
 
   return (
-    <div className="project-actions">
+    <div
+      className="project-actions"
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+    >
       <style jsx>{`
         .project-actions {
           display: flex;

@@ -90,20 +90,17 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // New token address validation
-    if (!newTokenAddress || typeof newTokenAddress !== 'string') {
-      errors.push('Current token address is required');
-    } else {
+    // New token address validation (optional - project may not have migrated yet)
+    if (newTokenAddress && typeof newTokenAddress === 'string' && newTokenAddress.trim()) {
       const trimmedNew = newTokenAddress.trim();
       if (!solanaAddressRegex.test(trimmedNew)) {
         errors.push('Invalid current token address format');
       }
-    }
 
-    // Check addresses are different
-    if (oldTokenAddress && newTokenAddress &&
-        oldTokenAddress.trim() === newTokenAddress.trim()) {
-      errors.push('Pre-migration and current token addresses must be different');
+      // Check addresses are different (only if both provided)
+      if (oldTokenAddress && oldTokenAddress.trim() === trimmedNew) {
+        errors.push('Pre-migration and current token addresses must be different');
+      }
     }
 
     // Migrate.fun URL validation (optional)
@@ -129,6 +126,29 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: errors.join('. '), errors },
         { status: 400 }
+      );
+    }
+
+    // Check for duplicate submissions (by email or token addresses)
+    // Build the OR condition dynamically based on what's provided
+    let orConditions = [`email.eq.${email}`, `old_token_address.eq.${oldTokenAddress}`];
+    if (newTokenAddress && newTokenAddress.trim()) {
+      orConditions.push(`new_token_address.eq.${newTokenAddress}`);
+    }
+
+    const { data: existingInquiry } = await supabase
+      .from('inquiries')
+      .select('id, email, old_token_address, new_token_address')
+      .or(orConditions.join(','))
+      .single();
+
+    if (existingInquiry) {
+      return NextResponse.json(
+        {
+          error: 'An inquiry has already been submitted with this email or token address. Please check your email for our response, or contact us directly at migratechart@gmail.com if you need assistance.',
+          duplicate: true
+        },
+        { status: 409 }
       );
     }
 

@@ -253,6 +253,12 @@ export default async function AdminDashboardPage() {
           font-weight: 600;
           color: var(--text);
           letter-spacing: 0.01em;
+          text-decoration: none;
+          transition: color 0.15s ease;
+        }
+
+        .section-title:hover {
+          color: var(--green);
         }
 
         .section-title-icon {
@@ -283,7 +289,9 @@ export default async function AdminDashboardPage() {
           align-items: center;
           padding: 0.875rem 1.25rem;
           border-bottom: 1px solid var(--border-subtle);
-          transition: background 0.1s ease;
+          transition: all 0.15s ease;
+          text-decoration: none;
+          color: inherit;
         }
 
         .list-item:last-child {
@@ -291,7 +299,8 @@ export default async function AdminDashboardPage() {
         }
 
         .list-item:hover {
-          background: rgba(255, 255, 255, 0.015);
+          background: rgba(82, 201, 125, 0.05);
+          cursor: pointer;
         }
 
         .list-item-content {
@@ -467,10 +476,10 @@ export default async function AdminDashboardPage() {
       <div className="content-grid">
         <div className="section-card">
           <div className="section-header">
-            <div className="section-title">
+            <Link href="/admin/inquiries" className="section-title">
               <span className="section-title-icon">◎</span>
               Recent Inquiries
-            </div>
+            </Link>
             <Link href="/admin/inquiries" className="section-link">
               View All →
             </Link>
@@ -478,7 +487,7 @@ export default async function AdminDashboardPage() {
 
           {recentInquiries.length > 0 ? (
             recentInquiries.map((inquiry: any) => (
-              <div key={inquiry.id} className="list-item">
+              <Link key={inquiry.id} href={`/admin/inquiries/${inquiry.id}`} className="list-item">
                 <div className="list-item-content">
                   <span className="list-item-title">{inquiry.project_name}</span>
                   <div className="list-item-meta">
@@ -490,7 +499,7 @@ export default async function AdminDashboardPage() {
                 <span className={`status-badge badge-${inquiry.status}`}>
                   {toTitleCase(inquiry.status)}
                 </span>
-              </div>
+              </Link>
             ))
           ) : (
             <div className="empty-state">
@@ -502,10 +511,10 @@ export default async function AdminDashboardPage() {
 
         <div className="section-card">
           <div className="section-header">
-            <div className="section-title">
+            <Link href="/admin/projects" className="section-title">
               <span className="section-title-icon">◇</span>
               Recent Projects
-            </div>
+            </Link>
             <Link href="/admin/projects" className="section-link">
               View All →
             </Link>
@@ -513,7 +522,7 @@ export default async function AdminDashboardPage() {
 
           {recentProjects.length > 0 ? (
             recentProjects.map((project: any) => (
-              <div key={project.id} className="list-item">
+              <Link key={project.id} href={`/admin/projects/${project.id}`} className="list-item">
                 <div className="list-item-content">
                   <span className="list-item-title">{project.name}</span>
                   <div className="list-item-meta">
@@ -526,7 +535,7 @@ export default async function AdminDashboardPage() {
                   <span className="status-dot" />
                   {project.is_active ? 'Active' : 'Inactive'}
                 </span>
-              </div>
+              </Link>
             ))
           ) : (
             <div className="empty-state">

@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { getUser, createClient } from '@/lib/supabase-server';
 import Link from 'next/link';
 import ProjectActions from '@/components/admin/ProjectActions';
+import { TrendingUp, DollarSign, Users, Flame } from 'lucide-react';
 
 async function getProjects() {
   const supabase = await createClient();
@@ -37,11 +38,20 @@ async function getProjects() {
         hasBurns = !!burnTransactions && burnTransactions.length > 0;
       }
 
+      // Check for fees data - look for pools with fee_rate > 0
+      const { data: poolsWithFees } = await supabase
+        .from('pools')
+        .select('fee_rate')
+        .eq('project_id', project.id)
+        .gt('fee_rate', 0)
+        .limit(1);
+
       return {
         ...project,
         hasHolders: !!holderSnapshots && holderSnapshots.length > 0,
         hasBurns,
         hasPools: (project.pools?.[0]?.count || 0) > 0,
+        hasFees: !!poolsWithFees && poolsWithFees.length > 0,
       };
     })
   );
@@ -131,8 +141,8 @@ export default async function ProjectsPage() {
 
         .table-header {
           display: grid;
-          grid-template-columns: 2fr 1fr 140px 1fr 1fr 120px;
-          gap: 1rem;
+          grid-template-columns: 2fr 1fr 180px 1fr 1fr 120px;
+          gap: 2rem;
           padding: 1rem 1.5rem;
           border-bottom: 1px solid rgba(82, 201, 125, 0.15);
           background: rgba(0, 0, 0, 0.2);
@@ -149,12 +159,14 @@ export default async function ProjectsPage() {
 
         .table-row {
           display: grid;
-          grid-template-columns: 2fr 1fr 140px 1fr 1fr 120px;
-          gap: 1rem;
+          grid-template-columns: 2fr 1fr 180px 1fr 1fr 120px;
+          gap: 2rem;
           padding: 1.25rem 1.5rem;
           border-bottom: 1px solid rgba(82, 201, 125, 0.08);
           align-items: center;
           transition: all 0.15s;
+          text-decoration: none;
+          color: inherit;
         }
 
         .table-row:last-child {
@@ -164,6 +176,7 @@ export default async function ProjectsPage() {
         .table-row:hover {
           background: rgba(82, 201, 125, 0.05);
           box-shadow: 0 0 20px rgba(82, 201, 125, 0.2);
+          cursor: pointer;
         }
 
         .project-info {
@@ -258,7 +271,7 @@ export default async function ProjectsPage() {
         .data-status {
           display: flex;
           align-items: center;
-          gap: 0.5rem;
+          gap: 0.75rem;
         }
 
         .data-indicator {
@@ -335,7 +348,7 @@ export default async function ProjectsPage() {
             </div>
 
             {projects.map((project: any) => (
-              <div key={project.id} className="table-row">
+              <Link key={project.id} href={`/admin/projects/${project.id}`} className="table-row">
                 <div className="project-info">
                   <div className="project-icon">
                     {project.icon_url ? (
@@ -357,18 +370,20 @@ export default async function ProjectsPage() {
                 <div className="data-status">
                   <div className="data-indicator" title={project.hasPools ? 'Chart data available' : 'No chart data'}>
                     <span className={`data-dot ${project.hasPools ? 'data-dot-active' : 'data-dot-inactive'}`} />
-                    <span>Chart</span>
+                    <TrendingUp size={12} />
+                  </div>
+                  <div className="data-indicator" title={project.hasFees ? 'Fees data available' : 'No fees data'}>
+                    <span className={`data-dot ${project.hasFees ? 'data-dot-active' : 'data-dot-inactive'}`} />
+                    <DollarSign size={12} />
                   </div>
                   <div className="data-indicator" title={project.hasHolders ? 'Holder data available' : 'No holder data'}>
                     <span className={`data-dot ${project.hasHolders ? 'data-dot-active' : 'data-dot-inactive'}`} />
-                    <span>Holders</span>
+                    <Users size={12} />
                   </div>
-                  {project.burns_enabled && (
-                    <div className="data-indicator" title={project.hasBurns ? 'Burns data available' : 'No burns data'}>
-                      <span className={`data-dot ${project.hasBurns ? 'data-dot-active' : 'data-dot-inactive'}`} />
-                      <span>Burns</span>
-                    </div>
-                  )}
+                  <div className="data-indicator" title={project.hasBurns ? 'Burns data available' : 'No burns data'}>
+                    <span className={`data-dot ${project.hasBurns ? 'data-dot-active' : 'data-dot-inactive'}`} />
+                    <Flame size={12} />
+                  </div>
                 </div>
 
                 <div className="cell-value">
@@ -387,10 +402,8 @@ export default async function ProjectsPage() {
                   </span>
                 </div>
 
-                <div>
-                  <ProjectActions project={project} />
-                </div>
-              </div>
+                <ProjectActions project={project} />
+              </Link>
             ))}
           </>
         ) : (

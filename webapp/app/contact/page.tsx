@@ -819,19 +819,18 @@ export default function ContactPage() {
 
               <div className="form-field full">
                 <label className="field-label">
-                  Post-Migration Address <span className="required-marker">*</span>
+                  Post-Migration Address
                 </label>
                 <input
                   type="text"
-                  required
                   value={formData.newTokenAddress}
                   onChange={(e) => setFormData({ ...formData, newTokenAddress: e.target.value })}
                   onFocus={() => setFocusedField('newTokenAddress')}
                   onBlur={() => setFocusedField(null)}
                   className="field-input address"
-                  placeholder="Current token mint address"
+                  placeholder="Current token mint address (optional)"
                 />
-                <span className="field-hint">Your token address after migration</span>
+                <span className="field-hint">Your token address after migration (leave blank if not migrated yet)</span>
               </div>
 
               <div className="form-field full">

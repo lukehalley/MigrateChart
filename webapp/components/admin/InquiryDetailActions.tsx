@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Mail, Check, X, Download } from 'lucide-react';
 
-export default function InquiryActions({ inquiry }: { inquiry: any }) {
+export default function InquiryDetailActions({ inquiry }: { inquiry: any }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
@@ -33,37 +33,28 @@ export default function InquiryActions({ inquiry }: { inquiry: any }) {
   };
 
   return (
-    <div
-      className="inquiry-actions"
-      onClick={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      }}
-    >
+    <div className="detail-actions">
       <style jsx>{`
-        .inquiry-actions {
+        .detail-actions {
           display: flex;
-          gap: 0.25rem;
+          gap: 0.75rem;
+          flex-wrap: wrap;
         }
 
         .action-btn {
-          width: 32px;
-          height: 32px;
-          display: flex;
+          display: inline-flex;
           align-items: center;
-          justify-content: center;
+          gap: 0.6rem;
+          padding: 0.75rem 1.25rem;
+          font-family: 'IBM Plex Mono', monospace;
+          font-size: 0.7rem;
+          font-weight: 500;
+          letter-spacing: 0.05em;
+          text-transform: uppercase;
           background: transparent;
-          border: 1px solid transparent;
-          color: var(--text-muted);
-          font-size: 1rem;
+          border: 1px solid;
           cursor: pointer;
-          transition: all 0.15s;
-        }
-
-        .action-btn:hover:not(:disabled) {
-          background: rgba(255, 255, 255, 0.05);
-          border-color: var(--border);
-          color: var(--text-primary);
+          transition: all 0.2s;
         }
 
         .action-btn:disabled {
@@ -71,24 +62,48 @@ export default function InquiryActions({ inquiry }: { inquiry: any }) {
           cursor: not-allowed;
         }
 
-        .action-btn.approve:hover:not(:disabled) {
-          color: var(--success);
-          border-color: rgba(124, 182, 135, 0.3);
+        .action-btn.contact {
+          border-color: rgba(91, 155, 213, 0.3);
+          color: #5B9BD5;
         }
 
         .action-btn.contact:hover:not(:disabled) {
-          color: #6ba3d4;
-          border-color: rgba(107, 163, 212, 0.3);
+          background: rgba(91, 155, 213, 0.1);
+          border-color: rgba(91, 155, 213, 0.5);
+          box-shadow: 0 0 20px rgba(91, 155, 213, 0.2);
+        }
+
+        .action-btn.approve {
+          border-color: rgba(82, 201, 125, 0.3);
+          color: #52C97D;
+        }
+
+        .action-btn.approve:hover:not(:disabled) {
+          background: rgba(82, 201, 125, 0.1);
+          border-color: rgba(82, 201, 125, 0.5);
+          box-shadow: 0 0 20px rgba(82, 201, 125, 0.2);
+        }
+
+        .action-btn.reject {
+          border-color: rgba(239, 83, 80, 0.3);
+          color: #ef5350;
         }
 
         .action-btn.reject:hover:not(:disabled) {
-          color: var(--error);
-          border-color: rgba(196, 92, 92, 0.3);
+          background: rgba(239, 83, 80, 0.1);
+          border-color: rgba(239, 83, 80, 0.5);
+          box-shadow: 0 0 20px rgba(239, 83, 80, 0.2);
+        }
+
+        .action-btn.import {
+          border-color: rgba(212, 168, 83, 0.3);
+          color: #D4A853;
         }
 
         .action-btn.import:hover:not(:disabled) {
-          color: var(--accent);
-          border-color: rgba(212, 168, 83, 0.3);
+          background: rgba(212, 168, 83, 0.1);
+          border-color: rgba(212, 168, 83, 0.5);
+          box-shadow: 0 0 20px rgba(212, 168, 83, 0.2);
         }
       `}</style>
 
@@ -98,27 +113,27 @@ export default function InquiryActions({ inquiry }: { inquiry: any }) {
             onClick={() => updateStatus('contacted')}
             disabled={loading}
             className="action-btn contact"
-            title="Mark as contacted"
           >
             <Mail size={16} />
+            Mark as Contacted
           </button>
 
           <button
             onClick={() => updateStatus('approved')}
             disabled={loading}
             className="action-btn approve"
-            title="Approve"
           >
             <Check size={16} />
+            Approve
           </button>
 
           <button
             onClick={() => updateStatus('rejected')}
             disabled={loading}
             className="action-btn reject"
-            title="Reject"
           >
             <X size={16} />
+            Reject
           </button>
         </>
       )}
@@ -129,18 +144,18 @@ export default function InquiryActions({ inquiry }: { inquiry: any }) {
             onClick={() => updateStatus('approved')}
             disabled={loading}
             className="action-btn approve"
-            title="Approve"
           >
             <Check size={16} />
+            Approve
           </button>
 
           <button
             onClick={() => updateStatus('rejected')}
             disabled={loading}
             className="action-btn reject"
-            title="Reject"
           >
             <X size={16} />
+            Reject
           </button>
         </>
       )}
@@ -149,9 +164,9 @@ export default function InquiryActions({ inquiry }: { inquiry: any }) {
         <button
           onClick={importAsProject}
           className="action-btn import"
-          title="Import as project"
         >
           <Download size={16} />
+          Import as Project
         </button>
       )}
     </div>

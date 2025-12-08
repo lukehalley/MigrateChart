@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import { getUser, createClient } from '@/lib/supabase-server';
+import Link from 'next/link';
 import InquiryActions from '@/components/admin/InquiryActions';
 import { toTitleCase } from '@/lib/utils';
 
@@ -85,7 +86,7 @@ export default async function InquiriesPage() {
         .list-header {
           display: grid;
           grid-template-columns: 2fr 1.5fr 1fr 1fr 120px;
-          gap: 1rem;
+          gap: 2rem;
           padding: 1rem 1.5rem;
           border-bottom: 1px solid var(--border);
           background: rgba(0, 0, 0, 0.2);
@@ -102,11 +103,13 @@ export default async function InquiriesPage() {
         .inquiry-row {
           display: grid;
           grid-template-columns: 2fr 1.5fr 1fr 1fr 120px;
-          gap: 1rem;
+          gap: 2rem;
           padding: 1.25rem 1.5rem;
           border-bottom: 1px solid var(--border-subtle);
           align-items: start;
-          transition: background 0.1s;
+          transition: all 0.15s;
+          text-decoration: none;
+          color: inherit;
         }
 
         .inquiry-row:last-child {
@@ -114,7 +117,8 @@ export default async function InquiriesPage() {
         }
 
         .inquiry-row:hover {
-          background: rgba(255, 255, 255, 0.015);
+          background: rgba(82, 201, 125, 0.05);
+          cursor: pointer;
         }
 
         .inquiry-project {
@@ -293,7 +297,7 @@ export default async function InquiriesPage() {
             </div>
 
             {inquiries.map((inquiry: any) => (
-              <div key={inquiry.id} className="inquiry-row">
+              <Link key={inquiry.id} href={`/admin/inquiries/${inquiry.id}`} className="inquiry-row">
                 <div className="inquiry-project">
                   <span className="project-name">{inquiry.project_name}</span>
                   <div className="project-tokens">
@@ -327,6 +331,7 @@ export default async function InquiriesPage() {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="migrate-link"
+                      onClick={(e) => e.stopPropagation()}
                     >
                       View Migration ↗
                     </a>
@@ -341,10 +346,8 @@ export default async function InquiriesPage() {
                   </span>
                 </div>
 
-                <div>
-                  <InquiryActions inquiry={inquiry} />
-                </div>
-              </div>
+                <InquiryActions inquiry={inquiry} />
+              </Link>
             ))}
           </>
         ) : (
