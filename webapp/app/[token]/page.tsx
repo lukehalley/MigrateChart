@@ -1102,8 +1102,8 @@ function HomeContent() {
 
           {/* Mobile and Tablet: Stacked layout (< 1024px) */}
           <div className="flex lg:hidden flex-col items-center gap-2 py-3 w-full relative">
-            {/* Logo and Menu Row */}
-            <div className="flex items-center justify-between w-full px-3 gap-2">
+            {/* Top Row: Logo, Support Message, Menu */}
+            <div className="flex items-center justify-between w-full px-3 gap-3">
               {/* Logo - Left */}
               <motion.button
                 onClick={() => router.push('/')}
@@ -1131,7 +1131,32 @@ function HomeContent() {
                 </svg>
               </motion.button>
 
-              {/* Menu Button - Right - Larger for touch */}
+              {/* Support Message - Center */}
+              <div className="flex items-center gap-2 flex-1 justify-center min-w-0">
+                <motion.div
+                  className="flex-shrink-0"
+                  animate={{
+                    scale: [1, 1.15, 1],
+                  }}
+                  transition={{
+                    duration: 1.5,
+                    repeat: Infinity,
+                    ease: 'easeInOut'
+                  }}
+                >
+                  <Heart className="w-4 h-4 text-[var(--primary-color)] fill-[var(--primary-color)]" />
+                </motion.div>
+                <div className="text-center min-w-0">
+                  <p className="text-white font-bold text-xs leading-tight">
+                    Support This Tool
+                  </p>
+                  <p className="text-white/70 text-[10px] leading-tight">
+                    Donate via Solana Network
+                  </p>
+                </div>
+              </div>
+
+              {/* Menu Button - Right */}
               <motion.button
                 onClick={() => setShowMobileMenu(true)}
                 className="flex-shrink-0 w-12 h-12 flex items-center justify-center bg-black/60 border-2 rounded-lg backdrop-blur-sm hover:bg-black/80 transition-all"
@@ -1147,31 +1172,6 @@ function HomeContent() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
               </motion.button>
-
-            </div>
-
-            {/* Call to Action - Centered */}
-            <div className="flex items-center gap-2 justify-center">
-              <motion.div
-                animate={{
-                  scale: [1, 1.15, 1],
-                }}
-                transition={{
-                  duration: 1.5,
-                  repeat: Infinity,
-                  ease: 'easeInOut'
-                }}
-              >
-                <Heart className="w-4 h-4 text-[var(--primary-color)] fill-[var(--primary-color)]" />
-              </motion.div>
-              <div className="text-center">
-                <p className="text-white font-bold text-xs leading-tight">
-                  Support This Tool
-                </p>
-                <p className="text-white/70 text-[10px] leading-tight">
-                  Donate via Solana Network
-                </p>
-              </div>
             </div>
 
             {/* Donation Goal Progress Bars - Stacked */}
