@@ -26,6 +26,120 @@ import { PoolData, Timeframe, ProjectConfig } from '@/lib/types';
 import { SafeStorage } from '@/lib/localStorage';
 import { DonationPopup } from '@/components/DonationPopup';
 import { LoginButton } from '@/components/LoginButton';
+import { LoginModal } from '@/components/LoginModal';
+import { createClient } from '@/lib/supabase-browser';
+import { User } from 'lucide-react';
+import { createPortal } from 'react-dom';
+
+// Mobile menu version of login button
+interface LoginButtonMenuWrapperProps {
+  primaryColor: string;
+  secondaryColor: string;
+  onClose: () => void;
+}
+
+function LoginButtonMenuWrapper({ primaryColor, secondaryColor, onClose }: LoginButtonMenuWrapperProps) {
+  const router = useRouter();
+  const [user, setUser] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const supabase = createClient();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    async function checkAuth() {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+      setIsLoading(false);
+    }
+
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user || null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [supabase]);
+
+  const handleClick = () => {
+    if (user) {
+      router.push('/admin/dashboard');
+      onClose();
+    } else {
+      setShowModal(true);
+    }
+  };
+
+  const hexToRgba = (hex: string, alpha: number) => {
+    const h = hex.replace('#', '');
+    const r = parseInt(h.substring(0, 2), 16);
+    const g = parseInt(h.substring(2, 4), 16);
+    const b = parseInt(h.substring(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  };
+
+  if (isLoading) {
+    return null;
+  }
+
+  return (
+    <>
+      <motion.button
+        onClick={handleClick}
+        className="flex flex-col items-center justify-center gap-1.5 py-3 px-3 rounded-lg border-2 transition-all relative overflow-hidden"
+        style={{
+          backgroundColor: user ? `${primaryColor}20` : '#000000a0',
+          borderColor: user ? `${primaryColor}80` : `${primaryColor}60`,
+          color: primaryColor
+        }}
+        whileHover={{
+          scale: 1.02,
+          borderColor: hexToRgba(primaryColor, 0.9),
+          boxShadow: `0 0 16px ${hexToRgba(primaryColor, 0.4)}`
+        }}
+        whileTap={{ scale: 0.98 }}
+      >
+        <User className="w-5 h-5" strokeWidth={2.5} />
+        <span className="text-xs font-bold">{user ? 'Dashboard' : 'Login'}</span>
+
+        {/* Subtle pulse when logged in */}
+        {user && (
+          <motion.div
+            className="absolute inset-0 rounded-lg pointer-events-none"
+            style={{
+              borderWidth: '1px',
+              borderStyle: 'solid',
+              borderColor: primaryColor,
+            }}
+            animate={{
+              opacity: [0.2, 0.5, 0.2],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: 'easeInOut',
+            }}
+          />
+        )}
+      </motion.button>
+
+      {mounted && createPortal(
+        <LoginModal
+          isOpen={showModal}
+          onClose={() => setShowModal(false)}
+          primaryColor={primaryColor}
+          secondaryColor={secondaryColor}
+        />,
+        document.body
+      )}
+    </>
+  );
+}
 
 function HomeContent() {
   const { currentProject, allProjects, isLoading: projectLoading, isSwitching, switchingToSlug, error: projectError } = useTokenContext();
@@ -320,7 +434,7 @@ function HomeContent() {
       setShowMobileMenu(false);
       setIsMenuClosing(false);
       setMobileMenuTab('settings'); // Reset to settings tab
-    }, 300); // Match animation duration
+    }, 200); // Match animation duration
   };
 
   // Handle copy address - use project's donation address
@@ -988,9 +1102,9 @@ function HomeContent() {
 
           {/* Mobile and Tablet: Stacked layout (< 1024px) */}
           <div className="flex lg:hidden flex-col items-center gap-2 py-3 w-full relative">
-            {/* Logo, Login, and Menu Row */}
+            {/* Logo and Menu Row */}
             <div className="flex items-center justify-between w-full px-3 gap-2">
-              {/* Logo - Far Left */}
+              {/* Logo - Left */}
               <motion.button
                 onClick={() => router.push('/')}
                 className="flex-shrink-0 cursor-pointer"
@@ -1017,29 +1131,7 @@ function HomeContent() {
                 </svg>
               </motion.button>
 
-              {/* Contact & Login Buttons - Center Right */}
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <motion.button
-                  onClick={() => router.push('/contact')}
-                  className="flex items-center justify-center w-10 h-10 rounded-lg border transition-all bg-black/60"
-                  style={{
-                    borderColor: `${primaryColor}40`,
-                    color: primaryColor
-                  }}
-                  whileHover={{
-                    scale: 1.05,
-                    borderColor: hexToRgba(primaryColor, 0.7),
-                    boxShadow: `0 0 12px ${hexToRgba(primaryColor, 0.3)}`
-                  }}
-                  whileTap={{ scale: 0.95 }}
-                  title="Contact Us"
-                >
-                  <MessageSquare className="w-5 h-5" />
-                </motion.button>
-                <LoginButton primaryColor={primaryColor} secondaryColor={secondaryColor} />
-              </div>
-
-              {/* Menu Button - Far Right - Larger for touch */}
+              {/* Menu Button - Right - Larger for touch */}
               <motion.button
                 onClick={() => setShowMobileMenu(true)}
                 className="flex-shrink-0 w-12 h-12 flex items-center justify-center bg-black/60 border-2 rounded-lg backdrop-blur-sm hover:bg-black/80 transition-all"
@@ -1534,6 +1626,44 @@ function HomeContent() {
                   </svg>
                   <p className="text-[var(--primary-color)] text-base font-bold tracking-wider">@Trenchooooor</p>
                 </a>
+              </div>
+
+              {/* Decorative Divider */}
+              <div className="flex items-center justify-center py-2">
+                <div className="dashed-divider w-24"></div>
+              </div>
+
+              {/* Contact & Login Actions */}
+              <div className="info-card-small">
+                <div className="py-2 px-2">
+                  <p className="text-white text-[10px] mb-3 text-center font-medium">Quick Actions</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {/* Contact Button */}
+                    <motion.button
+                      onClick={() => {
+                        router.push('/contact');
+                        closeMobileMenu();
+                      }}
+                      className="flex flex-col items-center justify-center gap-1.5 py-3 px-3 rounded-lg border-2 transition-all bg-black/60"
+                      style={{
+                        borderColor: `${primaryColor}60`,
+                        color: primaryColor
+                      }}
+                      whileHover={{
+                        scale: 1.02,
+                        borderColor: hexToRgba(primaryColor, 0.8),
+                        boxShadow: `0 0 16px ${hexToRgba(primaryColor, 0.4)}`
+                      }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <MessageSquare className="w-5 h-5" />
+                      <span className="text-xs font-bold">Contact</span>
+                    </motion.button>
+
+                    {/* Login/Dashboard Button */}
+                    <LoginButtonMenuWrapper primaryColor={primaryColor} secondaryColor={secondaryColor} onClose={closeMobileMenu} />
+                  </div>
+                </div>
               </div>
                   </>
                 )}
