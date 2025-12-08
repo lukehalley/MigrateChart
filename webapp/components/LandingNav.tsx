@@ -53,9 +53,8 @@ export default function LandingNav() {
         }
 
         .landing-nav.scrolled {
-          background: rgba(0, 0, 0, 0.8);
-          backdrop-filter: blur(10px);
-          border-bottom: 1px solid rgba(82, 201, 125, 0.15);
+          backdrop-filter: blur(8px);
+          border-bottom: 1px solid rgba(82, 201, 125, 0.1);
         }
 
         .nav-container {
