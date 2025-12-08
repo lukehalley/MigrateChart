@@ -228,7 +228,7 @@ export default function LandingNav() {
           left: 0;
           right: 0;
           bottom: 0;
-          background: rgba(0, 0, 0, 0.98);
+          background: rgba(0, 0, 0, 0.6);
           backdrop-filter: blur(20px);
           border-top: 1px solid rgba(82, 201, 125, 0.2);
           padding: 2rem 1.5rem;
