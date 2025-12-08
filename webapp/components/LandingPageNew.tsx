@@ -96,7 +96,6 @@ export default function LandingPageNew() {
           --border-accent: rgba(212, 168, 83, 0.15);
 
           min-height: 100vh;
-          scroll-behavior: smooth;
           background:
             /* Terminal character grid - more visible */
             repeating-linear-gradient(
@@ -267,6 +266,8 @@ export default function LandingPageNew() {
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           position: relative;
           overflow: hidden;
+          cursor: pointer;
+          font-family: 'JetBrains Mono', monospace;
         }
 
         .btn-primary {
@@ -707,15 +708,18 @@ export default function LandingPageNew() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.6 }}
+            suppressHydrationWarning
           >
             <Link href="/zera" prefetch={true} className="btn btn-primary">
               Launch App
               <ArrowRight size={20} strokeWidth={2.5} />
             </Link>
-            <button onClick={() => scrollToSection("problem")} className="btn btn-secondary hero-cta-desktop">
-              Learn More
-              <ChevronRight size={20} strokeWidth={2.5} style={{ transform: "rotate(90deg)" }} />
-            </button>
+            {mounted && (
+              <button onClick={() => scrollToSection("problem")} className="btn btn-secondary hero-cta-desktop">
+                Learn More
+                <ChevronRight size={20} strokeWidth={2.5} style={{ transform: "rotate(90deg)" }} />
+              </button>
+            )}
           </motion.div>
         </motion.div>
 
@@ -1011,7 +1015,7 @@ export default function LandingPageNew() {
       <PricingSection />
 
       {/* CTA Section */}
-      <section className="cta-section">
+      <section id="contact" className="cta-section">
         <motion.div
           className="cta-content"
           style={{ opacity: 0, y: 40, scale: 0.95 }}
@@ -1023,8 +1027,8 @@ export default function LandingPageNew() {
           <p className="cta-description">
             Your community deserves to see the full story. Every day with a reset chart is another day potential investors question your legitimacy. Show them the complete journey—from launch to today—and prove your project's staying power.
           </p>
-          <Link href="/zera" className="btn btn-primary">
-            Restore Your Full History
+          <Link href="/contact" className="btn btn-primary">
+            Contact Us
             <ArrowRight size={20} strokeWidth={2.5} />
           </Link>
         </motion.div>

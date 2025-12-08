@@ -6,6 +6,7 @@ import Link from "next/link";
 export default function LandingNav() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState<string>("");
 
   useEffect(() => {
     const handleScroll = () => {
@@ -14,6 +15,32 @@ export default function LandingNav() {
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const sections = ["problem", "solution", "metrics", "projects", "pricing", "contact"];
+
+    const observerOptions = {
+      rootMargin: "-20% 0px -60% 0px",
+      threshold: 0
+    };
+
+    const observerCallback = (entries: IntersectionObserverEntry[]) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setActiveSection(entry.target.id);
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(observerCallback, observerOptions);
+
+    sections.forEach((sectionId) => {
+      const element = document.getElementById(sectionId);
+      if (element) observer.observe(element);
+    });
+
+    return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
@@ -378,12 +405,18 @@ export default function LandingNav() {
               >
                 Pricing
               </button>
+              <button
+                onClick={() => scrollToSection("contact")}
+                className="nav-link"
+              >
+                Contact
+              </button>
             </div>
           </div>
 
           {/* CTA - Right aligned */}
           <div className="nav-cta-wrapper">
-            <Link href="/contact" className="nav-link primary">
+            <Link href="/zera" className="nav-link primary">
               Launch App
             </Link>
           </div>
@@ -455,12 +488,15 @@ function MobileNav({
         <button onClick={() => handleClick("pricing")} className="nav-link">
           Pricing
         </button>
+        <button onClick={() => handleClick("contact")} className="nav-link">
+          Contact
+        </button>
         <Link
-          href="/contact"
+          href="/zera"
           className="nav-link primary"
           onClick={() => setIsOpen(false)}
         >
-          Contact
+          Launch App
         </Link>
       </div>
     </div>

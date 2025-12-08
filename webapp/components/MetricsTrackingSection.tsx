@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import {
   TrendingUp,
   Users,
@@ -93,6 +92,24 @@ export default function MetricsTrackingSection() {
           border-bottom: 1px solid rgba(82, 201, 125, 0.1);
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           position: relative;
+          opacity: 0;
+          transform: translateX(-20px);
+          animation: slideInLeft 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        .metric-item:nth-child(1) { animation-delay: 0.05s; }
+        .metric-item:nth-child(2) { animation-delay: 0.1s; }
+        .metric-item:nth-child(3) { animation-delay: 0.15s; }
+        .metric-item:nth-child(4) { animation-delay: 0.2s; }
+        .metric-item:nth-child(5) { animation-delay: 0.25s; }
+        .metric-item:nth-child(6) { animation-delay: 0.3s; }
+        .metric-item:nth-child(7) { animation-delay: 0.35s; }
+
+        @keyframes slideInLeft {
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
         }
 
         .metric-item:first-child {
@@ -274,31 +291,17 @@ export default function MetricsTrackingSection() {
         </div>
 
         <div className="metrics-header">
-          <motion.div
-            style={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.8 }}
-          >
-            <div className="section-label">COMPREHENSIVE ANALYTICS</div>
-            <h2 className="section-title">Beyond Price History</h2>
-            <p className="section-description">
-              Track every metric that matters. From market fundamentals to advanced tokenomics.
-              One unified dashboard for complete project intelligence.
-            </p>
-          </motion.div>
+          <div className="section-label">COMPREHENSIVE ANALYTICS</div>
+          <h2 className="section-title">Beyond Price History</h2>
+          <p className="section-description">
+            Track every metric that matters. From market fundamentals to advanced tokenomics.
+            One unified dashboard for complete project intelligence.
+          </p>
         </div>
 
         <div className="metrics-list">
           {metrics.map((metric, index) => (
-            <motion.div
-              key={metric.title}
-              className="metric-item"
-              style={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.5, delay: index * 0.05 }}
-            >
+            <div key={metric.title} className="metric-item">
               <div className="metric-icon">{metric.icon}</div>
               <div className="metric-content">
                 <div className="metric-header">
@@ -313,7 +316,7 @@ export default function MetricsTrackingSection() {
                 </div>
                 <p className="metric-description">{metric.description}</p>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>
