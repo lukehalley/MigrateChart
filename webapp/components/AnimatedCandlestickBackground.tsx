@@ -237,7 +237,7 @@ function MigrationLine({ marker, index }: MigrationLineProps) {
         filter="url(#migrationGlow)"
       />
 
-      {/* Label - appears after line */}
+      {/* Label using foreignObject to prevent text squishing */}
       <motion.g
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -247,34 +247,40 @@ function MigrationLine({ marker, index }: MigrationLineProps) {
           ease: [0.22, 1, 0.36, 1],
         }}
       >
-        {/* Background box for label */}
-        <rect
+        <foreignObject
           x={marker.x - 50}
           y={labelY}
           width={100}
           height={32}
-          fill="#000000"
-          fillOpacity={0.9}
-          stroke={lineColor}
-          strokeWidth={2}
-          strokeOpacity={0.7}
-          rx={4}
-          filter="url(#labelGlow)"
-        />
-        {/* Label text */}
-        <text
-          x={marker.x}
-          y={labelY + 21}
-          fill={lineColor}
-          fillOpacity={0.95}
-          fontSize={13}
-          fontWeight="700"
-          fontFamily="JetBrains Mono, monospace"
-          textAnchor="middle"
-          letterSpacing="0.8"
+          style={{ overflow: 'visible' }}
         >
-          {marker.label}
-        </text>
+          <div
+            style={{
+              width: '100px',
+              height: '32px',
+              background: '#000000',
+              border: `2px solid ${lineColor}`,
+              borderRadius: '4px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: `0 0 12px ${lineColor}40`,
+            }}
+          >
+            <span
+              style={{
+                color: lineColor,
+                fontSize: '13px',
+                fontWeight: '700',
+                fontFamily: 'JetBrains Mono, monospace',
+                letterSpacing: '0.8px',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {marker.label}
+            </span>
+          </div>
+        </foreignObject>
       </motion.g>
     </g>
   );

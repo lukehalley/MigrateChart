@@ -244,6 +244,20 @@ export default function LandingPageNew() {
           flex-wrap: wrap;
         }
 
+        @media (max-width: 768px) {
+          .hero-cta {
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+          }
+
+          .hero-cta .btn {
+            max-width: 280px;
+            width: 100%;
+            justify-content: center;
+          }
+        }
+
         .btn {
           display: inline-flex;
           align-items: center;
