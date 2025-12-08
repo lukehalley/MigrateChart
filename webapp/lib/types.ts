@@ -126,4 +126,8 @@ export interface ProjectListItem {
   primaryColor: string;
   logoUrl: string;
   loaderUrl: string;
+  websiteUrl?: string;
+  marketCap?: number;
+  volume24h?: number;
+  holders?: number;
 }

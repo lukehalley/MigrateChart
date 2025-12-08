@@ -19,7 +19,7 @@ import {
 import { AnimatedCandlestickBackground } from "./AnimatedCandlestickBackground";
 import PricingSection from "./PricingSection";
 import TestimonialsCarousel from "./TestimonialsCarousel";
-import MetricsTrackingSection from "./MetricsTrackingSection";
+import BackToTop from "./BackToTop";
 
 interface ProjectListItem {
   slug: string;
@@ -375,6 +375,7 @@ export default function LandingPageNew() {
           padding: 2rem;
           border-radius: 12px;
           transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          text-align: center;
         }
 
         .feature-card:hover {
@@ -393,6 +394,8 @@ export default function LandingPageNew() {
           border-radius: 8px;
           color: var(--primary);
           margin-bottom: 1.5rem;
+          margin-left: auto;
+          margin-right: auto;
         }
 
         .feature-title {
@@ -718,11 +721,11 @@ export default function LandingPageNew() {
             transition={{ duration: 1, delay: 0.6 }}
           >
             <Link href="/zera" prefetch={true} className="btn btn-primary">
-              Enter App
+              View Live Charts
               <ArrowRight size={20} strokeWidth={2.5} />
             </Link>
             <Link href="/contact" className="btn btn-secondary">
-              Add Your Token
+              Get Your Complete Chart
             </Link>
           </motion.div>
         </motion.div>
@@ -763,10 +766,10 @@ export default function LandingPageNew() {
             >
               <div className="section-label">THE PROBLEM</div>
               <h2 className="section-title">
-                Migrations Erase History
+                Your Track Record Vanishes Overnight
               </h2>
               <p className="section-description">
-                When Tokens Migrate Pools, Charts Reset. Price History Disappears. Investors See Incomplete Data.
+                Pool migrations reset your chart. Investors see a "new" project and months of proven performance disappear.
               </p>
             </motion.div>
           </div>
@@ -775,21 +778,21 @@ export default function LandingPageNew() {
             {[
               {
                 icon: <XCircle size={24} />,
-                title: "Charts Start Over",
+                title: "Lose Credibility Instantly",
                 description:
-                  "Projects Migrate For Better Fees. New Pool Creates Fresh Chart. Historical Performance Erased.",
+                  "Your chart looks 3 days old. New investors think you just launched. Your proven track record? Gone.",
               },
               {
                 icon: <AlertCircle size={24} />,
-                title: "Fee Tier Confusion",
+                title: "Investors Can't Compare",
                 description:
-                  "0.05% Pool. 0.30% Pool. 1.00% Pool. Volume Split Across Tiers. Impossible To Compare.",
+                  "Liquidity split across multiple pools. Different fee tiers. Fragmented volume data. Impossible to evaluate real performance.",
               },
               {
                 icon: <Clock size={24} />,
-                title: "Trust Gap",
+                title: "Trust Gap Grows",
                 description:
-                  "Legitimate Projects Look Brand New. No Track Record Visible. Investors Can't Verify History.",
+                  "Fresh charts raise questions. Without historical data, you can't demonstrate your project's legitimacy and staying power.",
               },
             ].map((feature, index) => (
               <div key={index} className="feature-card">
@@ -814,10 +817,10 @@ export default function LandingPageNew() {
             >
               <div className="section-label">THE SOLUTION</div>
               <h2 className="section-title">
-                We Reconnect Everything
+                Prove Your Legitimacy With One Chart
               </h2>
               <p className="section-description">
-                One Continuous Chart Across All Migrations. Complete Price History From Launch To Today.
+                Show investors your complete journey. Connect your old pool to your new one. One unbroken timeline that demonstrates your project's real staying power and transparency.
               </p>
             </motion.div>
           </div>
@@ -826,21 +829,21 @@ export default function LandingPageNew() {
             {[
               {
                 icon: <GitMerge size={24} />,
-                title: "Unified Timeline",
+                title: "Build Trust Immediately",
                 description:
-                  "One Chart From First Pool To Current. Every Migration Connected.",
+                  "Show your complete track record in one glance. Investors see you're established, not a rug waiting to happen. Transparency wins confidence.",
               },
               {
                 icon: <History size={24} />,
-                title: "Pre-Migration Data",
+                title: "Prove Your Staying Power",
                 description:
-                  "See Price Action Before The Move. Show Investors The Full Story.",
+                  "Display months of price action, holder growth, and real volume. Let your history do the talking. Legitimate projects have nothing to hide.",
               },
               {
                 icon: <MapPin size={24} />,
-                title: "Migration Markers",
+                title: "Demonstrate Smart Strategy",
                 description:
-                  "Visual Indicators For Each Transition. Track Fees And Holders Per Phase.",
+                  "Show why you migrated: better fees, more holders, stronger liquidity. Turn migrations from red flags into proof points of professional management.",
               },
             ].map((feature, index) => (
               <div key={index} className="feature-card">
@@ -852,9 +855,6 @@ export default function LandingPageNew() {
           </div>
         </div>
       </section>
-
-      {/* Metrics Tracking Section */}
-      <MetricsTrackingSection />
 
       {/* Projects Showcase */}
       {projects.length > 0 && (
@@ -1027,12 +1027,12 @@ export default function LandingPageNew() {
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
         >
-          <h2 className="cta-title">Already Migrated?</h2>
+          <h2 className="cta-title">Don't Let Another Day Go By With Incomplete Charts</h2>
           <p className="cta-description">
-            Get In Touch.
+            Your community deserves to see the full story. Every day with a reset chart is another day potential investors question your legitimacy. Show them the complete journey—from launch to today—and prove your project's staying power.
           </p>
           <Link href="/contact" className="btn btn-primary">
-            Add Your Token
+            Restore Your Full History
             <ArrowRight size={20} strokeWidth={2.5} />
           </Link>
         </motion.div>
@@ -1077,6 +1077,9 @@ export default function LandingPageNew() {
           </div>
         </div>
       </footer>
+
+      {/* Back to Top Button */}
+      <BackToTop />
     </div>
   );
 }

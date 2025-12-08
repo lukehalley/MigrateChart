@@ -34,7 +34,7 @@ export default function ContactPage() {
         body: JSON.stringify({
           name: formData.name,
           email: formData.email,
-          telegram: formData.telegram || null,
+          telegram: formData.telegram ? `@${formData.telegram}` : null,
           projectName: formData.projectName,
           oldTokenAddress: formData.oldTokenAddress,
           newTokenAddress: formData.newTokenAddress,
@@ -504,6 +504,26 @@ export default function ContactPage() {
           color: var(--text-muted);
         }
 
+        .input-with-prefix {
+          position: relative;
+          display: flex;
+          align-items: center;
+        }
+
+        .input-prefix {
+          position: absolute;
+          left: 1rem;
+          font-family: 'Space Mono', monospace;
+          font-size: 0.85rem;
+          color: var(--text-secondary);
+          pointer-events: none;
+          z-index: 1;
+        }
+
+        .input-with-prefix .field-input {
+          padding-left: 1.875rem;
+        }
+
         .field-input.address {
           font-size: 0.75rem;
           letter-spacing: 0.02em;
@@ -773,15 +793,18 @@ export default function ContactPage() {
 
               <div className="form-field">
                 <label className="field-label">Telegram</label>
-                <input
-                  type="text"
-                  value={formData.telegram}
-                  onChange={(e) => setFormData({ ...formData, telegram: e.target.value })}
-                  onFocus={() => setFocusedField('telegram')}
-                  onBlur={() => setFocusedField(null)}
-                  className="field-input"
-                  placeholder="@username"
-                />
+                <div className="input-with-prefix">
+                  <span className="input-prefix">@</span>
+                  <input
+                    type="text"
+                    value={formData.telegram}
+                    onChange={(e) => setFormData({ ...formData, telegram: e.target.value })}
+                    onFocus={() => setFocusedField('telegram')}
+                    onBlur={() => setFocusedField(null)}
+                    className="field-input"
+                    placeholder="username"
+                  />
+                </div>
               </div>
 
               <div className="form-field">

@@ -34,7 +34,7 @@ const tweets: Tweet[] = [
     id: "2",
     author: "conviccion",
     username: "convictionprtcl",
-    content: "https://migrate-chart.fun\n\n@Trenchooooor from @PayAINetwork community built it for free",
+    content: "@Trenchooooor from @PayAINetwork community built it for free",
     verified: false,
     url: "https://x.com/convictionprtcl/status/1996306917002527115",
     avatar: "https://pbs.twimg.com/profile_images/1920978398458826752/p1aB9OWu_400x400.jpg",
@@ -52,10 +52,64 @@ const tweets: Tweet[] = [
     id: "4",
     author: "ZERA",
     username: "ZeraLabs",
-    content: "Between moving LP to @MeteoraAG and migrating #M0N3Y → $ZERA earlier, the legacy and complete historical chart was lost.\n\nBut thankfully our awesome community stepped up: @Trenchooooor have assembled a web app for a complete journey-wide price view.\n\nWe appreciate the initiative and our community's support toward privacy for everyone! 🙏\n\nCheck it out: https://zera-chart.vercel.app",
+    content: "Between moving LP to @MeteoraAG and migrating #M0N3Y → $ZERA earlier, the legacy and complete historical chart was lost.\n\nBut thankfully our awesome community stepped up: @Trenchooooor have assembled a web app for a complete journey-wide price view.\n\nWe appreciate the initiative and our community's support toward privacy for everyone! 🙏",
     verified: true,
     url: "https://x.com/ZeraLabs/status/1987243484089032773",
     avatar: "https://pbs.twimg.com/profile_images/1956178690649296901/6DmEWifl_400x400.jpg",
+  },
+  {
+    id: "5",
+    author: "crispy",
+    username: "crispyycrispyy",
+    content: "ah clean, i hate the post migration charts",
+    verified: false,
+    url: "https://x.com/crispyycrispyy/status/1995494794270036349",
+    avatar: "https://pbs.twimg.com/profile_images/1987153960978030597/ibFUuv_W_400x400.jpg",
+  },
+  {
+    id: "6",
+    author: "DoKwonMike (zera mode)",
+    username: "DoKwonMike",
+    content: "Let's go!! ZERA HQ on the way!!\n\nYou are not ready!! 🚀\n\n$ZERA",
+    verified: false,
+    url: "https://x.com/DoKwonMike/status/1990796842096079047",
+    avatar: "https://pbs.twimg.com/profile_images/1997397822191095808/N3D6LDS0_400x400.jpg",
+  },
+  {
+    id: "7",
+    author: "Costco Pizza",
+    username: "MOON_BAGS69",
+    content: "For the uninitiated, there's much more to the lore behind Zera. Here's the full chart for starters",
+    verified: false,
+    url: "https://x.com/MOON_BAGS69/status/1993641428308890024",
+    avatar: "https://pbs.twimg.com/profile_images/1954860793733738496/F6ZYyXgo_400x400.jpg",
+  },
+  {
+    id: "9",
+    author: "TMXX",
+    username: "tomaki_x",
+    content: "$ZERA CHART",
+    verified: false,
+    url: "https://x.com/tomaki_x/status/1993582284297933023",
+    avatar: "https://pbs.twimg.com/profile_images/1982696850541998080/TDBKce7__400x400.jpg",
+  },
+  {
+    id: "10",
+    author: "beatingthemarket",
+    username: "beatingthemarkt",
+    content: "BEST ZERA CHART",
+    verified: false,
+    url: "https://x.com/beatingthemarkt/status/1992091025033375868",
+    avatar: "https://pbs.twimg.com/profile_images/1550446064729083904/r0ruSt-y_400x400.png",
+  },
+  {
+    id: "11",
+    author: "Papi",
+    username: "PapiSOLnasty",
+    content: "Yo fam, zera chart is fire! I love it.",
+    verified: false,
+    url: "https://x.com/PapiSOLnasty/status/1991539567149887579",
+    avatar: "https://pbs.twimg.com/profile_images/1892260322641059840/A8emxARN_400x400.jpg",
   },
 ]
 
@@ -70,11 +124,8 @@ function TweetCard({ tweet }: { tweet: Tweet }) {
       transition={{ duration: 0.5 }}
       className="relative group h-full block"
     >
-      {/* Terminal-style border with glow */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[var(--primary)]/20 via-transparent to-[var(--accent)]/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl pointer-events-none" />
-
       {/* Main card - clickable area */}
-      <div className="relative bg-transparent border border-[var(--border)] hover:border-[var(--primary)]/40 rounded-xl p-6 h-full transition-all duration-300 backdrop-blur-sm overflow-hidden cursor-pointer">
+      <div className="relative bg-transparent border border-[var(--border)] hover:border-[var(--primary)]/40 rounded-xl p-6 h-full transition-colors duration-300 backdrop-blur-sm overflow-hidden cursor-pointer">
         {/* Scan line effect */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[var(--primary)]/30 to-transparent animate-scan-line" />
@@ -87,7 +138,7 @@ function TweetCard({ tweet }: { tweet: Tweet }) {
         }} />
 
         {/* Header */}
-        <div className="flex items-start gap-3 mb-4 relative z-10">
+        <div className="flex items-center justify-center gap-3 mb-4 relative z-10">
           {/* Avatar with glow */}
           <div className="relative flex-shrink-0">
             <div className="w-12 h-12 rounded-full border-2 border-[var(--primary)]/30 overflow-hidden">
@@ -110,14 +161,14 @@ function TweetCard({ tweet }: { tweet: Tweet }) {
           </div>
 
           {/* Author info */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5 flex-wrap">
+          <div className="flex-1 min-w-0 text-center">
+            <div className="flex items-center justify-center gap-1.5 flex-wrap">
               <span className="font-semibold text-[var(--text)] truncate" style={{ fontFamily: "'Syne', sans-serif" }}>{tweet.author}</span>
               {tweet.verified && (
                 <BadgeCheck className="w-4 h-4 text-[var(--accent)] fill-[var(--accent)]/20 flex-shrink-0" />
               )}
             </div>
-            <div className="flex items-center gap-2 text-[var(--text-muted)] text-sm font-mono">
+            <div className="flex items-center justify-center gap-2 text-[var(--text-muted)] text-sm font-mono">
               <span className="truncate">@{tweet.username}</span>
             </div>
           </div>
@@ -131,14 +182,11 @@ function TweetCard({ tweet }: { tweet: Tweet }) {
         </div>
 
         {/* Content */}
-        <div className="relative z-10">
+        <div className="relative z-10 text-center">
           <p className="text-[var(--text-secondary)] leading-relaxed whitespace-pre-wrap text-[15px] font-mono">
             {tweet.content}
           </p>
         </div>
-
-        {/* Corner accent */}
-        <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-[var(--primary)]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
       </div>
     </motion.a>
   )
@@ -186,10 +234,10 @@ export default function TestimonialsCarousel() {
           >
             <div className="section-label">COMMUNITY VOICES</div>
             <h2 className="section-title">
-              What Builders Say
+              What The Community Is Saying
             </h2>
             <p className="section-description">
-              Real Feedback From Projects Using Complete Migration History.
+              Real Feedback From Holders Using The Platform.
             </p>
           </motion.div>
         </div>
@@ -211,8 +259,8 @@ export default function TestimonialsCarousel() {
             className="w-full"
           >
             <CarouselContent className="-ml-4">
-              {[...tweets, ...tweets].map((tweet, index) => (
-                <CarouselItem key={`${tweet.id}-${index}`} className="pl-4 md:basis-1/2 lg:basis-1/3">
+              {tweets.map((tweet, index) => (
+                <CarouselItem key={tweet.id} className="pl-4 md:basis-1/2 lg:basis-1/3">
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -226,10 +274,6 @@ export default function TestimonialsCarousel() {
               ))}
             </CarouselContent>
           </Carousel>
-
-          {/* Subtle glow effects on sides */}
-          <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-32 h-32 bg-[var(--primary)]/10 blur-[80px] pointer-events-none" />
-          <div className="absolute -right-4 top-1/2 -translate-y-1/2 w-32 h-32 bg-[var(--accent)]/10 blur-[80px] pointer-events-none" />
         </motion.div>
       </div>
     </section>
