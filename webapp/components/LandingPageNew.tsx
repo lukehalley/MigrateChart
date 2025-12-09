@@ -44,13 +44,15 @@ export default function LandingPageNew() {
   return (
     <div className={`landing ${mounted ? 'mounted' : ''}`} suppressHydrationWarning>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap');
 
         .landing {
           --primary: #52C97D;
+          --primary-light: #7ADFA0;
           --primary-dark: #3FAA66;
           --primary-darker: #2D7A4A;
           --accent: #D4A853;
+          --accent-light: #E8C17A;
           --accent-dark: #B8913D;
           --bg: #000000;
           --bg-subtle: #030303;
@@ -61,41 +63,51 @@ export default function LandingPageNew() {
           --text-muted: rgba(255, 255, 255, 0.4);
           --border: rgba(82, 201, 125, 0.15);
           --border-accent: rgba(212, 168, 83, 0.15);
+          --glow-primary: rgba(82, 201, 125, 0.4);
+          --glow-accent: rgba(212, 168, 83, 0.3);
 
-          min-height: 100vh; /* Fallback for browsers without dvh support */
+          min-height: 100vh;
           min-height: 100dvh;
           background:
-            /* Terminal character grid - more visible */
+            /* Subtle grid overlay */
             repeating-linear-gradient(
               0deg,
               transparent,
-              transparent 2px,
-              rgba(82, 201, 125, 0.06) 2px,
-              rgba(82, 201, 125, 0.06) 3px
+              transparent 1px,
+              rgba(82, 201, 125, 0.03) 1px,
+              rgba(82, 201, 125, 0.03) 2px
             ),
             repeating-linear-gradient(
               90deg,
               transparent,
-              transparent 2px,
-              rgba(82, 201, 125, 0.04) 2px,
-              rgba(82, 201, 125, 0.04) 3px
+              transparent 1px,
+              rgba(82, 201, 125, 0.02) 1px,
+              rgba(82, 201, 125, 0.02) 2px
             ),
-            /* Radial accent gradients */
+            /* Primary ambient glow - top center */
             radial-gradient(
-              ellipse 120% 80% at 50% 20%,
-              rgba(82, 201, 125, 0.08) 0%,
+              ellipse 100% 60% at 50% 0%,
+              rgba(82, 201, 125, 0.12) 0%,
+              rgba(82, 201, 125, 0.04) 30%,
+              transparent 60%
+            ),
+            /* Secondary accent glow - bottom right */
+            radial-gradient(
+              ellipse 80% 50% at 85% 100%,
+              rgba(212, 168, 83, 0.08) 0%,
               transparent 50%
             ),
+            /* Tertiary subtle glow - left side */
             radial-gradient(
-              ellipse 100% 70% at 80% 80%,
-              rgba(212, 168, 83, 0.05) 0%,
+              ellipse 50% 80% at 0% 60%,
+              rgba(82, 201, 125, 0.04) 0%,
               transparent 50%
             ),
-            /* Noise texture for terminal feel */
-            url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E"),
-            /* Base color */
-            #000000;
-          background-size: 3px 3px, 3px 3px, 100% 100%, 100% 100%, 200px 200px, 100% 100%;
+            /* Fine noise texture */
+            url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E"),
+            /* Deep black base */
+            linear-gradient(180deg, #000000 0%, #020202 50%, #000000 100%);
+          background-size: 2px 2px, 2px 2px, 100% 100%, 100% 100%, 100% 100%, 256px 256px, 100% 100%;
           background-attachment: fixed;
           color: var(--text);
           font-family: 'JetBrains Mono', monospace;
@@ -103,7 +115,7 @@ export default function LandingPageNew() {
           position: relative;
         }
 
-        /* CRT scanline effect - more visible */
+        /* Refined scanline effect - subtle and elegant */
         .landing.mounted::before {
           content: '';
           position: fixed;
@@ -111,28 +123,29 @@ export default function LandingPageNew() {
           background:
             repeating-linear-gradient(
               0deg,
-              rgba(0, 0, 0, 0.3),
-              rgba(0, 0, 0, 0.3) 1px,
-              transparent 1px,
-              transparent 3px
-            ),
-            repeating-linear-gradient(
-              0deg,
               transparent,
-              transparent 6px,
-              rgba(82, 201, 125, 0.03) 6px,
-              rgba(82, 201, 125, 0.03) 7px
+              transparent 2px,
+              rgba(0, 0, 0, 0.15) 2px,
+              rgba(0, 0, 0, 0.15) 3px
             );
-          background-size: 100% 3px, 100% 7px;
+          background-size: 100% 3px;
           pointer-events: none;
           z-index: 1;
-          opacity: 1;
-          /* animation: scanline 12s linear infinite; */
+          opacity: 0.6;
         }
 
-        @keyframes scanline {
-          0% { transform: translateY(0); }
-          100% { transform: translateY(7px); }
+        /* Section divider gradient */
+        .section-divider {
+          width: min(600px, 60%);
+          height: 1px;
+          background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(82, 201, 125, 0.15) 20%,
+            rgba(212, 168, 83, 0.1) 50%,
+            rgba(82, 201, 125, 0.15) 80%,
+            transparent 100%
+          );
+          margin: 0 auto;
         }
 
         @keyframes pulse-cta {
@@ -163,7 +176,7 @@ export default function LandingPageNew() {
 
         /* Hero Section */
         .hero {
-          min-height: 100vh; /* Fallback */
+          min-height: 100vh;
           min-height: 100dvh;
           display: flex;
           flex-direction: column;
@@ -175,51 +188,146 @@ export default function LandingPageNew() {
         }
 
         .hero-content {
-          max-width: 1000px;
+          max-width: 1100px;
           text-align: center;
           position: relative;
           z-index: 3;
         }
 
+        /* Floating ambient orbs */
+        .hero-ambient {
+          position: absolute;
+          border-radius: 50%;
+          filter: blur(80px);
+          pointer-events: none;
+          opacity: 0;
+          animation: floatIn 2s ease-out forwards;
+        }
+
+        .hero-ambient-1 {
+          width: 500px;
+          height: 500px;
+          background: radial-gradient(circle, rgba(82, 201, 125, 0.15) 0%, transparent 70%);
+          top: 10%;
+          left: -10%;
+          animation-delay: 0.2s;
+        }
+
+        .hero-ambient-2 {
+          width: 400px;
+          height: 400px;
+          background: radial-gradient(circle, rgba(212, 168, 83, 0.1) 0%, transparent 70%);
+          bottom: 10%;
+          right: -5%;
+          animation-delay: 0.4s;
+        }
+
+        .hero-ambient-3 {
+          width: 300px;
+          height: 300px;
+          background: radial-gradient(circle, rgba(82, 201, 125, 0.08) 0%, transparent 70%);
+          top: 50%;
+          right: 20%;
+          animation-delay: 0.6s;
+        }
+
+        @keyframes floatIn {
+          0% {
+            opacity: 0;
+            transform: scale(0.8) translateY(20px);
+          }
+          100% {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
+        }
+
+        .hero-eyebrow {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.75rem;
+          padding: 0.6rem 1.25rem;
+          background: rgba(82, 201, 125, 0.08);
+          border: 1px solid rgba(82, 201, 125, 0.2);
+          border-radius: 100px;
+          font-size: 0.7rem;
+          font-weight: 600;
+          color: var(--primary);
+          letter-spacing: 0.15em;
+          text-transform: uppercase;
+          margin-bottom: 2rem;
+          backdrop-filter: blur(10px);
+        }
+
+        .hero-eyebrow::before {
+          content: '';
+          width: 6px;
+          height: 6px;
+          background: var(--primary);
+          border-radius: 50%;
+          animation: pulse-dot 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-dot {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
         .hero-title {
           font-family: 'Syne', sans-serif;
-          font-size: clamp(3rem, 10vw, 7rem);
+          font-size: clamp(2.8rem, 9vw, 6.5rem);
           font-weight: 800;
           line-height: 0.95;
-          letter-spacing: -0.04em;
-          margin-bottom: 2rem;
-          background: linear-gradient(180deg, #ffffff 0%, rgba(255, 255, 255, 0.6) 100%);
+          letter-spacing: -0.03em;
+          margin-bottom: 1.5rem;
+          background: linear-gradient(180deg,
+            #ffffff 0%,
+            rgba(255, 255, 255, 0.9) 40%,
+            rgba(255, 255, 255, 0.7) 100%
+          );
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           background-clip: text;
+          text-shadow: 0 0 80px rgba(82, 201, 125, 0.15);
         }
 
         .hero-highlight {
           position: relative;
           display: inline-block;
+          background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 50%, var(--accent) 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
         }
 
         .hero-highlight::after {
           content: '';
           position: absolute;
-          bottom: 0.1em;
+          bottom: 0.05em;
           left: 0;
           right: 0;
-          height: 0.15em;
+          height: 0.08em;
           background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
-          opacity: 0.6;
-          filter: blur(4px);
+          opacity: 0.5;
+          filter: blur(2px);
+          border-radius: 2px;
         }
 
         .hero-subtitle {
-          font-size: clamp(1rem, 2.5vw, 1.5rem);
-          font-weight: 300;
+          font-size: clamp(1rem, 2.2vw, 1.35rem);
+          font-weight: 400;
           color: var(--text-secondary);
-          margin-bottom: 3rem;
-          max-width: 700px;
+          margin-bottom: 2.5rem;
+          max-width: 650px;
           margin-left: auto;
           margin-right: auto;
-          line-height: 1.6;
+          line-height: 1.7;
+          letter-spacing: 0.01em;
+        }
+
+        .hero-subtitle strong {
+          color: var(--text);
+          font-weight: 500;
         }
 
         .hero-cta {
@@ -247,17 +355,31 @@ export default function LandingPageNew() {
           display: inline-flex;
           align-items: center;
           gap: 0.75rem;
-          padding: 1.25rem 2rem;
-          font-size: 0.9rem;
-          font-weight: 500;
-          letter-spacing: 0.02em;
+          padding: 1rem 1.75rem;
+          font-size: 0.85rem;
+          font-weight: 600;
+          letter-spacing: 0.03em;
           text-decoration: none;
-          border-radius: 6px;
+          border-radius: 8px;
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           position: relative;
           overflow: hidden;
           cursor: pointer;
           font-family: 'JetBrains Mono', monospace;
+          text-transform: uppercase;
+        }
+
+        .btn::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%);
+          opacity: 0;
+          transition: opacity 0.3s ease;
+        }
+
+        .btn:hover::before {
+          opacity: 1;
         }
 
         .hero-cta .btn-primary {
@@ -273,43 +395,53 @@ export default function LandingPageNew() {
         }
 
         .btn-primary {
-          background: var(--primary);
+          background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
           color: #000000;
-          border: 2px solid var(--primary);
-          box-shadow: 0 0 30px rgba(82, 201, 125, 0.4);
-          animation: pulse-cta 1.5s ease-in-out infinite;
+          border: none;
+          box-shadow:
+            0 0 30px rgba(82, 201, 125, 0.4),
+            0 4px 20px rgba(0, 0, 0, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+          animation: pulse-cta 2s ease-in-out infinite;
         }
 
         .btn-primary:hover {
-          background: var(--primary-dark);
-          box-shadow: 0 0 50px rgba(82, 201, 125, 0.5);
-          transform: translateY(-2px);
+          background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+          box-shadow:
+            0 0 50px rgba(82, 201, 125, 0.5),
+            0 8px 30px rgba(0, 0, 0, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.3);
+          transform: translateY(-3px);
           animation-play-state: paused;
         }
 
         .btn-secondary {
-          background: transparent;
+          background: rgba(0, 0, 0, 0.5);
           color: var(--text);
-          border: 2px solid var(--border);
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          backdrop-filter: blur(10px);
         }
 
         .btn-secondary:hover {
           border-color: var(--primary);
           color: var(--primary);
-          box-shadow: 0 0 20px rgba(82, 201, 125, 0.2);
+          box-shadow: 0 0 25px rgba(82, 201, 125, 0.25);
+          background: rgba(82, 201, 125, 0.05);
         }
 
         .btn.hero-cta-desktop {
-          background: #000000;
+          background: rgba(0, 0, 0, 0.7);
           color: var(--primary);
-          border: 2px solid var(--primary);
-          box-shadow: 0 0 20px rgba(82, 201, 125, 0.2);
+          border: 1px solid rgba(82, 201, 125, 0.4);
+          box-shadow: 0 0 20px rgba(82, 201, 125, 0.15);
+          backdrop-filter: blur(10px);
         }
 
         .btn.hero-cta-desktop:hover {
-          background: #000000;
-          color: var(--primary);
-          box-shadow: 0 0 30px rgba(82, 201, 125, 0.6);
+          background: rgba(82, 201, 125, 0.1);
+          color: var(--primary-light);
+          border-color: var(--primary);
+          box-shadow: 0 0 35px rgba(82, 201, 125, 0.4);
         }
 
         /* Scroll Down Indicator */
@@ -553,45 +685,132 @@ export default function LandingPageNew() {
 
         /* CTA Section */
         .cta-section {
-          padding: 10rem 2rem;
+          padding: 8rem 2rem 10rem;
           text-align: center;
           position: relative;
           background: transparent;
         }
 
-        .cta-content {
+        .cta-section::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 80%;
           max-width: 800px;
+          height: 1px;
+          background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(82, 201, 125, 0.3) 30%,
+            rgba(212, 168, 83, 0.2) 50%,
+            rgba(82, 201, 125, 0.3) 70%,
+            transparent 100%
+          );
+        }
+
+        .cta-content {
+          max-width: 900px;
           margin: 0 auto;
-          padding: 4rem;
-          background: transparent;
-          border: 1px solid var(--border);
-          border-radius: 16px;
-          box-shadow: 0 0 80px rgba(82, 201, 125, 0.1);
+          padding: 5rem 4rem;
+          background:
+            radial-gradient(ellipse 100% 100% at 50% 0%, rgba(82, 201, 125, 0.08) 0%, transparent 50%),
+            rgba(0, 0, 0, 0.4);
+          border: 1px solid rgba(82, 201, 125, 0.15);
+          border-radius: 24px;
+          box-shadow:
+            0 0 100px rgba(82, 201, 125, 0.08),
+            0 25px 50px rgba(0, 0, 0, 0.5),
+            inset 0 1px 0 rgba(255, 255, 255, 0.05);
+          backdrop-filter: blur(20px);
+          position: relative;
+          overflow: hidden;
+        }
+
+        .cta-content::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 1px;
+          background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(82, 201, 125, 0.5) 50%,
+            transparent 100%
+          );
+        }
+
+        .cta-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.5rem 1rem;
+          background: rgba(212, 168, 83, 0.1);
+          border: 1px solid rgba(212, 168, 83, 0.25);
+          border-radius: 100px;
+          font-size: 0.65rem;
+          font-weight: 600;
+          color: var(--accent);
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          margin-bottom: 1.5rem;
         }
 
         .cta-title {
           font-family: 'Syne', sans-serif;
-          font-size: clamp(2rem, 4vw, 3rem);
+          font-size: clamp(1.8rem, 4vw, 2.75rem);
           font-weight: 700;
-          margin-bottom: 1.5rem;
-          background: linear-gradient(135deg, var(--primary), var(--accent));
+          margin-bottom: 1.25rem;
+          line-height: 1.15;
+          background: linear-gradient(180deg,
+            #ffffff 0%,
+            rgba(255, 255, 255, 0.85) 100%
+          );
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+
+        .cta-title-highlight {
+          background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           background-clip: text;
         }
 
         .cta-description {
-          font-size: 1.1rem;
+          font-size: 1.05rem;
           color: var(--text-secondary);
           margin-bottom: 2.5rem;
-          line-height: 1.7;
+          line-height: 1.75;
+          max-width: 600px;
+          margin-left: auto;
+          margin-right: auto;
         }
 
         /* Footer */
         .footer {
-          padding: 4rem 2rem;
+          padding: 3rem 2rem 4rem;
           text-align: center;
           background: transparent;
+          position: relative;
+        }
+
+        .footer::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 60%;
+          max-width: 600px;
+          height: 1px;
+          background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.08) 50%,
+            transparent 100%
+          );
         }
 
         .footer-content {
@@ -605,7 +824,9 @@ export default function LandingPageNew() {
         }
 
         .footer-logo-link {
-          display: inline-block;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.75rem;
           text-decoration: none;
           transition: all 0.3s ease;
         }
@@ -615,32 +836,64 @@ export default function LandingPageNew() {
         }
 
         .footer-logo-svg {
-          width: 40px;
-          height: 40px;
+          width: 36px;
+          height: 36px;
           color: var(--primary);
-          filter: drop-shadow(0 0 8px rgba(82, 201, 125, 0.5));
+          filter: drop-shadow(0 0 6px rgba(82, 201, 125, 0.4));
           transition: all 0.3s ease;
         }
 
         .footer-logo-link:hover .footer-logo-svg {
-          filter: drop-shadow(0 0 15px rgba(82, 201, 125, 0.7));
+          filter: drop-shadow(0 0 12px rgba(82, 201, 125, 0.6));
+        }
+
+        .footer-brand-text {
+          font-family: 'Syne', sans-serif;
+          font-size: 0.9rem;
+          font-weight: 600;
+          color: var(--text-muted);
+          letter-spacing: 0.05em;
         }
 
         .footer-links {
           display: flex;
-          gap: 2rem;
+          gap: 2.5rem;
           flex-wrap: wrap;
         }
 
         .footer-link {
-          font-size: 0.85rem;
+          font-size: 0.8rem;
           color: var(--text-muted);
           text-decoration: none;
-          transition: color 0.2s ease;
+          transition: all 0.2s ease;
+          letter-spacing: 0.02em;
+          position: relative;
+        }
+
+        .footer-link::after {
+          content: '';
+          position: absolute;
+          bottom: -4px;
+          left: 0;
+          width: 0;
+          height: 1px;
+          background: var(--primary);
+          transition: width 0.2s ease;
         }
 
         .footer-link:hover {
           color: var(--primary);
+        }
+
+        .footer-link:hover::after {
+          width: 100%;
+        }
+
+        .footer-copyright {
+          font-size: 0.7rem;
+          color: var(--text-muted);
+          opacity: 0.6;
+          letter-spacing: 0.05em;
         }
 
         /* Responsive */
@@ -710,27 +963,36 @@ export default function LandingPageNew() {
         {/* Animated Candlestick Chart Background */}
         {mounted && <AnimatedCandlestickBackground />}
 
-        {/* Glowing Orb Effect */}
+        {/* Floating Ambient Orbs */}
+        {mounted && (
+          <>
+            <div className="hero-ambient hero-ambient-1" />
+            <div className="hero-ambient hero-ambient-2" />
+            <div className="hero-ambient hero-ambient-3" />
+          </>
+        )}
+
+        {/* Animated Glowing Orb */}
         {mounted && (
           <motion.div
             style={{
               position: "absolute",
-              top: "30%",
-              right: "10%",
-              width: "400px",
-              height: "400px",
+              top: "25%",
+              right: "15%",
+              width: "350px",
+              height: "350px",
               background:
-                "radial-gradient(circle, rgba(82, 201, 125, 0.1) 0%, transparent 70%)",
+                "radial-gradient(circle, rgba(82, 201, 125, 0.12) 0%, transparent 70%)",
               borderRadius: "50%",
-              filter: "blur(60px)",
+              filter: "blur(50px)",
               pointerEvents: "none",
             }}
             animate={{
-              scale: [1, 1.3, 1],
-              opacity: [0.3, 0.6, 0.3],
+              scale: [1, 1.2, 1],
+              opacity: [0.4, 0.7, 0.4],
             }}
             transition={{
-              duration: 10,
+              duration: 8,
               repeat: Infinity,
               ease: "easeInOut",
             }}
@@ -749,7 +1011,7 @@ export default function LandingPageNew() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
           >
-            Complete Price History.{" "}
+            Complete price history.
           </motion.h1>
 
           <motion.p
@@ -758,7 +1020,7 @@ export default function LandingPageNew() {
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 0.4 }}
           >
-            One Continuous Chart Across All Pool Migrations. No More Missing Price Data.
+            One continuous chart across <strong>all pool migrations</strong>. No more missing price data.
           </motion.p>
 
           <motion.div
@@ -806,37 +1068,46 @@ export default function LandingPageNew() {
       {/* Desktop-only sections - on mobile, these are separate pages */}
       <div className="desktop-sections">
       <ProblemSectionShared />
+      <div className="section-divider" />
       <SolutionSectionShared />
+      <div className="section-divider" />
 
       {/* Metrics Tracking Section */}
       <MetricsTrackingSection />
+      <div className="section-divider" />
 
       {/* Projects Showcase */}
       <ProjectsSectionShared />
-
+      <div className="section-divider" />
 
       {/* Testimonials Section */}
       <TestimonialsCarousel />
+      <div className="section-divider" />
 
       {/* Pricing Section */}
       <PricingSection />
+      <div className="section-divider" />
 
       {/* CTA Section */}
       <section id="contact" className="cta-section">
         <motion.div
           className="cta-content"
-          style={{ opacity: 0, y: 40, scale: 0.95 }}
+          style={{ opacity: 0, y: 40, scale: 0.98 }}
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
         >
-          <h2 className="cta-title">Don't Let Another Day Go By With Incomplete Charts</h2>
+          <div className="cta-badge">Ready to fix your charts?</div>
+          <h2 className="cta-title">
+            Don't let another day go by<br />
+            with <span className="cta-title-highlight">incomplete charts</span>
+          </h2>
           <p className="cta-description">
-            Your community deserves to see the full story. Every day with a reset chart is another day potential investors question your legitimacy. Show them the complete journey—from launch to today—and prove your project's staying power.
+            Your community deserves to see the full story. Show them the complete journey—from launch to today—and prove your project's staying power.
           </p>
           <Link href="/contact" className="btn btn-primary">
-            Contact Us
-            <ArrowRight size={20} strokeWidth={2.5} />
+            Get Started
+            <ArrowRight size={18} strokeWidth={2.5} />
           </Link>
         </motion.div>
       </section>
@@ -859,6 +1130,7 @@ export default function LandingPageNew() {
               <path fill="currentColor" d="M290.446106,290.423218 C290.253357,289.345978 289.834564,288.244904 289.832825,287.143219 C289.795258,263.321381 289.801147,239.499527 289.815552,215.677673 C289.816132,214.720184 289.982727,213.762787 290.090454,212.607132 C315.730774,212.607132 341.153046,212.607132 366.859802,212.607132 C366.859802,238.324921 366.859802,263.892670 366.859802,290.047455 C341.672607,290.047455 316.414978,290.047455 290.760803,290.192200 C290.364258,290.336945 290.414307,290.399109 290.446106,290.423218z"/>
               <path fill="currentColor" d="M445.290466,302.007385 C445.290466,323.963470 445.290466,345.421448 445.290466,367.245850 C419.480499,367.245850 393.966675,367.245850 368.177490,367.245850 C368.177490,341.667480 368.177490,316.112549 368.177490,290.260376 C393.644684,290.260376 419.183838,290.260376 445.290466,290.260376 C445.290466,293.993011 445.290466,297.751160 445.290466,302.007385z"/>
             </svg>
+            <span className="footer-brand-text">MIGRATE CHART</span>
           </Link>
           <div className="footer-links">
             <Link href="/" className="footer-link">
@@ -878,6 +1150,9 @@ export default function LandingPageNew() {
             >
               Twitter
             </a>
+          </div>
+          <div className="footer-copyright">
+            {new Date().getFullYear()} Migrate Chart
           </div>
         </div>
       </footer>
