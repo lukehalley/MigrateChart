@@ -276,14 +276,14 @@ function HolderTrackingViz({ isAnimating }: { isAnimating: boolean }) {
     if (!isAnimating) return;
     const interval = setInterval(() => {
       setCurrentFrame(prev => (prev + 1) % timeframes.length);
-    }, 1600);
+    }, 2800);
     return () => clearInterval(interval);
   }, [isAnimating]);
 
   const frame = timeframes[currentFrame];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '180px', justifyContent: 'center', padding: '0 2rem', gap: '1.5rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '220px', justifyContent: 'center', padding: '1rem 2rem', gap: '1.75rem' }}>
       {/* Timeframes at top */}
       <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
         {timeframes.map((tf, i) => (
@@ -346,7 +346,7 @@ function HolderTrackingViz({ isAnimating }: { isAnimating: boolean }) {
         </div>
 
         {/* Vertical divider */}
-        <div style={{ width: '1px', height: '80px', background: 'rgba(255, 255, 255, 0.08)' }} />
+        <div style={{ width: '1px', height: '80px', background: 'rgba(255, 255, 255, 0.08)', margin: '0 1.5rem' }} />
 
         {/* Right side - Change */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
@@ -929,7 +929,7 @@ const styles = `
     }
   }
   .viz-container {
-    height: 180px;
+    height: 220px;
     position: relative;
     background: rgba(0, 0, 0, 0.4);
     border-radius: 12px;
@@ -941,7 +941,7 @@ const styles = `
   }
   @media (max-width: 540px) {
     .viz-container {
-      height: 160px;
+      height: 200px;
       border-radius: 10px;
     }
   }
