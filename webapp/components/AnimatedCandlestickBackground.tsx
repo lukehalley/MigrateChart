@@ -567,7 +567,7 @@ export function AnimatedCandlestickBackground() {
         </AnimatePresence>
       </svg>
 
-      {/* Separate SVG for migration lines (higher opacity) */}
+      {/* Separate SVG for migration lines */}
       <svg
         style={{
           position: 'absolute',
@@ -575,7 +575,7 @@ export function AnimatedCandlestickBackground() {
           width: '100%',
           height: '100%',
           pointerEvents: 'none',
-          opacity: 0.7,
+          opacity: 0.45,
         }}
         viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}
         preserveAspectRatio="none"

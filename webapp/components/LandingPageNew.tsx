@@ -61,7 +61,8 @@ export default function LandingPageNew() {
           --border: rgba(82, 201, 125, 0.15);
           --border-accent: rgba(212, 168, 83, 0.15);
 
-          min-height: 100vh;
+          min-height: 100vh; /* Fallback for browsers without dvh support */
+          min-height: 100dvh;
           background:
             /* Terminal character grid - more visible */
             repeating-linear-gradient(
@@ -146,7 +147,8 @@ export default function LandingPageNew() {
 
         /* Hero Section */
         .hero {
-          min-height: 100vh;
+          min-height: 100vh; /* Fallback */
+          min-height: 100dvh;
           display: flex;
           flex-direction: column;
           align-items: center;
@@ -590,10 +592,9 @@ export default function LandingPageNew() {
           }
 
           .hero {
-            /* Use dynamic viewport height for better mobile support */
-            min-height: 100dvh;
-            /* Fallback for browsers that don't support dvh */
+            /* Fallback, then dvh override */
             min-height: 100vh;
+            min-height: 100dvh;
             /* Account for fixed navbar height (~72px) */
             padding-top: 80px;
             padding-bottom: 2rem;
@@ -610,20 +611,6 @@ export default function LandingPageNew() {
 
           .footer {
             display: none;
-          }
-
-          /* Alternative approach using small viewport height for more predictable behavior */
-          @supports (min-height: 100svh) {
-            .hero {
-              min-height: 100svh;
-            }
-          }
-
-          /* Override with dynamic viewport if supported and preferred */
-          @supports (min-height: 100dvh) {
-            .hero {
-              min-height: 100dvh;
-            }
           }
 
           .features, .projects, .cta-section {
