@@ -114,7 +114,6 @@ export default function MobileSectionPage({ children, nextPage }: MobileSectionP
 
         .section-content {
           padding-top: 100px;
-          min-height: calc(100vh - 100px);
           position: relative;
           z-index: 2;
         }
