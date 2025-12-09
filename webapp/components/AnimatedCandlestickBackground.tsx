@@ -198,40 +198,46 @@ interface MigrationLineProps {
 
 /**
  * Migration line rendered inside SVG (can stretch without legibility issues)
+ * Uses a rect with mask for Safari compatibility (Safari has issues with gradient strokes on lines)
  */
 function MigrationLine({ marker, index }: MigrationLineProps) {
-  const lineColor = '#52C97D';
   const baseDelay = 1.5 + (index * 0.4);
-  const lineTop = 0;
-  const lineBottom = SVG_HEIGHT;
+  const lineWidth = 2;
+
+  // Use a unique gradient ID per marker to avoid conflicts
+  const gradientId = `migrationGradient-${index}`;
 
   return (
-    <motion.line
-      x1={marker.x}
-      x2={marker.x}
-      y1={lineTop}
-      y2={lineBottom}
-      stroke={lineColor}
-      strokeWidth={2}
-      strokeDasharray="8 4"
-      strokeOpacity={0.6}
-      strokeLinecap="square"
-      initial={{ opacity: 0, pathLength: 0 }}
-      animate={{ opacity: 1, pathLength: 1 }}
+    <motion.g
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
       transition={{
         opacity: {
-          duration: 0.4,
+          duration: 0.6,
           delay: baseDelay,
           ease: 'easeOut',
         },
-        pathLength: {
-          duration: 0.8,
-          delay: baseDelay,
-          ease: [0.22, 1, 0.36, 1],
-        },
       }}
-      filter="url(#migrationGlow)"
-    />
+    >
+      {/* Define gradient inline for this specific line */}
+      <defs>
+        <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#52C97D" stopOpacity="0" />
+          <stop offset="12%" stopColor="#52C97D" stopOpacity="1" />
+          <stop offset="88%" stopColor="#52C97D" stopOpacity="1" />
+          <stop offset="100%" stopColor="#52C97D" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      {/* Main line as rect with gradient fill - more cross-browser compatible */}
+      <rect
+        x={marker.x - lineWidth / 2}
+        y={0}
+        width={lineWidth}
+        height={SVG_HEIGHT}
+        fill={`url(#${gradientId})`}
+        style={{ filter: 'url(#migrationGlow)' }}
+      />
+    </motion.g>
   );
 }
 
@@ -252,8 +258,8 @@ function MigrationLabel({ marker, index }: Omit<MigrationLabelProps, 'isVisible'
   // Convert SVG coordinates to percentage for CSS positioning
   // marker.x is in SVG coords (0-1000), convert to percentage
   const leftPercent = (marker.x / SVG_WIDTH) * 100;
-  // Position label at ~18% from top (similar to original labelY calculation)
-  const topPercent = (VIEWPORT_TOP_PERCENT * 100) + 3;
+  // Position label below hero text area
+  const topPercent = 14;
 
   return (
     <motion.div
@@ -277,18 +283,18 @@ function MigrationLabel({ marker, index }: Omit<MigrationLabelProps, 'isVisible'
     >
       <div
         style={{
-          padding: '7px 12px',
-          background: '#000000',
-          border: `2px solid ${lineColor}`,
+          padding: '6px 10px',
+          background: 'rgba(0, 0, 0, 0.8)',
+          border: `1px solid ${lineColor}70`,
           borderRadius: '4px',
-          boxShadow: `0 0 15px ${lineColor}80, inset 0 0 10px ${lineColor}20`,
+          boxShadow: `0 0 12px ${lineColor}50`,
           whiteSpace: 'nowrap',
         }}
       >
         <span
           style={{
             color: lineColor,
-            fontSize: '12px',
+            fontSize: '11px',
             fontWeight: '600',
             fontFamily: 'JetBrains Mono, monospace',
             letterSpacing: '0.5px',
@@ -480,7 +486,7 @@ export function AnimatedCandlestickBackground() {
           <motion.div
             key={`${cycleKey}-labels`}
             initial={{ opacity: 0 }}
-            animate={{ opacity: 0.6 }}
+            animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{
               duration: EXIT_DURATION,
@@ -506,7 +512,7 @@ export function AnimatedCandlestickBackground() {
         )}
       </AnimatePresence>
 
-      {/* SVG for candlesticks and migration lines (these can stretch) */}
+      {/* SVG for candlesticks (lower opacity background) */}
       <svg
         style={{
           position: 'absolute',
@@ -534,14 +540,6 @@ export function AnimatedCandlestickBackground() {
               <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
-          <filter id="migrationGlow" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="6" result="coloredBlur" />
-            <feMerge>
-              <feMergeNode in="coloredBlur" />
-              <feMergeNode in="coloredBlur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
         </defs>
 
         <AnimatePresence mode="wait">
@@ -564,8 +562,48 @@ export function AnimatedCandlestickBackground() {
                   index={index}
                 />
               ))}
+            </motion.g>
+          )}
+        </AnimatePresence>
+      </svg>
 
-              {/* Render migration lines (inside SVG - lines can stretch) */}
+      {/* Separate SVG for migration lines (higher opacity) */}
+      <svg
+        style={{
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          pointerEvents: 'none',
+          opacity: 0.7,
+        }}
+        viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}
+        preserveAspectRatio="none"
+      >
+        <defs>
+          <filter id="migrationGlow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="6" result="coloredBlur" />
+            <feMerge>
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+
+        <AnimatePresence mode="wait">
+          {isVisible && (
+            <motion.g
+              key={`${cycleKey}-migrations`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{
+                duration: EXIT_DURATION,
+                ease: [0.4, 0, 0.2, 1]
+              }}
+            >
+              {/* Render migration lines */}
               {migrations.map((marker, index) => (
                 <MigrationLine
                   key={`${cycleKey}-migration-${index}`}
