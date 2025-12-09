@@ -8,6 +8,7 @@ import {
   BarChart3,
   Database,
   Zap,
+  ChevronDown,
 } from "lucide-react";
 import { AnimatedCandlestickBackground } from "./AnimatedCandlestickBackground";
 import PricingSection from "./PricingSection";
@@ -132,6 +133,21 @@ export default function LandingPageNew() {
         @keyframes scanline {
           0% { transform: translateY(0); }
           100% { transform: translateY(7px); }
+        }
+
+        @keyframes pulse-cta {
+          0% {
+            transform: scale(1);
+            box-shadow: 0 0 30px rgba(82, 201, 125, 0.5), 0 0 0 0 rgba(82, 201, 125, 0.8);
+          }
+          50% {
+            transform: scale(1.08);
+            box-shadow: 0 0 60px rgba(82, 201, 125, 1), 0 0 0 12px rgba(82, 201, 125, 0);
+          }
+          100% {
+            transform: scale(1);
+            box-shadow: 0 0 30px rgba(82, 201, 125, 0.5), 0 0 0 0 rgba(82, 201, 125, 0);
+          }
         }
 
         /* Film grain overlay */
@@ -260,13 +276,15 @@ export default function LandingPageNew() {
           background: var(--primary);
           color: #000000;
           border: 2px solid var(--primary);
-          box-shadow: 0 0 30px rgba(82, 201, 125, 0.3);
+          box-shadow: 0 0 30px rgba(82, 201, 125, 0.4);
+          animation: pulse-cta 1.5s ease-in-out infinite;
         }
 
         .btn-primary:hover {
           background: var(--primary-dark);
           box-shadow: 0 0 50px rgba(82, 201, 125, 0.5);
           transform: translateY(-2px);
+          animation-play-state: paused;
         }
 
         .btn-secondary {
@@ -279,6 +297,58 @@ export default function LandingPageNew() {
           border-color: var(--primary);
           color: var(--primary);
           box-shadow: 0 0 20px rgba(82, 201, 125, 0.2);
+        }
+
+        .btn.hero-cta-desktop {
+          background: #000000;
+          color: var(--primary);
+          border: 2px solid var(--primary);
+          box-shadow: 0 0 20px rgba(82, 201, 125, 0.2);
+        }
+
+        .btn.hero-cta-desktop:hover {
+          background: #000000;
+          color: var(--primary);
+          box-shadow: 0 0 30px rgba(82, 201, 125, 0.6);
+        }
+
+        /* Scroll Down Indicator */
+        .scroll-down-indicator {
+          position: absolute;
+          bottom: 2rem;
+          left: 0;
+          right: 0;
+          display: flex;
+          justify-content: center;
+          z-index: 10;
+          pointer-events: none;
+        }
+
+        .scroll-down-button {
+          background: rgba(0, 0, 0, 0.7);
+          border: 2px solid var(--primary);
+          border-radius: 50%;
+          color: var(--primary);
+          cursor: pointer;
+          transition: all 0.3s ease;
+          pointer-events: auto;
+          padding: 0.75rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 0 20px rgba(82, 201, 125, 0.4);
+          backdrop-filter: blur(8px);
+        }
+
+        .scroll-down-button:hover {
+          box-shadow: 0 0 30px rgba(82, 201, 125, 0.8);
+          transform: scale(1.1);
+        }
+
+        @media (max-width: 768px) {
+          .scroll-down-indicator {
+            display: none;
+          }
         }
 
         /* Features Section */
@@ -703,18 +773,34 @@ export default function LandingPageNew() {
               <ArrowRight size={20} strokeWidth={2.5} />
             </Link>
             {mounted && (
-              <>
-                <button onClick={() => scrollToSection("problem")} className="btn btn-secondary hero-cta-desktop">
-                  Learn More
-                </button>
-                <Link href="/why" className="btn btn-secondary hero-cta-mobile">
-                  Learn More
-                  <ArrowRight size={20} strokeWidth={2.5} />
-                </Link>
-              </>
+              <Link href="/why" className="btn btn-secondary hero-cta-mobile">
+                Learn More
+                <ArrowRight size={20} strokeWidth={2.5} />
+              </Link>
             )}
           </motion.div>
         </motion.div>
+
+        {/* Scroll Down Indicator - Desktop Only */}
+        {mounted && (
+          <div className="scroll-down-indicator">
+            <motion.button
+              className="scroll-down-button"
+              onClick={() => scrollToSection("problem")}
+              initial={{ opacity: 0 }}
+              animate={{
+                opacity: 1,
+                y: [0, 10, 0]
+              }}
+              transition={{
+                opacity: { duration: 1, delay: 1 },
+                y: { duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 1 }
+              }}
+            >
+              <ChevronDown size={32} strokeWidth={2} />
+            </motion.button>
+          </div>
+        )}
       </section>
 
       {/* Desktop-only sections - on mobile, these are separate pages */}

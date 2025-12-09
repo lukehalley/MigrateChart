@@ -109,6 +109,33 @@ export default function LandingNav() {
           }
         }
 
+        @keyframes pulse-cta {
+          0% {
+            transform: scale(1);
+          }
+          50% {
+            transform: scale(1.08);
+          }
+          100% {
+            transform: scale(1);
+          }
+        }
+
+        @keyframes ripple {
+          0% {
+            box-shadow: 0 0 0 0 rgba(82, 201, 125, 0.7),
+                        0 0 0 0 rgba(82, 201, 125, 0.7);
+          }
+          50% {
+            box-shadow: 0 0 0 10px rgba(82, 201, 125, 0),
+                        0 0 0 5px rgba(82, 201, 125, 0.3);
+          }
+          100% {
+            box-shadow: 0 0 0 20px rgba(82, 201, 125, 0),
+                        0 0 0 10px rgba(82, 201, 125, 0);
+          }
+        }
+
         .landing-nav.scrolled {
           backdrop-filter: blur(8px);
           border-bottom: 1px solid rgba(82, 201, 125, 0.1);
@@ -221,12 +248,14 @@ export default function LandingNav() {
           color: #000000;
           border: 2px solid var(--primary);
           font-weight: 600;
+          animation: pulse-cta 1.5s ease-in-out infinite, ripple 1.5s ease-out infinite;
         }
 
         .nav-link.primary:hover {
-          background: var(--primary-dark);
-          box-shadow: 0 0 20px rgba(82, 201, 125, 0.4);
+          background: var(--primary);
+          box-shadow: 0 0 30px rgba(82, 201, 125, 0.8), 0 0 50px rgba(82, 201, 125, 0.4);
           padding-left: 1.25rem;
+          animation-play-state: paused;
         }
 
         .nav-link.primary::before {
@@ -341,10 +370,13 @@ export default function LandingNav() {
           margin-top: 1rem;
           background: var(--primary);
           border-color: var(--primary);
+          animation: pulse-cta 1.5s ease-in-out infinite, ripple 1.5s ease-out infinite;
         }
 
         .mobile-nav .nav-link.primary:hover {
-          background: var(--primary-dark);
+          background: var(--primary);
+          box-shadow: 0 0 30px rgba(82, 201, 125, 0.8), 0 0 50px rgba(82, 201, 125, 0.4);
+          animation-play-state: paused;
         }
 
         @media (max-width: 768px) {
