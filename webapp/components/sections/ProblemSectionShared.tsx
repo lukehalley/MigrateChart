@@ -2,6 +2,23 @@
 
 import { motion } from "framer-motion";
 import { XCircle, AlertCircle, Clock } from "lucide-react";
+import { ReactNode } from "react";
+
+interface FeatureItem {
+  icon: ReactNode;
+  title: string;
+  description: string;
+}
+
+function FlowingFeatureCard({ feature, index }: { feature: FeatureItem; index: number }) {
+  return (
+    <div className="feature-card">
+      <div className="feature-icon">{feature.icon}</div>
+      <h3 className="feature-title">{feature.title}</h3>
+      <p className="feature-description">{feature.description}</p>
+    </div>
+  );
+}
 
 /**
  * Reusable Problem Section Component
@@ -12,6 +29,27 @@ import { XCircle, AlertCircle, Clock } from "lucide-react";
  * - This prevents double animation issues from viewport intersection retriggering
  */
 export default function ProblemSectionShared() {
+  const features: FeatureItem[] = [
+    {
+      icon: <XCircle size={24} />,
+      title: "Lose Credibility Instantly",
+      description:
+        "Your chart looks 3 days old. New investors think you just launched. Your proven track record? Gone.",
+    },
+    {
+      icon: <AlertCircle size={24} />,
+      title: "Investors Can't Compare",
+      description:
+        "Liquidity split across multiple pools. Different fee tiers. Fragmented volume data. Impossible to evaluate real performance.",
+    },
+    {
+      icon: <Clock size={24} />,
+      title: "Trust Gap Grows",
+      description:
+        "Fresh charts raise questions. Without historical data, you can't demonstrate your project's legitimacy and staying power.",
+    },
+  ];
+
   return (
     <section id="problem" className="features">
       <div className="features-container">
@@ -33,31 +71,8 @@ export default function ProblemSectionShared() {
         </div>
 
         <div className="features-grid">
-          {[
-            {
-              icon: <XCircle size={24} />,
-              title: "Lose Credibility Instantly",
-              description:
-                "Your chart looks 3 days old. New investors think you just launched. Your proven track record? Gone.",
-            },
-            {
-              icon: <AlertCircle size={24} />,
-              title: "Investors Can't Compare",
-              description:
-                "Liquidity split across multiple pools. Different fee tiers. Fragmented volume data. Impossible to evaluate real performance.",
-            },
-            {
-              icon: <Clock size={24} />,
-              title: "Trust Gap Grows",
-              description:
-                "Fresh charts raise questions. Without historical data, you can't demonstrate your project's legitimacy and staying power.",
-            },
-          ].map((feature, index) => (
-            <div key={index} className="feature-card">
-              <div className="feature-icon">{feature.icon}</div>
-              <h3 className="feature-title">{feature.title}</h3>
-              <p className="feature-description">{feature.description}</p>
-            </div>
+          {features.map((feature, index) => (
+            <FlowingFeatureCard key={index} feature={feature} index={index} />
           ))}
         </div>
       </div>

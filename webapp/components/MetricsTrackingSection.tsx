@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import {
   TrendingUp,
   Users,
@@ -12,6 +13,114 @@ import {
 } from "lucide-react";
 
 export default function MetricsTrackingSection() {
+  const [displayedIndex, setDisplayedIndex] = useState<number | null>(null);
+  const [prevIndex, setPrevIndex] = useState<number | null>(null);
+  const [targetIndex, setTargetIndex] = useState<number | null>(null);
+  const [direction, setDirection] = useState<"down" | "up">("down");
+  const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const sectionRef = useRef<HTMLElement>(null);
+  const animationRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Cascade animation effect - step through each item
+  useEffect(() => {
+    if (targetIndex === displayedIndex) return;
+
+    // Clear any existing animation
+    if (animationRef.current) {
+      clearTimeout(animationRef.current);
+    }
+
+    const stepToTarget = () => {
+      // Determine direction first, before changing index
+      const currentIdx = displayedIndex;
+      let newDirection: "down" | "up" = direction;
+      let nextIndex: number | null = currentIdx;
+
+      if (currentIdx === null && targetIndex !== null) {
+        newDirection = "down";
+        nextIndex = 0;
+      } else if (targetIndex === null) {
+        newDirection = "up";
+        nextIndex = currentIdx !== null && currentIdx > 0 ? currentIdx - 1 : null;
+      } else if (currentIdx === null) {
+        newDirection = "down";
+        nextIndex = 0;
+      } else if (currentIdx < targetIndex) {
+        newDirection = "down";
+        nextIndex = currentIdx + 1;
+      } else if (currentIdx > targetIndex) {
+        newDirection = "up";
+        nextIndex = currentIdx - 1;
+      }
+
+      // Set direction and previous index first
+      setDirection(newDirection);
+      setPrevIndex(currentIdx);
+
+      // Update index after a microtask to ensure CSS applies
+      requestAnimationFrame(() => {
+        setDisplayedIndex(nextIndex);
+        // Clear previous index after animation completes
+        setTimeout(() => setPrevIndex(null), 150);
+      });
+    };
+
+    // Step towards target with delay for cascade effect (match CSS transition duration)
+    animationRef.current = setTimeout(stepToTarget, 180);
+
+    return () => {
+      if (animationRef.current) {
+        clearTimeout(animationRef.current);
+      }
+    };
+  }, [targetIndex, displayedIndex]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!sectionRef.current) return;
+
+      const sectionRect = sectionRef.current.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+
+      // Only activate when section is in view
+      if (sectionRect.top > viewportHeight || sectionRect.bottom < 0) {
+        setTargetIndex(null);
+        return;
+      }
+
+      // Trigger line - where items become active when they cross it
+      const triggerLine = viewportHeight * 0.5;
+
+      // Find the last item that has crossed above the trigger line
+      let newTargetIndex: number | null = null;
+
+      for (let i = 0; i < itemRefs.current.length; i++) {
+        const ref = itemRefs.current[i];
+        if (!ref) continue;
+
+        const rect = ref.getBoundingClientRect();
+        const itemTop = rect.top;
+
+        // Item becomes active when its top crosses the trigger line
+        if (itemTop <= triggerLine) {
+          newTargetIndex = i;
+        }
+      }
+
+      // If we're at the very top of the section, activate first item
+      if (newTargetIndex === null && sectionRect.top <= viewportHeight * 0.7) {
+        newTargetIndex = 0;
+      }
+
+      setTargetIndex(newTargetIndex);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll(); // Initial check
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   const metrics = [
     {
       icon: <LineChart size={24} />,
@@ -58,7 +167,7 @@ export default function MetricsTrackingSection() {
   ];
 
   return (
-    <section id="metrics" className="metrics-section">
+    <section id="metrics" className="metrics-section" ref={sectionRef}>
       <style>{`
         .metrics-section {
           padding: 8rem 2rem;
@@ -90,7 +199,7 @@ export default function MetricsTrackingSection() {
           gap: 2rem;
           padding: 2rem;
           border-bottom: 1px solid rgba(82, 201, 125, 0.1);
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
           position: relative;
           opacity: 0;
           transform: translateX(-20px);
@@ -125,16 +234,39 @@ export default function MetricsTrackingSection() {
           width: 3px;
           background: linear-gradient(180deg, var(--primary), var(--accent));
           transform: scaleY(0);
-          transform-origin: top;
-          transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .metric-item:hover {
+        /* Direction-based transform origins for natural line animation */
+        /* Scrolling down: active enters from top, leaving exits to bottom */
+        .metric-item.dir-down.active::before {
+          transform-origin: top;
+          transform: scaleY(1);
+        }
+        .metric-item.dir-down.leaving::before {
+          transform-origin: bottom;
+        }
+
+        /* Scrolling up: active enters from bottom, leaving exits to top */
+        .metric-item.dir-up.active::before {
+          transform-origin: bottom;
+          transform: scaleY(1);
+        }
+        .metric-item.dir-up.leaving::before {
+          transform-origin: top;
+        }
+
+        .metric-item.has-active {
+          opacity: 0.35;
+        }
+
+        .metric-item.active {
           background: rgba(82, 201, 125, 0.03);
           padding-left: 2.5rem;
+          opacity: 1;
         }
 
-        .metric-item:hover::before {
+        .metric-item.active::before {
           transform: scaleY(1);
         }
 
@@ -151,7 +283,7 @@ export default function MetricsTrackingSection() {
           transition: all 0.3s ease;
         }
 
-        .metric-item:hover .metric-icon {
+        .metric-item.active .metric-icon {
           background: rgba(82, 201, 125, 0.2);
           box-shadow: 0 0 20px rgba(82, 201, 125, 0.3);
         }
@@ -255,7 +387,7 @@ export default function MetricsTrackingSection() {
             padding: 1.5rem;
           }
 
-          .metric-item:hover {
+          .metric-item.active {
             padding-left: 1.5rem;
           }
 
@@ -301,7 +433,11 @@ export default function MetricsTrackingSection() {
 
         <div className="metrics-list">
           {metrics.map((metric, index) => (
-            <div key={metric.title} className="metric-item">
+            <div
+              key={metric.title}
+              ref={(el) => { itemRefs.current[index] = el; }}
+              className={`metric-item dir-${direction}${displayedIndex === index ? " active" : ""}${prevIndex === index ? " leaving" : ""}${displayedIndex !== null && displayedIndex !== index && prevIndex !== index ? " has-active" : ""}`}
+            >
               <div className="metric-icon">{metric.icon}</div>
               <div className="metric-content">
                 <div className="metric-header">
