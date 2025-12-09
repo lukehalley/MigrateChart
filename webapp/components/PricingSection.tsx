@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion";
 import { TrendingUp } from "lucide-react";
-import { useFlowingElement } from "./FlowingCursor";
 
 interface PricingTier {
   name: string;
