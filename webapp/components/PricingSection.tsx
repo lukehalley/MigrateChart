@@ -250,6 +250,17 @@ export default function PricingSection() {
           font-weight: 600;
         }
 
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
         @media (max-width: 768px) {
           .pricing-section {
             padding: 4rem 1.5rem;
@@ -288,13 +299,14 @@ export default function PricingSection() {
 
         <div className="pricing-grid">
           {pricingTiers.map((tier, index) => (
-            <motion.div
+            <div
               key={tier.name}
               className={`tier-card ${tier.popular ? "popular" : ""}`}
-              style={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
+              style={{
+                animationDelay: `${index * 0.1}s`,
+                opacity: 0,
+                animation: 'fadeInUp 0.5s ease-out forwards'
+              }}
             >
               <div className="tier-header">
                 <div className="tier-name">{tier.name}</div>
@@ -315,7 +327,7 @@ export default function PricingSection() {
                 </span>
                 <span className="price-currency">SOL</span>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
 

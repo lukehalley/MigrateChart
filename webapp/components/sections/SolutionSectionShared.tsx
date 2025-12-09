@@ -3,13 +3,21 @@
 import { motion } from "framer-motion";
 import { GitMerge, History, MapPin } from "lucide-react";
 
-export default function SolutionSection() {
+/**
+ * Reusable Solution Section Component
+ *
+ * Uses the working animation pattern from LandingPageNew.tsx:
+ * - Only animates the header with motion.div + whileInView
+ * - Feature cards are plain divs without individual animations
+ * - This prevents double animation issues from viewport intersection retriggering
+ */
+export default function SolutionSectionShared() {
   return (
     <section id="solution" className="features">
       <div className="features-container">
         <div className="section-header">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            style={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.8 }}
@@ -45,18 +53,11 @@ export default function SolutionSection() {
                 "Show why you migrated: better fees, more holders, stronger liquidity. Turn migrations from red flags into proof points of professional management.",
             },
           ].map((feature, index) => (
-            <motion.div
-              key={index}
-              className="feature-card"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-            >
+            <div key={index} className="feature-card">
               <div className="feature-icon">{feature.icon}</div>
               <h3 className="feature-title">{feature.title}</h3>
               <p className="feature-description">{feature.description}</p>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>

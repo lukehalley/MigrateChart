@@ -261,15 +261,9 @@ export default function TestimonialsCarousel() {
             <CarouselContent className="-ml-4">
               {tweets.map((tweet, index) => (
                 <CarouselItem key={tweet.id} className="pl-4 md:basis-1/2 lg:basis-1/3">
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                    className="h-full"
-                  >
+                  <div className="h-full">
                     <TweetCard tweet={tweet} />
-                  </motion.div>
+                  </div>
                 </CarouselItem>
               ))}
             </CarouselContent>

@@ -8,12 +8,6 @@ import {
   BarChart3,
   Database,
   Zap,
-  XCircle,
-  AlertCircle,
-  Clock,
-  GitMerge,
-  History,
-  MapPin,
 } from "lucide-react";
 import { AnimatedCandlestickBackground } from "./AnimatedCandlestickBackground";
 import PricingSection from "./PricingSection";
@@ -21,21 +15,11 @@ import TestimonialsCarousel from "./TestimonialsCarousel";
 import BackToTop from "./BackToTop";
 import LandingNav from "./LandingNav";
 import MetricsTrackingSection from "./MetricsTrackingSection";
-
-interface ProjectListItem {
-  slug: string;
-  name: string;
-  primaryColor: string;
-  logoUrl: string;
-  websiteUrl?: string;
-  marketCap?: number;
-  volume24h?: number;
-  holders?: number;
-}
+import ProblemSectionShared from "./sections/ProblemSectionShared";
+import SolutionSectionShared from "./sections/SolutionSectionShared";
+import ProjectsSectionShared from "./sections/ProjectsSectionShared";
 
 export default function LandingPageNew() {
-  const [projects, setProjects] = useState<ProjectListItem[]>([]);
-  const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -55,23 +39,6 @@ export default function LandingPageNew() {
       });
     }
   };
-
-  useEffect(() => {
-    async function fetchProjects() {
-      try {
-        const response = await fetch("/api/projects");
-        if (response.ok) {
-          const data = await response.json();
-          setProjects(data);
-        }
-      } catch (error) {
-        console.error("Failed to fetch projects:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchProjects();
-  }, []);
 
   return (
     <div className={`landing ${mounted ? 'mounted' : ''}`} suppressHydrationWarning>
@@ -765,266 +732,15 @@ export default function LandingPageNew() {
 
       {/* Desktop-only sections - on mobile, these are separate pages */}
       <div className="desktop-sections">
-      {/* Problem Section */}
-      <section id="problem" className="features">
-        <div className="features-container">
-          <div className="section-header">
-            <motion.div
-              style={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 0.8 }}
-            >
-              <div className="section-label">THE PROBLEM</div>
-              <h2 className="section-title">
-                Your Track Record Vanishes Overnight
-              </h2>
-              <p className="section-description">
-                Pool migrations reset your chart. Investors see a "new" project and months of proven performance disappear.
-              </p>
-            </motion.div>
-          </div>
-
-          <div className="features-grid">
-            {[
-              {
-                icon: <XCircle size={24} />,
-                title: "Lose Credibility Instantly",
-                description:
-                  "Your chart looks 3 days old. New investors think you just launched. Your proven track record? Gone.",
-              },
-              {
-                icon: <AlertCircle size={24} />,
-                title: "Investors Can't Compare",
-                description:
-                  "Liquidity split across multiple pools. Different fee tiers. Fragmented volume data. Impossible to evaluate real performance.",
-              },
-              {
-                icon: <Clock size={24} />,
-                title: "Trust Gap Grows",
-                description:
-                  "Fresh charts raise questions. Without historical data, you can't demonstrate your project's legitimacy and staying power.",
-              },
-            ].map((feature, index) => (
-              <div key={index} className="feature-card">
-                <div className="feature-icon">{feature.icon}</div>
-                <h3 className="feature-title">{feature.title}</h3>
-                <p className="feature-description">{feature.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Solution Section */}
-      <section id="solution" className="features">
-        <div className="features-container">
-          <div className="section-header">
-            <motion.div
-              style={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 0.8 }}
-            >
-              <div className="section-label">THE SOLUTION</div>
-              <h2 className="section-title">
-                Prove Your Legitimacy With One Chart
-              </h2>
-              <p className="section-description">
-                Show investors your complete journey. Connect your old pool to your new one. One unbroken timeline that demonstrates your project's real staying power and transparency.
-              </p>
-            </motion.div>
-          </div>
-
-          <div className="features-grid">
-            {[
-              {
-                icon: <GitMerge size={24} />,
-                title: "Build Trust Immediately",
-                description:
-                  "Show your complete track record in one glance. Investors see you're established, not a rug waiting to happen. Transparency wins confidence.",
-              },
-              {
-                icon: <History size={24} />,
-                title: "Prove Your Staying Power",
-                description:
-                  "Display months of price action, holder growth, and real volume. Let your history do the talking. Legitimate projects have nothing to hide.",
-              },
-              {
-                icon: <MapPin size={24} />,
-                title: "Demonstrate Smart Strategy",
-                description:
-                  "Show why you migrated: better fees, more holders, stronger liquidity. Turn migrations from red flags into proof points of professional management.",
-              },
-            ].map((feature, index) => (
-              <div key={index} className="feature-card">
-                <div className="feature-icon">{feature.icon}</div>
-                <h3 className="feature-title">{feature.title}</h3>
-                <p className="feature-description">{feature.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <ProblemSectionShared />
+      <SolutionSectionShared />
 
       {/* Metrics Tracking Section */}
       <MetricsTrackingSection />
 
       {/* Projects Showcase */}
-      {projects.length > 0 && (
-        <section id="projects" className="projects">
-          <div className="projects-container">
-            <div className="section-header">
-              <motion.div
-                style={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 0.8 }}
-              >
-                <div className="section-label">SEE IT IN ACTION</div>
-                <h2 className="section-title">Complete Histories</h2>
-                <p className="section-description">
-                  Projects That Migrated. Full Price Journey, Launch To Today.
-                </p>
-              </motion.div>
-            </div>
+      <ProjectsSectionShared />
 
-            <div className="projects-grid">
-              {projects.map((project, index) => {
-                const formatNumber = (num?: number) => {
-                  if (!num) return null;
-                  if (num >= 1_000_000_000) return `$${(num / 1_000_000_000).toFixed(2)}B`;
-                  if (num >= 1_000_000) return `$${(num / 1_000_000).toFixed(1)}M`;
-                  if (num >= 1_000) return `$${(num / 1_000).toFixed(0)}K`;
-                  return `$${num.toFixed(0)}`;
-                };
-
-                const formatCount = (num?: number) => {
-                  if (!num) return null;
-                  if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(1)}M`;
-                  if (num >= 1_000) return `${(num / 1_000).toFixed(1)}K`;
-                  return num.toString();
-                };
-
-                const cleanUrl = project.websiteUrl?.replace(/^https?:\/\//, '').replace(/\/$/, '');
-
-                return (
-                  <motion.div
-                    key={project.slug}
-                    style={{ opacity: 0, scale: 0.9, y: 20 }}
-                    whileInView={{ opacity: 1, scale: 1, y: 0 }}
-                    viewport={{ once: true, margin: "-50px" }}
-                    transition={{ duration: 0.5, delay: index * 0.05 }}
-                  >
-                    {project.websiteUrl ? (
-                      <a
-                        href={project.websiteUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="project-card"
-                        style={{
-                          backgroundColor: `${project.primaryColor}15`,
-                          borderColor: `${project.primaryColor}40`,
-                        }}
-                      >
-                        {project.logoUrl && (
-                          <img
-                            src={project.logoUrl}
-                            alt={project.name}
-                            className="project-logo"
-                            style={{ borderColor: `${project.primaryColor}60` }}
-                          />
-                        )}
-                        <div className="project-name">{project.name}</div>
-
-                        <div className="project-stats">
-                          {project.marketCap && (
-                            <div className="stat-item">
-                              <span className="stat-label">MCap</span>
-                              <span className="stat-value" style={{ color: project.primaryColor }}>
-                                {formatNumber(project.marketCap)}
-                              </span>
-                            </div>
-                          )}
-                          {project.volume24h && (
-                            <div className="stat-item">
-                              <span className="stat-label">Volume</span>
-                              <span className="stat-value" style={{ color: project.primaryColor }}>
-                                {formatNumber(project.volume24h)}
-                              </span>
-                            </div>
-                          )}
-                          {project.holders && (
-                            <div className="stat-item">
-                              <span className="stat-label">Holders</span>
-                              <span className="stat-value" style={{ color: project.primaryColor }}>
-                                {formatCount(project.holders)}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="project-url" style={{ color: `${project.primaryColor}cc` }}>
-                          {cleanUrl}
-                        </div>
-                      </a>
-                    ) : (
-                      <Link
-                        href={`/${project.slug}`}
-                        prefetch={true}
-                        className="project-card"
-                        style={{
-                          backgroundColor: `${project.primaryColor}15`,
-                          borderColor: `${project.primaryColor}40`,
-                        }}
-                      >
-                        {project.logoUrl && (
-                          <img
-                            src={project.logoUrl}
-                            alt={project.name}
-                            className="project-logo"
-                            style={{ borderColor: `${project.primaryColor}60` }}
-                          />
-                        )}
-                        <div className="project-name">{project.name}</div>
-
-                        <div className="project-stats">
-                          {project.marketCap && (
-                            <div className="stat-item">
-                              <span className="stat-label">MCap</span>
-                              <span className="stat-value" style={{ color: project.primaryColor }}>
-                                {formatNumber(project.marketCap)}
-                              </span>
-                            </div>
-                          )}
-                          {project.volume24h && (
-                            <div className="stat-item">
-                              <span className="stat-label">Volume</span>
-                              <span className="stat-value" style={{ color: project.primaryColor }}>
-                                {formatNumber(project.volume24h)}
-                              </span>
-                            </div>
-                          )}
-                          {project.holders && (
-                            <div className="stat-item">
-                              <span className="stat-label">Holders</span>
-                              <span className="stat-value" style={{ color: project.primaryColor }}>
-                                {formatCount(project.holders)}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="project-slug">/{project.slug}</div>
-                      </Link>
-                    )}
-                  </motion.div>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* Testimonials Section */}
       <TestimonialsCarousel />

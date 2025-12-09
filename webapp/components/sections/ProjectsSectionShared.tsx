@@ -15,7 +15,13 @@ interface ProjectListItem {
   holders?: number;
 }
 
-export default function ProjectsSection() {
+/**
+ * Reusable Projects Section Component
+ *
+ * Extracted from working desktop LandingPageNew.tsx
+ * Uses style={{ opacity: 0 }} instead of initial prop on motion.div cards
+ */
+export default function ProjectsSectionShared() {
   const [projects, setProjects] = useState<ProjectListItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -60,7 +66,7 @@ export default function ProjectsSection() {
       <div className="projects-container">
         <div className="section-header">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            style={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.8 }}
@@ -80,7 +86,7 @@ export default function ProjectsSection() {
             return (
               <motion.div
                 key={project.slug}
-                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                style={{ opacity: 0, scale: 0.9, y: 20 }}
                 whileInView={{ opacity: 1, scale: 1, y: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.5, delay: index * 0.05 }}
