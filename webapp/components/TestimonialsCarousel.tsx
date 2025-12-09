@@ -22,6 +22,24 @@ interface Tweet {
 
 const tweets: Tweet[] = [
   {
+    id: "4",
+    author: "ZERA",
+    username: "ZeraLabs",
+    content: "Between moving LP to @MeteoraAG and migrating #M0N3Y → $ZERA earlier, the legacy and complete historical chart was lost.\n\nBut thankfully our awesome community stepped up: @Trenchooooor have assembled a web app for a complete journey-wide price view.\n\nWe appreciate the initiative and our community's support toward privacy for everyone! 🙏",
+    verified: true,
+    url: "https://x.com/ZeraLabs/status/1987243484089032773",
+    avatar: "https://pbs.twimg.com/profile_images/1956178690649296901/6DmEWifl_400x400.jpg",
+  },
+  {
+    id: "3",
+    author: "Notorious D.E.V.",
+    username: "notorious_d_e_v",
+    content: "🔥🔥 very nice work ser!\n\nI can see this being useful for all @MigrateFun migrations!",
+    verified: true,
+    url: "https://x.com/notorious_d_e_v/status/1996381224437457338",
+    avatar: "https://pbs.twimg.com/profile_images/1964588626173628416/5_0LN7Bi_400x400.jpg",
+  },
+  {
     id: "1",
     author: "jake",
     username: "Jakegallen",
@@ -38,24 +56,6 @@ const tweets: Tweet[] = [
     verified: false,
     url: "https://x.com/convictionprtcl/status/1996306917002527115",
     avatar: "https://pbs.twimg.com/profile_images/1920978398458826752/p1aB9OWu_400x400.jpg",
-  },
-  {
-    id: "3",
-    author: "Notorious D.E.V.",
-    username: "notorious_d_e_v",
-    content: "🔥🔥 very nice work ser!\n\nI can see this being useful for all @MigrateFun migrations!",
-    verified: true,
-    url: "https://x.com/notorious_d_e_v/status/1996381224437457338",
-    avatar: "https://pbs.twimg.com/profile_images/1964588626173628416/5_0LN7Bi_400x400.jpg",
-  },
-  {
-    id: "4",
-    author: "ZERA",
-    username: "ZeraLabs",
-    content: "Between moving LP to @MeteoraAG and migrating #M0N3Y → $ZERA earlier, the legacy and complete historical chart was lost.\n\nBut thankfully our awesome community stepped up: @Trenchooooor have assembled a web app for a complete journey-wide price view.\n\nWe appreciate the initiative and our community's support toward privacy for everyone! 🙏",
-    verified: true,
-    url: "https://x.com/ZeraLabs/status/1987243484089032773",
-    avatar: "https://pbs.twimg.com/profile_images/1956178690649296901/6DmEWifl_400x400.jpg",
   },
   {
     id: "5",
@@ -125,7 +125,7 @@ function TweetCard({ tweet }: { tweet: Tweet }) {
       className="relative group h-full block"
     >
       {/* Main card - clickable area */}
-      <div className="relative bg-transparent border border-[var(--border)] hover:border-[var(--primary)]/40 rounded-xl p-6 h-full transition-colors duration-300 backdrop-blur-sm overflow-hidden cursor-pointer">
+      <div className="relative bg-black/90 border border-[var(--border)] hover:border-[var(--primary)]/40 rounded-xl p-6 h-full transition-colors duration-300 backdrop-blur-sm overflow-hidden cursor-pointer">
         {/* Scan line effect */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[var(--primary)]/30 to-transparent animate-scan-line" />
@@ -195,12 +195,35 @@ function TweetCard({ tweet }: { tweet: Tweet }) {
 export default function TestimonialsCarousel() {
   const plugin = React.useRef(
     AutoScroll({
-      playOnInit: true,
+      playOnInit: false,
       speed: 1,
       stopOnInteraction: false,
       stopOnMouseEnter: false,
     })
   )
+
+  const carouselRef = React.useRef<HTMLDivElement>(null)
+  const [hasStarted, setHasStarted] = React.useState(false)
+
+  React.useEffect(() => {
+    if (!carouselRef.current || hasStarted) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !hasStarted) {
+            plugin.current.play()
+            setHasStarted(true)
+          }
+        })
+      },
+      { threshold: 0.1 }
+    )
+
+    observer.observe(carouselRef.current)
+
+    return () => observer.disconnect()
+  }, [hasStarted])
 
   return (
     <section id="community" className="testimonials-section">
@@ -244,6 +267,7 @@ export default function TestimonialsCarousel() {
 
         {/* Carousel */}
         <motion.div
+          ref={carouselRef}
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
@@ -259,7 +283,7 @@ export default function TestimonialsCarousel() {
             className="w-full"
           >
             <CarouselContent className="-ml-4">
-              {tweets.map((tweet, index) => (
+              {tweets.map((tweet) => (
                 <CarouselItem key={tweet.id} className="pl-4 md:basis-1/2 lg:basis-1/3">
                   <div className="h-full">
                     <TweetCard tweet={tweet} />
