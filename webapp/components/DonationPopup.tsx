@@ -107,7 +107,7 @@ export function DonationPopup() {
 
   // Fetch wallet balance
   const { data: walletBalance = 0 } = useSWR(
-    solanaAddress ? `wallet-balance-${solanaAddress}` : null,
+    solanaAddress && currentProject?.slug ? `wallet-balance-${currentProject.slug}-${solanaAddress}` : null,
     () => solanaAddress ? fetchWalletBalance(solanaAddress) : Promise.resolve(0),
     {
       refreshInterval: 60000,
@@ -117,7 +117,7 @@ export function DonationPopup() {
 
   // Fetch token balance
   const { data: tokenBalance = 0 } = useSWR(
-    solanaAddress && currentTokenAddress ? `token-balance-${solanaAddress}-${currentTokenAddress}` : null,
+    solanaAddress && currentTokenAddress && currentProject?.slug ? `token-balance-${currentProject.slug}-${solanaAddress}-${currentTokenAddress}` : null,
     () => (solanaAddress && currentTokenAddress) ? fetchTokenBalance(solanaAddress, currentTokenAddress) : Promise.resolve(0),
     {
       refreshInterval: 60000,
