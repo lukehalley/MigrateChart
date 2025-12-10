@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getUser } from '@/lib/supabase-server';
 import AdminSidebar from '@/components/admin/AdminSidebar';
+import { ThemeProvider } from '@/lib/ThemeContext';
 
 export default async function AdminLayout({
   children
@@ -13,6 +14,7 @@ export default async function AdminLayout({
   // The actual protection happens per-page
 
   return (
+    <ThemeProvider>
     <div className="admin-layout">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&display=swap');
@@ -60,6 +62,40 @@ export default async function AdminLayout({
           position: relative;
         }
 
+        /* Light mode styles */
+        html.light .admin-layout,
+        .light .admin-layout {
+          --bg: #f8faf9;
+          --surface: #ffffff;
+          --text: #1a1a1a;
+          --text-secondary: rgba(26, 26, 26, 0.7);
+          --text-muted: rgba(26, 26, 26, 0.5);
+          --border: rgba(82, 201, 125, 0.2);
+
+          background:
+            repeating-linear-gradient(
+              0deg,
+              transparent,
+              transparent 2px,
+              rgba(82, 201, 125, 0.03) 2px,
+              rgba(82, 201, 125, 0.03) 3px
+            ),
+            repeating-linear-gradient(
+              90deg,
+              transparent,
+              transparent 2px,
+              rgba(82, 201, 125, 0.02) 2px,
+              rgba(82, 201, 125, 0.02) 3px
+            ),
+            radial-gradient(
+              ellipse 120% 80% at 50% 20%,
+              rgba(82, 201, 125, 0.06) 0%,
+              transparent 50%
+            ),
+            #f8faf9;
+          color: var(--text);
+        }
+
         .admin-layout::before {
           content: '';
           position: fixed;
@@ -85,6 +121,26 @@ export default async function AdminLayout({
           /* animation: scanline 12s linear infinite; */
         }
 
+        /* Light mode scanlines */
+        html.light .admin-layout::before,
+        .light .admin-layout::before {
+          background:
+            repeating-linear-gradient(
+              0deg,
+              rgba(255, 255, 255, 0.4),
+              rgba(255, 255, 255, 0.4) 1px,
+              transparent 1px,
+              transparent 3px
+            ),
+            repeating-linear-gradient(
+              0deg,
+              transparent,
+              transparent 6px,
+              rgba(82, 201, 125, 0.02) 6px,
+              rgba(82, 201, 125, 0.02) 7px
+            );
+        }
+
         @keyframes scanline {
           0% { transform: translateY(0); }
           100% { transform: translateY(7px); }
@@ -100,13 +156,13 @@ export default async function AdminLayout({
 
         .admin-main-content {
           flex: 1;
-          margin-left: 260px;
-          transition: margin-left 0.3s ease;
+          margin-right: 260px;
+          transition: margin-right 0.3s ease;
         }
 
         @media (max-width: 1024px) {
           .admin-main-content {
-            margin-left: 0;
+            margin-right: 0;
             width: 100%;
           }
         }
@@ -124,5 +180,6 @@ export default async function AdminLayout({
         </div>
       )}
     </div>
+    </ThemeProvider>
   );
 }

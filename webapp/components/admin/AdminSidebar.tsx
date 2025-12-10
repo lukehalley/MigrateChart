@@ -4,6 +4,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase-browser';
+import { useThemeContext } from '@/lib/ThemeContext';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 const navItems = [
   { href: '/admin/dashboard', label: 'Overview', icon: '◈' },
@@ -17,6 +19,8 @@ export default function AdminSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
+  const { theme } = useThemeContext();
+  const isLight = theme === 'light';
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -72,15 +76,25 @@ export default function AdminSidebar() {
           width: 260px;
           height: 100vh;
           position: fixed;
-          left: 0;
+          right: 0;
           top: 0;
           background: var(--surface);
-          border-right: 1px solid var(--border);
+          border-left: 1px solid var(--border);
           display: flex;
           flex-direction: column;
           font-family: 'JetBrains Mono', monospace;
           backdrop-filter: blur(10px);
           z-index: 50;
+        }
+
+        /* Light mode sidebar */
+        html.light .admin-sidebar,
+        .light .admin-sidebar {
+          --surface: rgba(255, 255, 255, 0.95);
+          --border: rgba(82, 201, 125, 0.2);
+          --text: #1a1a1a;
+          --text-secondary: rgba(26, 26, 26, 0.7);
+          --text-muted: rgba(26, 26, 26, 0.5);
         }
 
         .sidebar-header {
@@ -112,23 +126,6 @@ export default function AdminSidebar() {
           color: var(--text);
           letter-spacing: -0.01em;
           text-align: center;
-        }
-
-        .admin-badge {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          gap: 0.4rem;
-          padding: 0.4rem 0.75rem;
-          background: var(--primary-dim);
-          border: 1px solid rgba(82, 201, 125, 0.2);
-          border-radius: 4px;
-          font-family: 'JetBrains Mono', monospace;
-          font-size: 0.6rem;
-          font-weight: 600;
-          color: var(--primary);
-          letter-spacing: 0.1em;
-          text-transform: uppercase;
         }
 
         .sidebar-nav {
@@ -170,6 +167,11 @@ export default function AdminSidebar() {
         .nav-item:hover {
           color: var(--text);
           background: rgba(255, 255, 255, 0.03);
+        }
+
+        html.light .nav-item:hover,
+        .light .nav-item:hover {
+          background: rgba(82, 201, 125, 0.08);
         }
 
         .nav-item.active {
@@ -214,6 +216,11 @@ export default function AdminSidebar() {
           background: rgba(255, 255, 255, 0.03);
         }
 
+        html.light .external-link:hover,
+        .light .external-link:hover {
+          background: rgba(82, 201, 125, 0.08);
+        }
+
         .external-icon {
           font-size: 0.75rem;
           opacity: 0.5;
@@ -222,30 +229,6 @@ export default function AdminSidebar() {
         .sidebar-footer {
           padding: 1rem 1.5rem;
           border-top: 1px solid var(--border);
-        }
-
-        .status-row {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          margin-bottom: 0.75rem;
-          font-family: 'JetBrains Mono', monospace;
-          font-size: 0.6rem;
-          color: var(--text-muted);
-        }
-
-        .status-dot {
-          width: 6px;
-          height: 6px;
-          background: var(--primary);
-          border-radius: 50%;
-          box-shadow: 0 0 8px rgba(82, 201, 125, 0.6);
-          animation: pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.5; }
         }
 
         .signout-btn {
@@ -278,7 +261,7 @@ export default function AdminSidebar() {
           display: none;
           position: fixed;
           top: 1rem;
-          left: 1rem;
+          right: 1rem;
           z-index: 60;
           width: 48px;
           height: 48px;
@@ -289,6 +272,11 @@ export default function AdminSidebar() {
           cursor: pointer;
           backdrop-filter: blur(10px);
           transition: all 0.3s ease;
+        }
+
+        html.light .mobile-menu-btn,
+        .light .mobile-menu-btn {
+          background: rgba(255, 255, 255, 0.95);
         }
 
         .mobile-menu-btn:hover {
@@ -305,6 +293,11 @@ export default function AdminSidebar() {
           backdrop-filter: blur(4px);
           z-index: 45;
           animation: fadeIn 0.3s ease;
+        }
+
+        html.light .mobile-backdrop,
+        .light .mobile-backdrop {
+          background: rgba(255, 255, 255, 0.8);
         }
 
         @keyframes fadeIn {
@@ -353,7 +346,7 @@ export default function AdminSidebar() {
           }
 
           .admin-sidebar {
-            transform: translateX(-100%);
+            transform: translateX(100%);
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           }
 
@@ -398,7 +391,6 @@ export default function AdminSidebar() {
           </svg>
           <span className="brand-text">Dashboard</span>
         </Link>
-        <span className="admin-badge">Authorized</span>
       </div>
 
       <nav className="sidebar-nav">
@@ -433,9 +425,9 @@ export default function AdminSidebar() {
       </nav>
 
       <div className="sidebar-footer">
-        <div className="status-row">
-          <span className="status-dot" />
-          System Online
+        <div className="theme-toggle-row" style={{ marginBottom: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)', fontWeight: 500, letterSpacing: '0.05em' }}>THEME</span>
+          <ThemeToggle size="sm" />
         </div>
         <button
           onClick={handleSignOut}

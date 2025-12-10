@@ -106,34 +106,6 @@ export default async function AdminDashboardPage() {
           color: var(--text-muted);
         }
 
-        .live-badge {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          padding: 0.4rem 0.75rem;
-          background: var(--green-dim);
-          border: 1px solid rgba(82, 201, 125, 0.2);
-          border-radius: 100px;
-          font-family: 'JetBrains Mono', monospace;
-          font-size: 0.65rem;
-          font-weight: 500;
-          color: var(--green);
-          letter-spacing: 0.02em;
-        }
-
-        .live-dot {
-          width: 6px;
-          height: 6px;
-          background: var(--green);
-          border-radius: 50%;
-          animation: pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.5; transform: scale(0.9); }
-        }
-
         /* Stats Grid */
         .stats-grid {
           display: grid;
@@ -420,16 +392,63 @@ export default async function AdminDashboardPage() {
           color: var(--text-muted);
         }
 
+        /* Light mode overrides */
+        html.light .dashboard,
+        .light .dashboard {
+          --bg: #f8faf9;
+          --surface: #ffffff;
+          --surface-elevated: rgba(255, 255, 255, 0.8);
+          --border: rgba(45, 138, 82, 0.2);
+          --border-subtle: rgba(45, 138, 82, 0.1);
+          --text: #1a1a1a;
+          --text-secondary: rgba(26, 26, 26, 0.7);
+          --text-muted: rgba(26, 26, 26, 0.5);
+          --primary: #2d8a52;
+          --green: #2d8a52;
+          --green-dim: rgba(45, 138, 82, 0.1);
+          --green-glow: rgba(45, 138, 82, 0.15);
+          --orange: #b8860b;
+          --orange-dim: rgba(184, 134, 11, 0.1);
+        }
+
+        html.light .stat-card,
+        .light .stat-card {
+          background: rgba(255, 255, 255, 0.7);
+          border-color: rgba(45, 138, 82, 0.15);
+        }
+
+        html.light .stat-card:hover,
+        .light .stat-card:hover {
+          background: rgba(255, 255, 255, 0.9);
+          box-shadow: 0 4px 20px rgba(45, 138, 82, 0.12);
+        }
+
+        html.light .section-card,
+        .light .section-card {
+          background: rgba(255, 255, 255, 0.7);
+        }
+
+        html.light .section-card:hover,
+        .light .section-card:hover {
+          box-shadow: 0 4px 20px rgba(45, 138, 82, 0.12);
+        }
+
+        html.light .section-header,
+        .light .section-header {
+          background: rgba(45, 138, 82, 0.05);
+        }
+
+        html.light .list-item:hover,
+        .light .list-item:hover {
+          background: rgba(45, 138, 82, 0.08);
+        }
+
       `}</style>
 
       <header className="dashboard-header">
         <div className="header-content">
           <h1>Dashboard</h1>
-          <p>migrate-chart.fun admin console</p>
-        </div>
-        <div className="live-badge">
-          <span className="live-dot" />
-          SYSTEM ONLINE
+          <p>Admin overview</p>
         </div>
       </header>
 
