@@ -1344,28 +1344,30 @@ function HomeContent() {
                         <span className="relative z-10">Fees</span>
                       </button>
                       {/* Burns */}
-                      <button
-                        onClick={() => {
-                          setViewMode('burns');
-                          closeMobileMenu();
-                        }}
-                        className={`relative py-2 px-2 rounded-md text-xs font-bold flex items-center justify-center gap-1 z-10 transition-colors duration-200 ${
-                          viewMode === 'burns'
-                            ? ''
-                            : 'text-white/70 hover:text-white'
-                        }`}
-                        style={viewMode === 'burns' ? { color: secondaryColor } : undefined}
-                      >
-                        {viewMode === 'burns' && (
-                          <motion.div
-                            layoutId="viewModeIndicator"
-                            className="absolute inset-0 bg-[var(--primary-color)] rounded-md"
-                            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                          />
-                        )}
-                        <Flame width="12" height="12" className="relative z-10" />
-                        <span className="relative z-10">Burns</span>
-                      </button>
+                      {currentProject?.burnsEnabled && (
+                        <button
+                          onClick={() => {
+                            setViewMode('burns');
+                            closeMobileMenu();
+                          }}
+                          className={`relative py-2 px-2 rounded-md text-xs font-bold flex items-center justify-center gap-1 z-10 transition-colors duration-200 ${
+                            viewMode === 'burns'
+                              ? ''
+                              : 'text-white/70 hover:text-white'
+                          }`}
+                          style={viewMode === 'burns' ? { color: secondaryColor } : undefined}
+                        >
+                          {viewMode === 'burns' && (
+                            <motion.div
+                              layoutId="viewModeIndicator"
+                              className="absolute inset-0 bg-[var(--primary-color)] rounded-md"
+                              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                            />
+                          )}
+                          <Flame width="12" height="12" className="relative z-10" />
+                          <span className="relative z-10">Burns</span>
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -2533,25 +2535,27 @@ function HomeContent() {
                     <span className="relative z-10">Fees</span>
                   </button>
                   {/* Burns */}
-                  <button
-                    onClick={() => setViewMode('burns')}
-                    className={`relative py-1.5 px-1 rounded-md text-[10px] font-bold flex items-center justify-center gap-0.5 z-10 transition-colors duration-200 ${
-                      viewMode === 'burns'
-                        ? ''
-                        : 'text-white/70 hover:text-white'
-                    }`}
-                    style={viewMode === 'burns' ? { color: secondaryColor } : undefined}
-                  >
-                    {viewMode === 'burns' && (
-                      <motion.div
-                        layoutId="viewModeIndicatorDesktop"
-                        className="absolute inset-0 bg-[var(--primary-color)] rounded-md"
-                        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                      />
-                    )}
-                    <Flame width="10" height="10" className="relative z-10 flex-shrink-0" />
-                    <span className="relative z-10">Burns</span>
-                  </button>
+                  {currentProject?.burnsEnabled && (
+                    <button
+                      onClick={() => setViewMode('burns')}
+                      className={`relative py-1.5 px-1 rounded-md text-[10px] font-bold flex items-center justify-center gap-0.5 z-10 transition-colors duration-200 ${
+                        viewMode === 'burns'
+                          ? ''
+                          : 'text-white/70 hover:text-white'
+                      }`}
+                      style={viewMode === 'burns' ? { color: secondaryColor } : undefined}
+                    >
+                      {viewMode === 'burns' && (
+                        <motion.div
+                          layoutId="viewModeIndicatorDesktop"
+                          className="absolute inset-0 bg-[var(--primary-color)] rounded-md"
+                          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                        />
+                      )}
+                      <Flame width="10" height="10" className="relative z-10 flex-shrink-0" />
+                      <span className="relative z-10">Burns</span>
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
