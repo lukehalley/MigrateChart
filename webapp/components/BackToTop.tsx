@@ -128,6 +128,45 @@ export default function BackToTop() {
             height: 48px;
           }
         }
+
+        /* Light mode overrides */
+        html.light .back-to-top-button,
+        .light .back-to-top-button {
+          background: rgba(255, 255, 255, 0.95);
+          border-color: rgba(45, 138, 82, 0.3);
+          color: #2d8a52;
+        }
+
+        html.light .back-to-top-button:hover,
+        .light .back-to-top-button:hover {
+          border-color: #2d8a52;
+          box-shadow: 0 0 30px rgba(45, 138, 82, 0.3);
+        }
+
+        html.light .back-to-top-button::after,
+        .light .back-to-top-button::after {
+          background: repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 2px,
+            rgba(45, 138, 82, 0.03) 2px,
+            rgba(45, 138, 82, 0.03) 4px
+          );
+        }
+
+        @keyframes pulse-glow-light {
+          0%, 100% {
+            box-shadow: 0 0 15px rgba(45, 138, 82, 0.15);
+          }
+          50% {
+            box-shadow: 0 0 25px rgba(45, 138, 82, 0.25);
+          }
+        }
+
+        html.light .back-to-top-button:not(:hover),
+        .light .back-to-top-button:not(:hover) {
+          animation: pulse-glow-light 3s ease-in-out infinite;
+        }
       `}</style>
 
       <AnimatePresence>
