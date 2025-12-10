@@ -34,19 +34,19 @@ export default function ProblemSectionShared() {
       icon: <XCircle size={24} />,
       title: "Lose Credibility Instantly",
       description:
-        "Your chart looks 3 days old. New investors think you just launched. Your proven track record? Gone.",
+        "Your Chart Looks 3 Days Old. New Investors Think You Just Launched. Your Proven Track Record? Gone.",
     },
     {
       icon: <AlertCircle size={24} />,
       title: "Investors Can't Compare",
       description:
-        "Liquidity split across multiple pools. Different fee tiers. Fragmented volume data. Impossible to evaluate real performance.",
+        "Liquidity Split Across Multiple Pools. Different Fee Tiers. Fragmented Volume Data. Impossible To Evaluate Real Performance.",
     },
     {
       icon: <Clock size={24} />,
       title: "Trust Gap Grows",
       description:
-        "Fresh charts raise questions. Without historical data, you can't demonstrate your project's legitimacy and staying power.",
+        "Fresh Charts Raise Questions. Without Historical Data, You Can't Demonstrate Your Project's Legitimacy And Staying Power.",
     },
   ];
 
@@ -65,7 +65,7 @@ export default function ProblemSectionShared() {
               Your Track Record Vanishes Overnight
             </h2>
             <p className="section-description">
-              Pool migrations reset your chart. Investors see a "new" project and months of proven performance disappear.
+              Pool Migrations Reset Your Chart. Investors See A "New" Project And Months Of Proven Performance Disappear.
             </p>
           </motion.div>
         </div>

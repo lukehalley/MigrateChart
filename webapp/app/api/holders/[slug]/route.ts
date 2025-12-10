@@ -84,23 +84,25 @@ export async function GET(
     // Map to ProjectConfig format
     const project: ProjectConfig = {
       ...projectData,
-      pools: (projectData.pools || []).map((pool: any) => ({
-        id: pool.id,
-        projectId: pool.project_id,
-        poolAddress: pool.pool_address,
-        tokenAddress: pool.token_address,
-        tokenSymbol: pool.token_symbol,
-        poolName: pool.pool_name,
-        dexType: pool.dex_type,
-        color: pool.color,
-        orderIndex: pool.order_index,
-        feeRate: pool.fee_rate,
-        createdAt: pool.created_at,
-      })),
+      pools: (projectData.pools || [])
+        .map((pool: any) => ({
+          id: pool.id,
+          projectId: pool.project_id,
+          poolAddress: pool.pool_address,
+          tokenAddress: pool.token_address,
+          tokenSymbol: pool.token_symbol,
+          poolName: pool.pool_name,
+          dexType: pool.dex_type,
+          color: pool.color,
+          orderIndex: pool.order_index,
+          feeRate: pool.fee_rate,
+          createdAt: pool.created_at,
+        }))
+        .sort((a, b) => a.orderIndex - b.orderIndex), // Sort by order_index to ensure correct pool order
       migrations: [], // Not needed for holders
     };
 
-    // Get current token address
+    // Get current token address (last pool after sorting by order_index)
     const currentPool = project.pools[project.pools.length - 1];
     const tokenAddress = currentPool?.tokenAddress;
 

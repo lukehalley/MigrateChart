@@ -27,7 +27,7 @@ export default function SolutionSectionShared() {
               Prove Your Legitimacy With One Chart
             </h2>
             <p className="section-description">
-              Show investors your complete journey. Connect your old pool to your new one. One unbroken timeline that demonstrates your project's real staying power and transparency.
+              Show Investors Your Complete Journey. Connect Your Old Pool To Your New One. One Unbroken Timeline That Demonstrates Your Project's Real Staying Power And Transparency.
             </p>
           </motion.div>
         </div>
@@ -38,19 +38,19 @@ export default function SolutionSectionShared() {
               icon: <GitMerge size={24} />,
               title: "Build Trust Immediately",
               description:
-                "Show your complete track record in one glance. Investors see you're established, not a rug waiting to happen. Transparency wins confidence.",
+                "Show Your Complete Track Record In One Glance. Investors See You're Established, Not A Rug Waiting To Happen. Transparency Wins Confidence.",
             },
             {
               icon: <History size={24} />,
               title: "Prove Your Staying Power",
               description:
-                "Display months of price action, holder growth, and real volume. Let your history do the talking. Legitimate projects have nothing to hide.",
+                "Display Months Of Price Action, Holder Growth, And Real Volume. Let Your History Do The Talking. Legitimate Projects Have Nothing To Hide.",
             },
             {
               icon: <MapPin size={24} />,
               title: "Demonstrate Smart Strategy",
               description:
-                "Show why you migrated: better fees, more holders, stronger liquidity. Turn migrations from red flags into proof points of professional management.",
+                "Show Why You Migrated: Better Fees, More Holders, Stronger Liquidity. Turn Migrations From Red Flags Into Proof Points Of Professional Management.",
             },
           ].map((feature, index) => (
             <div key={index} className="feature-card">

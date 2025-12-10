@@ -463,8 +463,9 @@ function HomeContent() {
     });
   };
 
-  // Get the current pool address (last pool in the chain)
-  const currentPoolAddress = currentProject?.pools?.[currentProject.pools.length - 1]?.poolAddress;
+  // Get the current pool address (last pool in the chain, sorted by order_index)
+  const sortedPools = currentProject?.pools ? [...currentProject.pools].sort((a, b) => a.orderIndex - b.orderIndex) : [];
+  const currentPoolAddress = sortedPools[sortedPools.length - 1]?.poolAddress;
 
   // Fetch data with SWR for automatic revalidation
   // Optimized intervals for live updates while respecting rate limits
@@ -522,8 +523,8 @@ function HomeContent() {
   );
 
   // Fetch token balance for donation goal (only if address is available)
-  // Use the current token address
-  const currentTokenAddress = currentProject?.pools?.[currentProject.pools.length - 1]?.tokenAddress;
+  // Use the current token address (from sorted pools)
+  const currentTokenAddress = sortedPools[sortedPools.length - 1]?.tokenAddress;
   const { data: tokenBalance = 0 } = useSWR(
     solanaAddress && currentTokenAddress ? `token-balance-${solanaAddress}-${currentTokenAddress}` : null,
     () => (solanaAddress && currentTokenAddress) ? fetchTokenBalance(solanaAddress, currentTokenAddress) : Promise.resolve(0),
@@ -621,8 +622,8 @@ function HomeContent() {
     const data = currentPoolData.data;
     const now = Math.floor(Date.now() / 1000);
 
-    // Get the current pool config to check fee rate and migration start time
-    const currentPool = currentProject?.pools[currentProject.pools.length - 1];
+    // Get the current pool config to check fee rate and migration start time (from sorted pools)
+    const currentPool = sortedPools[sortedPools.length - 1];
     const feeRate = currentPool?.feeRate || 0;
 
     // Find when this pool started collecting fees (its migration start date)
@@ -930,7 +931,7 @@ function HomeContent() {
                       }}
                     />
                   </div>
-                  <span className="text-[var(--primary-color)] text-xs font-bold whitespace-nowrap">{tokenBalance.toFixed(0)} / {formatGoalNumber(tokenGoal)} {currentProject.pools[currentProject.pools.length - 1]?.tokenSymbol}</span>
+                  <span className="text-[var(--primary-color)] text-xs font-bold whitespace-nowrap">{tokenBalance.toFixed(0)} / {formatGoalNumber(tokenGoal)} {sortedPools[sortedPools.length - 1]?.tokenSymbol}</span>
                 </div>
 
                 {/* SOL Balance */}
@@ -1041,7 +1042,7 @@ function HomeContent() {
               {/* ZERA Token Balance */}
               <div className="mb-2">
                 <div className="flex items-center justify-between gap-2 mb-0.5">
-                  <span className="text-white/70 text-[10px] font-medium">{currentProject.pools[currentProject.pools.length - 1]?.tokenSymbol} Tokens</span>
+                  <span className="text-white/70 text-[10px] font-medium">{sortedPools[sortedPools.length - 1]?.tokenSymbol} Tokens</span>
                   <span className="text-[var(--primary-color)] text-[10px] font-bold">{tokenBalance.toFixed(0)} / {formatGoalNumber(tokenGoal)}</span>
                 </div>
                 <div className="relative h-1.5 bg-black/60 rounded-full overflow-hidden border border-[var(--primary-color)]/30">

@@ -15,10 +15,10 @@ import PricingSection from "./PricingSection";
 import TestimonialsCarousel from "./TestimonialsCarousel";
 import BackToTop from "./BackToTop";
 import LandingNav from "./LandingNav";
-import MetricsTrackingSection from "./MetricsTrackingSection";
 import ProblemSectionShared from "./sections/ProblemSectionShared";
 import SolutionSectionShared from "./sections/SolutionSectionShared";
 import ProjectsSectionShared from "./sections/ProjectsSectionShared";
+import UnifiedMetricsShowcase from "./UnifiedMetricsShowcase";
 
 export default function LandingPageNew() {
   const [mounted, setMounted] = useState(false);
@@ -145,7 +145,7 @@ export default function LandingPageNew() {
             rgba(82, 201, 125, 0.15) 80%,
             transparent 100%
           );
-          margin: 0 auto;
+          margin: 2rem auto;
         }
 
         @keyframes pulse-cta {
@@ -532,8 +532,18 @@ export default function LandingPageNew() {
 
         .features-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-          gap: 2rem;
+          grid-template-columns: 1fr 1fr 1fr;
+          gap: 1.5rem;
+          max-width: 1000px;
+          margin: 0 auto;
+          width: 100%;
+        }
+
+        @media (max-width: 768px) {
+          .features-grid {
+            grid-template-columns: 1fr;
+            max-width: 500px;
+          }
         }
 
         .feature-card {
@@ -543,6 +553,8 @@ export default function LandingPageNew() {
           border-radius: 12px;
           transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
           text-align: center;
+          min-width: 0;
+          overflow: hidden;
         }
 
         .feature-card:hover {
@@ -1011,7 +1023,7 @@ export default function LandingPageNew() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
           >
-            Complete price history.
+            Complete Price History.
           </motion.h1>
 
           <motion.p
@@ -1020,7 +1032,7 @@ export default function LandingPageNew() {
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 0.4 }}
           >
-            One continuous chart across <strong>all pool migrations</strong>. No more missing price data.
+            One Continuous Chart Across <strong>All Pool Migrations</strong>. No More Missing Price Data.
           </motion.p>
 
           <motion.div
@@ -1072,8 +1084,8 @@ export default function LandingPageNew() {
       <SolutionSectionShared />
       <div className="section-divider" />
 
-      {/* Metrics Tracking Section */}
-      <MetricsTrackingSection />
+      {/* Unified Metrics Showcase - All features with diagrams */}
+      <UnifiedMetricsShowcase />
       <div className="section-divider" />
 
       {/* Projects Showcase */}
@@ -1097,13 +1109,13 @@ export default function LandingPageNew() {
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
         >
-          <div className="cta-badge">Ready to fix your charts?</div>
+          <div className="cta-badge">Ready To Fix Your Charts?</div>
           <h2 className="cta-title">
-            Don't let another day go by<br />
-            with <span className="cta-title-highlight">incomplete charts</span>
+            Don't Let Another Day Go By<br />
+            With <span className="cta-title-highlight">Incomplete Charts</span>
           </h2>
           <p className="cta-description">
-            Your community deserves to see the full story. Show them the complete journey—from launch to today—and prove your project's staying power.
+            Your Community Deserves To See The Full Story. Show Them The Complete Journey—From Launch To Today—And Prove Your Project's Staying Power.
           </p>
           <Link href="/contact" className="btn btn-primary">
             Get Started

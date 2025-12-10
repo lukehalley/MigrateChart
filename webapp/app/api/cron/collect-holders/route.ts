@@ -59,7 +59,9 @@ export async function GET(request: NextRequest) {
 
     // Collect holder snapshots for each project's current token
     for (const project of projects) {
-      const currentPool = project.pools[project.pools.length - 1];
+      // Sort pools by order_index to ensure we get the correct current pool
+      const sortedPools = [...project.pools].sort((a, b) => a.orderIndex - b.orderIndex);
+      const currentPool = sortedPools[sortedPools.length - 1];
       const tokenAddress = currentPool.tokenAddress;
 
       try {

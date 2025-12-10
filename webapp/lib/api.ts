@@ -566,7 +566,9 @@ export async function fetchTokenStats(
     // Step 3: Fetch holder count for current token (with caching)
     // Use the latest/current token address for holder count
     const currentPool = projectConfig.pools.find(p => p.poolAddress === poolAddress);
-    const currentToken = currentPool?.tokenAddress || projectConfig.pools[projectConfig.pools.length - 1].tokenAddress;
+    // Sort pools by order_index to ensure we get the correct current token as fallback
+    const sortedPools = [...projectConfig.pools].sort((a, b) => a.orderIndex - b.orderIndex);
+    const currentToken = currentPool?.tokenAddress || sortedPools[sortedPools.length - 1].tokenAddress;
     const holderCount = await fetchHolderCount(projectConfig.id, currentToken);
 
     // Step 4: Extract current market data
