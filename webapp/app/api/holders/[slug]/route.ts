@@ -98,7 +98,7 @@ export async function GET(
           feeRate: pool.fee_rate,
           createdAt: pool.created_at,
         }))
-        .sort((a, b) => a.orderIndex - b.orderIndex), // Sort by order_index to ensure correct pool order
+        .sort((a: { orderIndex: number }, b: { orderIndex: number }) => a.orderIndex - b.orderIndex), // Sort by order_index to ensure correct pool order
       migrations: [], // Not needed for holders
     };
 
