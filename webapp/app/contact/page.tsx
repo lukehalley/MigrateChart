@@ -5,9 +5,12 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Check, ArrowUpRight } from 'lucide-react';
+import { useThemeContext } from '@/lib/ThemeContext';
 
 export default function ContactPage() {
   const router = useRouter();
+  const { theme } = useThemeContext();
+  const isLight = theme === 'light';
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -78,6 +81,20 @@ export default function ContactPage() {
             background: var(--bg);
             position: relative;
             overflow: hidden;
+          }
+
+          /* Light mode */
+          html.light .contact-page,
+          .light .contact-page {
+            --bg: #f8faf9;
+            --surface: #ffffff;
+            --surface-elevated: #ffffff;
+            --border: rgba(82, 201, 125, 0.15);
+            --border-focus: rgba(82, 201, 125, 0.4);
+            --text: #1a1a1a;
+            --text-secondary: rgba(26, 26, 26, 0.7);
+            --text-muted: rgba(26, 26, 26, 0.5);
+            --accent-glow: rgba(82, 201, 125, 0.2);
           }
 
           .contact-page::before {
@@ -259,6 +276,20 @@ export default function ContactPage() {
           background: var(--bg);
           position: relative;
           overflow-x: hidden;
+        }
+
+        /* Light mode */
+        html.light .contact-page,
+        .light .contact-page {
+          --bg: #f8faf9;
+          --surface: #ffffff;
+          --surface-elevated: #ffffff;
+          --border: rgba(82, 201, 125, 0.15);
+          --border-focus: rgba(82, 201, 125, 0.4);
+          --text: #1a1a1a;
+          --text-secondary: rgba(26, 26, 26, 0.7);
+          --text-muted: rgba(26, 26, 26, 0.5);
+          --accent-glow: rgba(82, 201, 125, 0.2);
         }
 
         .contact-page::before {

@@ -10,6 +10,7 @@ import { TokenLoadingLogo } from '@/components/TokenLoadingLogo';
 import { TokenContextProvider, useTokenContext } from '@/lib/TokenContext';
 import { FeesResponse } from '@/app/api/fees/[slug]/route';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from '@/components/ui/chart';
+import { useThemeContext } from '@/lib/ThemeContext';
 
 type FeesTimeframe = '7D' | '30D' | '90D' | 'ALL';
 
@@ -27,6 +28,8 @@ const getChartConfig = (primaryColor: string): ChartConfig => ({
 function FeesPageContent() {
   const { currentProject, isLoading: projectLoading, error: projectError } = useTokenContext();
   const router = useRouter();
+  const { theme } = useThemeContext();
+  const isLight = theme === 'light';
   const [timeframe, setTimeframe] = useState<FeesTimeframe>('30D');
   const [chartView, setChartView] = useState<'daily' | 'cumulative'>('daily');
 
@@ -89,7 +92,7 @@ function FeesPageContent() {
 
   if (projectLoading || !currentProject) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center bg-black">
+      <div className={`fixed inset-0 flex items-center justify-center ${isLight ? 'bg-white' : 'bg-black'}`}>
         <TokenLoadingLogo
           svgUrl={currentProject?.loaderUrl}
           color={currentProject?.primaryColor || '#52C97D'}
@@ -101,7 +104,7 @@ function FeesPageContent() {
 
   if (projectError) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center bg-black text-white">
+      <div className={`fixed inset-0 flex items-center justify-center ${isLight ? 'bg-white text-gray-900' : 'bg-black text-white'}`}>
         <p>Error loading project</p>
       </div>
     );
@@ -111,7 +114,7 @@ function FeesPageContent() {
   const peakDay = feesData ? Math.max(...feesData.dailyFees.map(d => d.fees)) : 0;
 
   return (
-    <div className="min-h-screen bg-black grid-pattern relative overflow-x-hidden">
+    <div className={`min-h-screen grid-pattern relative overflow-x-hidden ${isLight ? 'bg-gray-50' : 'bg-black'}`}>
       {/* Ambient glow effect */}
       <div
         className="fixed inset-0 opacity-20 pointer-events-none"
@@ -125,7 +128,7 @@ function FeesPageContent() {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="sticky top-0 z-50 backdrop-blur-xl bg-black/30"
+        className={`sticky top-0 z-50 backdrop-blur-xl ${isLight ? 'bg-white/80' : 'bg-black/30'}`}
         style={{
           borderBottom: `1px solid ${primaryColor}40`,
           boxShadow: `0 4px 24px -8px ${primaryColor}40`
@@ -147,7 +150,7 @@ function FeesPageContent() {
               <Zap className="h-7 w-7" />
               FEE ANALYTICS
             </h1>
-            <p className="text-xs  text-white/50 mt-0.5">
+            <p className={`text-xs mt-0.5 ${isLight ? 'text-gray-500' : 'text-white/50'}`}>
               Real-time fee collection metrics
             </p>
           </div>
@@ -217,7 +220,7 @@ function FeesPageContent() {
                       <div className="text-5xl  font-bold data-glow mb-2" style={{ color: primaryColor }}>
                         {formatLargeNumber(feesData.totalFees)}
                       </div>
-                      <p className="text-xs  text-white/40">
+                      <p className={`text-xs ${isLight ? 'text-gray-500' : 'text-white/40'}`}>
                         {timeframe} PERIOD
                       </p>
                     </div>
@@ -315,7 +318,7 @@ function FeesPageContent() {
                     <h2 className="text-xl  font-bold tracking-tight mb-1" style={{ color: primaryColor }}>
                       {chartView === 'daily' ? 'DAILY COLLECTION FLOW' : 'CUMULATIVE GROWTH TRAJECTORY'}
                     </h2>
-                    <p className="text-xs  text-white/40">
+                    <p className={`text-xs ${isLight ? 'text-gray-500' : 'text-white/40'}`}>
                       {chartView === 'daily'
                         ? 'Fee volume collected per day across all transactions'
                         : 'Total accumulated fees over the selected timeframe'}
@@ -437,7 +440,7 @@ function FeesPageContent() {
                 className="text-center terminal-card p-4"
                 style={{ borderColor: `${primaryColor}40` }}
               >
-                <p className="text-xs  text-white/40 tracking-wider">
+                <p className={`text-xs tracking-wider ${isLight ? 'text-gray-500' : 'text-white/40'}`}>
                   Fee calculation based on pool configurations and migration timestamps
                 </p>
               </motion.div>

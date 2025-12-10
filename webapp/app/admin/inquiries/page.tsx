@@ -270,6 +270,77 @@ export default async function InquiriesPage() {
             display: none;
           }
         }
+
+        /* Light mode overrides */
+        html.light .inquiries-page,
+        .light .inquiries-page {
+          --bg: #f8faf9;
+          --surface: #ffffff;
+          --surface-elevated: rgba(255, 255, 255, 0.8);
+          --border: rgba(45, 138, 82, 0.2);
+          --border-subtle: rgba(45, 138, 82, 0.1);
+          --text: #1a1a1a;
+          --text-secondary: rgba(26, 26, 26, 0.7);
+          --text-muted: rgba(26, 26, 26, 0.5);
+          --primary: #2d8a52;
+          --green: #2d8a52;
+          --green-dim: rgba(45, 138, 82, 0.1);
+          --green-glow: rgba(45, 138, 82, 0.15);
+          --orange: #b8860b;
+          --orange-dim: rgba(184, 134, 11, 0.1);
+          --blue: #2563eb;
+          --red: #dc2626;
+        }
+
+        html.light .inquiries-list,
+        .light .inquiries-list {
+          background: rgba(255, 255, 255, 0.7);
+        }
+
+        html.light .inquiries-list:hover,
+        .light .inquiries-list:hover {
+          box-shadow: 0 4px 20px rgba(45, 138, 82, 0.12);
+        }
+
+        html.light .list-header,
+        .light .list-header {
+          background: rgba(45, 138, 82, 0.05);
+        }
+
+        html.light .inquiry-row:hover,
+        .light .inquiry-row:hover {
+          background: rgba(45, 138, 82, 0.08);
+        }
+
+        html.light .token-address,
+        .light .token-address {
+          background: rgba(45, 138, 82, 0.08);
+          color: #1a1a1a;
+        }
+
+        html.light .status-badge.status-pending,
+        .light .status-badge.status-pending {
+          background: rgba(184, 134, 11, 0.1);
+          color: #b8860b;
+        }
+
+        html.light .status-badge.status-contacted,
+        .light .status-badge.status-contacted {
+          background: rgba(37, 99, 235, 0.1);
+          color: #2563eb;
+        }
+
+        html.light .status-badge.status-approved,
+        .light .status-badge.status-approved {
+          background: rgba(45, 138, 82, 0.1);
+          color: #2d8a52;
+        }
+
+        html.light .status-badge.status-rejected,
+        .light .status-badge.status-rejected {
+          background: rgba(220, 38, 38, 0.1);
+          color: #dc2626;
+        }
       `}</style>
 
       <header className="page-header">

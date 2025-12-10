@@ -95,6 +95,58 @@ export default function AdminLoginLoading() {
           text-transform: uppercase;
           opacity: 0.8;
         }
+
+        /* Light mode overrides */
+        html.light .login-loading,
+        .light .login-loading {
+          --primary: #2d8a52;
+          background:
+            repeating-linear-gradient(
+              0deg,
+              transparent,
+              transparent 2px,
+              rgba(45, 138, 82, 0.04) 2px,
+              rgba(45, 138, 82, 0.04) 3px
+            ),
+            repeating-linear-gradient(
+              90deg,
+              transparent,
+              transparent 2px,
+              rgba(45, 138, 82, 0.03) 2px,
+              rgba(45, 138, 82, 0.03) 3px
+            ),
+            radial-gradient(
+              ellipse 120% 80% at 50% 20%,
+              rgba(45, 138, 82, 0.06) 0%,
+              transparent 50%
+            ),
+            #f8faf9;
+        }
+
+        html.light .login-loading::before,
+        .light .login-loading::before {
+          background:
+            repeating-linear-gradient(
+              0deg,
+              rgba(45, 138, 82, 0.05),
+              rgba(45, 138, 82, 0.05) 1px,
+              transparent 1px,
+              transparent 3px
+            ),
+            repeating-linear-gradient(
+              0deg,
+              transparent,
+              transparent 6px,
+              rgba(45, 138, 82, 0.02) 6px,
+              rgba(45, 138, 82, 0.02) 7px
+            );
+        }
+
+        html.light .spinner-icon,
+        .light .spinner-icon {
+          color: #2d8a52;
+          text-shadow: 0 0 12px rgba(45, 138, 82, 0.6);
+        }
       `}</style>
 
       <div className="loading-spinner">

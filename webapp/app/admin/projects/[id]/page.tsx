@@ -484,6 +484,103 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           color: var(--text-muted);
           font-size: 0.85rem;
         }
+
+        /* Light mode overrides */
+        html.light .project-detail,
+        .light .project-detail {
+          --bg: #f8faf9;
+          --surface: rgba(255, 255, 255, 0.7);
+          --surface-elevated: rgba(255, 255, 255, 0.9);
+          --border: rgba(45, 138, 82, 0.2);
+          --border-subtle: rgba(45, 138, 82, 0.1);
+          --text: #1a1a1a;
+          --text-secondary: rgba(26, 26, 26, 0.7);
+          --text-muted: rgba(26, 26, 26, 0.5);
+          --accent: #2d8a52;
+          --accent-glow: rgba(45, 138, 82, 0.15);
+        }
+
+        html.light .project-detail::before,
+        .light .project-detail::before {
+          background: radial-gradient(ellipse at top right, rgba(45, 138, 82, 0.08) 0%, transparent 60%);
+        }
+
+        html.light .project-icon,
+        .light .project-icon {
+          background: #f3f4f6;
+          border-color: rgba(45, 138, 82, 0.2);
+        }
+
+        html.light .section-card,
+        .light .section-card {
+          background: rgba(255, 255, 255, 0.8);
+        }
+
+        html.light .field-value.code,
+        .light .field-value.code {
+          background: rgba(45, 138, 82, 0.05);
+          border-color: rgba(45, 138, 82, 0.15);
+        }
+
+        html.light .data-indicator,
+        .light .data-indicator {
+          background: rgba(45, 138, 82, 0.05);
+          border-color: rgba(45, 138, 82, 0.15);
+        }
+
+        html.light .data-indicator:hover,
+        .light .data-indicator:hover {
+          background: rgba(45, 138, 82, 0.1);
+          border-color: rgba(45, 138, 82, 0.25);
+        }
+
+        html.light .data-dot-inactive,
+        .light .data-dot-inactive {
+          background: rgba(26, 26, 26, 0.15);
+        }
+
+        html.light .data-dot-active,
+        .light .data-dot-active {
+          background: #2d8a52;
+          box-shadow: 0 0 6px rgba(45, 138, 82, 0.6);
+        }
+
+        html.light .pool-card,
+        .light .pool-card {
+          background: rgba(45, 138, 82, 0.05);
+          border-color: rgba(45, 138, 82, 0.15);
+        }
+
+        html.light .pool-label,
+        .light .pool-label {
+          background: rgba(45, 138, 82, 0.1);
+          border-color: rgba(45, 138, 82, 0.2);
+        }
+
+        html.light .status-enabled,
+        .light .status-enabled {
+          color: #2d8a52;
+          border-color: rgba(45, 138, 82, 0.3);
+          background: rgba(45, 138, 82, 0.1);
+        }
+
+        html.light .status-enabled .status-dot,
+        .light .status-enabled .status-dot {
+          background: #2d8a52;
+          box-shadow: 0 0 4px rgba(45, 138, 82, 0.5);
+        }
+
+        html.light .status-disabled,
+        .light .status-disabled {
+          color: #666;
+          border-color: rgba(102, 102, 102, 0.3);
+          background: rgba(102, 102, 102, 0.1);
+        }
+
+        html.light .status-disabled .status-dot,
+        .light .status-disabled .status-dot {
+          background: #666;
+        }
       `}</style>
 
       <div className="detail-container">

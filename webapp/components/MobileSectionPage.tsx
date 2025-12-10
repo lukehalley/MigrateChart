@@ -4,6 +4,7 @@ import { useState, useEffect, ReactNode } from "react";
 import LandingNav from "./LandingNav";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { useThemeContext } from "@/lib/ThemeContext";
 
 interface MobileSectionPageProps {
   children: ReactNode;
@@ -15,6 +16,8 @@ interface MobileSectionPageProps {
 
 export default function MobileSectionPage({ children, nextPage }: MobileSectionPageProps) {
   const [mounted, setMounted] = useState(false);
+  const { theme } = useThemeContext();
+  const isLight = theme === 'light';
 
   useEffect(() => {
     setMounted(true);
@@ -77,6 +80,42 @@ export default function MobileSectionPage({ children, nextPage }: MobileSectionP
           position: relative;
         }
 
+        /* Light mode styles */
+        html.light .landing,
+        .light .landing {
+          --bg: #f8faf9;
+          --bg-subtle: #f5f7f6;
+          --surface: #ffffff;
+          --surface-elevated: #ffffff;
+          --text: #1a1a1a;
+          --text-secondary: rgba(26, 26, 26, 0.7);
+          --text-muted: rgba(26, 26, 26, 0.5);
+          --border: rgba(82, 201, 125, 0.2);
+          --border-accent: rgba(212, 168, 83, 0.2);
+
+          background:
+            repeating-linear-gradient(
+              0deg,
+              transparent,
+              transparent 2px,
+              rgba(82, 201, 125, 0.03) 2px,
+              rgba(82, 201, 125, 0.03) 3px
+            ),
+            repeating-linear-gradient(
+              90deg,
+              transparent,
+              transparent 2px,
+              rgba(82, 201, 125, 0.02) 2px,
+              rgba(82, 201, 125, 0.02) 3px
+            ),
+            radial-gradient(
+              ellipse 120% 80% at 50% 20%,
+              rgba(82, 201, 125, 0.06) 0%,
+              transparent 50%
+            ),
+            #f8faf9;
+        }
+
         .landing.mounted::before {
           content: '';
           position: fixed;
@@ -100,6 +139,26 @@ export default function MobileSectionPage({ children, nextPage }: MobileSectionP
           pointer-events: none;
           z-index: 1;
           opacity: 1;
+        }
+
+        /* Light mode scanlines */
+        html.light .landing.mounted::before,
+        .light .landing.mounted::before {
+          background:
+            repeating-linear-gradient(
+              0deg,
+              rgba(255, 255, 255, 0.4),
+              rgba(255, 255, 255, 0.4) 1px,
+              transparent 1px,
+              transparent 3px
+            ),
+            repeating-linear-gradient(
+              0deg,
+              transparent,
+              transparent 6px,
+              rgba(82, 201, 125, 0.02) 6px,
+              rgba(82, 201, 125, 0.02) 7px
+            );
         }
 
         .landing::after {
@@ -196,6 +255,16 @@ export default function MobileSectionPage({ children, nextPage }: MobileSectionP
           border-color: rgba(82, 201, 125, 0.3);
         }
 
+        html.light .feature-card,
+        .light .feature-card {
+          background: rgba(255, 255, 255, 0.7);
+        }
+
+        html.light .feature-card:hover,
+        .light .feature-card:hover {
+          box-shadow: 0 20px 40px rgba(82, 201, 125, 0.2);
+        }
+
         .feature-icon {
           width: 48px;
           height: 48px;
@@ -267,6 +336,16 @@ export default function MobileSectionPage({ children, nextPage }: MobileSectionP
           transform: translateY(-12px);
           box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
           filter: brightness(1.1);
+        }
+
+        html.light .project-card,
+        .light .project-card {
+          background: rgba(255, 255, 255, 0.7);
+        }
+
+        html.light .project-card:hover,
+        .light .project-card:hover {
+          box-shadow: 0 30px 60px rgba(82, 201, 125, 0.15);
         }
 
         .project-logo {
@@ -349,6 +428,11 @@ export default function MobileSectionPage({ children, nextPage }: MobileSectionP
           border: 1px solid var(--border);
           border-radius: 16px;
           box-shadow: 0 0 80px rgba(82, 201, 125, 0.1);
+        }
+
+        html.light .cta-content,
+        .light .cta-content {
+          background: rgba(255, 255, 255, 0.7);
         }
 
         .cta-title {

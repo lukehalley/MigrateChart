@@ -1,6 +1,21 @@
+'use client';
+
 import { Skeleton } from '@/components/ui/skeleton';
+import { useThemeContext } from '@/lib/ThemeContext';
 
 export function FeesChartSkeleton() {
+  const { theme } = useThemeContext();
+  const isLight = theme === 'light';
+
+  // Theme-aware classes
+  const cardBg = isLight ? 'bg-gray-100' : 'bg-neutral-900';
+  const cardBorder = isLight ? 'border-gray-200' : 'border-neutral-800';
+  const skeletonBg = isLight ? 'bg-gray-300' : 'bg-neutral-700';
+  const statCardBg = isLight ? 'bg-gray-100' : 'bg-black/50';
+
+  // SVG gradient colors for light/dark mode
+  const gradientColor = isLight ? 'rgb(180, 180, 180)' : 'rgb(64, 64, 64)';
+
   return (
     <div className="w-full h-full relative flex overflow-hidden">
       {/* Mobile/Tablet View (< 1024px) and Desktop - No sidebar needed, page handles it */}
@@ -10,11 +25,11 @@ export function FeesChartSkeleton() {
             {/* Stats Cards Skeleton */}
             <div className="grid grid-cols-3 gap-2 md:gap-4 flex-shrink-0">
               {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="p-2 md:p-6 bg-black/50 border border-neutral-800 rounded-lg flex flex-col items-center text-center">
-                  <Skeleton className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-neutral-700 mb-2" />
-                  <Skeleton className="h-3 md:h-4 w-16 md:w-24 bg-neutral-700 mb-2" />
-                  <Skeleton className="h-4 md:h-8 w-12 md:w-20 bg-neutral-700 mb-1" />
-                  <Skeleton className="h-2 md:h-3 w-10 md:w-16 bg-neutral-700" />
+                <div key={i} className={`p-2 md:p-6 ${statCardBg} border ${cardBorder} rounded-lg flex flex-col items-center text-center`}>
+                  <Skeleton className={`w-8 h-8 md:w-10 md:h-10 rounded-full ${skeletonBg} mb-2`} />
+                  <Skeleton className={`h-3 md:h-4 w-16 md:w-24 ${skeletonBg} mb-2`} />
+                  <Skeleton className={`h-4 md:h-8 w-12 md:w-20 ${skeletonBg} mb-1`} />
+                  <Skeleton className={`h-2 md:h-3 w-10 md:w-16 ${skeletonBg}`} />
                 </div>
               ))}
             </div>
@@ -22,16 +37,16 @@ export function FeesChartSkeleton() {
             {/* Charts Grid */}
             <div className="grid gap-4 grid-cols-1 lg:grid-cols-2 flex-1 md:min-h-0 md:grid-rows-2">
               {/* Chart 1: Bar Chart */}
-              <div className="bg-neutral-900 border border-neutral-800 rounded-lg p-6 flex flex-col md:min-h-0">
+              <div className={`${cardBg} border ${cardBorder} rounded-lg p-6 flex flex-col md:min-h-0`}>
                 <div className="mb-4">
-                  <Skeleton className="h-6 w-48 bg-neutral-700 mb-2" />
-                  <Skeleton className="h-4 w-64 bg-neutral-700" />
+                  <Skeleton className={`h-6 w-48 ${skeletonBg} mb-2`} />
+                  <Skeleton className={`h-4 w-64 ${skeletonBg}`} />
                 </div>
                 <div className="flex-1 flex items-end gap-2 px-4 pb-0 md:min-h-0 h-[250px] md:h-full">
                   {Array.from({ length: 15 }).map((_, i) => (
                     <Skeleton
                       key={i}
-                      className="flex-1 bg-neutral-700"
+                      className={`flex-1 ${skeletonBg}`}
                       style={{
                         height: `${Math.random() * 80 + 20}%`,
                         minWidth: '8px',
@@ -43,18 +58,18 @@ export function FeesChartSkeleton() {
               </div>
 
               {/* Chart 2: Area Chart */}
-              <div className="bg-neutral-900 border border-neutral-800 rounded-lg p-6 flex flex-col md:min-h-0">
+              <div className={`${cardBg} border ${cardBorder} rounded-lg p-6 flex flex-col md:min-h-0`}>
                 <div className="mb-4">
-                  <Skeleton className="h-6 w-48 bg-neutral-700 mb-2" />
-                  <Skeleton className="h-4 w-64 bg-neutral-700" />
+                  <Skeleton className={`h-6 w-48 ${skeletonBg} mb-2`} />
+                  <Skeleton className={`h-4 w-64 ${skeletonBg}`} />
                 </div>
                 <div className="flex-1 pb-0 md:min-h-0 h-[250px] md:h-full">
                   <div className="relative w-full h-full">
                     <svg className="w-full h-full" viewBox="0 0 400 300" preserveAspectRatio="none">
                       <defs>
                         <linearGradient id="skeletonGradient1" x1="0%" y1="0%" x2="0%" y2="100%">
-                          <stop offset="0%" stopColor="rgb(64, 64, 64)" stopOpacity="0.8" />
-                          <stop offset="100%" stopColor="rgb(64, 64, 64)" stopOpacity="0.1" />
+                          <stop offset="0%" stopColor={gradientColor} stopOpacity="0.8" />
+                          <stop offset="100%" stopColor={gradientColor} stopOpacity="0.1" />
                         </linearGradient>
                       </defs>
                       <path
@@ -68,10 +83,10 @@ export function FeesChartSkeleton() {
               </div>
 
               {/* Chart 3: Line Chart */}
-              <div className="bg-neutral-900 border border-neutral-800 rounded-lg p-6 flex flex-col md:min-h-0">
+              <div className={`${cardBg} border ${cardBorder} rounded-lg p-6 flex flex-col md:min-h-0`}>
                 <div className="mb-4">
-                  <Skeleton className="h-6 w-48 bg-neutral-700 mb-2" />
-                  <Skeleton className="h-4 w-64 bg-neutral-700" />
+                  <Skeleton className={`h-6 w-48 ${skeletonBg} mb-2`} />
+                  <Skeleton className={`h-4 w-64 ${skeletonBg}`} />
                 </div>
                 <div className="flex-1 pb-0 md:min-h-0 h-[250px] md:h-full">
                   <div className="relative w-full h-full">
@@ -79,7 +94,7 @@ export function FeesChartSkeleton() {
                       <path
                         d="M 0 200 Q 50 150, 100 170 T 200 120 T 300 80 T 400 50"
                         fill="none"
-                        stroke="rgb(64, 64, 64)"
+                        stroke={gradientColor}
                         strokeWidth="3"
                         className="animate-pulse"
                         style={{ animationDelay: '0.1s' }}
@@ -90,18 +105,18 @@ export function FeesChartSkeleton() {
               </div>
 
               {/* Chart 4: Area Chart */}
-              <div className="bg-neutral-900 border border-neutral-800 rounded-lg p-6 flex flex-col md:min-h-0">
+              <div className={`${cardBg} border ${cardBorder} rounded-lg p-6 flex flex-col md:min-h-0`}>
                 <div className="mb-4">
-                  <Skeleton className="h-6 w-48 bg-neutral-700 mb-2" />
-                  <Skeleton className="h-4 w-64 bg-neutral-700" />
+                  <Skeleton className={`h-6 w-48 ${skeletonBg} mb-2`} />
+                  <Skeleton className={`h-4 w-64 ${skeletonBg}`} />
                 </div>
                 <div className="flex-1 pb-0 md:min-h-0 h-[250px] md:h-full">
                   <div className="relative w-full h-full">
                     <svg className="w-full h-full" viewBox="0 0 400 250" preserveAspectRatio="none">
                       <defs>
                         <linearGradient id="skeletonGradient2" x1="0%" y1="0%" x2="0%" y2="100%">
-                          <stop offset="0%" stopColor="rgb(64, 64, 64)" stopOpacity="0.6" />
-                          <stop offset="100%" stopColor="rgb(64, 64, 64)" stopOpacity="0.05" />
+                          <stop offset="0%" stopColor={gradientColor} stopOpacity="0.6" />
+                          <stop offset="100%" stopColor={gradientColor} stopOpacity="0.05" />
                         </linearGradient>
                       </defs>
                       <path

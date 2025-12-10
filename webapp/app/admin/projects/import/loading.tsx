@@ -31,6 +31,13 @@ export default function ImportLoading() {
           gap: 1rem;
           justify-content: flex-end;
         }
+
+        /* Light mode overrides */
+        html.light .wizard-skeleton,
+        .light .wizard-skeleton {
+          border-color: rgba(45, 138, 82, 0.2);
+          background: rgba(255, 255, 255, 0.7);
+        }
       `}</style>
 
       {/* Header */}

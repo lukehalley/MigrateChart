@@ -945,6 +945,73 @@ const styles = `
       border-radius: 10px;
     }
   }
+
+  /* Light mode overrides */
+  .light .unified-title,
+  html.light .unified-title {
+    background: linear-gradient(180deg, #1a1a1a 0%, rgba(26, 26, 26, 0.8) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .light .unified-subtitle,
+  html.light .unified-subtitle {
+    color: rgba(26, 26, 26, 0.6);
+  }
+
+  .light .metrics-feature-card,
+  html.light .metrics-feature-card {
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(45, 138, 82, 0.15);
+  }
+
+  .light .metrics-feature-card:hover,
+  html.light .metrics-feature-card:hover {
+    border-color: rgba(45, 138, 82, 0.3);
+    box-shadow: 0 20px 60px rgba(45, 138, 82, 0.1);
+  }
+
+  .light .metrics-feature-header,
+  html.light .metrics-feature-header {
+    border-bottom: 1px solid rgba(45, 138, 82, 0.1);
+  }
+
+  .light .metrics-feature-icon,
+  html.light .metrics-feature-icon {
+    background: rgba(45, 138, 82, 0.1);
+    border: 1px solid rgba(45, 138, 82, 0.2);
+    color: #2d8a52;
+  }
+
+  .light .metrics-feature-card:hover .metrics-feature-icon,
+  html.light .metrics-feature-card:hover .metrics-feature-icon {
+    background: rgba(45, 138, 82, 0.15);
+    box-shadow: 0 0 20px rgba(45, 138, 82, 0.2);
+  }
+
+  .light .metrics-feature-title,
+  html.light .metrics-feature-title {
+    color: #1a1a1a;
+  }
+
+  .light .metrics-feature-badge.core,
+  html.light .metrics-feature-badge.core {
+    background: rgba(45, 138, 82, 0.1);
+    color: #2d8a52;
+    border: 1px solid rgba(45, 138, 82, 0.2);
+  }
+
+  .light .metrics-feature-description,
+  html.light .metrics-feature-description {
+    color: rgba(26, 26, 26, 0.6);
+  }
+
+  .light .viz-container,
+  html.light .viz-container {
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(45, 138, 82, 0.1);
+  }
 `;
 
 export default function UnifiedMetricsShowcase() {

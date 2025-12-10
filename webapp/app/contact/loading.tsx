@@ -140,6 +140,29 @@ export default function ContactLoading() {
             grid-template-columns: 1fr;
           }
         }
+
+        /* Light mode overrides */
+        html.light .contact-loading,
+        .light .contact-loading {
+          --accent: #2d8a52;
+          --accent-glow: rgba(45, 138, 82, 0.3);
+          --bg: #f8faf9;
+          --surface: #ffffff;
+          --border: rgba(45, 138, 82, 0.15);
+          background: var(--bg);
+        }
+
+        html.light .contact-loading::before,
+        .light .contact-loading::before {
+          background:
+            radial-gradient(ellipse 100% 100% at 0% 0%, rgba(45, 138, 82, 0.06) 0%, transparent 50%),
+            radial-gradient(ellipse 80% 80% at 100% 100%, rgba(45, 138, 82, 0.04) 0%, transparent 50%);
+        }
+
+        html.light .hero-panel,
+        .light .hero-panel {
+          border-color: rgba(45, 138, 82, 0.15);
+        }
       `}</style>
 
       <div className="page-container">

@@ -21,14 +21,16 @@ import { TokenLoadingLogo } from '@/components/TokenLoadingLogo';
 import { TokenSwitcher } from '@/components/TokenSwitcher';
 import { TokenContextProvider, useTokenContext } from '@/lib/TokenContext';
 import { useTheme } from '@/lib/useTheme';
+import { useThemeContext } from '@/lib/ThemeContext';
 import { fetchAllPoolsData, fetchTokenStats, fetchWalletBalance, fetchTokenBalance } from '@/lib/api';
 import { PoolData, Timeframe, ProjectConfig } from '@/lib/types';
 import { SafeStorage } from '@/lib/localStorage';
 import { DonationPopup } from '@/components/DonationPopup';
 import { LoginButton } from '@/components/LoginButton';
 import { LoginModal } from '@/components/LoginModal';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { createClient } from '@/lib/supabase-browser';
-import { User } from 'lucide-react';
+import { User, Sun, Moon } from 'lucide-react';
 import { createPortal } from 'react-dom';
 
 // Mobile menu version of login button
@@ -160,6 +162,8 @@ function HomeContent() {
   });
 
   const themeStyles = useTheme(currentProject?.primaryColor || 'var(--primary-color)');
+  const { theme } = useThemeContext();
+  const isLight = theme === 'light';
   const primaryColor = currentProject?.primaryColor || '#52C97D';
   const secondaryColor = currentProject?.secondaryColor || '#000000';
 
@@ -712,8 +716,8 @@ function HomeContent() {
           position: fixed;
           inset: 0;
           background:
-            repeating-linear-gradient(0deg, rgba(0,0,0,0.3), rgba(0,0,0,0.3) 1px, transparent 1px, transparent 3px),
-            repeating-linear-gradient(0deg, transparent, transparent 6px, ${hexToRgba(primaryColor, 0.03)} 6px, ${hexToRgba(primaryColor, 0.03)} 7px);
+            repeating-linear-gradient(0deg, ${isLight ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.3)'}, ${isLight ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.3)'} 1px, transparent 1px, transparent 3px),
+            repeating-linear-gradient(0deg, transparent, transparent 6px, ${hexToRgba(primaryColor, isLight ? 0.02 : 0.03)} 6px, ${hexToRgba(primaryColor, isLight ? 0.02 : 0.03)} 7px);
           background-size: 100% 3px, 100% 7px;
           pointer-events: none;
           z-index: 1;
@@ -744,7 +748,7 @@ function HomeContent() {
 
       {/* Donation Banner */}
       <motion.div
-        className="relative bg-gradient-to-r from-black via-[var(--primary-darker)]/30 to-black border-b-2 border-[var(--primary-color)]/50 backdrop-blur-sm"
+        className={`relative border-b-2 border-[var(--primary-color)]/50 backdrop-blur-sm ${isLight ? 'bg-gradient-to-r from-gray-50 via-[var(--primary-color)]/10 to-gray-50' : 'bg-gradient-to-r from-black via-[var(--primary-darker)]/30 to-black'}`}
         style={{ boxShadow: `0 4px 20px rgba(var(--primary-rgb), 0.25)` }}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -803,11 +807,12 @@ function HomeContent() {
               </svg>
             </motion.button>
 
-            {/* Contact & Login Buttons - Far Right */}
+            {/* Theme, Contact & Login Buttons - Far Right */}
             <div className="absolute right-6 flex items-center gap-2">
+              <ThemeToggle size="md" />
               <motion.button
                 onClick={() => router.push('/contact')}
-                className="flex items-center justify-center w-10 h-10 rounded-lg border transition-all bg-black/60"
+                className={`flex items-center justify-center w-10 h-10 rounded-lg border transition-all ${isLight ? 'bg-gray-100' : 'bg-black/60'}`}
                 style={{
                   borderColor: `${primaryColor}40`,
                   color: primaryColor
@@ -828,7 +833,7 @@ function HomeContent() {
             {/* Column 1: Address Bar + Copy Button */}
             <div className="flex items-center justify-center gap-2">
               <motion.div
-                className="flex items-center gap-2 bg-black/60 px-4 py-[11px] rounded-lg border border-[var(--primary-color)]/40 overflow-hidden flex-shrink min-w-0 h-[48px]"
+                className={`flex items-center gap-2 px-4 py-[11px] rounded-lg border border-[var(--primary-color)]/40 overflow-hidden flex-shrink min-w-0 h-[48px] ${isLight ? 'bg-gray-100' : 'bg-black/60'}`}
                 whileHover={{ borderColor: hexToRgba(primaryColor, 0.7) }}
               >
                 <code className="text-[var(--primary-color)] text-sm font-mono select-all truncate">
@@ -893,10 +898,10 @@ function HomeContent() {
                 <Heart className="w-6 h-6 text-[var(--primary-color)] fill-[var(--primary-color)]" />
               </motion.div>
               <div className="flex flex-col gap-0.5 items-center justify-center">
-                <p className="text-white font-bold text-base leading-tight">
+                <p className={`font-bold text-base leading-tight ${isLight ? 'text-gray-900' : 'text-white'}`}>
                   Support This Tool
                 </p>
-                <p className="text-white/70 text-xs leading-tight">
+                <p className={`text-xs leading-tight ${isLight ? 'text-gray-600' : 'text-white/70'}`}>
                   Donate via Solana Network
                 </p>
               </div>
@@ -907,10 +912,10 @@ function HomeContent() {
 
             {/* Column 3: Donate Goal - Stacked Progress Bars */}
             <div className="flex items-center justify-center">
-              <div className="flex flex-col gap-1 bg-black/60 px-4 py-2 rounded-lg border border-[var(--primary-color)]/30">
+              <div className={`flex flex-col gap-1 px-4 py-2 rounded-lg border border-[var(--primary-color)]/30 ${isLight ? 'bg-gray-100' : 'bg-black/60'}`}>
                 {/* Token Balance */}
                 <div className="flex items-center gap-2">
-                  <div className="relative w-28 h-1.5 bg-black/60 rounded-full overflow-hidden border border-[var(--primary-color)]/30">
+                  <div className={`relative w-28 h-1.5 rounded-full overflow-hidden border border-[var(--primary-color)]/30 ${isLight ? 'bg-gray-200' : 'bg-black/60'}`}>
                     <motion.div
                       className="absolute inset-y-0 left-0 bg-gradient-to-r from-[var(--primary-color)] to-[#3FAA66] rounded-full"
                       initial={{ width: 0 }}
@@ -936,7 +941,7 @@ function HomeContent() {
 
                 {/* SOL Balance */}
                 <div className="flex items-center gap-2">
-                  <div className="relative w-28 h-1.5 bg-black/60 rounded-full overflow-hidden border border-[var(--primary-color)]/30">
+                  <div className={`relative w-28 h-1.5 rounded-full overflow-hidden border border-[var(--primary-color)]/30 ${isLight ? 'bg-gray-200' : 'bg-black/60'}`}>
                     <motion.div
                       className="absolute inset-y-0 left-0 bg-gradient-to-r from-[var(--primary-color)] to-[#3FAA66] rounded-full"
                       initial={{ width: 0 }}
@@ -1010,10 +1015,10 @@ function HomeContent() {
                   <Heart className="w-4 h-4 text-[var(--primary-color)] fill-[var(--primary-color)]" />
                 </motion.div>
                 <div className="text-center min-w-0">
-                  <p className="text-white font-bold text-xs leading-tight">
+                  <p className={`font-bold text-xs leading-tight ${isLight ? 'text-gray-900' : 'text-white'}`}>
                     Support This Tool
                   </p>
-                  <p className="text-white/70 text-[10px] leading-tight">
+                  <p className={`text-[10px] leading-tight ${isLight ? 'text-gray-600' : 'text-white/70'}`}>
                     Donate via Solana Network
                   </p>
                 </div>
@@ -1022,7 +1027,7 @@ function HomeContent() {
               {/* Menu Button - Right */}
               <motion.button
                 onClick={() => setShowMobileMenu(true)}
-                className="flex-shrink-0 w-12 h-12 flex items-center justify-center bg-black/60 border-2 rounded-lg backdrop-blur-sm hover:bg-black/80 transition-all"
+                className={`flex-shrink-0 w-12 h-12 flex items-center justify-center border-2 rounded-lg backdrop-blur-sm transition-all ${isLight ? 'bg-gray-100 hover:bg-gray-200' : 'bg-black/60 hover:bg-black/80'}`}
                 style={{ borderColor: `${primaryColor}40` }}
                 whileHover={{
                   borderColor: hexToRgba(primaryColor, 0.7),
@@ -1042,10 +1047,10 @@ function HomeContent() {
               {/* ZERA Token Balance */}
               <div className="mb-2">
                 <div className="flex items-center justify-between gap-2 mb-0.5">
-                  <span className="text-white/70 text-[10px] font-medium">{sortedPools[sortedPools.length - 1]?.tokenSymbol} Tokens</span>
+                  <span className={`text-[10px] font-medium ${isLight ? 'text-gray-600' : 'text-white/70'}`}>{sortedPools[sortedPools.length - 1]?.tokenSymbol} Tokens</span>
                   <span className="text-[var(--primary-color)] text-[10px] font-bold">{tokenBalance.toFixed(0)} / {formatGoalNumber(tokenGoal)}</span>
                 </div>
-                <div className="relative h-1.5 bg-black/60 rounded-full overflow-hidden border border-[var(--primary-color)]/30">
+                <div className={`relative h-1.5 rounded-full overflow-hidden border border-[var(--primary-color)]/30 ${isLight ? 'bg-gray-200' : 'bg-black/60'}`}>
                   <motion.div
                     className="absolute inset-y-0 left-0 bg-gradient-to-r from-[var(--primary-color)] to-[#3FAA66] rounded-full"
                     initial={{ width: 0 }}
@@ -1070,10 +1075,10 @@ function HomeContent() {
               {/* SOL Balance */}
               <div>
                 <div className="flex items-center justify-between gap-2 mb-0.5">
-                  <span className="text-white/70 text-[10px] font-medium">Solana (SOL)</span>
+                  <span className={`text-[10px] font-medium ${isLight ? 'text-gray-600' : 'text-white/70'}`}>Solana (SOL)</span>
                   <span className="text-[var(--primary-color)] text-[10px] font-bold">{walletBalance.toFixed(2)} / {formatGoalNumber(solGoal)}</span>
                 </div>
-                <div className="relative h-1.5 bg-black/60 rounded-full overflow-hidden border border-[var(--primary-color)]/30">
+                <div className={`relative h-1.5 rounded-full overflow-hidden border border-[var(--primary-color)]/30 ${isLight ? 'bg-gray-200' : 'bg-black/60'}`}>
                   <motion.div
                     className="absolute inset-y-0 left-0 bg-gradient-to-r from-[var(--primary-color)] to-[#3FAA66] rounded-full"
                     initial={{ width: 0 }}
@@ -1099,7 +1104,7 @@ function HomeContent() {
             {/* Address and Copy Button */}
             <div className="flex items-center justify-center gap-1.5 w-full px-2">
               <motion.div
-                className="flex items-center justify-center gap-2 bg-black/60 px-2.5 py-1.5 rounded-lg border border-[var(--primary-color)]/40 overflow-hidden flex-1 min-w-0"
+                className={`flex items-center justify-center gap-2 px-2.5 py-1.5 rounded-lg border border-[var(--primary-color)]/40 overflow-hidden flex-1 min-w-0 ${isLight ? 'bg-gray-100' : 'bg-black/60'}`}
                 whileHover={{ borderColor: hexToRgba(primaryColor, 0.7) }}
               >
                 <code className="text-[var(--primary-color)] text-[10px] font-mono select-all truncate text-center">
@@ -1498,9 +1503,17 @@ function HomeContent() {
                 <div className="dashed-divider w-24"></div>
               </div>
 
-              {/* Contact & Login Actions */}
+              {/* Theme & Quick Actions */}
               <div className="info-card-small">
                 <div className="py-2 px-2">
+                  <p className="text-white text-[10px] mb-3 text-center font-medium">Settings</p>
+                  {/* Theme Toggle */}
+                  <div className="flex items-center justify-between mb-3 px-2 py-2 rounded-lg border-2 bg-black/60"
+                    style={{ borderColor: `${primaryColor}40` }}
+                  >
+                    <span className="text-xs font-medium text-white/80">Theme</span>
+                    <ThemeToggle size="md" />
+                  </div>
                   <p className="text-white text-[10px] mb-3 text-center font-medium">Quick Actions</p>
                   <div className="grid grid-cols-2 gap-2">
                     {/* Contact Button */}

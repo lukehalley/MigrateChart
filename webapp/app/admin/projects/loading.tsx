@@ -49,6 +49,23 @@ export default function ProjectsLoading() {
             grid-template-columns: 1fr;
           }
         }
+
+        /* Light mode overrides */
+        html.light .table-skeleton,
+        .light .table-skeleton {
+          border-color: rgba(45, 138, 82, 0.2);
+        }
+
+        html.light .table-header-skeleton,
+        .light .table-header-skeleton {
+          background: rgba(45, 138, 82, 0.05);
+          border-color: rgba(45, 138, 82, 0.2);
+        }
+
+        html.light .table-row-skeleton,
+        .light .table-row-skeleton {
+          border-color: rgba(45, 138, 82, 0.1);
+        }
       `}</style>
 
       {/* Header */}

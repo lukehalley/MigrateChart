@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { createClient } from '@/lib/supabase-browser';
+import { useThemeContext } from '@/lib/ThemeContext';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -15,6 +16,8 @@ interface LoginModalProps {
 
 export function LoginModal({ isOpen, onClose, primaryColor, secondaryColor }: LoginModalProps) {
   const router = useRouter();
+  const { theme } = useThemeContext();
+  const isLight = theme === 'light';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -51,7 +54,7 @@ export function LoginModal({ isOpen, onClose, primaryColor, secondaryColor }: Lo
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm"
+            className={`fixed inset-0 backdrop-blur-sm ${isLight ? 'bg-black/40' : 'bg-black/80'}`}
             style={{ zIndex: 9999 }}
           />
 
@@ -65,10 +68,12 @@ export function LoginModal({ isOpen, onClose, primaryColor, secondaryColor }: Lo
             style={{ zIndex: 10000 }}
           >
             <div
-              className="relative bg-black border-2 rounded-lg p-8"
+              className={`relative border-2 rounded-lg p-8 ${isLight ? 'bg-white' : 'bg-black'}`}
               style={{
                 borderColor: `${primaryColor}60`,
-                boxShadow: `0 0 40px ${primaryColor}30, 0 0 80px ${primaryColor}15`,
+                boxShadow: isLight
+                  ? `0 4px 20px rgba(0, 0, 0, 0.15), 0 0 40px ${primaryColor}20`
+                  : `0 0 40px ${primaryColor}30, 0 0 80px ${primaryColor}15`,
               }}
             >
               {/* Close Button */}
@@ -122,7 +127,11 @@ export function LoginModal({ isOpen, onClose, primaryColor, secondaryColor }: Lo
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="w-full px-4 py-3 bg-black/50 border rounded-lg text-white placeholder-white/30 transition-all focus:outline-none"
+                    className={`w-full px-4 py-3 border rounded-lg transition-all focus:outline-none ${
+                      isLight
+                        ? 'bg-gray-50 text-gray-900 placeholder-gray-400'
+                        : 'bg-black/50 text-white placeholder-white/30'
+                    }`}
                     style={{
                       borderColor: `${primaryColor}40`,
                     }}
@@ -151,7 +160,11 @@ export function LoginModal({ isOpen, onClose, primaryColor, secondaryColor }: Lo
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    className="w-full px-4 py-3 bg-black/50 border rounded-lg text-white placeholder-white/30 transition-all focus:outline-none"
+                    className={`w-full px-4 py-3 border rounded-lg transition-all focus:outline-none ${
+                      isLight
+                        ? 'bg-gray-50 text-gray-900 placeholder-gray-400'
+                        : 'bg-black/50 text-white placeholder-white/30'
+                    }`}
                     style={{
                       borderColor: `${primaryColor}40`,
                     }}

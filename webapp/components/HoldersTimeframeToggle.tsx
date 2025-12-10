@@ -1,5 +1,8 @@
+'use client';
+
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useThemeContext } from '@/lib/ThemeContext';
 
 type HoldersTimeframe = '1D' | '7D' | '30D' | '90D' | 'ALL';
 
@@ -16,6 +19,8 @@ export default function HoldersTimeframeToggle({
   primaryColor = '#52C97D',
   secondaryColor = '#000000',
 }: HoldersTimeframeToggleProps) {
+  const { theme } = useThemeContext();
+  const isLight = theme === 'light';
   const topTimeframes: HoldersTimeframe[] = ['1D', '7D', '30D', '90D'];
   const bottomTimeframe: HoldersTimeframe = 'ALL';
 
@@ -32,7 +37,9 @@ export default function HoldersTimeframeToggle({
               ${
                 currentTimeframe === tf
                   ? ''
-                  : 'text-white hover:text-white hover:bg-gray-800/50 border border-gray-700/40'
+                  : isLight
+                    ? 'text-gray-700 hover:text-gray-900 hover:bg-gray-200/50 border border-gray-300/60'
+                    : 'text-white hover:text-white hover:bg-gray-800/50 border border-gray-700/40'
               }
             `}
             style={currentTimeframe === tf ? { color: secondaryColor } : undefined}
@@ -58,7 +65,9 @@ export default function HoldersTimeframeToggle({
           ${
             currentTimeframe === bottomTimeframe
               ? ''
-              : 'text-white hover:text-white hover:bg-gray-800/50 border border-gray-700/40'
+              : isLight
+                ? 'text-gray-700 hover:text-gray-900 hover:bg-gray-200/50 border border-gray-300/60'
+                : 'text-white hover:text-white hover:bg-gray-800/50 border border-gray-700/40'
           }
         `}
         style={currentTimeframe === bottomTimeframe ? { color: secondaryColor } : undefined}

@@ -6,8 +6,89 @@
 @plugin "tailwindcss-animate";
 
 @custom-variant dark (&:is(.dark *));
+@custom-variant light (&:is(.light *));
 
+/* ============================================
+   LIGHT MODE (Default) - Refined Paper Terminal
+   Warm, sophisticated, editorial aesthetic
+   ============================================ */
 :root {
+  /* Core brand color adapted for light */
+  --surface: #f8f6f1;
+  --border: rgba(0, 0, 0, 0.08);
+  --text: #1a1a1a;
+  --text-muted: #6b7280;
+  --zera: #2d8a52;
+  --green: #2d8a52;
+  --red: #dc2626;
+  --radius: 0.625rem;
+
+  /* Warm cream/ivory backgrounds */
+  --background: #fdfbf7;
+  --foreground: #1a1a1a;
+
+  /* Elevated surfaces with subtle warmth */
+  --card: #ffffff;
+  --card-foreground: #1a1a1a;
+  --popover: #ffffff;
+  --popover-foreground: #1a1a1a;
+
+  /* Primary actions - forest green for contrast */
+  --primary: #2d8a52;
+  --primary-foreground: #ffffff;
+
+  /* Secondary elements */
+  --secondary: #f3f1ec;
+  --secondary-foreground: #374151;
+
+  /* Muted/subtle elements */
+  --muted: #f3f1ec;
+  --muted-foreground: #6b7280;
+
+  /* Accent highlights */
+  --accent: #e8f5e9;
+  --accent-foreground: #1a1a1a;
+
+  /* Destructive actions */
+  --destructive: #dc2626;
+
+  /* Form elements */
+  --input: #f3f1ec;
+  --ring: #2d8a52;
+
+  /* Chart colors - adjusted for light background */
+  --chart-1: #2d8a52;
+  --chart-2: #059669;
+  --chart-3: #0d9488;
+  --chart-4: #0891b2;
+  --chart-5: #6366f1;
+
+  /* Sidebar */
+  --sidebar: #f8f6f1;
+  --sidebar-foreground: #1a1a1a;
+  --sidebar-primary: #2d8a52;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e8f5e9;
+  --sidebar-accent-foreground: #1a1a1a;
+  --sidebar-border: rgba(0, 0, 0, 0.08);
+  --sidebar-ring: #2d8a52;
+
+  /* Light mode specific - dynamic primary colors (used by useTheme hook) */
+  --primary-color: #2d8a52;
+  --primary-rgb: 45, 138, 82;
+  --primary-glow: rgba(45, 138, 82, 0.15);
+  --primary-10: rgba(45, 138, 82, 0.1);
+  --primary-20: rgba(45, 138, 82, 0.2);
+  --primary-30: rgba(45, 138, 82, 0.3);
+  --primary-50: rgba(45, 138, 82, 0.5);
+  --primary-darker: #236b40;
+  --primary-lighter: #3da866;
+}
+
+/* ============================================
+   DARK MODE - Terminal Aesthetic
+   ============================================ */
+.dark {
   --surface: #161b22;
   --border: oklch(0.922 0 0);
   --text: #ffffff;
@@ -15,7 +96,6 @@
   --zera: #52C97D;
   --green: #52C97D;
   --red: #ef5350;
-  --radius: 0.625rem;
   --background: oklch(0 0 0);
   --foreground: oklch(1 0 0);
   --card: oklch(0.165 0 0);
@@ -46,6 +126,17 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* Dark mode specific - dynamic primary colors */
+  --primary-color: #52C97D;
+  --primary-rgb: 82, 201, 125;
+  --primary-glow: rgba(82, 201, 125, 0.2);
+  --primary-10: rgba(82, 201, 125, 0.1);
+  --primary-20: rgba(82, 201, 125, 0.2);
+  --primary-30: rgba(82, 201, 125, 0.3);
+  --primary-50: rgba(82, 201, 125, 0.5);
+  --primary-darker: #3da866;
+  --primary-lighter: #6dd99a;
 }
 
 html,
@@ -87,10 +178,13 @@ a {
   text-decoration: none;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
+/* Color scheme based on theme class */
+html.dark {
+  color-scheme: dark;
+}
+
+html.light {
+  color-scheme: light;
 }
 
 @keyframes fade-in {
@@ -220,6 +314,13 @@ a {
   background-size: 24px 24px;
 }
 
+/* Light mode grid pattern - subtle warm lines */
+.light .grid-pattern {
+  background-image:
+    linear-gradient(to right, rgba(45, 138, 82, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(45, 138, 82, 0.04) 1px, transparent 1px);
+}
+
 /* Neon glow effect for data elements */
 .data-glow {
   text-shadow:
@@ -257,6 +358,26 @@ a {
   height: 100%;
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.03), transparent);
   /* animation: shimmer 3s infinite; */
+}
+
+/* Light mode terminal card - refined paper style */
+.light .terminal-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 246, 241, 0.95) 100%);
+  border: 1px solid rgba(45, 138, 82, 0.2);
+  border-image: none;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.05),
+    0 4px 12px rgba(45, 138, 82, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.light .terminal-card::before {
+  background: linear-gradient(90deg, transparent, rgba(45, 138, 82, 0.3), transparent);
+  opacity: 1;
+}
+
+.light .terminal-card::after {
+  background: linear-gradient(90deg, transparent, rgba(45, 138, 82, 0.02), transparent);
 }
 
 /* Scan line effect */
@@ -315,10 +436,48 @@ a {
   }
 }
 
+/* Light mode info cards - elegant paper style */
+.light .info-card-main {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(45, 138, 82, 0.25);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.06),
+    0 8px 24px rgba(45, 138, 82, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.light .info-card-small {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(45, 138, 82, 0.25);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.06),
+    0 8px 24px rgba(45, 138, 82, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+@media (min-width: 768px) {
+  .light .info-card-main {
+    border-color: rgba(45, 138, 82, 0.3);
+    box-shadow:
+      0 4px 12px rgba(0, 0, 0, 0.08),
+      0 12px 32px rgba(45, 138, 82, 0.12),
+      inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  }
+
+  .light .info-card-small {
+    border-color: rgba(45, 138, 82, 0.3);
+    box-shadow:
+      0 4px 12px rgba(0, 0, 0, 0.08),
+      0 12px 32px rgba(45, 138, 82, 0.12),
+      inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  }
+}
+
 /* Stat card for sidebar */
 .stat-card {
   background: transparent;
-  border: none;
+  border: 1px solid transparent;
+  border-radius: 8px;
   padding: 6px 8px;
   margin: 0;
   transition: all 0.2s ease;
@@ -327,7 +486,8 @@ a {
 /* Stat card with ZERA highlight */
 .stat-card-highlight {
   background: transparent;
-  border: none;
+  border: 1px solid transparent;
+  border-radius: 8px;
   padding: 8px 8px 6px 8px;
   margin: 0;
   transition: all 0.2s ease;
@@ -360,6 +520,19 @@ a {
 
 .overflow-y-auto::-webkit-scrollbar-thumb:hover {
   background: var(--primary-30);
+}
+
+/* Light mode scrollbars */
+.light .overflow-y-auto::-webkit-scrollbar-track {
+  background: rgba(45, 138, 82, 0.08);
+}
+
+.light .overflow-y-auto::-webkit-scrollbar-thumb {
+  background: rgba(45, 138, 82, 0.25);
+}
+
+.light .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: rgba(45, 138, 82, 0.4);
 }
 
 /* Smooth scrolling for floating icons on mobile */
@@ -473,40 +646,6 @@ a {
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
-}
-
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -514,4 +653,325 @@ a {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* ============================================
+   LIGHT MODE OVERRIDES - Token Page
+   Overrides hardcoded dark styles for light theme
+   ============================================ */
+
+/* Token page main container */
+html.light .token-page-container,
+.light .token-page-container {
+  background: var(--background) !important;
+}
+
+/* Sidebar light mode */
+html.light [class*="bg-black"],
+.light [class*="bg-black"]:not([class*="text-"]) {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+}
+
+/* Fix for sidebar and popovers */
+html.light .border-l.bg-black,
+.light .border-l.bg-black {
+  background: linear-gradient(to bottom, #ffffff 0%, #fdfbf7 100%) !important;
+  border-color: rgba(45, 138, 82, 0.2) !important;
+}
+
+/* PopoverContent - override black backgrounds */
+html.light [data-radix-popper-content-wrapper] [class*="from-black"],
+.light [data-radix-popper-content-wrapper] [class*="from-black"],
+html.light [data-radix-popper-content-wrapper] [class*="to-black"],
+.light [data-radix-popper-content-wrapper] [class*="to-black"] {
+  background: linear-gradient(to bottom, #ffffff, #fdfbf7) !important;
+}
+
+/* Text colors for light mode */
+html.light .text-white,
+.light .text-white {
+  color: #1a1a1a !important;
+}
+
+html.light .text-white\/50,
+.light .text-white\/50 {
+  color: rgba(26, 26, 26, 0.6) !important;
+}
+
+html.light .text-white\/60,
+.light .text-white\/60 {
+  color: rgba(26, 26, 26, 0.65) !important;
+}
+
+html.light .text-white\/70,
+.light .text-white\/70 {
+  color: rgba(26, 26, 26, 0.75) !important;
+}
+
+/* Border colors */
+html.light .border-white\/20,
+.light .border-white\/20 {
+  border-color: rgba(45, 138, 82, 0.2) !important;
+}
+
+html.light [class*="border-\[var\(--primary-color\)\]\/20"],
+.light [class*="border-\[var\(--primary-color\)\]\/20"] {
+  border-color: rgba(45, 138, 82, 0.2) !important;
+}
+
+/* Stat cards light mode */
+html.light .stat-card,
+.light .stat-card {
+  background: rgba(255, 255, 255, 0.7) !important;
+  border: 1px solid rgba(45, 138, 82, 0.1) !important;
+  border-radius: 8px !important;
+}
+
+html.light .stat-card-highlight,
+.light .stat-card-highlight {
+  background: rgba(255, 255, 255, 0.8) !important;
+  border: 1px solid rgba(45, 138, 82, 0.15) !important;
+  border-radius: 8px !important;
+}
+
+/* Dashed divider in light mode */
+html.light .dashed-divider,
+.light .dashed-divider {
+  border-color: var(--primary-color) !important;
+  opacity: 0.4 !important;
+}
+
+/* View mode buttons with black backgrounds */
+html.light [class*="bg-black\/50"],
+.light [class*="bg-black\/50"] {
+  background-color: rgba(45, 138, 82, 0.08) !important;
+}
+
+html.light [class*="bg-black\/60"],
+.light [class*="bg-black\/60"] {
+  background-color: rgba(45, 138, 82, 0.1) !important;
+}
+
+/* Gray toggle backgrounds */
+html.light .bg-gray-700\/80,
+.light .bg-gray-700\/80 {
+  background-color: rgba(0, 0, 0, 0.15) !important;
+}
+
+html.light .hover\:bg-gray-600\/80:hover,
+.light .hover\:bg-gray-600\/80:hover {
+  background-color: rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Hover states */
+html.light .hover\:bg-white\/5:hover,
+.light .hover\:bg-white\/5:hover {
+  background-color: rgba(45, 138, 82, 0.1) !important;
+}
+
+html.light [class*="hover:bg-\[var(--primary-color)\]\/20"]:hover,
+.light [class*="hover:bg-\[var(--primary-color)\]\/20"]:hover {
+  background-color: rgba(45, 138, 82, 0.2) !important;
+}
+
+/* Mobile menu overlay */
+html.light .backdrop-blur-xl,
+.light .backdrop-blur-xl {
+  background-color: rgba(253, 251, 247, 0.9) !important;
+}
+
+/* Chart container */
+html.light .chart-container,
+.light .chart-container {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border: 1px solid rgba(45, 138, 82, 0.15) !important;
+}
+
+/* Token stats light mode */
+html.light .token-stats-container,
+.light .token-stats-container {
+  background: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Scrollbar in light mode for token page sidebar */
+html.light .overflow-y-auto::-webkit-scrollbar-track,
+.light .overflow-y-auto::-webkit-scrollbar-track {
+  background: rgba(45, 138, 82, 0.05);
+}
+
+html.light .overflow-y-auto::-webkit-scrollbar-thumb,
+.light .overflow-y-auto::-webkit-scrollbar-thumb {
+  background-color: rgba(45, 138, 82, 0.3);
+}
+
+html.light .overflow-y-auto::-webkit-scrollbar-thumb:hover,
+.light .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(45, 138, 82, 0.5);
+}
+
+/* Chart.tsx specific light mode overrides */
+html.light [class*="bg-black\/95"],
+.light [class*="bg-black\/95"] {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+}
+
+html.light [class*="bg-black\/70"],
+.light [class*="bg-black\/70"] {
+  background-color: rgba(255, 255, 255, 0.85) !important;
+}
+
+/* Chart about modal and indicator menus */
+html.light .backdrop-blur-sm,
+.light .backdrop-blur-sm {
+  background-color: rgba(255, 255, 255, 0.92) !important;
+}
+
+/* Text in chart modals */
+html.light .text-white\/90,
+.light .text-white\/90 {
+  color: rgba(26, 26, 26, 0.9) !important;
+}
+
+html.light .text-white\/40,
+.light .text-white\/40 {
+  color: rgba(26, 26, 26, 0.5) !important;
+}
+
+html.light .text-white\/30,
+.light .text-white\/30 {
+  color: rgba(26, 26, 26, 0.4) !important;
+}
+
+/* ============================================
+   LIGHT MODE - Neutral backgrounds
+   ============================================ */
+html.light .bg-neutral-900,
+.light .bg-neutral-900 {
+  background-color: #f3f4f6 !important;
+}
+
+html.light .bg-neutral-800,
+.light .bg-neutral-800 {
+  background-color: #e5e7eb !important;
+}
+
+html.light .bg-neutral-700,
+.light .bg-neutral-700 {
+  background-color: #d1d5db !important;
+}
+
+html.light .border-neutral-800,
+.light .border-neutral-800 {
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+html.light .border-neutral-700,
+.light .border-neutral-700 {
+  border-color: rgba(0, 0, 0, 0.12) !important;
+}
+
+/* ============================================
+   LIGHT MODE - Skeleton loaders
+   ============================================ */
+html.light .animate-pulse,
+.light .animate-pulse {
+  --tw-pulse-bg: rgba(0, 0, 0, 0.08);
+}
+
+/* Skeleton specific backgrounds */
+html.light .bg-neutral-700.animate-pulse,
+.light .bg-neutral-700.animate-pulse {
+  background-color: #d1d5db !important;
+}
+
+/* ============================================
+   LIGHT MODE - Additional hover states
+   ============================================ */
+html.light .hover\:bg-gray-800\/50:hover,
+.light .hover\:bg-gray-800\/50:hover {
+  background-color: rgba(45, 138, 82, 0.1) !important;
+}
+
+html.light .hover\:bg-white\/10:hover,
+.light .hover\:bg-white\/10:hover {
+  background-color: rgba(45, 138, 82, 0.12) !important;
+}
+
+/* ============================================
+   LIGHT MODE - Gray border colors
+   ============================================ */
+html.light .border-gray-700,
+.light .border-gray-700 {
+  border-color: rgba(0, 0, 0, 0.15) !important;
+}
+
+html.light .border-gray-700\/40,
+.light .border-gray-700\/40 {
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+html.light .border-gray-600,
+.light .border-gray-600 {
+  border-color: rgba(0, 0, 0, 0.12) !important;
+}
+
+/* ============================================
+   LIGHT MODE - Gradient backgrounds
+   ============================================ */
+html.light .from-black,
+.light .from-black {
+  --tw-gradient-from: #ffffff var(--tw-gradient-from-position) !important;
+}
+
+html.light .to-black,
+.light .to-black {
+  --tw-gradient-to: #fdfbf7 var(--tw-gradient-to-position) !important;
+}
+
+/* ============================================
+   LIGHT MODE - Additional text colors
+   ============================================ */
+html.light .text-gray-400,
+.light .text-gray-400 {
+  color: #6b7280 !important;
+}
+
+html.light .text-gray-300,
+.light .text-gray-300 {
+  color: #4b5563 !important;
+}
+
+/* ============================================
+   LIGHT MODE - Form elements
+   ============================================ */
+html.light input::placeholder,
+.light input::placeholder {
+  color: rgba(107, 114, 128, 0.8) !important;
+}
+
+html.light .placeholder-white\/30::placeholder,
+.light .placeholder-white\/30::placeholder {
+  color: rgba(107, 114, 128, 0.6) !important;
+}
+
+/* ============================================
+   LIGHT MODE - Focus rings
+   ============================================ */
+html.light .focus\:ring-white\/20:focus,
+.light .focus\:ring-white\/20:focus {
+  --tw-ring-color: rgba(45, 138, 82, 0.3) !important;
+}
+
+/* ============================================
+   LIGHT MODE - Dropdown menus
+   ============================================ */
+html.light [data-radix-menu-content],
+.light [data-radix-menu-content] {
+  background-color: #ffffff !important;
+  border-color: rgba(45, 138, 82, 0.2) !important;
+}
+
+html.light [data-radix-menu-item]:hover,
+.light [data-radix-menu-item]:hover {
+  background-color: rgba(45, 138, 82, 0.1) !important;
 }

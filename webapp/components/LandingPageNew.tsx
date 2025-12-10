@@ -19,9 +19,12 @@ import ProblemSectionShared from "./sections/ProblemSectionShared";
 import SolutionSectionShared from "./sections/SolutionSectionShared";
 import ProjectsSectionShared from "./sections/ProjectsSectionShared";
 import UnifiedMetricsShowcase from "./UnifiedMetricsShowcase";
+import { useThemeContext } from "@/lib/ThemeContext";
 
 export default function LandingPageNew() {
   const [mounted, setMounted] = useState(false);
+  const { theme } = useThemeContext();
+  const isLight = theme === 'light';
 
   useEffect(() => {
     setMounted(true);
@@ -46,6 +49,7 @@ export default function LandingPageNew() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap');
 
+        /* Dark mode (default) */
         .landing {
           --primary: #52C97D;
           --primary-light: #7ADFA0;
@@ -115,6 +119,67 @@ export default function LandingPageNew() {
           position: relative;
         }
 
+        /* Light mode overrides */
+        .light .landing,
+        html.light .landing {
+          --primary: #2d8a52;
+          --primary-light: #3da866;
+          --primary-dark: #236b40;
+          --primary-darker: #1a5030;
+          --accent: #b8913d;
+          --accent-light: #d4a853;
+          --accent-dark: #9a7a32;
+          --bg: #fdfbf7;
+          --bg-subtle: #f8f6f1;
+          --surface: #ffffff;
+          --surface-elevated: #ffffff;
+          --text: #1a1a1a;
+          --text-secondary: rgba(26, 26, 26, 0.7);
+          --text-muted: rgba(26, 26, 26, 0.5);
+          --border: rgba(45, 138, 82, 0.2);
+          --border-accent: rgba(184, 145, 61, 0.2);
+          --glow-primary: rgba(45, 138, 82, 0.15);
+          --glow-accent: rgba(184, 145, 61, 0.12);
+
+          background:
+            /* Subtle grid overlay - light */
+            repeating-linear-gradient(
+              0deg,
+              transparent,
+              transparent 1px,
+              rgba(45, 138, 82, 0.04) 1px,
+              rgba(45, 138, 82, 0.04) 2px
+            ),
+            repeating-linear-gradient(
+              90deg,
+              transparent,
+              transparent 1px,
+              rgba(45, 138, 82, 0.03) 1px,
+              rgba(45, 138, 82, 0.03) 2px
+            ),
+            /* Primary ambient glow - top center */
+            radial-gradient(
+              ellipse 100% 60% at 50% 0%,
+              rgba(45, 138, 82, 0.08) 0%,
+              rgba(45, 138, 82, 0.03) 30%,
+              transparent 60%
+            ),
+            /* Secondary accent glow - bottom right */
+            radial-gradient(
+              ellipse 80% 50% at 85% 100%,
+              rgba(184, 145, 61, 0.06) 0%,
+              transparent 50%
+            ),
+            /* Tertiary subtle glow - left side */
+            radial-gradient(
+              ellipse 50% 80% at 0% 60%,
+              rgba(45, 138, 82, 0.04) 0%,
+              transparent 50%
+            ),
+            /* Warm cream base */
+            linear-gradient(180deg, #fdfbf7 0%, #f8f6f1 50%, #fdfbf7 100%);
+        }
+
         /* Refined scanline effect - subtle and elegant */
         .landing.mounted::before {
           content: '';
@@ -132,6 +197,220 @@ export default function LandingPageNew() {
           pointer-events: none;
           z-index: 1;
           opacity: 0.6;
+        }
+
+        /* Light mode: hide scanline effect */
+        .light .landing.mounted::before,
+        html.light .landing.mounted::before {
+          opacity: 0;
+        }
+
+        /* Light mode: reduce film grain */
+        .light .landing::after,
+        html.light .landing::after {
+          opacity: 0.02;
+        }
+
+        /* Light mode: hero ambient orbs */
+        .light .hero-ambient-1,
+        html.light .hero-ambient-1 {
+          background: radial-gradient(circle, rgba(45, 138, 82, 0.1) 0%, transparent 70%);
+        }
+
+        .light .hero-ambient-2,
+        html.light .hero-ambient-2 {
+          background: radial-gradient(circle, rgba(184, 145, 61, 0.08) 0%, transparent 70%);
+        }
+
+        .light .hero-ambient-3,
+        html.light .hero-ambient-3 {
+          background: radial-gradient(circle, rgba(45, 138, 82, 0.06) 0%, transparent 70%);
+        }
+
+        /* Light mode: hero title */
+        .light .hero-title,
+        html.light .hero-title {
+          background: linear-gradient(180deg,
+            #1a1a1a 0%,
+            rgba(26, 26, 26, 0.9) 40%,
+            rgba(26, 26, 26, 0.75) 100%
+          );
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          text-shadow: none;
+        }
+
+        /* Light mode: hero eyebrow */
+        .light .hero-eyebrow,
+        html.light .hero-eyebrow {
+          background: rgba(45, 138, 82, 0.08);
+          border: 1px solid rgba(45, 138, 82, 0.25);
+        }
+
+        /* Light mode: buttons */
+        .light .btn-primary,
+        html.light .btn-primary {
+          background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+          color: #ffffff;
+          box-shadow:
+            0 0 20px rgba(45, 138, 82, 0.25),
+            0 4px 15px rgba(0, 0, 0, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .light .btn-primary:hover,
+        html.light .btn-primary:hover {
+          box-shadow:
+            0 0 35px rgba(45, 138, 82, 0.35),
+            0 8px 25px rgba(0, 0, 0, 0.15),
+            inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        .light .btn-secondary,
+        html.light .btn-secondary {
+          background: rgba(255, 255, 255, 0.8);
+          color: var(--text);
+          border: 1px solid rgba(45, 138, 82, 0.2);
+          backdrop-filter: blur(10px);
+        }
+
+        .light .btn-secondary:hover,
+        html.light .btn-secondary:hover {
+          border-color: var(--primary);
+          color: var(--primary);
+          box-shadow: 0 0 20px rgba(45, 138, 82, 0.15);
+          background: rgba(45, 138, 82, 0.05);
+        }
+
+        /* Light mode: section divider */
+        .light .section-divider,
+        html.light .section-divider {
+          background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(45, 138, 82, 0.2) 20%,
+            rgba(184, 145, 61, 0.15) 50%,
+            rgba(45, 138, 82, 0.2) 80%,
+            transparent 100%
+          );
+        }
+
+        /* Light mode: scroll down button */
+        .light .scroll-down-button,
+        html.light .scroll-down-button {
+          background: rgba(255, 255, 255, 0.9);
+          box-shadow: 0 0 15px rgba(45, 138, 82, 0.2), 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .light .scroll-down-button:hover,
+        html.light .scroll-down-button:hover {
+          box-shadow: 0 0 25px rgba(45, 138, 82, 0.35), 0 6px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Light mode: section labels */
+        .light .section-label,
+        html.light .section-label {
+          background: rgba(45, 138, 82, 0.08);
+          border: 1px solid rgba(45, 138, 82, 0.2);
+        }
+
+        /* Light mode: feature cards */
+        .light .feature-card,
+        html.light .feature-card {
+          background: rgba(255, 255, 255, 0.6);
+          border: 1px solid rgba(45, 138, 82, 0.15);
+        }
+
+        .light .feature-card:hover,
+        html.light .feature-card:hover {
+          box-shadow: 0 20px 40px rgba(45, 138, 82, 0.1), 0 8px 16px rgba(0, 0, 0, 0.05);
+          border-color: rgba(45, 138, 82, 0.25);
+        }
+
+        .light .feature-icon,
+        html.light .feature-icon {
+          background: rgba(45, 138, 82, 0.1);
+        }
+
+        /* Light mode: project cards */
+        .light .project-card,
+        html.light .project-card {
+          background: rgba(255, 255, 255, 0.6);
+          border: 1px solid rgba(45, 138, 82, 0.15);
+        }
+
+        .light .project-card:hover,
+        html.light .project-card:hover {
+          box-shadow: 0 30px 60px rgba(0, 0, 0, 0.1);
+        }
+
+        .light .project-stats,
+        html.light .project-stats {
+          border-top: 1px solid rgba(26, 26, 26, 0.08);
+          border-bottom: 1px solid rgba(26, 26, 26, 0.08);
+        }
+
+        /* Light mode: CTA section */
+        .light .cta-section::before,
+        html.light .cta-section::before {
+          background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(45, 138, 82, 0.25) 30%,
+            rgba(184, 145, 61, 0.15) 50%,
+            rgba(45, 138, 82, 0.25) 70%,
+            transparent 100%
+          );
+        }
+
+        .light .cta-content,
+        html.light .cta-content {
+          background:
+            radial-gradient(ellipse 100% 100% at 50% 0%, rgba(45, 138, 82, 0.06) 0%, transparent 50%),
+            rgba(255, 255, 255, 0.85);
+          border: 1px solid rgba(45, 138, 82, 0.2);
+          box-shadow:
+            0 0 80px rgba(45, 138, 82, 0.06),
+            0 25px 50px rgba(0, 0, 0, 0.08),
+            inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        }
+
+        /* Light mode: CTA badge */
+        .light .cta-badge,
+        html.light .cta-badge {
+          background: rgba(184, 145, 61, 0.1);
+          border: 1px solid rgba(184, 145, 61, 0.25);
+        }
+
+        /* Light mode: CTA title */
+        .light .cta-title,
+        html.light .cta-title {
+          background: linear-gradient(180deg,
+            #1a1a1a 0%,
+            rgba(26, 26, 26, 0.85) 100%
+          );
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+
+        /* Light mode: footer */
+        .light .footer::before,
+        html.light .footer::before {
+          background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(26, 26, 26, 0.1) 50%,
+            transparent 100%
+          );
+        }
+
+        .light .footer-logo-svg,
+        html.light .footer-logo-svg {
+          filter: drop-shadow(0 0 4px rgba(45, 138, 82, 0.25));
+        }
+
+        .light .footer-logo-link:hover .footer-logo-svg,
+        html.light .footer-logo-link:hover .footer-logo-svg {
+          filter: drop-shadow(0 0 8px rgba(45, 138, 82, 0.4));
         }
 
         /* Section divider gradient */

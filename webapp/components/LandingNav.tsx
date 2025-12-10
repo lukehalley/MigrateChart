@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function LandingNav() {
   const [scrolled, setScrolled] = useState(false);
@@ -403,6 +404,74 @@ export default function LandingNav() {
             display: flex;
           }
         }
+
+        /* Light mode overrides */
+        .light .landing-nav.scrolled,
+        html.light .landing-nav.scrolled {
+          background: rgba(255, 255, 255, 0.85);
+          border-bottom: 1px solid rgba(45, 138, 82, 0.15);
+        }
+
+        .light .nav-link.active,
+        html.light .nav-link.active {
+          background: rgba(45, 138, 82, 0.08);
+          border-color: rgba(45, 138, 82, 0.25);
+        }
+
+        .light .nav-link:hover,
+        html.light .nav-link:hover {
+          background: rgba(45, 138, 82, 0.05);
+          border-color: rgba(45, 138, 82, 0.2);
+        }
+
+        .light .nav-link.primary,
+        html.light .nav-link.primary {
+          color: #ffffff;
+        }
+
+        .light .nav-link.primary:hover,
+        html.light .nav-link.primary:hover {
+          box-shadow: 0 0 20px rgba(45, 138, 82, 0.5), 0 0 35px rgba(45, 138, 82, 0.25);
+        }
+
+        .light .mobile-menu-button,
+        html.light .mobile-menu-button {
+          border: 1px solid rgba(45, 138, 82, 0.3);
+        }
+
+        .light .mobile-menu-button:hover,
+        html.light .mobile-menu-button:hover {
+          background: rgba(45, 138, 82, 0.05);
+        }
+
+        .light .mobile-nav,
+        html.light .mobile-nav {
+          background: rgba(255, 255, 255, 0.95);
+          border-top: 1px solid rgba(45, 138, 82, 0.2);
+        }
+
+        .light .mobile-nav .nav-link,
+        html.light .mobile-nav .nav-link {
+          border: 1px solid rgba(45, 138, 82, 0.15);
+          background: rgba(255, 255, 255, 0.6);
+        }
+
+        .light .mobile-nav .nav-link.active,
+        html.light .mobile-nav .nav-link.active {
+          background: rgba(45, 138, 82, 0.1);
+          border-color: rgba(45, 138, 82, 0.3);
+        }
+
+        .light .mobile-nav .nav-link:hover,
+        html.light .mobile-nav .nav-link:hover {
+          background: rgba(45, 138, 82, 0.08);
+          border-color: rgba(45, 138, 82, 0.25);
+        }
+
+        .light .mobile-nav .nav-link.primary,
+        html.light .mobile-nav .nav-link.primary {
+          color: #ffffff;
+        }
       `}</style>
 
       <nav className={`landing-nav ${scrolled ? "scrolled" : ""}`}>
@@ -493,7 +562,8 @@ export default function LandingNav() {
           </div>
 
           {/* CTA - Right aligned */}
-          <div className="nav-cta-wrapper">
+          <div className="nav-cta-wrapper" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <ThemeToggle variant="nav" />
             <Link href="/zera" className="nav-link primary">
               Launch App
             </Link>
@@ -549,6 +619,10 @@ function MobileNav({
   return (
     <div className={`mobile-nav ${isOpen ? "open" : ""}`}>
       <div className="mobile-nav-links">
+        {/* Theme Toggle */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.5rem' }}>
+          <ThemeToggle variant="nav" />
+        </div>
         <Link
           href="/why"
           className="nav-link"

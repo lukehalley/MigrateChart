@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Heart, X, Copy, Check } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useTokenContext } from '@/lib/TokenContext';
+import { useThemeContext } from '@/lib/ThemeContext';
 import { fetchWalletBalance, fetchTokenBalance } from '@/lib/api';
 import { SafeStorage } from '@/lib/localStorage';
 import useSWR from 'swr';
@@ -60,6 +61,8 @@ export function DonationPopup() {
   const [isVisible, setIsVisible] = useState(false);
   const [showCopied, setShowCopied] = useState(false);
   const { currentProject } = useTokenContext();
+  const { theme } = useThemeContext();
+  const isLight = theme === 'light';
 
   // Goal state - load from localStorage
   const [tokenGoal, setTokenGoal] = useState<number>(5000);
@@ -198,7 +201,7 @@ export function DonationPopup() {
               backdropFilter: 'blur(12px)',
               WebkitBackdropFilter: 'blur(12px)',
             }}
-            className="fixed inset-0 z-[200] bg-black/70"
+            className={`fixed inset-0 z-[200] ${isLight ? 'bg-white/70' : 'bg-black/70'}`}
             onClick={handleClose}
           />
 
@@ -219,7 +222,7 @@ export function DonationPopup() {
               <div className="absolute -inset-[3px] bg-gradient-to-r from-[var(--primary-color)] via-[var(--primary-color)]/60 to-[var(--primary-color)] opacity-80 blur-xl animate-pulse" style={{ '--primary-color': primaryColor } as any} />
 
               {/* Main card */}
-              <div className="relative bg-gradient-to-b from-black to-black border-[3px] overflow-hidden rounded-lg" style={{ borderColor: `${primaryColor}99` }}>
+              <div className={`relative border-[3px] overflow-hidden rounded-lg ${isLight ? 'bg-gradient-to-b from-white to-gray-50' : 'bg-gradient-to-b from-black to-black'}`} style={{ borderColor: `${primaryColor}99` }}>
                 {/* Animated background grid */}
                 <div className="absolute inset-0 grid-pattern opacity-20" />
 
@@ -260,7 +263,7 @@ export function DonationPopup() {
                 {/* Close button */}
                 <button
                   onClick={handleClose}
-                  className="absolute top-3 right-3 sm:top-4 sm:right-4 md:top-6 md:right-6 z-10 p-2 sm:p-2.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-all duration-200 group"
+                  className={`absolute top-3 right-3 sm:top-4 sm:right-4 md:top-6 md:right-6 z-10 p-2 sm:p-2.5 rounded-lg border transition-all duration-200 group ${isLight ? 'bg-black/5 hover:bg-black/10 border-black/10' : 'bg-white/5 hover:bg-white/10 border-white/10'}`}
                   style={{
                     borderColor: `${primaryColor}40`,
                   }}
@@ -304,7 +307,7 @@ export function DonationPopup() {
                     </motion.div>
 
                     <h2
-                      className="text-xl sm:text-2xl md:text-4xl font-bold text-white text-center mb-2 sm:mb-3 px-2"
+                      className={`text-xl sm:text-2xl md:text-4xl font-bold text-center mb-2 sm:mb-3 px-2 ${isLight ? 'text-gray-900' : 'text-white'}`}
                       style={{
                         textShadow: `0 0 20px ${hexToRgba(primaryColor, 0.3)}`
                       }}
@@ -312,7 +315,7 @@ export function DonationPopup() {
                       Enjoying the Tool?
                     </h2>
 
-                    <p className="text-white/70 text-center text-xs sm:text-sm md:text-base leading-relaxed max-w-xl px-2">
+                    <p className={`text-center text-xs sm:text-sm md:text-base leading-relaxed max-w-xl px-2 ${isLight ? 'text-gray-600' : 'text-white/70'}`}>
                       Your support helps us build more features and improve the platform.
                       <br />
                       <span className="font-semibold" style={{ color: primaryColor }}>Every contribution matters.</span>
@@ -347,10 +350,10 @@ export function DonationPopup() {
                   >
                     {/* CTA Text */}
                     <div className="text-center px-2">
-                      <p className="text-white font-bold text-sm sm:text-base md:text-lg mb-1">
+                      <p className={`font-bold text-sm sm:text-base md:text-lg mb-1 ${isLight ? 'text-gray-900' : 'text-white'}`}>
                         Donate via Solana Network
                       </p>
-                      <p className="text-white/60 text-xs sm:text-xs md:text-sm">
+                      <p className={`text-xs sm:text-xs md:text-sm ${isLight ? 'text-gray-500' : 'text-white/60'}`}>
                         Send SOL or {tokenSymbol} tokens to support development
                       </p>
                     </div>
@@ -358,7 +361,7 @@ export function DonationPopup() {
                     {/* Wallet Address + Copy Button */}
                     <div className="flex flex-col sm:flex-row items-stretch gap-2 sm:gap-3">
                       <motion.div
-                        className="flex-1 flex items-center justify-center gap-2 bg-black/70 px-3 py-3 sm:px-4 sm:py-4 rounded-lg border-2 overflow-hidden min-w-0"
+                        className={`flex-1 flex items-center justify-center gap-2 px-3 py-3 sm:px-4 sm:py-4 rounded-lg border-2 overflow-hidden min-w-0 ${isLight ? 'bg-gray-100' : 'bg-black/70'}`}
                         style={{
                           borderColor: `${primaryColor}66`,
                           boxShadow: `0 0 12px ${hexToRgba(primaryColor, 0.2)}`
@@ -415,9 +418,9 @@ export function DonationPopup() {
                     </div>
 
                     {/* Progress Bars */}
-                    <div className="space-y-3 sm:space-y-4 bg-black/60 px-4 py-4 sm:px-5 sm:py-5 md:px-6 md:py-5 rounded-lg border-2" style={{ borderColor: `${primaryColor}40` }}>
+                    <div className={`space-y-3 sm:space-y-4 px-4 py-4 sm:px-5 sm:py-5 md:px-6 md:py-5 rounded-lg border-2 ${isLight ? 'bg-gray-50' : 'bg-black/60'}`} style={{ borderColor: `${primaryColor}40` }}>
                       <div className="text-center mb-3 sm:mb-4">
-                        <p className="text-white/80 text-xs sm:text-xs md:text-sm font-medium">
+                        <p className={`text-xs sm:text-xs md:text-sm font-medium ${isLight ? 'text-gray-700' : 'text-white/80'}`}>
                           Current Donation Progress
                         </p>
                       </div>
@@ -425,12 +428,12 @@ export function DonationPopup() {
                       {/* Token Balance */}
                       <div>
                         <div className="flex items-center justify-between gap-2 mb-1.5 sm:mb-2">
-                          <span className="text-white/70 text-[11px] sm:text-xs md:text-sm font-medium">{tokenSymbol} Tokens</span>
+                          <span className={`text-[11px] sm:text-xs md:text-sm font-medium ${isLight ? 'text-gray-600' : 'text-white/70'}`}>{tokenSymbol} Tokens</span>
                           <span className="text-xs sm:text-sm md:text-base font-bold" style={{ color: primaryColor }}>
                             {tokenBalance.toFixed(0)} / {formatGoalNumber(tokenGoal)}
                           </span>
                         </div>
-                        <div className="relative h-2.5 sm:h-3 md:h-4 bg-black/60 rounded-full overflow-hidden border" style={{ borderColor: `${primaryColor}40` }}>
+                        <div className={`relative h-2.5 sm:h-3 md:h-4 rounded-full overflow-hidden border ${isLight ? 'bg-gray-200' : 'bg-black/60'}`} style={{ borderColor: `${primaryColor}40` }}>
                           <motion.div
                             className="absolute inset-y-0 left-0 rounded-full"
                             style={{
@@ -459,12 +462,12 @@ export function DonationPopup() {
                       {/* SOL Balance */}
                       <div>
                         <div className="flex items-center justify-between gap-2 mb-1.5 sm:mb-2">
-                          <span className="text-white/70 text-[11px] sm:text-xs md:text-sm font-medium">Solana (SOL)</span>
+                          <span className={`text-[11px] sm:text-xs md:text-sm font-medium ${isLight ? 'text-gray-600' : 'text-white/70'}`}>Solana (SOL)</span>
                           <span className="text-xs sm:text-sm md:text-base font-bold" style={{ color: primaryColor }}>
                             {walletBalance.toFixed(2)} / {formatGoalNumber(solGoal)}
                           </span>
                         </div>
-                        <div className="relative h-2.5 sm:h-3 md:h-4 bg-black/60 rounded-full overflow-hidden border" style={{ borderColor: `${primaryColor}40` }}>
+                        <div className={`relative h-2.5 sm:h-3 md:h-4 rounded-full overflow-hidden border ${isLight ? 'bg-gray-200' : 'bg-black/60'}`} style={{ borderColor: `${primaryColor}40` }}>
                           <motion.div
                             className="absolute inset-y-0 left-0 rounded-full"
                             style={{
@@ -494,7 +497,7 @@ export function DonationPopup() {
                     {/* Maybe Later Button */}
                     <button
                       onClick={handleClose}
-                      className="w-full px-4 py-2.5 sm:px-6 sm:py-3 bg-white/5 hover:bg-white/10 text-white/80 hover:text-white font-medium text-xs sm:text-sm md:text-base rounded-lg border transition-all duration-200"
+                      className={`w-full px-4 py-2.5 sm:px-6 sm:py-3 font-medium text-xs sm:text-sm md:text-base rounded-lg border transition-all duration-200 ${isLight ? 'bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900' : 'bg-white/5 hover:bg-white/10 text-white/80 hover:text-white'}`}
                       style={{
                         borderColor: `${primaryColor}30`,
                       }}

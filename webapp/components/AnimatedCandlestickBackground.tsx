@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useThemeContext } from '@/lib/ThemeContext';
 
 /**
  * Candlestick Animation - Authentic Formation Lifecycle
@@ -245,14 +246,15 @@ interface MigrationLabelProps {
   marker: MigrationMarker;
   index: number;
   isVisible: boolean;
+  theme: 'light' | 'dark';
 }
 
 /**
  * Migration label rendered OUTSIDE SVG as HTML element
  * This prevents the preserveAspectRatio="none" distortion from affecting text
  */
-function MigrationLabel({ marker, index }: Omit<MigrationLabelProps, 'isVisible'>) {
-  const lineColor = '#52C97D';
+function MigrationLabel({ marker, index, theme }: Omit<MigrationLabelProps, 'isVisible'>) {
+  const lineColor = theme === 'light' ? '#2d8a52' : '#52C97D';
   const baseDelay = 1.5 + (index * 0.4);
 
   // Convert SVG coordinates to percentage for CSS positioning
@@ -284,10 +286,12 @@ function MigrationLabel({ marker, index }: Omit<MigrationLabelProps, 'isVisible'
       <div
         style={{
           padding: '6px 10px',
-          background: 'rgba(0, 0, 0, 0.8)',
+          background: theme === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.8)',
           border: `1px solid ${lineColor}70`,
           borderRadius: '4px',
-          boxShadow: `0 0 12px ${lineColor}50`,
+          boxShadow: theme === 'light'
+            ? `0 0 12px ${lineColor}30, 0 2px 8px rgba(0, 0, 0, 0.1)`
+            : `0 0 12px ${lineColor}50`,
           whiteSpace: 'nowrap',
         }}
       >
@@ -437,6 +441,7 @@ export function AnimatedCandlestickBackground() {
   const [cycleKey, setCycleKey] = useState(0);
   const [mounted, setMounted] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const { theme } = useThemeContext();
 
   useEffect(() => {
     setMounted(true);
@@ -506,6 +511,7 @@ export function AnimatedCandlestickBackground() {
                 key={`${cycleKey}-label-${index}`}
                 marker={marker}
                 index={index}
+                theme={theme}
               />
             ))}
           </motion.div>

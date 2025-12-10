@@ -324,6 +324,92 @@ export default async function ProjectsPage() {
           color: var(--text-muted);
           margin-bottom: 1.5rem;
         }
+
+        /* Light mode overrides */
+        html.light .projects-page,
+        .light .projects-page {
+          --text-primary: #1a1a1a;
+          --text-secondary: rgba(26, 26, 26, 0.7);
+          --text-muted: rgba(26, 26, 26, 0.5);
+          --bg-elevated: #f3f4f6;
+        }
+
+        html.light .projects-table,
+        .light .projects-table {
+          background: rgba(255, 255, 255, 0.7);
+          border-color: rgba(45, 138, 82, 0.2);
+        }
+
+        html.light .table-header,
+        .light .table-header {
+          background: rgba(45, 138, 82, 0.05);
+          border-color: rgba(45, 138, 82, 0.2);
+        }
+
+        html.light .table-row,
+        .light .table-row {
+          border-color: rgba(45, 138, 82, 0.1);
+        }
+
+        html.light .table-row:hover,
+        .light .table-row:hover {
+          background: rgba(45, 138, 82, 0.08);
+          box-shadow: 0 4px 20px rgba(45, 138, 82, 0.12);
+        }
+
+        html.light .project-icon,
+        .light .project-icon {
+          background: #f3f4f6;
+          border-color: rgba(45, 138, 82, 0.2);
+        }
+
+        html.light .btn-secondary,
+        .light .btn-secondary {
+          border-color: rgba(45, 138, 82, 0.2);
+          color: rgba(26, 26, 26, 0.7);
+        }
+
+        html.light .btn-secondary:hover,
+        .light .btn-secondary:hover {
+          border-color: rgba(45, 138, 82, 0.4);
+          color: #1a1a1a;
+        }
+
+        html.light .data-dot-inactive,
+        .light .data-dot-inactive {
+          background: rgba(26, 26, 26, 0.15);
+        }
+
+        html.light .status-disabled,
+        .light .status-disabled {
+          color: #666;
+          border-color: rgba(102, 102, 102, 0.3);
+          background: rgba(102, 102, 102, 0.1);
+        }
+
+        html.light .status-disabled .status-dot,
+        .light .status-disabled .status-dot {
+          background: #666;
+        }
+
+        html.light .status-enabled,
+        .light .status-enabled {
+          color: #2d8a52;
+          border-color: rgba(45, 138, 82, 0.3);
+          background: rgba(45, 138, 82, 0.1);
+        }
+
+        html.light .status-enabled .status-dot,
+        .light .status-enabled .status-dot {
+          background: #2d8a52;
+          box-shadow: 0 0 4px rgba(45, 138, 82, 0.5);
+        }
+
+        html.light .data-dot-active,
+        .light .data-dot-active {
+          background: #2d8a52;
+          box-shadow: 0 0 4px rgba(45, 138, 82, 0.5);
+        }
       `}</style>
 
       <header className="page-header">

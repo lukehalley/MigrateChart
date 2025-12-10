@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { useThemeContext } from '@/lib/ThemeContext';
 
 interface ChartControlsProps {
   displayMode: 'price' | 'marketCap';
@@ -33,23 +34,35 @@ export default function ChartControls({
   primaryColor,
   secondaryColor = '#000000',
 }: ChartControlsProps) {
+  const { theme } = useThemeContext();
+  const isLight = theme === 'light';
+
+  // Theme-aware colors
+  const bgColor = isLight ? 'rgba(255, 255, 255, 0.8)' : 'transparent';
+  const textColor = isLight ? '#1a1a1a' : 'white';
+  const mutedTextColor = isLight ? 'rgba(26, 26, 26, 0.7)' : 'rgba(255, 255, 255, 0.7)';
+  const buttonBgColor = isLight ? 'rgba(45, 138, 82, 0.08)' : 'rgba(0, 0, 0, 0.6)';
+  const buttonHoverBgColor = isLight ? 'rgba(45, 138, 82, 0.15)' : 'rgba(0, 0, 0, 0.6)';
+
   return (
-    <div className="stat-card" style={{ padding: '10px 8px' }}>
-      <p style={{ marginBottom: '8px' }} className="text-white text-[10px] font-medium text-center tracking-wider">CHART OPTIONS</p>
+    <div className="stat-card" style={{ padding: '10px 8px', background: bgColor }}>
+      <p style={{ marginBottom: '8px', color: textColor }} className="text-[10px] font-medium text-center tracking-wider">CHART OPTIONS</p>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         {/* Display Mode Section */}
         <div>
-          <label style={{ marginBottom: '6px' }} className="text-white/70 text-[9px] font-medium block tracking-wide">
+          <label style={{ marginBottom: '6px', color: mutedTextColor }} className="text-[9px] font-medium block tracking-wide">
             Y-AXIS DISPLAY
           </label>
-          <div className="grid grid-cols-2 gap-1.5 bg-black/60 p-1 rounded-lg border" style={{ borderColor: `${primaryColor}30` }}>
+          <div className="grid grid-cols-2 gap-1.5 p-1 rounded-lg border" style={{ borderColor: `${primaryColor}30`, backgroundColor: buttonBgColor }}>
             <button
               onClick={() => onDisplayModeChange('price')}
               className={`relative py-1.5 text-[10px] font-bold tracking-wider rounded-md transition-colors duration-200 ${
                 displayMode === 'price'
                   ? ''
-                  : 'text-white/60 hover:text-white hover:bg-white/5'
+                  : isLight
+                    ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/30'
+                    : 'text-white/60 hover:text-white hover:bg-white/5'
               }`}
               style={displayMode === 'price' ? { color: secondaryColor } : undefined}
             >
@@ -71,7 +84,9 @@ export default function ChartControls({
               className={`relative py-1.5 text-[10px] font-bold tracking-wider rounded-md transition-colors duration-200 ${
                 displayMode === 'marketCap'
                   ? ''
-                  : 'text-white/60 hover:text-white hover:bg-white/5'
+                  : isLight
+                    ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/30'
+                    : 'text-white/60 hover:text-white hover:bg-white/5'
               }`}
               style={displayMode === 'marketCap' ? { color: secondaryColor } : undefined}
             >
@@ -101,7 +116,7 @@ export default function ChartControls({
               <svg className="w-3 h-3 flex-shrink-0" style={{ color: `${primaryColor}b3` }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
-              <label className="text-white text-[10px] font-medium transition-colors cursor-pointer">
+              <label style={{ color: textColor }} className="text-[10px] font-medium transition-colors cursor-pointer">
                 Volume Bars
               </label>
             </div>
@@ -132,7 +147,7 @@ export default function ChartControls({
               <svg className="w-3 h-3 flex-shrink-0" style={{ color: `${primaryColor}b3` }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
-              <label className="text-white text-[10px] font-medium transition-colors cursor-pointer">
+              <label style={{ color: textColor }} className="text-[10px] font-medium transition-colors cursor-pointer">
                 Migration Events
               </label>
             </div>
@@ -166,7 +181,7 @@ export default function ChartControls({
               <svg className="w-3 h-3 flex-shrink-0" style={{ color: `${primaryColor}b3` }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
               </svg>
-              <label className="text-white text-[10px] font-medium transition-colors cursor-pointer">
+              <label style={{ color: textColor }} className="text-[10px] font-medium transition-colors cursor-pointer">
                 Auto Scale
               </label>
             </div>
@@ -197,7 +212,7 @@ export default function ChartControls({
               <svg className="w-3 h-3 flex-shrink-0" style={{ color: `${primaryColor}b3` }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
               </svg>
-              <label className="text-white text-[10px] font-medium transition-colors cursor-pointer">
+              <label style={{ color: textColor }} className="text-[10px] font-medium transition-colors cursor-pointer">
                 Log Scale
               </label>
             </div>
@@ -230,23 +245,24 @@ export default function ChartControls({
             <div style={{ paddingLeft: '2px', paddingRight: '2px' }}>
               <button
                 onClick={onResetPosition}
-                className="w-full flex items-center justify-center gap-1.5 py-1.5 bg-black/60 border rounded-lg transition-all"
+                className="w-full flex items-center justify-center gap-1.5 py-1.5 border rounded-lg transition-all"
                 style={{
                   borderColor: `${primaryColor}4d`,
+                  backgroundColor: buttonBgColor,
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = `${primaryColor}33`;
                   e.currentTarget.style.borderColor = `${primaryColor}99`;
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.6)';
+                  e.currentTarget.style.backgroundColor = buttonBgColor;
                   e.currentTarget.style.borderColor = `${primaryColor}4d`;
                 }}
               >
                 <svg className="w-3 h-3" style={{ color: primaryColor }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
-                <span className="text-white text-[9px] font-medium">Reset Position</span>
+                <span style={{ color: textColor }} className="text-[9px] font-medium">Reset Position</span>
               </button>
             </div>
           </>

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Analytics } from '@vercel/analytics/next';
 import { Inter } from 'next/font/google';
+import { ThemeProvider } from '@/lib/ThemeContext';
 import './globals.css';
 
 const inter = Inter({
@@ -38,9 +39,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={inter.variable}>
-      <body className="bg-background text-text">
-        {children}
+    <html lang="en" className={`${inter.variable} dark`} suppressHydrationWarning>
+      <body className="bg-background text-text transition-colors duration-300">
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
         <Analytics />
       </body>
     </html>

@@ -108,6 +108,63 @@ export default function AdminLoading() {
           flex-direction: column;
           gap: 0.75rem;
         }
+
+        /* Light mode overrides */
+        html.light .admin-loading,
+        .light .admin-loading {
+          background:
+            repeating-linear-gradient(
+              0deg,
+              transparent,
+              transparent 2px,
+              rgba(45, 138, 82, 0.04) 2px,
+              rgba(45, 138, 82, 0.04) 3px
+            ),
+            repeating-linear-gradient(
+              90deg,
+              transparent,
+              transparent 2px,
+              rgba(45, 138, 82, 0.03) 2px,
+              rgba(45, 138, 82, 0.03) 3px
+            ),
+            radial-gradient(
+              ellipse 120% 80% at 50% 20%,
+              rgba(45, 138, 82, 0.06) 0%,
+              transparent 50%
+            ),
+            #f8faf9;
+          color: #1a1a1a;
+        }
+
+        html.light .admin-loading::before,
+        .light .admin-loading::before {
+          background:
+            repeating-linear-gradient(
+              0deg,
+              rgba(45, 138, 82, 0.05),
+              rgba(45, 138, 82, 0.05) 1px,
+              transparent 1px,
+              transparent 3px
+            ),
+            repeating-linear-gradient(
+              0deg,
+              transparent,
+              transparent 6px,
+              rgba(45, 138, 82, 0.02) 6px,
+              rgba(45, 138, 82, 0.02) 7px
+            );
+        }
+
+        html.light .sidebar-skeleton,
+        .light .sidebar-skeleton {
+          background: rgba(255, 255, 255, 0.6);
+          border-color: rgba(45, 138, 82, 0.2);
+        }
+
+        html.light .stat-skeleton,
+        .light .stat-skeleton {
+          border-color: rgba(45, 138, 82, 0.2);
+        }
       `}</style>
 
       {/* Sidebar Skeleton */}

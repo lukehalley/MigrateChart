@@ -218,6 +218,85 @@ function LoginForm() {
         .login-footer a:hover {
           color: var(--primary);
         }
+
+        /* Light mode overrides */
+        html.light .admin-login,
+        .light .admin-login {
+          --primary: #2d8a52;
+          --primary-dark: #247043;
+          --text: #1a1a1a;
+          --text-secondary: rgba(26, 26, 26, 0.7);
+          --text-muted: rgba(26, 26, 26, 0.5);
+          --border: rgba(45, 138, 82, 0.25);
+          --error: #dc2626;
+        }
+
+        html.light .login-card,
+        .light .login-card {
+          background: rgba(255, 255, 255, 0.9);
+          border-color: rgba(45, 138, 82, 0.3);
+          box-shadow: 0 4px 40px rgba(45, 138, 82, 0.15);
+        }
+
+        html.light .login-logo,
+        .light .login-logo {
+          color: #2d8a52;
+          filter: drop-shadow(0 0 12px rgba(45, 138, 82, 0.4));
+        }
+
+        html.light .form-field input,
+        .light .form-field input {
+          background: rgba(255, 255, 255, 0.8);
+          border-color: rgba(45, 138, 82, 0.25);
+          color: #1a1a1a;
+        }
+
+        html.light .form-field input:focus,
+        .light .form-field input:focus {
+          border-color: #2d8a52;
+          box-shadow: 0 0 20px rgba(45, 138, 82, 0.2), 0 0 0 2px rgba(45, 138, 82, 0.15);
+        }
+
+        html.light .form-field input::placeholder,
+        .light .form-field input::placeholder {
+          color: rgba(26, 26, 26, 0.4);
+        }
+
+        html.light .submit-btn,
+        .light .submit-btn {
+          background: #2d8a52;
+          border-color: #2d8a52;
+          color: #ffffff;
+          box-shadow: 0 4px 20px rgba(45, 138, 82, 0.25);
+        }
+
+        html.light .submit-btn:hover:not(:disabled),
+        .light .submit-btn:hover:not(:disabled) {
+          background: #247043;
+          box-shadow: 0 6px 30px rgba(45, 138, 82, 0.35);
+        }
+
+        html.light .error-message,
+        .light .error-message {
+          background: rgba(220, 38, 38, 0.08);
+          border-color: #dc2626;
+          color: #dc2626;
+        }
+
+        html.light .login-footer,
+        .light .login-footer {
+          border-color: rgba(45, 138, 82, 0.2);
+        }
+
+        html.light .login-footer a,
+        .light .login-footer a {
+          color: rgba(26, 26, 26, 0.5);
+        }
+
+        html.light .login-footer a:hover,
+        .light .login-footer a:hover {
+          color: #2d8a52;
+        }
       `}</style>
 
       <div className="login-container">

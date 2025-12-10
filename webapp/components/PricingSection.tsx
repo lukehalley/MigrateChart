@@ -274,6 +274,92 @@ export default function PricingSection() {
             right: 1rem;
           }
         }
+
+        /* Light mode overrides */
+        .light .pricing-label,
+        html.light .pricing-label {
+          background: rgba(45, 138, 82, 0.1);
+          border: 1px solid rgba(45, 138, 82, 0.2);
+          color: #2d8a52;
+        }
+
+        .light .pricing-title,
+        html.light .pricing-title {
+          background: linear-gradient(180deg, #1a1a1a 0%, rgba(26, 26, 26, 0.8) 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+
+        .light .pricing-subtitle,
+        html.light .pricing-subtitle {
+          color: rgba(26, 26, 26, 0.6);
+        }
+
+        .light .pricing-note,
+        html.light .pricing-note {
+          color: rgba(45, 138, 82, 0.9);
+        }
+
+        .light .tier-card,
+        html.light .tier-card {
+          background: rgba(255, 255, 255, 0.8);
+          border: 1px solid rgba(45, 138, 82, 0.15);
+        }
+
+        .light .tier-card:hover,
+        html.light .tier-card:hover {
+          box-shadow:
+            0 20px 40px rgba(0, 0, 0, 0.1),
+            0 0 40px rgba(45, 138, 82, 0.1);
+        }
+
+        .light .tier-card.popular,
+        html.light .tier-card.popular {
+          box-shadow: 0 0 30px rgba(45, 138, 82, 0.1);
+        }
+
+        .light .tier-card.popular::before,
+        html.light .tier-card.popular::before {
+          background: linear-gradient(135deg, #2d8a52, #236b40);
+          color: #fff;
+        }
+
+        .light .tier-name,
+        html.light .tier-name {
+          color: #2d8a52;
+        }
+
+        .light .tier-market-cap,
+        html.light .tier-market-cap {
+          color: #1a1a1a;
+        }
+
+        .light .tier-market-range,
+        html.light .tier-market-range {
+          color: rgba(26, 26, 26, 0.5);
+        }
+
+        .light .market-cap-bar,
+        html.light .market-cap-bar {
+          background: rgba(45, 138, 82, 0.1);
+        }
+
+        .light .market-cap-fill,
+        html.light .market-cap-fill {
+          background: linear-gradient(90deg, #2d8a52, #236b40);
+          box-shadow: 0 0 8px rgba(45, 138, 82, 0.3);
+        }
+
+        .light .price-sol,
+        html.light .price-sol {
+          color: #1a1a1a;
+        }
+
+        .light .price-currency,
+        html.light .price-currency {
+          color: rgba(26, 26, 26, 0.6);
+        }
       `}</style>
 
       <div className="pricing-container">

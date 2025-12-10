@@ -9,6 +9,7 @@ import { DrawingToolsPrimitive, DrawingStateManager, DrawingType } from '@/lib/d
 import { motion, AnimatePresence } from 'motion/react';
 import { SafeStorage } from '@/lib/localStorage';
 import { formatMarketCap } from '@/lib/utils';
+import { useThemeContext } from '@/lib/ThemeContext';
 import { polyfillCanvasRoundRect } from '@/lib/canvasPolyfills';
 import {
   calculateSMA,
@@ -48,6 +49,15 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
   const [isAboutClosing, setIsAboutClosing] = useState(false);
   const [resetTrigger, setResetTrigger] = useState(0);
   const [chartVersion, setChartVersion] = useState(0);
+
+  // Theme context for light/dark mode
+  const { theme } = useThemeContext();
+  const isLight = theme === 'light';
+
+  // Theme-aware chart colors
+  const chartBgColor = isLight ? '#FDFBF7' : '#000000';
+  const chartTextColor = isLight ? '#1a1a1a' : '#FFFFFF';
+  const chartGridColor = isLight ? `${primaryColor}25` : `${primaryColor}40`;
 
   // Helper to get RGB values from hex color
   const getRgbFromHex = (hex: string) => {
@@ -254,16 +264,16 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
     // Create chart
     const chart = createChart(chartContainerRef.current, {
       layout: {
-        background: { color: '#000000' },
-        textColor: '#FFFFFF',
+        background: { color: chartBgColor },
+        textColor: chartTextColor,
       },
       grid: {
         vertLines: {
-          color: `${primaryColor}40`,  // Primary color with 25% opacity
+          color: chartGridColor,  // Primary color with theme-appropriate opacity
           visible: true,
         },
         horzLines: {
-          color: `${primaryColor}40`,  // Primary color with 25% opacity
+          color: chartGridColor,  // Primary color with theme-appropriate opacity
           visible: true,
         },
       },
@@ -1263,7 +1273,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
 
       chart.remove();
     };
-  }, [poolsData, timeframe, displayMode, showVolume, resetTrigger, enabledIndicators, isLogScale, isAutoScale]);
+  }, [poolsData, timeframe, displayMode, showVolume, resetTrigger, enabledIndicators, isLogScale, isAutoScale, theme, chartBgColor, chartTextColor, chartGridColor]);
 
   // Separate effect to handle migration lines toggle without recreating chart
   useEffect(() => {
@@ -1291,7 +1301,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
           color: darkerColor,
           label: migration.label,
           lineWidth: 2,
-          labelBackgroundColor: '#000000',
+          labelBackgroundColor: chartBgColor,
           labelTextColor: primaryColor,
         }));
 
@@ -1435,7 +1445,7 @@ export default function Chart({ poolsData, timeframe, displayMode, showVolume, s
       backgroundOpacity: textBox.backgroundOpacity !== undefined ? textBox.backgroundOpacity : 0.95,
       backgroundEnabled: textBox.backgroundEnabled !== false,
       borderEnabled: textBox.borderEnabled || false,
-      borderColor: textBox.borderColor || '#000000',
+      borderColor: textBox.borderColor || (isLight ? '#1a1a1a' : '#000000'),
       borderWidth: textBox.borderWidth || 2,
       textAlign: textBox.textAlign || 'left',
       rotation: textBox.rotation || 0,

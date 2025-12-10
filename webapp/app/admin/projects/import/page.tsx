@@ -133,6 +133,20 @@ export default function ImportProjectPage() {
             font-size: 0.8rem;
             color: var(--text-muted);
           }
+
+          /* Light mode overrides */
+          html.light .import-page,
+          .light .import-page {
+            --text-primary: #1a1a1a;
+            --text-muted: rgba(26, 26, 26, 0.5);
+          }
+
+          html.light .success-icon,
+          .light .success-icon {
+            border-color: #2d8a52;
+            color: #2d8a52;
+            box-shadow: 0 0 20px rgba(45, 138, 82, 0.2);
+          }
         `}</style>
 
         <div className="success-container">
@@ -439,6 +453,120 @@ export default function ImportProjectPage() {
           font-family: 'JetBrains Mono', monospace;
           font-size: 0.65rem;
           color: var(--text-muted);
+        }
+
+        /* Light mode overrides */
+        html.light .import-page,
+        .light .import-page {
+          --text-primary: #1a1a1a;
+          --text-muted: rgba(26, 26, 26, 0.5);
+        }
+
+        html.light .import-section,
+        .light .import-section {
+          border-color: rgba(45, 138, 82, 0.3);
+          background: rgba(255, 255, 255, 0.5);
+        }
+
+        html.light .section-header,
+        .light .section-header {
+          border-color: rgba(45, 138, 82, 0.2);
+          background: rgba(45, 138, 82, 0.05);
+        }
+
+        html.light .step-number,
+        .light .step-number {
+          border-color: #2d8a52;
+          color: #2d8a52;
+        }
+
+        html.light .url-input,
+        .light .url-input {
+          border-color: rgba(45, 138, 82, 0.3);
+          background: rgba(255, 255, 255, 0.8);
+          color: #1a1a1a;
+        }
+
+        html.light .url-input:focus,
+        .light .url-input:focus {
+          border-color: #2d8a52;
+          box-shadow: 0 0 15px rgba(45, 138, 82, 0.2);
+        }
+
+        html.light .url-input::placeholder,
+        .light .url-input::placeholder {
+          color: rgba(26, 26, 26, 0.4);
+        }
+
+        html.light .btn-primary,
+        .light .btn-primary {
+          border-color: #2d8a52;
+          color: #2d8a52;
+        }
+
+        html.light .btn-primary:hover:not(:disabled),
+        .light .btn-primary:hover:not(:disabled) {
+          background: rgba(45, 138, 82, 0.1);
+          box-shadow: 0 0 20px rgba(45, 138, 82, 0.25);
+        }
+
+        html.light .btn-success,
+        .light .btn-success {
+          background: #2d8a52;
+          border-color: #2d8a52;
+          color: #ffffff;
+        }
+
+        html.light .btn-success:hover:not(:disabled),
+        .light .btn-success:hover:not(:disabled) {
+          box-shadow: 0 0 25px rgba(45, 138, 82, 0.35);
+        }
+
+        html.light .error-box,
+        .light .error-box {
+          background: rgba(220, 38, 38, 0.05);
+          border-color: #dc2626;
+        }
+
+        html.light .error-icon,
+        .light .error-icon {
+          color: #dc2626;
+        }
+
+        html.light .error-text,
+        .light .error-text {
+          color: #dc2626;
+        }
+
+        html.light .preview-value.mono,
+        .light .preview-value.mono {
+          border-color: rgba(45, 138, 82, 0.25);
+          background: rgba(45, 138, 82, 0.05);
+        }
+
+        html.light .token-card,
+        .light .token-card {
+          border-color: rgba(45, 138, 82, 0.3);
+          background: rgba(255, 255, 255, 0.5);
+        }
+
+        html.light .token-type.old,
+        .light .token-type.old {
+          border-color: rgba(45, 138, 82, 0.25);
+          color: rgba(26, 26, 26, 0.5);
+        }
+
+        html.light .token-type.new,
+        .light .token-type.new {
+          color: #2d8a52;
+          border-color: #2d8a52;
+          background: rgba(45, 138, 82, 0.1);
+        }
+
+        html.light .arrow-icon,
+        .light .arrow-icon {
+          border-color: rgba(45, 138, 82, 0.3);
+          color: #2d8a52;
         }
       `}</style>
 

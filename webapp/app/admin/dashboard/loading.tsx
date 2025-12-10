@@ -82,6 +82,28 @@ export default function DashboardLoading() {
         .list-item-skeleton:last-child {
           border-bottom: none;
         }
+
+        /* Light mode overrides */
+        html.light .stat-card-skeleton,
+        .light .stat-card-skeleton {
+          border-color: rgba(45, 138, 82, 0.2);
+        }
+
+        html.light .section-skeleton,
+        .light .section-skeleton {
+          border-color: rgba(45, 138, 82, 0.2);
+        }
+
+        html.light .section-header-skeleton,
+        .light .section-header-skeleton {
+          background: rgba(45, 138, 82, 0.05);
+          border-color: rgba(45, 138, 82, 0.2);
+        }
+
+        html.light .list-item-skeleton,
+        .light .list-item-skeleton {
+          border-color: rgba(45, 138, 82, 0.1);
+        }
       `}</style>
 
       {/* Header */}

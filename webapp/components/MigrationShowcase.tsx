@@ -363,6 +363,70 @@ const styles = `
       align-items: flex-start;
     }
   }
+
+  /* Light mode overrides */
+  .light .showcase-title,
+  html.light .showcase-title {
+    background: linear-gradient(180deg, #1a1a1a 0%, rgba(26, 26, 26, 0.8) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .light .showcase-subtitle,
+  html.light .showcase-subtitle {
+    color: rgba(26, 26, 26, 0.6);
+  }
+
+  .light .chart-section,
+  html.light .chart-section {
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(45, 138, 82, 0.15);
+    backdrop-filter: blur(20px);
+  }
+
+  .light .chart-section.unified,
+  html.light .chart-section.unified {
+    border-color: rgba(45, 138, 82, 0.25);
+    box-shadow: 0 0 40px rgba(45, 138, 82, 0.08);
+  }
+
+  .light .chart-title,
+  html.light .chart-title {
+    color: #1a1a1a;
+  }
+
+  .light .chart-description,
+  html.light .chart-description {
+    color: rgba(26, 26, 26, 0.5);
+  }
+
+  .light .legend,
+  html.light .legend {
+    border-top: 1px solid rgba(45, 138, 82, 0.1);
+  }
+
+  .light .legend-item,
+  html.light .legend-item {
+    color: rgba(26, 26, 26, 0.6);
+  }
+
+  .light .showcase-note,
+  html.light .showcase-note {
+    color: rgba(26, 26, 26, 0.5);
+  }
+
+  .light .showcase-note strong,
+  html.light .showcase-note strong {
+    color: #2d8a52;
+  }
+
+  .light .chart-label.unified,
+  html.light .chart-label.unified {
+    background: rgba(45, 138, 82, 0.1);
+    color: #2d8a52;
+    border: 1px solid rgba(45, 138, 82, 0.2);
+  }
 `;
 
 export default function MigrationShowcase() {

@@ -387,6 +387,117 @@ export default async function InquiryDetailPage({ params }: { params: Promise<{ 
           word-break: break-all;
           line-height: 1.6;
         }
+
+        /* Light mode overrides */
+        html.light .inquiry-detail,
+        .light .inquiry-detail {
+          --bg: #f8faf9;
+          --surface: rgba(255, 255, 255, 0.7);
+          --surface-elevated: rgba(255, 255, 255, 0.9);
+          --border: rgba(45, 138, 82, 0.2);
+          --border-subtle: rgba(45, 138, 82, 0.1);
+          --text: #1a1a1a;
+          --text-secondary: rgba(26, 26, 26, 0.7);
+          --text-muted: rgba(26, 26, 26, 0.5);
+          --accent: #2d8a52;
+          --accent-glow: rgba(45, 138, 82, 0.15);
+          --orange: #b8860b;
+          --orange-dim: rgba(184, 134, 11, 0.1);
+          --blue: #2563eb;
+          --red: #dc2626;
+        }
+
+        html.light .inquiry-detail::before,
+        .light .inquiry-detail::before {
+          background: radial-gradient(ellipse at top right, rgba(45, 138, 82, 0.08) 0%, transparent 60%);
+        }
+
+        html.light .section-card,
+        .light .section-card {
+          background: rgba(255, 255, 255, 0.8);
+        }
+
+        html.light .field-value.code,
+        .light .field-value.code {
+          background: rgba(45, 138, 82, 0.05);
+          border-color: rgba(45, 138, 82, 0.15);
+        }
+
+        html.light .message-box,
+        .light .message-box {
+          background: rgba(45, 138, 82, 0.05);
+          border-color: rgba(45, 138, 82, 0.15);
+        }
+
+        html.light .token-card,
+        .light .token-card {
+          background: rgba(45, 138, 82, 0.05);
+          border-color: rgba(45, 138, 82, 0.15);
+        }
+
+        html.light .copy-btn,
+        .light .copy-btn {
+          border-color: rgba(45, 138, 82, 0.2);
+          color: rgba(26, 26, 26, 0.5);
+        }
+
+        html.light .copy-btn:hover,
+        .light .copy-btn:hover {
+          border-color: #2d8a52;
+          color: #2d8a52;
+        }
+
+        html.light .status-badge.status-pending,
+        .light .status-badge.status-pending {
+          background: rgba(184, 134, 11, 0.1);
+          color: #b8860b;
+          border-color: rgba(184, 134, 11, 0.3);
+        }
+
+        html.light .status-pending .status-dot,
+        .light .status-pending .status-dot {
+          background: #b8860b;
+          box-shadow: 0 0 8px rgba(184, 134, 11, 0.5);
+        }
+
+        html.light .status-badge.status-contacted,
+        .light .status-badge.status-contacted {
+          background: rgba(37, 99, 235, 0.1);
+          color: #2563eb;
+          border-color: rgba(37, 99, 235, 0.3);
+        }
+
+        html.light .status-contacted .status-dot,
+        .light .status-contacted .status-dot {
+          background: #2563eb;
+          box-shadow: 0 0 8px rgba(37, 99, 235, 0.5);
+        }
+
+        html.light .status-badge.status-approved,
+        .light .status-badge.status-approved {
+          background: rgba(45, 138, 82, 0.1);
+          color: #2d8a52;
+          border-color: rgba(45, 138, 82, 0.3);
+        }
+
+        html.light .status-approved .status-dot,
+        .light .status-approved .status-dot {
+          background: #2d8a52;
+          box-shadow: 0 0 8px rgba(45, 138, 82, 0.5);
+        }
+
+        html.light .status-badge.status-rejected,
+        .light .status-badge.status-rejected {
+          background: rgba(220, 38, 38, 0.1);
+          color: #dc2626;
+          border-color: rgba(220, 38, 38, 0.3);
+        }
+
+        html.light .status-rejected .status-dot,
+        .light .status-rejected .status-dot {
+          background: #dc2626;
+          box-shadow: 0 0 8px rgba(220, 38, 38, 0.5);
+        }
       `}</style>
 
       <div className="detail-container">
