@@ -1275,7 +1275,7 @@ function HomeContent() {
                           viewMode === 'chart'
                             ? ''
                             : 'text-white/70 hover:text-white'
-                        }`}
+                        } ${!currentProject?.burnsEnabled ? 'col-span-2' : ''}`}
                         style={viewMode === 'chart' ? { color: secondaryColor } : undefined}
                       >
                         {viewMode === 'chart' && (
@@ -2472,7 +2472,7 @@ function HomeContent() {
                       viewMode === 'chart'
                         ? ''
                         : 'text-white/70 hover:text-white'
-                    }`}
+                    } ${!currentProject?.burnsEnabled ? 'col-span-2' : ''}`}
                     style={viewMode === 'chart' ? { color: secondaryColor } : undefined}
                   >
                     {viewMode === 'chart' && (
