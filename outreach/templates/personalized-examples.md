@@ -8,28 +8,30 @@ Based on actual projects from latest scan.
 ```
 Hey Rainmaker team! Congrats on the upcoming Dec 9 migration.
 
-We built migrate-chart.fun after working with PAYAI and ZERA. Happy to show you what real-time tracking looks like if you're interested.
+We built migrate-chart.fun—working with ZERA and PAYAI currently. Even @notorious_d_e_v mentioned it could help @MigrateFun projects.
+
+Happy to show you the dashboard if you're interested.
 ```
 
 ### @AgentNyla (5.5K views) - AI Agent
 ```
-Saw you're migrating Dec 9! We built analytics specifically for AI agent projects moving through @MigrateFun.
+Saw you're migrating Dec 9! We built migrate-chart.fun—currently working with ZERA and PAYAI.
 
-Would love to show you what we've put together—might be useful for your community.
+@notorious_d_e_v suggested it for @MigrateFun migrations. Would love to show you if helpful.
 ```
 
 ### @swarmnode (4.8K views)
 ```
 Hey SwarmNode! Noticed you're starting migration soon.
 
-We built some tracking tools that other projects are using for transparency. Happy to share if helpful.
+We built migrate-chart.fun—ZERA and PAYAI are using it for post-migration analytics. Happy to show you if helpful.
 ```
 
 ### @ParagonTweaks (3.9K views) - 180K downloads
 ```
 Congrats on the migration! With 180K+ downloads, showing migration transparency could be huge.
 
-We built migrate-chart.fun for exactly this. Want to see what we did for PAYAI?
+We built migrate-chart.fun—working with ZERA and PAYAI currently. Want to see what we put together?
 ```
 
 ---

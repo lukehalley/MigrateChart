@@ -4,14 +4,14 @@
 ```
 Hey! Saw your migration via @MigrateFun wrapped up nicely.
 
-We built migrate-chart.fun—analytics specifically for migrated projects. Happy to show you what we put together for PAYAI if you're interested.
+We built migrate-chart.fun—working with ZERA and PAYAI currently. Happy to show you the dashboard if you're interested.
 ```
 
 ## Template 2: December 9th Wave (Peer-to-Peer)
 ```
-Congrats on the upcoming migration! We're building analytics dashboards for projects moving through @MigrateFun.
+Congrats on the upcoming migration! We built migrate-chart.fun—ZERA and PAYAI are using it for post-migration analytics.
 
-Would love to show you what we've done for other projects launching around the same time.
+Would love to show you what we've put together.
 ```
 
 ## Template 3: Low Participation (Problem-Focused)
@@ -23,10 +23,20 @@ Working with a few other projects, happy to share what's working if helpful.
 
 ## Template 4: Super Casual (Minimal)
 ```
-Built something for migration analytics after working with PAYAI and ZERA.
+Built migrate-chart.fun for PAYAI and ZERA's migrations.
 
 Might be useful for you—DM if you want to see it.
 ```
+
+---
+
+## Social Proof Talking Points
+
+**When they ask "Who else uses this?":**
+
+"Currently working with ZERA and PAYAI. ZERA's official account praised it for restoring their complete migration history, and @notorious_d_e_v (PAYAI's dev) mentioned it could help all @MigrateFun projects.
+
+You can see the live testimonials on our landing page."
 
 ---
 
