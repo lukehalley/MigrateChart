@@ -10,7 +10,7 @@ Just copy and send these. Details are in each project's folder.
 ```
 Hey SwarmNode! I'm Luke—been working with Adam, Chris and Jake from @MigrateFun on tools that help projects post-migration.
 
-Built https://migrate-chart.fun so holders can see complete price action across migrations. Working with ZERA and PAYAI currently.
+Built https://migrate-chart.fun so holders can see complete price action across migrations. Working with @dev_skill_issue from @ZeraLabs and @notorious_d_e_v from @PayAINetwork currently.
 
 Noticed you're at 20% participation—happy to help if useful. Want to see what we built?
 ```
@@ -19,7 +19,7 @@ Noticed you're at 20% participation—happy to help if useful. Want to see what 
 ```
 Hey Ace team! I'm Luke—been chatting with Adam McBride and the @MigrateFun guys about helping projects with post-migration transparency.
 
-Built https://migrate-chart.fun for ZERA and PAYAI—shows complete price history so holders can see the full picture.
+Built https://migrate-chart.fun—working with @dev_skill_issue from @ZeraLabs and @notorious_d_e_v from @PayAINetwork. Shows complete price history so holders can see the full picture.
 
 Saw you're at 20% participation. Happy to help if it's useful. Want to see it?
 ```
@@ -32,7 +32,7 @@ Saw you're at 20% participation. Happy to help if it's useful. Want to see it?
 ```
 Hey Paragon team! I'm Luke—been working with the @MigrateFun guys on helping projects with post-migration analytics.
 
-Built https://migrate-chart.fun for ZERA and PAYAI. With 180K+ downloads, showing investors complete price action across migrations probably matters.
+Built https://migrate-chart.fun—working with @dev_skill_issue from @ZeraLabs and @notorious_d_e_v from @PayAINetwork. With 180K+ downloads, showing investors complete price action probably matters.
 
 Happy to share what we built if it's helpful.
 ```
@@ -41,7 +41,7 @@ Happy to share what we built if it's helpful.
 ```
 Hey Rainmaker! I'm Luke—been chatting with Adam and Chris from @MigrateFun about helping projects post-migration.
 
-Built https://migrate-chart.fun for ZERA and PAYAI. Shows holders complete price action across migrations. @notorious_d_e_v mentioned it could help projects.
+Built https://migrate-chart.fun—working with @dev_skill_issue from @ZeraLabs and @notorious_d_e_v from @PayAINetwork. Shows holders complete price action across migrations.
 
 Happy to share if interested!
 ```
@@ -50,7 +50,7 @@ Happy to share if interested!
 ```
 Hey NYLA! I'm Luke—been working with the @MigrateFun team on post-migration tools.
 
-Built https://migrate-chart.fun for ZERA and PAYAI—shows complete price history for holders and investors. @notorious_d_e_v said it could help migrating projects.
+Built https://migrate-chart.fun—working with @dev_skill_issue from @ZeraLabs and @notorious_d_e_v from @PayAINetwork. Shows complete price history for holders and investors.
 
 Want to see it?
 ```
@@ -59,7 +59,7 @@ Want to see it?
 ```
 Hey Akasha team! I'm Luke—been chatting with Adam McBride and the @MigrateFun guys about helping projects.
 
-Built https://migrate-chart.fun for ZERA and PAYAI. With your 27-day window, showing holders complete price action helps them make informed decisions.
+Built https://migrate-chart.fun—working with @dev_skill_issue from @ZeraLabs and @notorious_d_e_v from @PayAINetwork. Shows holders complete price action to help with decision-making.
 
 Happy to share if useful.
 ```
@@ -68,7 +68,7 @@ Happy to share if useful.
 ```
 Hey Realis! I'm Luke—been working with the @MigrateFun team on helping projects post-migration.
 
-Built https://migrate-chart.fun for ZERA and PAYAI—shows complete price action for holders and potential partners.
+Built https://migrate-chart.fun—working with @dev_skill_issue from @ZeraLabs and @notorious_d_e_v from @PayAINetwork. Shows complete price action for holders and partners.
 
 Might help with your gaming community. Want to see?
 ```
