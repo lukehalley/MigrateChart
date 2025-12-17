@@ -380,6 +380,12 @@ export default function LandingNav() {
           animation-play-state: paused;
         }
 
+        /* Hide theme toggle and launch app in mobile nav */
+        .mobile-theme-toggle,
+        .mobile-launch-app {
+          display: none;
+        }
+
         @media (max-width: 768px) {
           .landing-nav {
             padding: 1rem 1.5rem;
@@ -620,7 +626,7 @@ function MobileNav({
     <div className={`mobile-nav ${isOpen ? "open" : ""}`}>
       <div className="mobile-nav-links">
         {/* Theme Toggle */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.5rem' }}>
+        <div className="mobile-theme-toggle" style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.5rem' }}>
           <ThemeToggle variant="nav" />
         </div>
         <Link
