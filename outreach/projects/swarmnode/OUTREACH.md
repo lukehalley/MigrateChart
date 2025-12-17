@@ -69,18 +69,18 @@ Skip discovery, go straight to solution.
 ```
 Hey SwarmNode team - saw you're at 20% participation.
 
-We built migrate-chart.fun with live migration tracking that creates visibility and FOMO. Working with ZERA and PAYAI currently.
+We built migrate-chart.fun so holders can see complete price action across migrations. Working with ZERA and PAYAI currently.
 
-Can set you up today to help boost those numbers. Want to jump on a quick call?
+Can set you up today to help with transparency. Want to jump on a quick call?
 ```
 
 ### Version 2: Social Proof + Urgency
 ```
 SwarmNode! Migration is live but only 20% participating so far.
 
-We built migrate-chart.fun—ZERA and PAYAI use it. @notorious_d_e_v said it helps boost visibility for @MigrateFun migrations.
+We built migrate-chart.fun—ZERA and PAYAI use it. @notorious_d_e_v said it could help @MigrateFun migrations.
 
-Can set up a live tracking dashboard today. Interested?
+Shows holders full price history for transparency. Interested?
 ```
 
 ### Version 3: Direct Offer (If No Response to V1)
@@ -96,9 +96,9 @@ No BS, just trying to help. LMK.
 ```
 Saw your participation is low (happens to everyone).
 
-We built live tracking for migrations. Let us set you up FREE for the next 48 hours to see if it helps boost numbers.
+We built migrate-chart.fun to show holders complete price action. Working with ZERA and PAYAI.
 
-If it works, we can talk pricing. If not, no charge.
+Let us set you up FREE for 48 hours to help with transparency. If useful, we can discuss pricing. If not, no charge.
 ```
 
 ---

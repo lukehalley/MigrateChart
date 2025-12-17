@@ -37,14 +37,14 @@
 ```
 Ace Data Cloud - saw you're at 20% participation.
 
-We just set up live tracking for SwarmNode to help boost their numbers. Can have you live today too.
+We built migrate-chart.fun so holders can see complete price action across migrations. Working with ZERA and PAYAI.
 
-Working with ZERA and PAYAI. Free trial to help get participation up. Want it?
+Free trial to help with transparency through Dec 24. Want it?
 ```
 
 ### Version 2: If They Respond
 ```
-We built migrate-chart.fun with real-time participation tracking. Creates FOMO when community sees live counter.
+We built migrate-chart.fun to show holders the full migration journey. Helps with transparency when community needs to see complete price history.
 
 Can set up in 2 hours. No charge for first 48 hours—just want to help. If it works, we can discuss keeping it.
 ```
