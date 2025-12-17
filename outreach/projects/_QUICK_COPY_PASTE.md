@@ -62,14 +62,14 @@ Working with @dev_skill_issue and @notorious_d_e_v. @notorious_d_e_v mentioned i
 DM if interested!
 ```
 
-### 6. @Akasha_Rising (27-day window)
-**DM Link:** https://x.com/Akasha_Rising
+### 6. @Akasha_Rising (27-day window) - **TWEET (DMs closed)**
+**Tweet At:** https://x.com/Akasha_Rising
 ```
-Hey! I'm Luke - been chatting with Adam McBride and the @MigrateFun team about helping projects.
+@Akasha_Rising Your 27-day migration window with 50% late fee is a smart approach!
 
-Built migrate-chart.fun for @ZeraLabs and @PayAINetwork (working with @dev_skill_issue and @notorious_d_e_v). Complete analytics suite - price, holders, fees, burns - preserved across migrations.
+Built migrate-chart.fun for @ZeraLabs and @PayAINetwork - complete analytics (price, holders, fees, burns) preserved across migrations.
 
-Your 27-day window is smart - happy to share if this would be useful.
+Working with @dev_skill_issue and @notorious_d_e_v. Happy to help if useful - DM me!
 ```
 
 ### 7. @realisworlds (gaming project)
