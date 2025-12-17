@@ -9,9 +9,9 @@ Just copy and send these. Details are in each project's folder.
 ### 1. @swarmnode (20% participation crisis)
 **DM Link:** https://x.com/swarmnode
 ```
-Hey! I'm Luke - been working with Adam, Chris and Jake from @MigrateFun on tools that help projects post-migration.
+Hey! I'm Luke - been working with Adam, Chris and Jake from @MigrateFun on analytics that help projects post-migration.
 
-Built https://migrate-chart.fun so holders can see complete price action across migrations. Currently working with @dev_skill_issue from @ZeraLabs and @notorious_d_e_v from @PayAINetwork.
+Built https://migrate-chart.fun - tracks price, volume, holders, fees and burns across migrations. Currently working with @dev_skill_issue from @ZeraLabs and @notorious_d_e_v from @PayAINetwork.
 
 Noticed you're at 20% participation - happy to help if useful. Want to see what we built?
 ```
@@ -21,7 +21,7 @@ Noticed you're at 20% participation - happy to help if useful. Want to see what 
 ```
 Hey! I'm Luke. Been chatting with Adam McBride and the @MigrateFun guys about helping projects with post-migration transparency.
 
-We built https://migrate-chart.fun for @ZeraLabs and @PayAINetwork (working with @dev_skill_issue and @notorious_d_e_v). It shows complete price history so holders can see the full picture.
+Built https://migrate-chart.fun for @ZeraLabs and @PayAINetwork (working with @dev_skill_issue and @notorious_d_e_v). Tracks complete analytics - price, holders, volume, fees - so your community can see the full picture.
 
 Saw you're at 20% participation. Happy to help if it's useful.
 ```
@@ -33,19 +33,19 @@ Saw you're at 20% participation. Happy to help if it's useful.
 ### 3. @ParagonTweaks (180K app downloads)
 **DM Link:** https://x.com/ParagonTweaks
 ```
-Hey! I'm Luke. Been working with the @MigrateFun team (Adam, Chris, Jake) on helping projects with analytics post-migration.
+Hey! I'm Luke. Been working with the @MigrateFun team (Adam, Chris, Jake) on analytics for projects post-migration.
 
-With 180K+ downloads, I imagine showing investors the complete price action across your migration probably matters. Built https://migrate-chart.fun for this - currently working with @dev_skill_issue from @ZeraLabs and @notorious_d_e_v from @PayAINetwork.
+With 180K+ downloads, showing investors comprehensive metrics probably matters. Built https://migrate-chart.fun for this - tracks price, volume, holders, fees across migrations. Working with @dev_skill_issue from @ZeraLabs and @notorious_d_e_v from @PayAINetwork.
 
-Happy to share if helpful.
+Happy to share if helpful. We also do custom integrations for unique tokenomics.
 ```
 
 ### 4. @rainmakerdotfun (highest engagement)
 **DM Link:** https://x.com/rainmakerdotfun
 ```
-Hey! I'm Luke - been talking with Adam and Chris from @MigrateFun about post-migration tools that help projects.
+Hey! I'm Luke - been talking with Adam and Chris from @MigrateFun about post-migration analytics.
 
-I built https://migrate-chart.fun to show holders complete price action across migrations. Working with @dev_skill_issue (@ZeraLabs) and @notorious_d_e_v (@PayAINetwork) on it.
+Built https://migrate-chart.fun to track everything - price, holders, volume, fees - across migrations. Working with @dev_skill_issue (@ZeraLabs) and @notorious_d_e_v (@PayAINetwork) on it.
 
 Congrats on the upcoming migration! Happy to share what we've put together.
 ```
@@ -53,9 +53,9 @@ Congrats on the upcoming migration! Happy to share what we've put together.
 ### 5. @AgentNyla (AI agent, VC potential)
 **DM Link:** https://x.com/AgentNyla
 ```
-Hey! I'm Luke. Been working with the @MigrateFun guys on post-migration analytics tools.
+Hey! I'm Luke. Been working with the @MigrateFun guys on analytics for migrating projects.
 
-Built https://migrate-chart.fun to show complete price history for holders and investors. Currently working with @dev_skill_issue from @ZeraLabs and @notorious_d_e_v from @PayAINetwork.
+Built https://migrate-chart.fun - full analytics dashboard (price, holders, volume, fees, burns) for investors and community. Working with @dev_skill_issue from @ZeraLabs and @notorious_d_e_v from @PayAINetwork.
 
 @notorious_d_e_v mentioned it could help migrating projects. Want to check it out?
 ```
@@ -65,7 +65,7 @@ Built https://migrate-chart.fun to show complete price history for holders and i
 ```
 Hey! I'm Luke - been chatting with Adam McBride and the @MigrateFun team about helping projects.
 
-I built https://migrate-chart.fun for @ZeraLabs and @PayAINetwork (working with @dev_skill_issue and @notorious_d_e_v). Shows holders complete price action which helps with decision-making during longer migration windows.
+Built https://migrate-chart.fun for @ZeraLabs and @PayAINetwork (working with @dev_skill_issue and @notorious_d_e_v). Complete analytics suite - price, holders, fees, burns - preserved across migrations.
 
 Your 27-day window is smart - happy to share if this would be useful.
 ```
@@ -73,9 +73,9 @@ Your 27-day window is smart - happy to share if this would be useful.
 ### 7. @realisworlds (gaming project)
 **DM Link:** https://x.com/realisworlds
 ```
-Hey! I'm Luke. Been working with the @MigrateFun team on helping projects post-migration.
+Hey! I'm Luke. Been working with the @MigrateFun team on post-migration analytics.
 
-Built https://migrate-chart.fun - working with @dev_skill_issue from @ZeraLabs and @notorious_d_e_v from @PayAINetwork. It shows complete price action across migrations, which is useful for holders and potential partners.
+Built https://migrate-chart.fun - working with @dev_skill_issue from @ZeraLabs and @notorious_d_e_v from @PayAINetwork. Full analytics dashboard (price, holders, volume, fees) useful for community and potential partners.
 
 Might help with your gaming community!
 ```
