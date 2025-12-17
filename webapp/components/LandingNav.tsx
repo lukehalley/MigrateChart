@@ -161,6 +161,9 @@ export default function LandingNav() {
 
         .nav-cta-wrapper {
           margin-left: auto;
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
         }
 
         .nav-logo-link {
@@ -472,6 +475,13 @@ export default function LandingNav() {
         html.light .mobile-nav .nav-link.primary {
           color: #ffffff;
         }
+
+        /* Hide theme toggle on mobile */
+        @media (max-width: 768px) {
+          .mobile-nav .theme-toggle-wrapper {
+            display: none;
+          }
+        }
       `}</style>
 
       <nav className={`landing-nav ${scrolled ? "scrolled" : ""}`}>
@@ -562,7 +572,7 @@ export default function LandingNav() {
           </div>
 
           {/* CTA - Right aligned */}
-          <div className="nav-cta-wrapper" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <div className="nav-cta-wrapper">
             <ThemeToggle variant="nav" />
             <Link href="/zera" className="nav-link primary">
               Launch App
@@ -620,7 +630,7 @@ function MobileNav({
     <div className={`mobile-nav ${isOpen ? "open" : ""}`}>
       <div className="mobile-nav-links">
         {/* Theme Toggle */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.5rem' }}>
+        <div className="theme-toggle-wrapper" style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.5rem' }}>
           <ThemeToggle variant="nav" />
         </div>
         <Link

@@ -8,20 +8,20 @@ Just copy and send these. Details are in each project's folder.
 
 ### 1. @swarmnode (20% participation crisis)
 ```
-SwarmNode - saw you're at 20% participation.
+Hey SwarmNode! I'm Luke—been working with Adam, Chris and Jake from @MigrateFun on tools that help projects post-migration.
 
-We built migrate-chart.fun so holders and investors can see complete price action across migrations. Working with ZERA and PAYAI currently.
+Built migrate-chart.fun so holders can see complete price action across migrations. Working with ZERA and PAYAI currently.
 
-Happy to show you what we built if helpful.
+Noticed you're at 20% participation—happy to help if useful. Want to see what we built?
 ```
 
 ### 2. @acedatacloud (20% participation crisis)
 ```
-Ace Data Cloud - saw you're at 20% participation.
+Hey Ace team! I'm Luke—been chatting with Adam McBride and the @MigrateFun guys about helping projects with post-migration transparency.
 
-We built migrate-chart.fun—shows holders the full price action pre/post migration. Working with ZERA and PAYAI.
+Built migrate-chart.fun for ZERA and PAYAI—shows complete price history so holders can see the full picture.
 
-Might help with transparency through Dec 24. Want to see it?
+Saw you're at 20% participation. Happy to help if it's useful. Want to see it?
 ```
 
 ---
@@ -30,45 +30,47 @@ Might help with transparency through Dec 24. Want to see it?
 
 ### 3. @ParagonTweaks (180K app downloads)
 ```
-Hey Paragon! With 180K+ downloads, professional migration analytics matter.
+Hey Paragon team! I'm Luke—been working with the @MigrateFun guys on helping projects with post-migration analytics.
 
-We built migrate-chart.fun—working with ZERA and PAYAI. Shows investors and partners complete price action across migrations.
+Built migrate-chart.fun for ZERA and PAYAI. With 180K+ downloads, showing investors complete price action across migrations probably matters.
 
-Happy to show you if helpful.
+Happy to share what we built if it's helpful.
 ```
 
 ### 4. @rainmakerdotfun (highest engagement)
 ```
-Hey Rainmaker! Congrats on the upcoming Dec 9 migration.
+Hey Rainmaker! I'm Luke—been chatting with Adam and Chris from @MigrateFun about helping projects post-migration.
 
-We built migrate-chart.fun so holders can see complete price action. Working with ZERA and PAYAI—@notorious_d_e_v mentioned it could help @MigrateFun projects.
+Built migrate-chart.fun for ZERA and PAYAI. Shows holders complete price action across migrations. @notorious_d_e_v mentioned it could help projects.
 
-Happy to show you if interested.
+Happy to share if interested!
 ```
 
 ### 5. @AgentNyla (AI agent, VC potential)
 ```
-Saw you're migrating Dec 9! We built migrate-chart.fun—working with ZERA and PAYAI currently.
+Hey NYLA! I'm Luke—been working with the @MigrateFun team on post-migration tools.
 
-@notorious_d_e_v said it could help @MigrateFun projects. Shows full price action for holders and investors.
-```
-
-### 6. @Akasha_Rising (27-day window)
-```
-Hey Akasha! 27-day migration window with 50% late fee shows you care about participation.
-
-We built migrate-chart.fun—working with ZERA and PAYAI. Shows holders complete price action to help with decision-making.
+Built migrate-chart.fun for ZERA and PAYAI—shows complete price history for holders and investors. @notorious_d_e_v said it could help migrating projects.
 
 Want to see it?
 ```
 
+### 6. @Akasha_Rising (27-day window)
+```
+Hey Akasha team! I'm Luke—been chatting with Adam McBride and the @MigrateFun guys about helping projects.
+
+Built migrate-chart.fun for ZERA and PAYAI. With your 27-day window, showing holders complete price action helps them make informed decisions.
+
+Happy to share if useful.
+```
+
 ### 7. @realisworlds (gaming project)
 ```
-Hey Realis! Congrats on the Dec 9 migration.
+Hey Realis! I'm Luke—been working with the @MigrateFun team on helping projects post-migration.
 
-We built migrate-chart.fun—working with ZERA and PAYAI. Shows complete price action for holders and potential partners.
+Built migrate-chart.fun for ZERA and PAYAI—shows complete price action for holders and potential partners.
 
-Might be useful for your gaming community.
+Might help with your gaming community. Want to see?
 ```
 
 ---
