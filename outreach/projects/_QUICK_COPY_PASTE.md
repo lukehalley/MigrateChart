@@ -30,45 +30,45 @@ Might help with transparency through Dec 24. Want to see it?
 
 ### 3. @ParagonTweaks (180K app downloads)
 ```
-Hey Paragon! With 180K+ downloads, showing migration transparency could be huge.
+Hey Paragon! With 180K+ downloads, professional migration analytics matter.
 
-We built migrate-chart.fun—working with ZERA and PAYAI. Are you raising capital or partnering post-migration?
+We built migrate-chart.fun—working with ZERA and PAYAI. Shows investors and partners complete price action across migrations.
 
-Happy to show you what we built.
+Happy to show you if helpful.
 ```
 
 ### 4. @rainmakerdotfun (highest engagement)
 ```
 Hey Rainmaker! Congrats on the upcoming Dec 9 migration.
 
-We built migrate-chart.fun—working with ZERA and PAYAI. @notorious_d_e_v mentioned it could help @MigrateFun projects.
+We built migrate-chart.fun so holders can see complete price action. Working with ZERA and PAYAI—@notorious_d_e_v mentioned it could help @MigrateFun projects.
 
-Happy to show you the dashboard if interested.
+Happy to show you if interested.
 ```
 
 ### 5. @AgentNyla (AI agent, VC potential)
 ```
-Saw you're migrating Dec 9! We built migrate-chart.fun—currently working with ZERA and PAYAI.
+Saw you're migrating Dec 9! We built migrate-chart.fun—working with ZERA and PAYAI currently.
 
-@notorious_d_e_v suggested it for @MigrateFun migrations. Would love to show you if helpful.
+@notorious_d_e_v said it could help @MigrateFun projects. Shows full price action for holders and investors.
 ```
 
 ### 6. @Akasha_Rising (27-day window)
 ```
-Hey Akasha! 27-day migration window is smart but needs sustained visibility.
+Hey Akasha! 27-day migration window with 50% late fee shows you care about participation.
 
-We built migrate-chart.fun—working with ZERA and PAYAI. With your 50% late fee, keeping participation high matters.
+We built migrate-chart.fun—working with ZERA and PAYAI. Shows holders complete price action to help with decision-making.
 
-Want to see what we built?
+Want to see it?
 ```
 
 ### 7. @realisworlds (gaming project)
 ```
 Hey Realis! Congrats on the Dec 9 migration.
 
-We built migrate-chart.fun—ZERA and PAYAI use it for post-migration analytics. Gaming communities love transparency metrics.
+We built migrate-chart.fun—working with ZERA and PAYAI. Shows complete price action for holders and potential partners.
 
-Might be useful for you.
+Might be useful for your gaming community.
 ```
 
 ---
