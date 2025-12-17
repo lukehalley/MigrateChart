@@ -10,9 +10,9 @@ Just copy and send these. Details are in each project's folder.
 ```
 SwarmNode - saw you're at 20% participation.
 
-We built migrate-chart.fun so holders can see complete price action across migrations. Working with ZERA and PAYAI currently.
+We built migrate-chart.fun so holders and investors can see complete price action across migrations. Working with ZERA and PAYAI currently.
 
-Can set you up today (free trial) to help with transparency. Interested?
+Happy to show you what we built if helpful.
 ```
 
 ### 2. @acedatacloud (20% participation crisis)
@@ -21,7 +21,7 @@ Ace Data Cloud - saw you're at 20% participation.
 
 We built migrate-chart.fun—shows holders the full price action pre/post migration. Working with ZERA and PAYAI.
 
-Free trial to help with visibility through Dec 24. Want it?
+Might help with transparency through Dec 24. Want to see it?
 ```
 
 ---
