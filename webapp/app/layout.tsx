@@ -16,9 +16,16 @@ export const metadata: Metadata = {
   keywords: ['token migration', 'crypto tracking', 'DeFi', 'pool migration', 'price charts', 'token transitions'],
   authors: [{ name: 'Migration Chart' }],
   openGraph: {
-    title: 'Migration Chart - Track Every Token Transition',
+    title: 'MigrateChart - Track Every Token Transition',
     description: 'Visualize complete price history across pool migrations with interactive charts and real-time data.',
+    url: 'https://migrate-chart.fun',
+    siteName: 'MigrateChart',
     type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'MigrateChart - Track Every Token Transition',
+    description: 'Unified price history across pool migrations. Never lose your chart history.',
   },
   // Icons are automatically served from /app directory:
   // - favicon.ico (32x32)
