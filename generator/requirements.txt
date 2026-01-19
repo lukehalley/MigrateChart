@@ -1,5 +1,0 @@
-requests==2.31.0
-pandas==2.2.0
-matplotlib==3.8.2
-mplfinance==0.12.10b0
-python-dateutil==2.8.2

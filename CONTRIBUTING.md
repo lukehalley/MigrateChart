@@ -8,14 +8,14 @@ The production site runs at [migrate-chart.fun](https://migrate-chart.fun)
 
 ## Project Architecture
 
-MigrateChart consists of two main components:
+MigrateChart is a Next.js application with a Supabase backend:
 
-- **`/generator`** - Python scripts for fetching and processing price data from GeckoTerminal API
-- **`/webapp`** - Next.js frontend application with Supabase backend
+- **`/webapp`** - Next.js 14 frontend with App Router, TypeScript, and Tailwind CSS
+- **Supabase** - PostgreSQL database, authentication, and storage
 
 ### Infrastructure Note
 
-The production Vercel deployment and Supabase database are maintained by the core team. Contributors can:
+The production Vercel deployment and Supabase database are maintained by the project owner. Contributors can:
 
 - Run the webapp locally with their own Supabase instance
 - Submit PRs that will be tested against the production infrastructure before merging
@@ -25,7 +25,6 @@ The production Vercel deployment and Supabase database are maintained by the cor
 ### Prerequisites
 
 - Node.js 18+
-- Python 3.8+
 - A Supabase account (for local development)
 
 ### Local Development Setup
@@ -45,12 +44,9 @@ The production Vercel deployment and Supabase database are maintained by the cor
    npm run dev
    ```
 
-3. **Set up the Python generator** (optional)
-   ```bash
-   pip install -r requirements.txt
-   cd generator
-   python main.py
-   ```
+3. **Open the app**
+
+   Visit [http://localhost:3000](http://localhost:3000)
 
 ## How to Contribute
 
@@ -90,8 +86,7 @@ The production Vercel deployment and Supabase database are maintained by the cor
 
 ### Code Style
 
-- **TypeScript/JavaScript**: Follow the existing ESLint configuration
-- **Python**: Follow PEP 8 guidelines
+- **TypeScript**: Follow the existing ESLint configuration
 - **Commits**: Use clear, descriptive commit messages
 
 ## Areas for Contribution

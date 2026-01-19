@@ -1,6 +1,0 @@
-requests
-pandas
-matplotlib
-pyrogram
-tgcrypto
-python-dotenv
