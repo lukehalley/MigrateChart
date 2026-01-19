@@ -47,50 +47,29 @@ export default async function Image() {
             gap: '24px',
           }}
         >
-          {/* Logo/Title */}
-          <div
+          {/* Logo */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="https://migrate-chart.fun/logo/MC_Logo_BG.png"
+            alt="MigrateChart Logo"
+            width={200}
+            height={200}
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '16px',
+              borderRadius: '24px',
+            }}
+          />
+
+          {/* Title */}
+          <span
+            style={{
+              fontSize: '72px',
+              fontWeight: 'bold',
+              color: '#ffffff',
+              letterSpacing: '-2px',
             }}
           >
-            <div
-              style={{
-                width: '80px',
-                height: '80px',
-                background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
-                borderRadius: '16px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <svg
-                width="48"
-                height="48"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="white"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
-                <polyline points="16 7 22 7 22 13" />
-              </svg>
-            </div>
-            <span
-              style={{
-                fontSize: '72px',
-                fontWeight: 'bold',
-                color: '#ffffff',
-                letterSpacing: '-2px',
-              }}
-            >
-              MigrateChart
-            </span>
-          </div>
+            MigrateChart
+          </span>
 
           {/* Tagline */}
           <div
