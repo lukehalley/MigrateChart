@@ -41,3 +41,21 @@ next-env.d.ts
 .vercel
 
 *.env
+
+# Misc loose files
+*.mp4
+*.mp3
+*.mov
+*.avi
+*.zip
+*.tar.gz
+*.rar
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Exports and generated files
+exports/

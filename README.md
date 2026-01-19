@@ -2,7 +2,10 @@
 
 A comprehensive platform to track complete price history for any token across pool migrations and chain transitions. Currently tracking ZERA token migrations on Solana, but designed to support any token migration scenario.
 
-**Live Chart**: [migrate-chart.vercel.app](https://migrate-chart.vercel.app)
+**🌐 Live Site**: [migrate-chart.fun](https://migrate-chart.fun)
+
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 ## Overview
 
@@ -152,10 +155,29 @@ This platform is ideal for:
 - Visualizing multi-phase token launches and transitions
 - Historical analysis of liquidity pool changes
 
+## Contributing
+
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+### Development Setup
+
+The production site runs on Vercel with a Supabase backend. For local development:
+
+1. Fork and clone the repo
+2. Set up your own Supabase instance for local testing
+3. Copy `.env.local.example` to `.env.local` in the webapp directory
+4. Run `npm install && npm run dev` in the webapp directory
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed instructions.
+
+## Security
+
+For security concerns, please see [SECURITY.md](SECURITY.md) or email migratechart@gmail.com.
+
 ## License
 
-This is an open-source project for tracking token migration price histories across multiple pools and platforms.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Support
 
-For issues, questions, or feature requests, please refer to the project documentation or open an issue on GitHub.
+For issues, questions, or feature requests, please [open an issue](https://github.com/lukehalley/MigrateChart/issues) on GitHub.
