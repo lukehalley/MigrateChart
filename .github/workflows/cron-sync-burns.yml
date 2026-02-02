@@ -15,7 +15,7 @@ jobs:
       - name: Call sync-burns API
         run: |
           response=$(curl -s -w "\n%{http_code}" \
-            -X GET "https://migrate-chart.fun/api/cron/sync-burns" \
+            -X GET "https://www.migrate-chart.fun/api/cron/sync-burns" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}")
 
           http_code=$(echo "$response" | tail -n1)

@@ -15,7 +15,7 @@ jobs:
       - name: Call sync-migrations API
         run: |
           response=$(curl -s -w "\n%{http_code}" \
-            -X GET "https://migrate-chart.fun/api/cron/sync-migrations" \
+            -X GET "https://www.migrate-chart.fun/api/cron/sync-migrations" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}")
 
           http_code=$(echo "$response" | tail -n1)
