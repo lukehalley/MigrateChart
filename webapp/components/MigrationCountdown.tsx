@@ -83,7 +83,7 @@ export function MigrationCountdown({
             {projectName} Migration
           </h2>
           <p className="text-sm" style={{ color: hexToRgba(primaryColor, 0.8) }}>
-            {isComplete ? 'Migration complete - chart coming soon' : 'Migration in progress'}
+            {isComplete ? 'Migration Complete - Chart Coming Soon' : 'Migration In Progress'}
           </p>
         </div>
 
@@ -133,7 +133,7 @@ export function MigrationCountdown({
             />
           </div>
           <p className="text-center text-xs text-white/40 mt-2">
-            {progress.toFixed(1)}% complete
+            {progress.toFixed(1)}% Complete
           </p>
         </div>
 
@@ -149,13 +149,13 @@ export function MigrationCountdown({
               color: '#000',
             }}
           >
-            Migrate on migrate.fun
+            Migrate On Migrate.Fun
           </a>
         )}
 
         {/* Chart will be available text */}
         <p className="text-xs text-white/30 text-center">
-          Full migration chart will be available once migration completes
+          Full Migration Chart Will Be Available Once Migration Completes
         </p>
       </motion.div>
     </div>
