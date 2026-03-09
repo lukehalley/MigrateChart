@@ -744,6 +744,20 @@ function HomeContent() {
         </div>
       )}
 
+      {/* Migration Countdown Banner (replaces donation when active) */}
+      {currentProject?.migrationStatus === 'active' && currentProject?.migrationEndDate ? (
+        <MigrationCountdown
+          migrationEndDate={currentProject.migrationEndDate}
+          migrationStartDate={currentProject.migrationStartDate}
+          projectName={currentProject.name}
+          primaryColor={currentProject.primaryColor}
+          secondaryColor={currentProject.secondaryColor}
+          logoUrl={currentProject.logoUrl}
+          migrateFunUrl={currentProject.migrateFunUrl}
+          isLight={isLight}
+        />
+      ) : (
+      <>
       {/* Donation Popup */}
       <DonationPopup />
 
@@ -1150,6 +1164,8 @@ function HomeContent() {
           </motion.div>
         </AnimatePresence>
       </motion.div>
+      </>
+      )}
 
       {/* Mobile and Tablet View (< 1024px) */}
       <div className="lg:hidden w-full h-full relative overflow-hidden">
@@ -1742,18 +1758,6 @@ function HomeContent() {
               </AnimatePresence>
             )}
 
-          {/* Migration Countdown Overlay */}
-          {currentProject?.migrationStatus === 'active' && currentProject?.migrationEndDate && (
-            <MigrationCountdown
-              migrationEndDate={currentProject.migrationEndDate}
-              migrationStartDate={currentProject.migrationStartDate}
-              projectName={currentProject.name}
-              primaryColor={currentProject.primaryColor}
-              logoUrl={currentProject.logoUrl}
-              migrateFunUrl={currentProject.migrateFunUrl}
-            />
-          )}
-
           {/* Loader Overlay */}
           <AnimatePresence>
             {showLoader && currentProject && (
@@ -1883,18 +1887,6 @@ function HomeContent() {
                 ) : null}
               </AnimatePresence>
             )}
-
-          {/* Migration Countdown Overlay */}
-          {currentProject?.migrationStatus === 'active' && currentProject?.migrationEndDate && (
-            <MigrationCountdown
-              migrationEndDate={currentProject.migrationEndDate}
-              migrationStartDate={currentProject.migrationStartDate}
-              projectName={currentProject.name}
-              primaryColor={currentProject.primaryColor}
-              logoUrl={currentProject.logoUrl}
-              migrateFunUrl={currentProject.migrateFunUrl}
-            />
-          )}
 
           {/* Loader Overlay */}
           <AnimatePresence>

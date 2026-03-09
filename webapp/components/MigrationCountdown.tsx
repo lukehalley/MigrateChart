@@ -1,15 +1,18 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X } from 'lucide-react';
 
 interface MigrationCountdownProps {
   migrationEndDate: string;
   migrationStartDate?: string | null;
   projectName: string;
   primaryColor: string;
+  secondaryColor: string;
   logoUrl?: string;
   migrateFunUrl?: string | null;
+  isLight?: boolean;
 }
 
 function hexToRgba(hex: string, alpha: number) {
@@ -25,11 +28,14 @@ export function MigrationCountdown({
   migrationStartDate,
   projectName,
   primaryColor,
+  secondaryColor,
   logoUrl,
   migrateFunUrl,
+  isLight = false,
 }: MigrationCountdownProps) {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [progress, setProgress] = useState(0);
+  const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
     const endTime = new Date(migrationEndDate).getTime();
@@ -56,108 +62,131 @@ export function MigrationCountdown({
     return () => clearInterval(interval);
   }, [migrationEndDate, migrationStartDate]);
 
+  if (dismissed) return null;
+
   const isComplete = timeLeft.days === 0 && timeLeft.hours === 0 && timeLeft.minutes === 0 && timeLeft.seconds === 0;
 
   return (
-    <div className="absolute inset-0 flex items-center justify-center z-40">
-      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
+    <AnimatePresence>
       <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5 }}
-        className="relative z-10 flex flex-col items-center gap-6 p-8 max-w-lg w-full mx-4"
+        initial={{ opacity: 0, height: 0 }}
+        animate={{ opacity: 1, height: 'auto' }}
+        exit={{ opacity: 0, height: 0 }}
+        className={`relative border-b-2 border-[var(--primary-color)]/50 backdrop-blur-sm overflow-hidden ${isLight ? 'bg-gradient-to-r from-gray-50 via-[var(--primary-color)]/10 to-gray-50' : 'bg-gradient-to-r from-black via-[var(--primary-darker)]/30 to-black'}`}
+        style={{ boxShadow: `0 4px 20px rgba(var(--primary-rgb), 0.25)` }}
       >
-        {/* Logo */}
-        {logoUrl && (
-          <img
-            src={logoUrl}
-            alt={projectName}
-            className="w-20 h-20 rounded-full border-2"
-            style={{ borderColor: hexToRgba(primaryColor, 0.6) }}
-          />
-        )}
+        {/* Animated gradient overlay */}
+        <motion.div
+          className="absolute inset-0 bg-gradient-to-r from-transparent via-[var(--primary-color)]/20 to-transparent opacity-50"
+          animate={{ x: ['-100%', '100%'] }}
+          transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
+        />
 
-        {/* Title */}
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-white mb-1">
-            {projectName} Migration
-          </h2>
-          <p className="text-sm" style={{ color: hexToRgba(primaryColor, 0.8) }}>
-            {isComplete ? 'Migration Complete - Chart Coming Soon' : 'Migration In Progress'}
-          </p>
+        {/* Progress bar at bottom */}
+        <div className="absolute bottom-0 left-0 right-0 h-[2px]" style={{ backgroundColor: hexToRgba(primaryColor, 0.15) }}>
+          <motion.div
+            className="h-full"
+            style={{ backgroundColor: primaryColor }}
+            initial={{ width: 0 }}
+            animate={{ width: `${progress}%` }}
+            transition={{ duration: 1, ease: 'easeOut' }}
+          />
         </div>
 
-        {/* Countdown boxes */}
-        {!isComplete && (
-          <div className="flex gap-3">
-            {[
-              { value: timeLeft.days, label: 'Days' },
-              { value: timeLeft.hours, label: 'Hrs' },
-              { value: timeLeft.minutes, label: 'Min' },
-              { value: timeLeft.seconds, label: 'Sec' },
-            ].map(({ value, label }) => (
-              <div
-                key={label}
-                className="flex flex-col items-center rounded-lg border px-4 py-3 min-w-[70px]"
+        <div className="relative flex items-center justify-center gap-4 py-3 px-4 sm:px-6">
+          {/* Dismiss button */}
+          <button
+            onClick={() => setDismissed(true)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-all hover:bg-white/10"
+            style={{ color: hexToRgba(primaryColor, 0.6) }}
+            title="Dismiss"
+          >
+            <X className="w-4 h-4" />
+          </button>
+
+          {/* Logo */}
+          {logoUrl && (
+            <img
+              src={logoUrl}
+              alt={projectName}
+              className="w-8 h-8 rounded-full border hidden sm:block"
+              style={{ borderColor: hexToRgba(primaryColor, 0.4) }}
+            />
+          )}
+
+          {/* Migration label */}
+          <div className="flex items-center gap-2">
+            <div
+              className="w-2 h-2 rounded-full animate-pulse"
+              style={{ backgroundColor: primaryColor }}
+            />
+            <span className={`text-sm font-semibold ${isLight ? 'text-gray-900' : 'text-white'}`}>
+              {projectName} Migration {isComplete ? 'Complete' : 'In Progress'}
+            </span>
+          </div>
+
+          {/* Divider */}
+          <div className="h-6 w-px hidden sm:block" style={{ backgroundColor: hexToRgba(primaryColor, 0.3) }} />
+
+          {/* Countdown */}
+          {!isComplete && (
+            <div className="flex items-center gap-1.5">
+              {[
+                { value: timeLeft.days, label: 'D' },
+                { value: timeLeft.hours, label: 'H' },
+                { value: timeLeft.minutes, label: 'M' },
+                { value: timeLeft.seconds, label: 'S' },
+              ].map(({ value, label }, i) => (
+                <React.Fragment key={label}>
+                  <div
+                    className="flex items-baseline gap-0.5 px-2 py-1 rounded border"
+                    style={{
+                      backgroundColor: hexToRgba(primaryColor, 0.08),
+                      borderColor: hexToRgba(primaryColor, 0.25),
+                    }}
+                  >
+                    <span
+                      className="text-sm font-mono font-bold tabular-nums"
+                      style={{ color: primaryColor }}
+                    >
+                      {String(value).padStart(2, '0')}
+                    </span>
+                    <span className="text-[9px] text-white/40">{label}</span>
+                  </div>
+                  {i < 3 && <span className="text-white/20 text-xs">:</span>}
+                </React.Fragment>
+              ))}
+            </div>
+          )}
+
+          {/* Divider */}
+          <div className="h-6 w-px hidden sm:block" style={{ backgroundColor: hexToRgba(primaryColor, 0.3) }} />
+
+          {/* Progress */}
+          <span className="text-xs text-white/50 hidden sm:block">
+            {progress.toFixed(1)}% Complete
+          </span>
+
+          {/* Migrate button */}
+          {migrateFunUrl && !isComplete && (
+            <>
+              <div className="h-6 w-px hidden lg:block" style={{ backgroundColor: hexToRgba(primaryColor, 0.3) }} />
+              <a
+                href={migrateFunUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold text-xs transition-all hover:scale-105"
                 style={{
-                  backgroundColor: hexToRgba(primaryColor, 0.08),
-                  borderColor: hexToRgba(primaryColor, 0.3),
+                  backgroundColor: primaryColor,
+                  color: secondaryColor,
                 }}
               >
-                <span
-                  className="text-3xl font-mono font-bold tabular-nums"
-                  style={{ color: primaryColor }}
-                >
-                  {String(value).padStart(2, '0')}
-                </span>
-                <span className="text-[10px] tracking-widest text-white/50 mt-1">
-                  {label}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Progress bar */}
-        <div className="w-full max-w-xs">
-          <div
-            className="w-full h-2 rounded-full overflow-hidden"
-            style={{ backgroundColor: hexToRgba(primaryColor, 0.15) }}
-          >
-            <motion.div
-              className="h-full rounded-full"
-              style={{ backgroundColor: primaryColor }}
-              initial={{ width: 0 }}
-              animate={{ width: `${progress}%` }}
-              transition={{ duration: 1, ease: 'easeOut' }}
-            />
-          </div>
-          <p className="text-center text-xs text-white/40 mt-2">
-            {progress.toFixed(1)}% Complete
-          </p>
+                Migrate Now
+              </a>
+            </>
+          )}
         </div>
-
-        {/* Migrate button */}
-        {migrateFunUrl && !isComplete && (
-          <a
-            href={migrateFunUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-6 py-2.5 rounded-lg font-semibold text-sm transition-all hover:scale-105"
-            style={{
-              backgroundColor: primaryColor,
-              color: '#000',
-            }}
-          >
-            Migrate On Migrate.Fun
-          </a>
-        )}
-
-        {/* Chart will be available text */}
-        <p className="text-xs text-white/30 text-center">
-          Full Migration Chart Will Be Available Once Migration Completes
-        </p>
       </motion.div>
-    </div>
+    </AnimatePresence>
   );
 }
