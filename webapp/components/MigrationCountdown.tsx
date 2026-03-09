@@ -109,7 +109,7 @@ export function MigrationCountdown({
             <img
               src={logoUrl}
               alt={projectName}
-              className="w-8 h-8 rounded-full border hidden sm:block"
+              className="w-12 h-12 rounded-full border hidden sm:block"
               style={{ borderColor: hexToRgba(primaryColor, 0.4) }}
             />
           )}
