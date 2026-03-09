@@ -91,10 +91,10 @@ export function MigrationCountdown({
         {!isComplete && (
           <div className="flex gap-3">
             {[
-              { value: timeLeft.days, label: 'DAYS' },
-              { value: timeLeft.hours, label: 'HRS' },
-              { value: timeLeft.minutes, label: 'MIN' },
-              { value: timeLeft.seconds, label: 'SEC' },
+              { value: timeLeft.days, label: 'Days' },
+              { value: timeLeft.hours, label: 'Hrs' },
+              { value: timeLeft.minutes, label: 'Min' },
+              { value: timeLeft.seconds, label: 'Sec' },
             ].map(({ value, label }) => (
               <div
                 key={label}
