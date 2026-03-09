@@ -25,6 +25,7 @@ import { useThemeContext } from '@/lib/ThemeContext';
 import { fetchAllPoolsData, fetchTokenStats, fetchWalletBalance, fetchTokenBalance } from '@/lib/api';
 import { PoolData, Timeframe, ProjectConfig } from '@/lib/types';
 import { SafeStorage } from '@/lib/localStorage';
+import { MigrationCountdown } from '@/components/MigrationCountdown';
 import { DonationPopup } from '@/components/DonationPopup';
 import { LoginButton } from '@/components/LoginButton';
 import { LoginModal } from '@/components/LoginModal';
@@ -1741,6 +1742,18 @@ function HomeContent() {
               </AnimatePresence>
             )}
 
+          {/* Migration Countdown Overlay */}
+          {currentProject?.migrationStatus === 'active' && currentProject?.migrationEndDate && (
+            <MigrationCountdown
+              migrationEndDate={currentProject.migrationEndDate}
+              migrationStartDate={currentProject.migrationStartDate}
+              projectName={currentProject.name}
+              primaryColor={currentProject.primaryColor}
+              logoUrl={currentProject.logoUrl}
+              migrateFunUrl={currentProject.migrateFunUrl}
+            />
+          )}
+
           {/* Loader Overlay */}
           <AnimatePresence>
             {showLoader && currentProject && (
@@ -1870,6 +1883,18 @@ function HomeContent() {
                 ) : null}
               </AnimatePresence>
             )}
+
+          {/* Migration Countdown Overlay */}
+          {currentProject?.migrationStatus === 'active' && currentProject?.migrationEndDate && (
+            <MigrationCountdown
+              migrationEndDate={currentProject.migrationEndDate}
+              migrationStartDate={currentProject.migrationStartDate}
+              projectName={currentProject.name}
+              primaryColor={currentProject.primaryColor}
+              logoUrl={currentProject.logoUrl}
+              migrateFunUrl={currentProject.migrateFunUrl}
+            />
+          )}
 
           {/* Loader Overlay */}
           <AnimatePresence>

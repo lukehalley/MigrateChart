@@ -89,6 +89,12 @@ export interface ProjectConfig {
   isActive: boolean;
   isPreview?: boolean; // True when admin is previewing inactive project
   burnsEnabled?: boolean; // Optional flag to enable burns tracking
+  migrationStatus?: string | null; // active, completed, failed
+  migrationEndDate?: string | null; // ISO date when migration ends
+  migrationStartDate?: string | null;
+  migrateFunUrl?: string | null;
+  totalMigrated?: number | null;
+  exchangeRate?: number | null;
   pools: PoolConfig[];
   migrations: MigrationConfig[];
   createdAt: string;

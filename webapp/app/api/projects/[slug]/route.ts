@@ -147,6 +147,12 @@ export async function GET(
       isActive: project.is_active,
       isPreview: isAdmin && !project.is_active, // Flag for preview mode
       burnsEnabled: project.burns_enabled || false,
+      migrationStatus: project.migration_status || null,
+      migrationEndDate: project.migration_end_date || null,
+      migrationStartDate: project.migration_start_date || null,
+      migrateFunUrl: project.migrate_fun_url || null,
+      totalMigrated: project.total_migrated ? parseFloat(project.total_migrated) : null,
+      exchangeRate: project.exchange_rate ? parseFloat(project.exchange_rate) : null,
       pools: poolConfigs,
       migrations: migrationConfigs,
       createdAt: project.created_at,
