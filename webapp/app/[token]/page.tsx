@@ -1974,7 +1974,13 @@ function HomeContent() {
                       className="flex flex-col items-center gap-3 w-full"
                     >
                   {/* Logo */}
-                  <div className="w-12 h-12 flex items-center justify-center">
+                  <div
+                    className="w-12 h-12 flex items-center justify-center rounded-full border-2 p-1.5"
+                    style={{
+                      borderColor: primaryColor,
+                      boxShadow: `0 0 12px ${hexToRgba(primaryColor, 0.3)}`,
+                    }}
+                  >
                     {currentProject?.logoUrl ? (
                       <img
                         src={currentProject.logoUrl}

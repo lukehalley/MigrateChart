@@ -30,14 +30,17 @@ export function TokenSwitcher() {
   if (allProjects.length <= 1) {
     return (
       <div className="flex items-center gap-3">
-        <div className="relative h-8 w-8">
+        <div
+          className="relative h-10 w-10 rounded-full border-2 p-1 flex items-center justify-center"
+          style={{ borderColor: 'var(--primary-color)', boxShadow: '0 0 12px rgba(var(--primary-rgb), 0.3)' }}
+        >
           {!imageLoaded[currentProject.slug] && (
             <div className={`absolute inset-0 rounded-full animate-pulse ${isLight ? 'bg-gray-200' : 'bg-gray-700'}`} />
           )}
           <img
             src={currentProject.logoUrl}
             alt={currentProject.name}
-            className={`h-8 w-8 transition-opacity duration-300 ${
+            className={`h-full w-full object-contain transition-opacity duration-300 ${
               imageLoaded[currentProject.slug] ? 'opacity-100' : 'opacity-0'
             }`}
             onLoad={() => handleImageLoad(currentProject.slug)}
@@ -55,14 +58,17 @@ export function TokenSwitcher() {
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer group"
       >
-        <div className="relative h-8 w-8">
+        <div
+          className="relative h-10 w-10 rounded-full border-2 p-1 flex items-center justify-center"
+          style={{ borderColor: 'var(--primary-color)', boxShadow: '0 0 12px rgba(var(--primary-rgb), 0.3)' }}
+        >
           {!imageLoaded[currentProject.slug] && (
             <div className={`absolute inset-0 rounded-full animate-pulse ${isLight ? 'bg-gray-200' : 'bg-gray-700'}`} />
           )}
           <img
             src={currentProject.logoUrl}
             alt={currentProject.name}
-            className={`h-8 w-8 group-hover:scale-105 transition-all duration-300 ${
+            className={`h-full w-full object-contain group-hover:scale-105 transition-all duration-300 ${
               imageLoaded[currentProject.slug] ? 'opacity-100' : 'opacity-0'
             }`}
             onLoad={() => handleImageLoad(currentProject.slug)}
