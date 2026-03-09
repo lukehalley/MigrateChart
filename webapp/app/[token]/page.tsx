@@ -470,6 +470,7 @@ function HomeContent() {
 
   // Get the current pool address (last pool in the chain, sorted by order_index)
   const sortedPools = currentProject?.pools ? [...currentProject.pools].sort((a, b) => a.orderIndex - b.orderIndex) : [];
+  const hasFees = sortedPools.some(p => p.feeRate > 0);
   const currentPoolAddress = sortedPools[sortedPools.length - 1]?.poolAddress;
 
   // Fetch data with SWR for automatic revalidation
@@ -1341,6 +1342,7 @@ function HomeContent() {
                         <span className="relative z-10">Holders</span>
                       </button>
                       {/* Fees */}
+                      {hasFees && (
                       <button
                         onClick={() => {
                           setViewMode('fees');
@@ -1365,6 +1367,7 @@ function HomeContent() {
                         </svg>
                         <span className="relative z-10">Fees</span>
                       </button>
+                      )}
                       {/* Burns */}
                       {currentProject?.burnsEnabled && (
                         <button
@@ -2019,6 +2022,7 @@ function HomeContent() {
                     </button>
 
                     {/* Fees View */}
+                    {hasFees && (
                     <button
                       onClick={() => setViewMode('fees')}
                       className={`w-12 h-12 rounded-lg flex items-center justify-center transition-all ${
@@ -2033,6 +2037,7 @@ function HomeContent() {
                         <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
                     </button>
+                    )}
 
                     {/* Holders View */}
                     <button
@@ -2549,6 +2554,7 @@ function HomeContent() {
                     <span className="relative z-10">Holders</span>
                   </button>
                   {/* Fees */}
+                  {hasFees && (
                   <button
                     onClick={() => setViewMode('fees')}
                     className={`relative py-1.5 px-1 rounded-md text-[10px] font-bold flex items-center justify-center gap-0.5 z-10 transition-colors duration-200 ${
@@ -2570,6 +2576,7 @@ function HomeContent() {
                     </svg>
                     <span className="relative z-10">Fees</span>
                   </button>
+                  )}
                   {/* Burns */}
                   {currentProject?.burnsEnabled && (
                     <button
