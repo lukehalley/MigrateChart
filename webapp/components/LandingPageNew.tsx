@@ -1434,13 +1434,16 @@ export default function LandingPageNew() {
               Contact
             </Link>
             <a
-              href="https://x.com/Trenchooooor"
+              href="https://x.com/Luke_Halley_"
               target="_blank"
               rel="noopener noreferrer"
               className="footer-link"
             >
               Twitter
             </a>
+            <span className="footer-link" style={{ opacity: 0.5, cursor: 'default' }}>
+              For business enquiries, contact <a href="https://x.com/Luke_Halley_" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent, #52C97D)', textDecoration: 'underline' }}>@Luke_Halley_</a>
+            </span>
           </div>
           <div className="footer-copyright">
             {new Date().getFullYear()} Migrate Chart

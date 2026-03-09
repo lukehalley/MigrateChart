@@ -1505,7 +1505,7 @@ function HomeContent() {
               {/* Follow Section */}
               <div>
                 <a
-                  href="https://x.com/Trenchooooor"
+                  href="https://x.com/Luke_Halley_"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 py-4 bg-black/85 hover:bg-[var(--primary-color)]/15 transition-all cursor-pointer backdrop-blur-xl"
@@ -1514,7 +1514,7 @@ function HomeContent() {
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" fill="var(--primary-color)"/>
                   </svg>
-                  <p className="text-[var(--primary-color)] text-base font-bold tracking-wider">@Trenchooooor</p>
+                  <p className="text-[var(--primary-color)] text-base font-bold tracking-wider">@Luke_Halley_</p>
                 </a>
               </div>
 
@@ -2687,7 +2687,7 @@ function HomeContent() {
 
             {/* Follow Section */}
             <a
-              href="https://x.com/Trenchooooor"
+              href="https://x.com/Luke_Halley_"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 py-3 bg-black/85 hover:bg-[var(--primary-color)]/15 transition-all cursor-pointer backdrop-blur-xl w-full"
@@ -2696,7 +2696,7 @@ function HomeContent() {
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" fill="var(--primary-color)"/>
               </svg>
-              <p className="text-[var(--primary-color)] text-base font-bold tracking-wider">@Trenchooooor</p>
+              <p className="text-[var(--primary-color)] text-base font-bold tracking-wider">@Luke_Halley_</p>
             </a>
           </div>
                 </motion.div>

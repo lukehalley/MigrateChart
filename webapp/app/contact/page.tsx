@@ -763,6 +763,11 @@ export default function ContactPage() {
                 <span className="feature-dot" />
                 Comprehensive token listing
               </div>
+              <div className="feature-item" style={{ marginTop: '0.5rem' }}>
+                <span className="feature-dot" />
+                For business enquiries, contact{' '}
+                <a href="https://x.com/Luke_Halley_" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'underline' }}>@Luke_Halley_</a> on X
+              </div>
             </div>
           </motion.div>
         </motion.div>
