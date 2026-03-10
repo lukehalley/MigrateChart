@@ -771,7 +771,7 @@ function HomeContent() {
       {currentProject?.donationPopupEnabled !== false && <DonationPopup />}
 
       {/* Donation Banner */}
-      <motion.div
+      {!currentProject?.donationBarDisabled && <motion.div
         className={`relative border-b-2 border-[var(--primary-color)]/50 backdrop-blur-sm ${isLight ? 'bg-gradient-to-r from-gray-50 via-[var(--primary-color)]/10 to-gray-50' : 'bg-gradient-to-r from-black via-[var(--primary-darker)]/30 to-black'}`}
         style={{ boxShadow: `0 4px 20px rgba(var(--primary-rgb), 0.25)` }}
         initial={{ opacity: 0 }}
@@ -1172,7 +1172,7 @@ function HomeContent() {
           </div>
           </motion.div>
         </AnimatePresence>
-      </motion.div>
+      </motion.div>}
       </>
       )}
 

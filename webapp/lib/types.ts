@@ -97,6 +97,7 @@ export interface ProjectConfig {
   exchangeRate?: number | null;
   defaultTimeframe?: Timeframe | null;
   donationPopupEnabled?: boolean;
+  donationBarDisabled?: boolean;
   pools: PoolConfig[];
   migrations: MigrationConfig[];
   createdAt: string;

@@ -155,6 +155,7 @@ export async function GET(
       exchangeRate: project.exchange_rate ? parseFloat(project.exchange_rate) : null,
       defaultTimeframe: project.default_timeframe || null,
       donationPopupEnabled: project.donation_popup_enabled ?? true,
+      donationBarDisabled: project.donation_bar_disabled ?? false,
       pools: poolConfigs,
       migrations: migrationConfigs,
       createdAt: project.created_at,
