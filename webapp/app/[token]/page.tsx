@@ -192,7 +192,8 @@ function HomeContent() {
   const validHoldersTimeframes = ['1D', '7D', '30D', '90D', 'ALL'];
   const validBurnsTimeframes = ['1D', '7D', '30D', '90D', 'ALL'];
 
-  const initialTimeframe = urlChartTimeframe && validTimeframes.includes(urlChartTimeframe) ? urlChartTimeframe : '1D';
+  const projectDefault = (currentProject?.defaultTimeframe && validTimeframes.includes(currentProject.defaultTimeframe)) ? currentProject.defaultTimeframe : '1D';
+  const initialTimeframe = urlChartTimeframe && validTimeframes.includes(urlChartTimeframe) ? urlChartTimeframe : projectDefault;
   const initialViewMode = urlView && ['chart', 'fees', 'holders', 'burns'].includes(urlView) ? urlView : 'chart';
   const initialFeesTimeframe = urlFeesTimeframe && validFeesTimeframes.includes(urlFeesTimeframe) ? urlFeesTimeframe : 'ALL';
   const initialHoldersTimeframe = urlHoldersTimeframe && validHoldersTimeframes.includes(urlHoldersTimeframe) ? urlHoldersTimeframe : '30D';
@@ -257,6 +258,13 @@ function HomeContent() {
     return `$${num.toFixed(2)}`;
   };
 
+
+  // Set project default timeframe when project loads (if no URL override)
+  useEffect(() => {
+    if (currentProject?.defaultTimeframe && validTimeframes.includes(currentProject.defaultTimeframe) && !searchParams.get('chartTimeframe')) {
+      setTimeframeState(currentProject.defaultTimeframe);
+    }
+  }, [currentProject?.defaultTimeframe]);
 
   // Sync state with URL params when they change
   useEffect(() => {
@@ -760,7 +768,7 @@ function HomeContent() {
       ) : (
       <>
       {/* Donation Popup */}
-      <DonationPopup />
+      {currentProject?.donationPopupEnabled !== false && <DonationPopup />}
 
       {/* Donation Banner */}
       <motion.div

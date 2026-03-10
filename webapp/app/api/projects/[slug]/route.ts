@@ -153,6 +153,8 @@ export async function GET(
       migrateFunUrl: project.migrate_fun_url || null,
       totalMigrated: project.total_migrated ? parseFloat(project.total_migrated) : null,
       exchangeRate: project.exchange_rate ? parseFloat(project.exchange_rate) : null,
+      defaultTimeframe: project.default_timeframe || null,
+      donationPopupEnabled: project.donation_popup_enabled ?? true,
       pools: poolConfigs,
       migrations: migrationConfigs,
       createdAt: project.created_at,

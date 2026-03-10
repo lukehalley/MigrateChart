@@ -95,6 +95,8 @@ export interface ProjectConfig {
   migrateFunUrl?: string | null;
   totalMigrated?: number | null;
   exchangeRate?: number | null;
+  defaultTimeframe?: Timeframe | null;
+  donationPopupEnabled?: boolean;
   pools: PoolConfig[];
   migrations: MigrationConfig[];
   createdAt: string;
