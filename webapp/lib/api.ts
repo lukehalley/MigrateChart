@@ -456,7 +456,14 @@ export async function fetchTokenStats(
       allTimeHighMarketCap = Math.max(...cachedStatsArray.map(stat => stat?.all_time_high_market_cap || 0));
     } else {
       // Fetch all-time data for all tokens to calculate totals
-      const tokenDataPromises = uniqueTokens.map(token => fetchJupiterData(projectConfig.id, token, 'MAX'));
+      // Build token-to-pool map for GeckoTerminal fallback when Jupiter has no data
+      const tokenToPoolMap = new Map<string, string>();
+      for (const pool of projectConfig.pools) {
+        tokenToPoolMap.set(pool.tokenAddress, pool.poolAddress);
+      }
+      const tokenDataPromises = uniqueTokens.map(token =>
+        fetchJupiterData(projectConfig.id, token, 'MAX', tokenToPoolMap.get(token))
+      );
       const tokenDataArray = await Promise.all(tokenDataPromises);
 
       const CIRCULATING_SUPPLY = 1_000_000_000; // Default 1B, could be made configurable per project
@@ -607,7 +614,23 @@ export async function fetchTokenStats(
       website: pair.info?.websites?.[0]?.url,
     };
   } catch (error) {
-    return null;
+    console.error('[fetchTokenStats] Fatal error, returning fallback stats:', error);
+    // Return minimal valid stats instead of null to prevent infinite loading
+    return {
+      price: 0,
+      priceChange24h: 0,
+      volume24h: 0,
+      fees24h: 0,
+      allTimeVolume: 0,
+      allTimeFees: 0,
+      marketCap: 0,
+      allTimeHighMarketCap: 0,
+      liquidity: 0,
+      allTimeHighLiquidity: 0,
+      holders: 0,
+      buyCount24h: 0,
+      sellCount24h: 0,
+    };
   }
 }
 

@@ -522,9 +522,10 @@ function HomeContent() {
     }
   );
 
-  // Fetch wallet balance for donation goal (only if address is available)
+  // Fetch wallet balance for donation goal (only if address is available and donation bar is enabled)
+  const donationEnabled = !currentProject?.donationBarDisabled;
   const { data: walletBalance = 0 } = useSWR(
-    solanaAddress ? `wallet-balance-${solanaAddress}` : null,
+    donationEnabled && solanaAddress ? `wallet-balance-${solanaAddress}` : null,
     () => solanaAddress ? fetchWalletBalance(solanaAddress) : Promise.resolve(0),
     {
       refreshInterval: 60000, // Refresh every minute
@@ -540,7 +541,7 @@ function HomeContent() {
   // Use the current token address (from sorted pools)
   const currentTokenAddress = sortedPools[sortedPools.length - 1]?.tokenAddress;
   const { data: tokenBalance = 0 } = useSWR(
-    solanaAddress && currentTokenAddress ? `token-balance-${solanaAddress}-${currentTokenAddress}` : null,
+    donationEnabled && solanaAddress && currentTokenAddress ? `token-balance-${solanaAddress}-${currentTokenAddress}` : null,
     () => (solanaAddress && currentTokenAddress) ? fetchTokenBalance(solanaAddress, currentTokenAddress) : Promise.resolve(0),
     {
       refreshInterval: 60000, // Refresh every minute
@@ -587,8 +588,17 @@ function HomeContent() {
     }
   }, [currentProject, tokenStats]);
 
+  // Loading timeout - prevent infinite loading spinner
+  const [loadingTimedOut, setLoadingTimedOut] = useState(false);
+  useEffect(() => {
+    setLoadingTimedOut(false);
+    const timer = setTimeout(() => setLoadingTimedOut(true), 15000);
+    return () => clearTimeout(timer);
+  }, [currentProject?.slug]);
+
   // Show loader during initial load or when switching projects
-  const showLoader = !currentProject || !poolsData || !tokenStats || isSwitching;
+  // If loading times out, stop showing loader so the page renders (with error state if needed)
+  const showLoader = !loadingTimedOut && (!currentProject || !poolsData || !tokenStats || isSwitching);
 
   // Auto-scale goals when met
   useEffect(() => {
@@ -754,6 +764,8 @@ function HomeContent() {
       )}
 
       {/* Migration Countdown Banner (replaces donation when active) */}
+      {/* Wrapped in div to always occupy grid row 1, preventing content from collapsing into auto row */}
+      <div>
       {currentProject?.migrationStatus === 'active' && currentProject?.migrationEndDate ? (
         <MigrationCountdown
           migrationEndDate={currentProject.migrationEndDate}
@@ -1175,6 +1187,7 @@ function HomeContent() {
       </motion.div>}
       </>
       )}
+      </div>
 
       {/* Mobile and Tablet View (< 1024px) */}
       <div className="lg:hidden w-full h-full relative overflow-hidden">
